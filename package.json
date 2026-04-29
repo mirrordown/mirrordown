@@ -1,0 +1,25 @@
+{
+  "name": "@saeris/markdown",
+  "private": true,
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "license": "MIT",
+  "repository": "git@github.com:saeris/markdown.git",
+  "packageManager": "yarn@4.14.1",
+  "workspaces": [
+    "docs/*",
+    "extensions/*",
+    "packages/*",
+    "tests/*"
+  ],
+  "scripts": {
+    "prepare": "vp config"
+  },
+  "resolutions": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  },
+  "devDependencies": {
+    "@varlock/bumpy": "^1.4.2",
+    "vite-plus": "latest"
+  }
+}
