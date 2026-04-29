@@ -1,0 +1,5 @@
+{
+  "name": "@saeris/tests",
+  "private": true,
+  "type": "module"
+}

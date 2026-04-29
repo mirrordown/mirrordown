@@ -8,7 +8,7 @@
     "docs/*",
     "extensions/*",
     "packages/*",
-    "tests/*"
+    "tests"
   ],
   "scripts": {
     "prepare": "vp config"
