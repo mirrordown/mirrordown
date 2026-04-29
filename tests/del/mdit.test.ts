@@ -10,7 +10,7 @@ const expected = normalizeHtml(
   readFileSync(join(import.meta.dirname, "expected/del.html"), "utf8"),
 );
 
-const md = new MarkdownIt().use(del);
+const md = new MarkdownIt({ html: true }).use(del);
 
 test("del (markdown-it)", () => {
   expect(normalizeHtml(md.render(fixture))).toBe(expected);
