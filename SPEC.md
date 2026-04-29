@@ -134,6 +134,14 @@ mdit-<name>/
   },
   "devDependencies": {
     "markdown-it": "^14.0.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "npm publish --access public",
+      "npx jsr publish"
+    ]
   }
 }
 ```
@@ -144,6 +152,9 @@ mdit-<name>/
 - `@types/` packages: add to `devDependencies` of the individual package only if needed
   for TypeScript compilation. Do not hoist to root. Modern unified/mdast packages ship
   their own types; audit per plugin during migration.
+- `bumpy.buildCommand` runs `vp pack` before publishing; `bumpy.publishCommand` syncs
+  `jsr.json`, publishes to npm, then publishes to JSR. Requires `allowCustomCommands: true`
+  in `.bumpy/_config.json`.
 
 **`jsr.json`:**
 
@@ -159,9 +170,10 @@ mdit-<name>/
 
 > **Note:** JSR requires a dedicated `jsr.json` file — there is no `jsr` field in
 > `package.json`. The `exports` in `jsr.json` point to TypeScript source, not build output.
-> The version must be kept in sync with `package.json`. Whether `bumpy ci release` updates
-> `jsr.json` automatically needs verification in Phase 0 before the full pipeline is relied
-> upon; a pre-publish script may be needed.
+> Bumpy does not update `jsr.json` when bumping versions (it only touches `package.json`).
+> The `scripts/sync-jsr-version.mjs` script at the repo root handles this: it reads the
+> version from `package.json` and writes it to `jsr.json` before `npx jsr publish` runs.
+> This script is the first step of every plugin package's `bumpy.publishCommand`.
 
 **`tsconfig.json`:**
 
@@ -304,7 +316,7 @@ The root `tsconfig.json` is the base all packages extend. Current root config ap
 the whole monorepo for editor tooling. Per-package `tsconfig.json` files narrow the scope
 for build/emit:
 
-- Remove `jsx`/`jsxImportSource` from the root — those go in `docs/tsconfig.json` only
+- `jsx`/`jsxImportSource` and `DOM` lib are absent from the root — those go in `docs/tsconfig.json` only
 - `moduleResolution: "Bundler"` stays in root (correct for Rolldown/tsdown consumers)
 - `noEmit: true` stays in root (for editor/type-check only); per-package configs override
   with `outDir` for actual emit via `vp pack`
@@ -344,48 +356,55 @@ usage of multiple plugins in a single document. Priority scenarios:
 
 ## 8. Publishing
 
-### 8.1 npm
+Bumpy config lives in two places:
 
-Scoped public packages. Bumpy handles version bumps and publish.
+- **`.bumpy/_config.json`** (root): top-level settings; `allowCustomCommands: true` to
+  trust per-package commands defined in `package.json`
+- **Each package's `package.json`** (under `"bumpy"` key): `buildCommand` and
+  `publishCommand` specific to that package
 
-### 8.2 JSR
+### 8.1 npm + JSR (plugin packages)
 
-Each plugin package publishes to JSR in addition to npm. JSR requires `jsr.json` (see §4.1).
-The publish command is `jsr publish` (or `npx jsr publish`).
+Both npm and JSR are published using **OIDC trusted publishing** from GitHub Actions —
+no tokens or secrets are required for either registry. Publishing works because the release
+job has `id-token: write` permission and each package/scope is linked to this repository
+in the respective registry settings (one-time setup per package, see §9.3).
 
-**Bumpy configuration** — per package in `.bumpy/_config.json`:
+Each plugin package publishes to both npm and JSR. The `"bumpy"` block in each plugin's
+`package.json` (see §4.1 template) handles this:
 
 ```json
 {
-  "packages": {
-    "@saeris/mdit-del": {
-      "publishCommand": ["npm publish --access public", "jsr publish"]
-    },
-    "@saeris/remd-del": {
-      "publishCommand": ["npm publish --access public", "jsr publish"]
-    }
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "npm publish --access public",
+      "npx jsr publish"
+    ]
   }
 }
 ```
 
-> **Phase 0 investigation required:** Confirm whether `bumpy ci release` updates `jsr.json`
-> version automatically, or whether a pre-publish script is needed to sync `jsr.json`
-> version from `package.json` before `jsr publish` runs.
+`scripts/sync-jsr-version.mjs` (repo root) reads `version` from `package.json` and writes
+it to `jsr.json` before `jsr publish` runs. This is required because bumpy only bumps
+`package.json`; JSR requires the version field in `jsr.json` and does not fall back to
+`package.json`.
 
-### 8.3 VSCode extensions
+### 8.2 VSCode extensions
+
+Extensions are not published to npm or JSR. The `"bumpy"` block in each extension's
+`package.json`:
 
 ```json
 {
-  "packages": {
-    "markdown-del": {
-      "publishCommand": "vsce publish",
-      "skipNpmPublish": true
-    }
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": "vsce publish",
+    "skipNpmPublish": true
   }
 }
 ```
-
-`skipNpmPublish: true` — extensions are not published to npm or JSR.
 
 ### 8.4 Bump files
 
@@ -481,7 +500,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      id-token: write    # required for npm OIDC trusted publishing
+      id-token: write  # required for npm and JSR OIDC trusted publishing
     steps:
       - uses: actions/checkout@v4
         with:
@@ -496,7 +515,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BUMPY_GH_TOKEN: ${{ secrets.BUMPY_GH_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 ```
 
@@ -504,15 +522,17 @@ jobs:
 - `BUMPY_GH_TOKEN` — Fine-grained PAT with Contents + Pull Requests write permissions.
   Needed so the "Version Packages" PR triggers CI workflows (the default `github.token`
   does not trigger other workflows due to GitHub's recursion guard).
-- `NPM_TOKEN` — npm publish token (or use npm OIDC with `id-token: write`)
-- `VSCE_PAT` — VS Code Marketplace personal access token
+- `VSCE_PAT` — VS Code Marketplace personal access token.
+
+**One-time registry setup (per package, before first publish):**
+- **npm:** Go to the package's settings on npmjs.com → Trusted Publishers → add this
+  repository and the `release.yml` workflow filename.
+- **JSR:** Go to the package's settings on jsr.io → Link GitHub repository.
 
 ---
 
 ## 10. Open items
 
-- **`jsr.json` version sync:** Verify during Phase 0 whether bumpy updates `jsr.json`
-  automatically, or whether a sync script is required.
 - **`markdown-del` name conflict:** Check the VSCode Marketplace before publishing;
   rename if a conflicting extension already exists. Safe to proceed with this name during
   development — only matters at first publish time.

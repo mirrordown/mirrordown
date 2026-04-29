@@ -10,11 +10,9 @@
     "noEmit": true,
     "strict": true,
     "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
     "types": ["node"],
     "allowJs": true,
     "resolveJsonModule": true,
@@ -24,7 +22,6 @@
     "noErrorTruncation": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+    "noFallthroughCasesInSwitch": true
   }
 }
