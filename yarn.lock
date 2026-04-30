@@ -1122,6 +1122,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-sub@workspace:*, @saeris/mdit-sub@workspace:packages/mdit-sub":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-sub@workspace:packages/mdit-sub"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/mdit-sup@workspace:*, @saeris/mdit-sup@workspace:packages/mdit-sup":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-sup@workspace:packages/mdit-sup"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/remd-del@workspace:packages/remd-del":
   version: 0.0.0-use.local
   resolution: "@saeris/remd-del@workspace:packages/remd-del"
@@ -1190,6 +1212,40 @@ __metadata:
 "@saeris/remd-mark@workspace:packages/remd-mark":
   version: 0.0.0-use.local
   resolution: "@saeris/remd-mark@workspace:packages/remd-mark"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.5"
+    unist-builder: "npm:^4.0.0"
+    unist-util-find-after: "npm:^5.0.0"
+    unist-util-find-all-after: "npm:^5.0.0"
+    unist-util-find-all-before: "npm:^5.0.0"
+    unist-util-find-between-all: "npm:^1.1.6"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-sub@workspace:packages/remd-sub":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-sub@workspace:packages/remd-sub"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.5"
+    unist-builder: "npm:^4.0.0"
+    unist-util-find-after: "npm:^5.0.0"
+    unist-util-find-all-after: "npm:^5.0.0"
+    unist-util-find-all-before: "npm:^5.0.0"
+    unist-util-find-between-all: "npm:^1.1.6"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-sup@workspace:packages/remd-sup":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-sup@workspace:packages/remd-sup"
   dependencies:
     "@types/mdast": "npm:^4.0.4"
     unified: "npm:^11.0.5"
@@ -2738,6 +2794,26 @@ __metadata:
   resolution: "markdown-mark@workspace:extensions/markdown-mark"
   dependencies:
     "@saeris/mdit-mark": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-sub@workspace:extensions/markdown-sub":
+  version: 0.0.0-use.local
+  resolution: "markdown-sub@workspace:extensions/markdown-sub"
+  dependencies:
+    "@saeris/mdit-sub": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-sup@workspace:extensions/markdown-sup":
+  version: 0.0.0-use.local
+  resolution: "markdown-sup@workspace:extensions/markdown-sup"
+  dependencies:
+    "@saeris/mdit-sup": "workspace:*"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/vscode": "npm:^1.118.0"
   languageName: unknown

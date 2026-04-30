@@ -12,7 +12,6 @@
   "publisher": "saeris",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
-  "scripts": {},
   "devDependencies": {
     "@types/vscode": "^1.118.0"
   },

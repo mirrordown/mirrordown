@@ -1,5 +1,5 @@
 {
-  "name": "@saeris/remd-inline-svg",
+  "name": "@saeris/remd-sub",
   "version": "0.0.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
@@ -15,16 +15,19 @@
     }
   },
   "dependencies": {
-    "rehype-parse": "^9.0.1",
-    "svgo": "^4.0.1"
+    "unist-builder": "^4.0.0",
+    "unist-util-find-after": "^5.0.0",
+    "unist-util-find-all-after": "^5.0.0",
+    "unist-util-find-all-before": "^5.0.0",
+    "unist-util-find-between-all": "^1.1.6",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "unified": "^11.0.5",
-    "vfile": "^6.0.3"
+    "@types/mdast": "^4.0.4",
+    "unified": "^11.0.5"
   },
   "peerDependencies": {
-    "unified": "^11.0.0",
-    "vfile": "^6.0.0"
+    "unified": "^11.0.0"
   },
   "engines": {
     "node": ">=24.0.0"

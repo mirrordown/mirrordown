@@ -1,5 +1,5 @@
 {
-  "name": "@saeris/remd-inline-svg",
+  "name": "@saeris/mdit-sub",
   "version": "0.0.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
@@ -14,17 +14,12 @@
       "import": "./dist/index.mjs"
     }
   },
-  "dependencies": {
-    "rehype-parse": "^9.0.1",
-    "svgo": "^4.0.1"
-  },
   "devDependencies": {
-    "unified": "^11.0.5",
-    "vfile": "^6.0.3"
+    "@types/markdown-it": "^14.1.2",
+    "markdown-it": "^14.1.1"
   },
   "peerDependencies": {
-    "unified": "^11.0.0",
-    "vfile": "^6.0.0"
+    "markdown-it": "^14.0.0"
   },
   "engines": {
     "node": ">=24.0.0"
