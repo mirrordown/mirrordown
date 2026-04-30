@@ -14,15 +14,18 @@
       "import": "./dist/index.mjs"
     }
   },
-  "devDependencies": {
-    "@types/mdast": "^4.0.4",
-    "unified": "^11.0.0",
+  "scripts": {},
+  "dependencies": {
     "unist-builder": "^4.0.0",
     "unist-util-find-after": "^5.0.0",
     "unist-util-find-all-after": "^5.0.0",
     "unist-util-find-all-before": "^5.0.0",
-    "unist-util-find-between-all": "^1.1.0",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-find-between-all": "^1.1.6",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "unified": "^11.0.5"
   },
   "peerDependencies": {
     "unified": "^11.0.0"

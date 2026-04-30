@@ -12,10 +12,11 @@
   "publisher": "saeris",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
+  "scripts": {},
   "devDependencies": {
     "@saeris/mdit-ins": "workspace:*",
     "@types/markdown-it": "^14.1.2",
-    "@types/vscode": "^1.80.0"
+    "@types/vscode": "^1.118.0"
   },
   "contributes": {
     "markdown.markdownItPlugins": true

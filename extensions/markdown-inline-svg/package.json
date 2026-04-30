@@ -12,8 +12,9 @@
   "publisher": "saeris",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
+  "scripts": {},
   "devDependencies": {
-    "@types/vscode": "^1.80.0"
+    "@types/vscode": "^1.118.0"
   },
   "contributes": {
     "markdown.previewScripts": [

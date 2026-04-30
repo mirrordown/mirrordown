@@ -12,6 +12,7 @@
   "publisher": "saeris",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
+  "scripts": {},
   "devDependencies": {
     "@saeris/mdit-<name>": "workspace:*",
     "@types/vscode": "^1.80.0"

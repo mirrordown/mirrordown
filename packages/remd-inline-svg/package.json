@@ -14,16 +14,18 @@
       "import": "./dist/index.mjs"
     }
   },
+  "scripts": {},
   "dependencies": {
     "rehype-parse": "^9.0.1",
-    "svgo": "^4.0.0",
-    "vfile": "^6.0.0"
+    "svgo": "^4.0.1"
   },
   "devDependencies": {
-    "unified": "^11.0.0"
+    "unified": "^11.0.5",
+    "vfile": "^6.0.3"
   },
   "peerDependencies": {
-    "unified": "^11.0.0"
+    "unified": "^11.0.0",
+    "vfile": "^6.0.0"
   },
   "engines": {
     "node": ">=24.0.0"
