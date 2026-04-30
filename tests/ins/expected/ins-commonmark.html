@@ -1,0 +1,59 @@
+<!-- @case: basic word -->
+<p><ins>Insert</ins></p>
+
+<!-- @case: start of sentence -->
+<p><ins>Insert me</ins> and leave me</p>
+
+<!-- @case: end of sentence -->
+<p>leave me and <ins>Insert me</ins></p>
+
+<!-- @case: middle of sentence -->
+<p>leave me and <ins>Insert me</ins> and leave me</p>
+
+<!-- @case: multiple ins -->
+<p><ins>first inserted</ins> and <ins>second inserted</ins></p>
+
+<!-- @case: spaces prevent match -->
+<p>foo ++ bar ++ baz</p>
+
+<!-- @case: adjacent to word chars -->
+<p>foo<ins>bar</ins>baz</p>
+
+<!-- @case: wrapping strong -->
+<p>
+  <ins><strong>bold inserted</strong></ins>
+</p>
+
+<!-- @case: wrapping emphasis -->
+<p>
+  <ins><em>italic inserted</em></ins>
+</p>
+
+<!-- @case: inside strong -->
+<p>
+  <strong><ins>inserted inside bold</ins></strong>
+</p>
+
+<!-- @case: inside emphasis -->
+<p>
+  <em><ins>inserted inside italic</ins></em>
+</p>
+
+<!-- @case: in heading -->
+<h2><ins>Inserted heading</ins></h2>
+
+<!-- @case: in list items -->
+<ul>
+  <li><ins>first item</ins></li>
+  <li><ins>second item</ins></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+  <p><ins>blockquote content</ins></p>
+</blockquote>
+
+<!-- @case: mixed inline content -->
+<p>
+  <ins><strong>bold</strong> and regular</ins>
+</p>

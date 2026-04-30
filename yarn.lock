@@ -377,6 +377,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-ins@workspace:*, @saeris/mdit-ins@workspace:packages/mdit-ins":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-ins@workspace:packages/mdit-ins"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.0.0"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/remd-del@workspace:*, @saeris/remd-del@workspace:packages/remd-del":
   version: 0.0.0-use.local
   resolution: "@saeris/remd-del@workspace:packages/remd-del"
@@ -407,14 +418,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/remd-ins@workspace:*, @saeris/remd-ins@workspace:packages/remd-ins":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-ins@workspace:packages/remd-ins"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.0"
+    unist-builder: "npm:^4.0.0"
+    unist-util-find-after: "npm:^5.0.0"
+    unist-util-find-all-after: "npm:^5.0.0"
+    unist-util-find-all-before: "npm:^5.0.0"
+    unist-util-find-between-all: "npm:^1.1.0"
+    unist-util-visit: "npm:^5.0.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/tests@workspace:tests":
   version: 0.0.0-use.local
   resolution: "@saeris/tests@workspace:tests"
   dependencies:
     "@saeris/mdit-del": "workspace:*"
     "@saeris/mdit-inline-svg": "workspace:*"
+    "@saeris/mdit-ins": "workspace:*"
     "@saeris/remd-del": "workspace:*"
     "@saeris/remd-inline-svg": "workspace:*"
+    "@saeris/remd-ins": "workspace:*"
     "@types/markdown-it": "npm:^14.1.2"
     markdown-it: "npm:^14.0.0"
     rehype-stringify: "npm:^10.0.0"
@@ -1277,6 +1307,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "markdown-inline-svg@workspace:extensions/markdown-inline-svg"
   dependencies:
+    "@types/vscode": "npm:^1.80.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-ins@workspace:extensions/markdown-ins":
+  version: 0.0.0-use.local
+  resolution: "markdown-ins@workspace:extensions/markdown-ins"
+  dependencies:
+    "@saeris/mdit-ins": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
     "@types/vscode": "npm:^1.80.0"
   languageName: unknown
   linkType: soft

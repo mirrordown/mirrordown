@@ -1,0 +1,7 @@
+{
+  "name": "@saeris/mdit-ins",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

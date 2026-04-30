@@ -5,8 +5,10 @@
   "devDependencies": {
     "@saeris/mdit-del": "workspace:*",
     "@saeris/mdit-inline-svg": "workspace:*",
+    "@saeris/mdit-ins": "workspace:*",
     "@saeris/remd-del": "workspace:*",
     "@saeris/remd-inline-svg": "workspace:*",
+    "@saeris/remd-ins": "workspace:*",
     "@types/markdown-it": "^14.1.2",
     "markdown-it": "^14.0.0",
     "rehype-stringify": "^10.0.0",
