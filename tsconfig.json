@@ -17,6 +17,9 @@
     "noErrorTruncation": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@saeris/*": ["./packages/*/src/index.ts"]
+    }
   }
 }
