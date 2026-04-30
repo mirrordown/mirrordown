@@ -8,10 +8,16 @@ import { type GroupedImageNodes, type ImageNode, isImageNode } from "./image-nod
 import { imgToSVG } from "./img-to-svg.js";
 import { applyDefaults, type Options } from "./options.js";
 
+const isExternalUrl = (src: string): boolean => /^(?:[a-z]+:|\/\/)/i.test(src);
+
 const findSvgNodes = (node: Node | Parent): ImageNode[] => {
   let imgNodes: ImageNode[] = [];
 
-  if (isImageNode(node) && node.properties.src.endsWith(`.svg`)) {
+  if (
+    isImageNode(node) &&
+    node.properties.src.endsWith(`.svg`) &&
+    !isExternalUrl(node.properties.src)
+  ) {
     imgNodes.push(node);
   }
 
@@ -77,7 +83,7 @@ export const rehypeInlineSvg = (config?: Partial<Options>): Transformer<Root, Ro
     let groupedNodes = groupSvgNodes(imgNodes, file);
     await svgCache.read(groupedNodes, options.optimize);
     groupedNodes = filterSvgNodes(groupedNodes, svgCache, options);
-    imgToSVG(groupedNodes, svgCache);
+    imgToSVG(groupedNodes, svgCache, tree, options);
 
     if (svgCache.hits !== hits || svgCache.misses !== misses) {
       hits = svgCache.hits;

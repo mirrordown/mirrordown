@@ -11,9 +11,8 @@ export interface ImageNode extends Node {
 export interface SvgNode extends Node {
   type: `element`;
   tagName: `svg`;
-  properties?: {
-    [key: string]: string;
-  };
+  properties?: Record<string, unknown>;
+  children?: Node[];
 }
 
 export type GroupedImageNodes = Map<string, ImageNode[]>;

@@ -13,12 +13,12 @@
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
   "devDependencies": {
-    "@saeris/mdit-inline-svg": "workspace:*",
-    "@types/markdown-it": "^14.1.2",
     "@types/vscode": "^1.80.0"
   },
   "contributes": {
-    "markdown.markdownItPlugins": true
+    "markdown.previewScripts": [
+      "./dist/preview.js"
+    ]
   },
   "engines": {
     "vscode": "^1.81.0"

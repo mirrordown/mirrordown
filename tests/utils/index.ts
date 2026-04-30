@@ -1,3 +1,25 @@
+export function parseCases(fixtureMd: string): Array<{ name: string; input: string }> {
+  const sections: Array<{ name: string; input: string }> = [];
+  const pattern = /<!--\s*@case:\s*(.+?)\s*-->/g;
+  let match: RegExpExecArray | null;
+  let lastName = "";
+  let lastEnd = 0;
+
+  while ((match = pattern.exec(fixtureMd)) !== null) {
+    if (lastName) {
+      sections.push({ name: lastName, input: fixtureMd.slice(lastEnd, match.index).trim() });
+    }
+    lastName = match[1].trim();
+    lastEnd = match.index + match[0].length;
+  }
+
+  if (lastName) {
+    sections.push({ name: lastName, input: fixtureMd.slice(lastEnd).trim() });
+  }
+
+  return sections;
+}
+
 export function normalizeHtml(html: string): string {
   return html.replace(/>\s+</g, "><").trim();
 }

@@ -3,7 +3,7 @@ import { defineConfig } from "vite-plus";
 export default defineConfig({
   pack: {
     entry: "src/index.ts",
-    deps: { neverBundle: ["markdown-it"] },
+    deps: { neverBundle: ["markdown-it", "svgo"], onlyBundle: false },
     dts: true,
   },
 });
