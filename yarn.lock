@@ -388,6 +388,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-kbd@workspace:*, @saeris/mdit-kbd@workspace:packages/mdit-kbd":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-kbd@workspace:packages/mdit-kbd"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.0.0"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-mark@workspace:*, @saeris/mdit-mark@workspace:packages/mdit-mark":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-mark@workspace:packages/mdit-mark"
@@ -432,6 +443,23 @@ __metadata:
 "@saeris/remd-ins@workspace:*, @saeris/remd-ins@workspace:packages/remd-ins":
   version: 0.0.0-use.local
   resolution: "@saeris/remd-ins@workspace:packages/remd-ins"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.0"
+    unist-builder: "npm:^4.0.0"
+    unist-util-find-after: "npm:^5.0.0"
+    unist-util-find-all-after: "npm:^5.0.0"
+    unist-util-find-all-before: "npm:^5.0.0"
+    unist-util-find-between-all: "npm:^1.1.0"
+    unist-util-visit: "npm:^5.0.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-kbd@workspace:packages/remd-kbd":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-kbd@workspace:packages/remd-kbd"
   dependencies:
     "@types/mdast": "npm:^4.0.4"
     unified: "npm:^11.0.0"
@@ -1366,6 +1394,16 @@ __metadata:
   checksum: 10/088822c8aa9346ba4af6a205f6ee0f4baae55e3314f040dc5c28c897d57d0f979840c71872b3582a6a6e572d8c851c54e323c82f4559011dfa2e96224fc20fc2
   languageName: node
   linkType: hard
+
+"markdown-kbd@workspace:extensions/markdown-kbd":
+  version: 0.0.0-use.local
+  resolution: "markdown-kbd@workspace:extensions/markdown-kbd"
+  dependencies:
+    "@saeris/mdit-kbd": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.80.0"
+  languageName: unknown
+  linkType: soft
 
 "markdown-mark@workspace:extensions/markdown-mark":
   version: 0.0.0-use.local
