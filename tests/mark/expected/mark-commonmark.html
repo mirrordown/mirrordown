@@ -1,0 +1,59 @@
+<!-- @case: basic word -->
+<p><mark>Mark</mark></p>
+
+<!-- @case: start of sentence -->
+<p><mark>Mark me</mark> and leave me</p>
+
+<!-- @case: end of sentence -->
+<p>leave me and <mark>Mark me</mark></p>
+
+<!-- @case: middle of sentence -->
+<p>leave me and <mark>Mark me</mark> and leave me</p>
+
+<!-- @case: multiple marks -->
+<p><mark>first marked</mark> and <mark>second marked</mark></p>
+
+<!-- @case: equality operator -->
+<p>if a == b then c == d</p>
+
+<!-- @case: adjacent to word chars -->
+<p>foo<mark>bar</mark>baz</p>
+
+<!-- @case: wrapping strong -->
+<p>
+  <mark><strong>bold marked</strong></mark>
+</p>
+
+<!-- @case: wrapping emphasis -->
+<p>
+  <mark><em>italic marked</em></mark>
+</p>
+
+<!-- @case: inside strong -->
+<p>
+  <strong><mark>marked inside bold</mark></strong>
+</p>
+
+<!-- @case: inside emphasis -->
+<p>
+  <em><mark>marked inside italic</mark></em>
+</p>
+
+<!-- @case: in heading -->
+<h2><mark>Marked heading</mark></h2>
+
+<!-- @case: in list items -->
+<ul>
+  <li><mark>first item</mark></li>
+  <li><mark>second item</mark></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+  <p><mark>blockquote content</mark></p>
+</blockquote>
+
+<!-- @case: mixed inline content -->
+<p>
+  <mark><strong>bold</strong> and regular</mark>
+</p>
