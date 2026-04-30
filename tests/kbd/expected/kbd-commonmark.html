@@ -1,0 +1,68 @@
+<!-- @case: basic word -->
+<p><kbd>Ctrl</kbd></p>
+
+<!-- @case: start of sentence -->
+<p><kbd>Ctrl</kbd> to copy</p>
+
+<!-- @case: end of sentence -->
+<p>press <kbd>Ctrl</kbd></p>
+
+<!-- @case: middle of sentence -->
+<p>press <kbd>Ctrl</kbd> to copy</p>
+
+<!-- @case: multiple keys -->
+<p><kbd>Ctrl</kbd> + <kbd>C</kbd></p>
+
+<!-- @case: key combination -->
+<p><kbd>Ctrl+C</kbd></p>
+
+<!-- @case: adjacent to word chars -->
+<p>foo<kbd>Bar</kbd>baz</p>
+
+<!-- @case: empty kbd -->
+<p><kbd></kbd></p>
+
+<!-- @case: wrapping emphasis -->
+<p>
+  <kbd><em>italic</em></kbd>
+</p>
+
+<!-- @case: wrapping strong -->
+<p>
+  <kbd><strong>bold</strong></kbd>
+</p>
+
+<!-- @case: inside emphasis -->
+<p>
+  <em>press <kbd>Ctrl</kbd></em>
+</p>
+
+<!-- @case: inside strong -->
+<p>
+  <strong>press <kbd>Ctrl</kbd></strong>
+</p>
+
+<!-- @case: in heading -->
+<h2><kbd>Ctrl</kbd></h2>
+
+<!-- @case: in list items -->
+<ul>
+  <li><kbd>Ctrl</kbd></li>
+  <li><kbd>Alt</kbd></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+  <p>press <kbd>Enter</kbd></p>
+</blockquote>
+
+<!-- @case: no match - single bracket -->
+<p>[Ctrl]</p>
+
+<!-- @case: mixed inline content -->
+<p>
+  <kbd><strong>Ctrl</strong>+C</kbd>
+</p>
+
+<!-- @case: unclosed opening -->
+<p>press [[ key</p>
