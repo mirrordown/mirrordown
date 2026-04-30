@@ -1,0 +1,7 @@
+{
+  "name": "@saeris/mdit-inline-svg",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
