@@ -1,5 +1,5 @@
 <!-- @case: in table cell -->
 
-| Before  | After  |
-| ------- | ------ |
-| ^sup^   | normal |
+| Before | After  |
+| ------ | ------ |
+| ^sup^  | normal |

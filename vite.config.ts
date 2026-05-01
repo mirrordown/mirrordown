@@ -1,4 +1,5 @@
 import { readdirSync } from "node:fs";
+
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { configDefaults, defineConfig } from "vite-plus";
@@ -16,7 +17,7 @@ export default defineConfig({
       },
     },
   },
-  fmt: {},
+  fmt: { ignorePatterns: ["tests/abbr/**"] },
   lint: { ignorePatterns: ["templates/**"], options: { typeAware: true, typeCheck: true } },
   resolve: {
     alias: Object.fromEntries(

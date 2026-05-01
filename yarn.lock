@@ -1066,6 +1066,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-abbr@workspace:*, @saeris/mdit-abbr@workspace:packages/mdit-abbr":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-abbr@workspace:packages/mdit-abbr"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-del@workspace:*, @saeris/mdit-del@workspace:packages/mdit-del":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-del@workspace:packages/mdit-del"
@@ -1141,6 +1152,18 @@ __metadata:
     markdown-it: "npm:^14.1.1"
   peerDependencies:
     markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-abbr@workspace:packages/remd-abbr":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-abbr@workspace:packages/remd-abbr"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.5"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
   languageName: unknown
   linkType: soft
 
@@ -2734,6 +2757,16 @@ __metadata:
   checksum: 10/724d47bfa70cc5046992cf6defae51a3cb701307b35e5637faede1b109fb19ccb47d3f3886df569f5b1281deb6a1ae6993f4542e7c7c6312f70d7be0f4194833
   languageName: node
   linkType: hard
+
+"markdown-abbr@workspace:extensions/markdown-abbr":
+  version: 0.0.0-use.local
+  resolution: "markdown-abbr@workspace:extensions/markdown-abbr"
+  dependencies:
+    "@saeris/mdit-abbr": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
 
 "markdown-del@workspace:extensions/markdown-del":
   version: 0.0.0-use.local

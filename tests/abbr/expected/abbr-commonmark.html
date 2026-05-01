@@ -1,0 +1,42 @@
+<!-- @case: basic abbreviation -->
+<p>The <abbr title="Hyper Text Markup Language">HTML</abbr> specification.</p>
+
+<!-- @case: multiple definitions -->
+<p>The <abbr title="Hyper Text Markup Language">HTML</abbr> specification is maintained by the <abbr title="World Wide Web Consortium">W3C</abbr>.</p>
+
+<!-- @case: multiple uses -->
+<p>Use the <abbr title="Application Programming Interface">API</abbr> to access the <abbr title="Application Programming Interface">API</abbr> endpoint.</p>
+
+<!-- @case: no match for partial word suffix -->
+<p>ABC</p>
+
+<!-- @case: no match for partial word prefix -->
+<p>ABC</p>
+
+<!-- @case: first definition wins -->
+<p><abbr title="Cascading Style Sheets">CSS</abbr> is great.</p>
+
+<!-- @case: longer abbreviation takes priority -->
+<p><abbr title="is awesome">JS HTTP</abbr> is nice.</p>
+
+<!-- @case: in heading -->
+<h2><abbr title="Application Programming Interface">API</abbr> Reference</h2>
+
+<!-- @case: in blockquote -->
+<blockquote>
+<p>Use <abbr title="Test Driven Development">TDD</abbr>.</p>
+</blockquote>
+
+<!-- @case: in list item -->
+<ul>
+<li><abbr title="Object Oriented Programming">OOP</abbr> principles</li>
+</ul>
+
+<!-- @case: inside strong -->
+<p><strong><abbr title="Application Programming Interface">API</abbr></strong> is documented.</p>
+
+<!-- @case: inside emphasis -->
+<p><em><abbr title="Application Programming Interface">API</abbr></em> is documented.</p>
+
+<!-- @case: no abbreviations defined -->
+<p>No abbreviation here.</p>
