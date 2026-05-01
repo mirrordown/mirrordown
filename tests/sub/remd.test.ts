@@ -19,6 +19,11 @@ const cmCases = parseFixture(
 
 const gfmCases = parseFixture(read("fixtures/sub-gfm.md"), read("expected/sub-gfm.html"));
 
+const crossNodeCases = parseFixture(
+  read("fixtures/sub-cross-node.md"),
+  read("expected/sub-cross-node.html"),
+);
+
 const cmProcessor = unified()
   .use(remarkParse)
   .use(remarkSub)
@@ -38,4 +43,8 @@ test.each(cmCases)("sub (remark): $name", ({ input, expected }) => {
 
 test.each(gfmCases)("sub (remark) gfm: $name", ({ input, expected }) => {
   expect(normalizeHtml(String(gfmProcessor.processSync(input)))).toBe(expected);
+});
+
+test.each(crossNodeCases)("sub (remark) cross-node: $name", ({ input, expected }) => {
+  expect(normalizeHtml(String(cmProcessor.processSync(input)))).toBe(expected);
 });
