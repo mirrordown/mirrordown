@@ -6,7 +6,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { remarkIns } from "@saeris/remd-ins";
+import { remarkIns } from "../../packages/remd-ins/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;

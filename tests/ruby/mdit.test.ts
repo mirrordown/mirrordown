@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { expect, test } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
-import { ruby } from "@saeris/mdit-ruby";
+import { ruby } from "../../packages/mdit-ruby/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;

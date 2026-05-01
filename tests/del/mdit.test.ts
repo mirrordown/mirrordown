@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
-import { del } from "@saeris/mdit-del";
+import { del } from "../../packages/mdit-del/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;

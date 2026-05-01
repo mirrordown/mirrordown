@@ -6,7 +6,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { rehypeInlineSvg, type Options } from "@saeris/remd-inline-svg";
+import { rehypeInlineSvg, type Options } from "../../packages/remd-inline-svg/src";
 import { parseCases } from "../utils/index.js";
 
 const dir = import.meta.dirname;

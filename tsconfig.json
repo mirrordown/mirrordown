@@ -8,6 +8,7 @@
     "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "customConditions": ["development"],
     "types": ["node"],
     "allowJs": true,
     "resolveJsonModule": true,
@@ -17,9 +18,6 @@
     "noErrorTruncation": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@saeris/*": ["./packages/*/src/index.ts"]
-    }
+    "noFallthroughCasesInSwitch": true
   }
 }
