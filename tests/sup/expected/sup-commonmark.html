@@ -1,0 +1,56 @@
+<!-- @case: basic word -->
+<p><sup>foo</sup></p>
+
+<!-- @case: start of sentence -->
+<p><sup>foo</sup> and more</p>
+
+<!-- @case: end of sentence -->
+<p>more and <sup>foo</sup></p>
+
+<!-- @case: middle of sentence -->
+<p>more and <sup>foo</sup> and more</p>
+
+<!-- @case: multiple sups -->
+<p><sup>first</sup> and <sup>second</sup></p>
+
+<!-- @case: exponent notation -->
+<p>E=mc<sup>2</sup></p>
+
+<!-- @case: adjacent to word chars -->
+<p>a<sup>b</sup>c</p>
+
+<!-- @case: other markers in content -->
+<p><sup>foo~bar</sup>baz<sup>bar~foo</sup></p>
+
+<!-- @case: space after opening prevents match -->
+<p>^ foo^</p>
+
+<!-- @case: space before closing prevents match -->
+<p>^foo ^</p>
+
+<!-- @case: inside strong -->
+<p>
+  <strong><sup>sup</sup></strong>
+</p>
+
+<!-- @case: inside emphasis -->
+<p>
+  <em><sup>sup</sup></em>
+</p>
+
+<!-- @case: in heading -->
+<h2><sup>heading</sup></h2>
+
+<!-- @case: in list items -->
+<ul>
+  <li><sup>first</sup></li>
+  <li><sup>second</sup></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+  <p><sup>content</sup></p>
+</blockquote>
+
+<!-- @case: unclosed opening -->
+<p>foo ^bar</p>

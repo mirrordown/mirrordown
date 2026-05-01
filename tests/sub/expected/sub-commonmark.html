@@ -1,0 +1,56 @@
+<!-- @case: basic word -->
+<p><sub>foo</sub></p>
+
+<!-- @case: start of sentence -->
+<p><sub>foo</sub> and more</p>
+
+<!-- @case: end of sentence -->
+<p>more and <sub>foo</sub></p>
+
+<!-- @case: middle of sentence -->
+<p>more and <sub>foo</sub> and more</p>
+
+<!-- @case: multiple subs -->
+<p><sub>first</sub> and <sub>second</sub></p>
+
+<!-- @case: chemical formula -->
+<p>H<sub>2</sub>O</p>
+
+<!-- @case: adjacent to word chars -->
+<p>a<sub>b</sub>c</p>
+
+<!-- @case: other markers in content -->
+<p><sub>foo^bar</sub>baz<sub>bar^foo</sub></p>
+
+<!-- @case: space after opening prevents match -->
+<p>~ foo~</p>
+
+<!-- @case: space before closing prevents match -->
+<p>~foo ~</p>
+
+<!-- @case: inside strong -->
+<p>
+  <strong><sub>sub</sub></strong>
+</p>
+
+<!-- @case: inside emphasis -->
+<p>
+  <em><sub>sub</sub></em>
+</p>
+
+<!-- @case: in heading -->
+<h2><sub>heading</sub></h2>
+
+<!-- @case: in list items -->
+<ul>
+  <li><sub>first</sub></li>
+  <li><sub>second</sub></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+  <p><sub>content</sub></p>
+</blockquote>
+
+<!-- @case: unclosed opening -->
+<p>foo ~bar</p>
