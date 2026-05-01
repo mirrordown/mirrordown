@@ -1,0 +1,41 @@
+{
+  "name": "@saeris/remd-ruby",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": "git@github.com:saeris/markdown.git",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.0.2",
+    "micromark-util-character": "^2.1.0",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "micromark-util-types": "^2.0.1",
+    "unified": "^11.0.5"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "npm publish --access public",
+      "npx jsr publish"
+    ]
+  }
+}

@@ -1133,6 +1133,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-ruby@workspace:*, @saeris/mdit-ruby@workspace:packages/mdit-ruby":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-ruby@workspace:packages/mdit-ruby"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-sub@workspace:*, @saeris/mdit-sub@workspace:packages/mdit-sub":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-sub@workspace:packages/mdit-sub"
@@ -1243,6 +1254,21 @@ __metadata:
     unist-util-find-all-after: "npm:^5.0.0"
     unist-util-find-all-before: "npm:^5.0.0"
     unist-util-find-between-all: "npm:^1.1.6"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-ruby@workspace:packages/remd-ruby":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-ruby@workspace:packages/remd-ruby"
+  dependencies:
+    "@types/mdast": "npm:^4.0.4"
+    mdast-util-from-markdown: "npm:^2.0.2"
+    micromark-util-character: "npm:^2.1.0"
+    micromark-util-types: "npm:^2.0.1"
+    unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.1.0"
   peerDependencies:
     unified: ^11.0.0
@@ -2778,6 +2804,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-denden-furigana@workspace:extensions/markdown-denden-furigana":
+  version: 0.0.0-use.local
+  resolution: "markdown-denden-furigana@workspace:extensions/markdown-denden-furigana"
+  dependencies:
+    "@saeris/mdit-ruby": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-inline-svg@workspace:extensions/markdown-inline-svg":
   version: 0.0.0-use.local
   resolution: "markdown-inline-svg@workspace:extensions/markdown-inline-svg"
@@ -2882,7 +2918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-from-markdown@npm:^2.0.0":
+"mdast-util-from-markdown@npm:^2.0.0, mdast-util-from-markdown@npm:^2.0.2":
   version: 2.0.3
   resolution: "mdast-util-from-markdown@npm:2.0.3"
   dependencies:
@@ -3227,7 +3263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-character@npm:^2.0.0":
+"micromark-util-character@npm:^2.0.0, micromark-util-character@npm:^2.1.0":
   version: 2.1.1
   resolution: "micromark-util-character@npm:2.1.1"
   dependencies:
@@ -3350,7 +3386,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-types@npm:^2.0.0":
+"micromark-util-types@npm:^2.0.0, micromark-util-types@npm:^2.0.1":
   version: 2.0.2
   resolution: "micromark-util-types@npm:2.0.2"
   checksum: 10/a9eb067bd9384eab61942285d53738aa22f3fef4819eaf20249bec6ec13f1e4da2800230fd0ceb7e705108987aa9062fe3e9a8e5e48aa60180db80b9489dc3e2

@@ -1,0 +1,43 @@
+<!-- @case: basic whole-text -->
+<p><ruby>ruby base<rt>ruby text</rt></ruby></p>
+
+<!-- @case: emphasis in base -->
+<p><ruby><em>word</em><rt>reading</rt></ruby></p>
+
+<!-- @case: emphasis in reading -->
+<p><ruby>word<rt><em>reading</em></rt></ruby></p>
+
+<!-- @case: emphasis wrapping whole ruby -->
+<p><em><ruby>word<rt>reading</rt></ruby></em></p>
+
+<!-- @case: inline context -->
+<p>Before <ruby>word<rt>read</rt></ruby> after.</p>
+
+<!-- @case: multiple ruby in paragraph -->
+<p><ruby>A<rt>a</rt></ruby> and <ruby>B<rt>b</rt></ruby>.</p>
+
+<!-- @case: strong in base -->
+<p><ruby><strong>word</strong><rt>reading</rt></ruby></p>
+
+<!-- @case: strong in reading -->
+<p><ruby>word<rt><strong>reading</strong></rt></ruby></p>
+
+<!-- @case: code span in base -->
+<p><ruby><code>code</code><rt>reading</rt></ruby></p>
+
+<!-- @case: code span in reading -->
+<p><ruby>word<rt><code>reading</code></rt></ruby></p>
+
+<!-- @case: multiple inline in base -->
+<p><ruby><em>a</em> and <em>b</em><rt>reading</rt></ruby></p>
+
+<!-- @case: in heading -->
+<h2><ruby>word<rt>reading</rt></ruby></h2>
+
+<!-- @case: in blockquote -->
+<blockquote>
+<p><ruby>word<rt>reading</rt></ruby></p>
+</blockquote>
+
+<!-- @case: no pipe - not matched -->
+<p>{no pipe here}</p>

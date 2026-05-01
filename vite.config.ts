@@ -17,7 +17,7 @@ export default defineConfig({
       },
     },
   },
-  fmt: { ignorePatterns: ["tests/abbr/**"] },
+  fmt: { ignorePatterns: ["templates/**", "tests/**/fixtures/**", "tests/**/expected/**"] },
   lint: { ignorePatterns: ["templates/**"], options: { typeAware: true, typeCheck: true } },
   resolve: {
     alias: Object.fromEntries(
