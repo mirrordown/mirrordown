@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`attrs (markdown-it): 'block: paragraph with id' 1`] = `"<p id="para-id">Some text.</p>"`;
+
+exports[`attrs (markdown-it): 'block: paragraph with trailing class' 1`] = `"<p class="intro">Hello world.</p>"`;
+
+exports[`attrs (markdown-it): 'fence: language with class' 1`] = `
+"<pre><code class="highlight language-js">const x = 1;
+</code></pre>"
+`;
+
+exports[`attrs (markdown-it): 'fence: language with id' 1`] = `
+"<pre><code id="code-block" class="language-python">print(&quot;hello&quot;)
+</code></pre>"
+`;
+
+exports[`attrs (markdown-it): 'fence: multiple attrs' 1`] = `
+"<pre><code class="foo language-ts" id="bar" data-lang="typescript">type T = string;
+</code></pre>"
+`;
+
+exports[`attrs (markdown-it): 'fence: no language with attr' 1`] = `
+"<pre><code class="plain">plain text
+</code></pre>"
+`;
+
+exports[`attrs (markdown-it): 'heading: h1 with class' 1`] = `"<h1 class="title">Hello World</h1>"`;
+
+exports[`attrs (markdown-it): 'heading: h2 with id' 1`] = `"<h2 id="section-2">Section Two</h2>"`;
+
+exports[`attrs (markdown-it): 'heading: multiple attrs' 1`] = `"<h3 class="active" id="deep" data-level="3">Deep Section</h3>"`;
+
+exports[`attrs (markdown-it): 'hr: thematic break with class' 1`] = `"<hr class="divider">"`;
+
+exports[`attrs (markdown-it): 'inline: code span with class' 1`] = `"<p><code class="code-class">code</code></p>"`;
+
+exports[`attrs (markdown-it): 'inline: em with class' 1`] = `"<p><em class="em-class">emphasized</em></p>"`;
+
+exports[`attrs (markdown-it): 'inline: image with class' 1`] = `"<p><img src="img.png" alt="alt" class="img-class"></p>"`;
+
+exports[`attrs (markdown-it): 'inline: strikethrough with class' 1`] = `"<p><s class="del-class">struck</s></p>"`;
+
+exports[`attrs (markdown-it): 'inline: strong with class' 1`] = `"<p><strong class="bold-class">bold</strong></p>"`;
+
+exports[`attrs (markdown-it): 'list: item end attr' 1`] = `"<ul><li class="red">item one</li><li>item two</li></ul>"`;
+
+exports[`attrs (markdown-it): 'list: list-level attr via softbreak' 1`] = `"<ul class="my-list"><li>alpha</li><li>beta</li></ul>"`;
+
+exports[`attrs (markdown-it): 'list: nested list attr' 1`] = `
+"<ul><li>parent
+<ul><li>child a</li><li>child b</li></ul></li></ul>"
+`;
+
+exports[`attrs (markdown-it): 'softbreak: block via softbreak attr l…' 1`] = `"<p class="softbreak-class">A paragraph with attrs</p>"`;
+
+exports[`attrs (markdown-it): 'table: cell attr' 1`] = `"<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td class="cell-class">cell</td></tr></tbody></table>"`;
+
+exports[`attrs (markdown-it): 'table: table-level attr' 1`] = `"<table class="my-table"><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>"`;
