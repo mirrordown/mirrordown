@@ -1,0 +1,280 @@
+<!-- @case: Basic definition list with spacing variations -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>
+<p>Definition 1</p>
+</dd>
+<dt>Term 2 with <em>inline markup</em></dt>
+<dd>
+<p>Definition 2</p>
+<pre><code>{ some code, part of Definition 2 }
+</code></pre>
+<p>Third paragraph of definition 2.</p>
+</dd>
+</dl>
+<!-- @case: Lazy continuation and multiple paragraphs -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>
+<p>Definition
+with lazy continuation.</p>
+<p>Second paragraph of the definition.</p>
+</dd>
+</dl>
+<!-- @case: Tilde marker and multiple definitions -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>Definition 1</dd>
+<dt>Term 2</dt>
+<dd>Definition 2a</dd>
+<dd>Definition 2b</dd>
+</dl>
+<!-- @case: Different indentation levels and markers -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>paragraph</dd>
+<dt>Term 2</dt>
+<dd>
+<pre><code>code block
+</code></pre>
+</dd>
+<dt>Term 3</dt>
+<dd>
+<pre><code>code block
+</code></pre>
+</dd>
+</dl>
+<!-- @case: Mixed markers and spacing -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>Definition with tab after colon</dd>
+<dt>Term 2</dt>
+<dd>Definition with spaces after colon</dd>
+<dt>Term 3</dt>
+<dd>First definition with colon</dd>
+<dd>Second definition with tilde</dd>
+<dd>Third definition with colon</dd>
+</dl>
+<!-- @case: Complex content in definitions -->
+
+<dl>
+<dt>foo</dt>
+<dd>
+<blockquote>
+<p>bar</p>
+</blockquote>
+</dd>
+<dd>baz</dd>
+<dt>Complex Term</dt>
+<dd>
+<p>Definition with list:</p>
+<ul>
+<li>Item 1</li>
+<li>Item 2</li>
+</ul>
+<blockquote>
+<p>This is a quote
+in the definition</p>
+</blockquote>
+<pre><code>function test() {
+  return true;
+}
+</code></pre>
+</dd>
+</dl>
+<!-- @case: Nested definition lists -->
+
+<dl>
+<dt>test</dt>
+<dd>
+<dl>
+<dt>foo</dt>
+<dd>
+<dl>
+<dt>bar</dt>
+<dd>baz</dd>
+</dl>
+</dd>
+<dd>bar</dd>
+</dl>
+</dd>
+<dd>foo</dd>
+</dl>
+<!-- @case: Tight lists (original functionality) -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>foo</dd>
+<dd>bar</dd>
+<dt>Term 2</dt>
+<dd>foo</dd>
+<dd>bar</dd>
+</dl>
+<!-- @case: Loose lists (original functionality) -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>
+<p>Definition paragraph 1.</p>
+</dd>
+<dt>Term 2</dt>
+<dd>
+<p>Definition paragraph 2.</p>
+</dd>
+</dl>
+<!-- @case: Different spacing patterns -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>
+<p>foo</p>
+<p>bar
+Term 2</p>
+</dd>
+<dd>
+<p>foo</p>
+</dd>
+<dt>Simple Term</dt>
+<dd>Definition 1</dd>
+<dt>Another Term</dt>
+<dd>
+<p>Another definition</p>
+</dd>
+<dt>Mixed Term</dt>
+<dd>
+<p>Definition 1a</p>
+</dd>
+<dd>
+<p>Definition 1b</p>
+</dd>
+<dt>Final Term</dt>
+<dd>Definition 2</dd>
+</dl>
+<!-- @case: Single character and long terms -->
+
+<dl>
+<dt>A</dt>
+<dd>Short term definition</dd>
+<dt>This is a very long term that spans multiple words and contains various punctuation marks, numbers 123, and special characters !@#$%</dt>
+<dd>Definition for the long term</dd>
+</dl>
+<!-- @case: Formatted terms and interaction with other elements -->
+
+<h1>Heading</h1>
+<dl>
+<dt><strong>Bold Term</strong> with <a href="http://example.com">link</a></dt>
+<dd>Definition for formatted term</dd>
+<dt><em>Italic Term</em></dt>
+<dd>Definition with tilde marker</dd>
+<dt>Term before heading</dt>
+<dd>Definition before heading</dd>
+</dl>
+<h1>Another Heading</h1>
+<!-- @case: Multiple definitions with separation -->
+
+<dl>
+<dt>First Term</dt>
+<dd>First def for first term</dd>
+<dd>Second def for first term</dd>
+<dt>Second Term</dt>
+<dd>First def for second term</dd>
+<dd>Second def for second term</dd>
+</dl>
+<!-- @case: A lazy continuation may start with a `:`, if it has enough indent. -->
+
+<dl>
+<dt>apple</dt>
+<dd>
+<blockquote>
+<p>computer company</p>
+</blockquote>
+: red fruit</dd>
+<dt>orange</dt>
+<dd>
+<blockquote>
+<p>telecom company</p>
+</blockquote>
+</dd>
+<dd>orange fruit</dd>
+<dt>chili's</dt>
+<dd>
+<blockquote>
+<p>restaurant company</p>
+</blockquote>
+</dd>
+<dd>spicy fruit</dd>
+</dl>
+<!-- @case: Empty or invalid definitions -->
+
+<p>Non-term 1
+:</p>
+<p>Non-term 2
+:</p>
+<p>Term
+:Definition</p>
+<p>Term
+:</p>
+<p>Term
+; Definition</p>
+<p>Term
+:</p>
+<p>Another paragraph after empty definition</p>
+<!-- @case: Headers should not be treated as terms -->
+
+<h1>test</h1>
+<p>: just a paragraph with a colon</p>
+<!-- @case: Multiple empty lines break definition list parsing -->
+
+<p>Term 1</p>
+<p>: Definition with multiple empty lines above</p>
+<dl>
+<dt>Term 1</dt>
+<dd>Definition 1</dd>
+</dl>
+<p>Term 2</p>
+<!-- @case: Term 2 followed by a DD that is less indented than blkIndent -->
+
+<ul>
+<li>
+<p>Term 1
+: Def 1</p>
+<p>Term 2</p>
+</li>
+</ul>
+<p>: Def 2</p>
+<!-- @case: Term 2 is less indented than blkIndent -->
+
+<ul>
+<li>Term 1
+: Def 1
+Term 2</li>
+</ul>
+<!-- @case: Term 1 followed by empty line then Term 2 -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>Def 1</dd>
+<dt>Term 2</dt>
+<dd>Def 2</dd>
+</dl>
+<!-- @case: Term 2 followed by something not a DD -->
+
+<dl>
+<dt>Term 1</dt>
+<dd>Def 1</dd>
+</dl>
+<p>Term 2
+Not a DD</p>
+<!-- @case: Marker followed by only spaces -->
+
+<p>Term 1
+:<br>
+Next line</p>
+<!-- @case: Term followed by empty line at end of file -->
+
+<p>Term</p>

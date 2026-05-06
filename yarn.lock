@@ -1077,6 +1077,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-definition-list@workspace:*, @saeris/mdit-definition-list@workspace:packages/mdit-definition-list":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-definition-list@workspace:packages/mdit-definition-list"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.0.0"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-del@workspace:*, @saeris/mdit-del@workspace:packages/mdit-del":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-del@workspace:packages/mdit-del"
@@ -1173,6 +1184,25 @@ __metadata:
     "@types/mdast": "npm:^4.0.4"
     unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-definition-list@workspace:packages/remd-definition-list":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-definition-list@workspace:packages/remd-definition-list"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    mdast-util-from-markdown: "npm:^2.0.0"
+    mdast-util-to-hast: "npm:^13.0.0"
+    micromark-core-commonmark: "npm:^2.0.0"
+    micromark-factory-space: "npm:^2.0.0"
+    micromark-util-character: "npm:^2.0.0"
+    micromark-util-chunked: "npm:^2.0.0"
+    micromark-util-types: "npm:^2.0.0"
+    unified: "npm:^11.0.0"
+    unist-builder: "npm:^4.0.0"
   peerDependencies:
     unified: ^11.0.0
   languageName: unknown
@@ -1512,7 +1542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/vscode@npm:^1.118.0":
+"@types/vscode@npm:^1.118.0, @types/vscode@npm:^1.80.0":
   version: 1.118.0
   resolution: "@types/vscode@npm:1.118.0"
   checksum: 10/abdc2853e8bc29a932393cc34045ecd2cb6335ef94067339bfcea4363e9b886cd5921ac61ee25bfa94175e192121ca5aa99fc38bedbbf9a211f03b8091a46c85
@@ -2794,6 +2824,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-definition-list@workspace:extensions/markdown-definition-list":
+  version: 0.0.0-use.local
+  resolution: "markdown-definition-list@workspace:extensions/markdown-definition-list"
+  dependencies:
+    "@saeris/mdit-definition-list": "workspace:*"
+    "@types/vscode": "npm:^1.80.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-del@workspace:extensions/markdown-del":
   version: 0.0.0-use.local
   resolution: "markdown-del@workspace:extensions/markdown-del"
@@ -2832,7 +2871,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"markdown-it@npm:^14.1.1":
+"markdown-it@npm:^14.0.0, markdown-it@npm:^14.1.1":
   version: 14.1.1
   resolution: "markdown-it@npm:14.1.1"
   dependencies:

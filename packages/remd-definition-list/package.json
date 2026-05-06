@@ -1,0 +1,46 @@
+{
+  "name": "@saeris/remd-definition-list",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": "git@github.com:saeris/markdown.git",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "dependencies": {
+    "@types/hast": "^3.0.0",
+    "mdast-util-from-markdown": "^2.0.0",
+    "mdast-util-to-hast": "^13.0.0",
+    "micromark-core-commonmark": "^2.0.0",
+    "micromark-factory-space": "^2.0.0",
+    "micromark-util-character": "^2.0.0",
+    "micromark-util-chunked": "^2.0.0",
+    "micromark-util-types": "^2.0.0",
+    "unist-builder": "^4.0.0"
+  },
+  "devDependencies": {
+    "unified": "^11.0.0"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "npm publish --access public",
+      "npx jsr publish"
+    ]
+  }
+}
