@@ -1099,6 +1099,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-github-alerts@workspace:*, @saeris/mdit-github-alerts@workspace:packages/mdit-github-alerts":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-github-alerts@workspace:packages/mdit-github-alerts"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-inline-svg@workspace:packages/mdit-inline-svg":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-inline-svg@workspace:packages/mdit-inline-svg"
@@ -1219,6 +1230,19 @@ __metadata:
     unist-util-find-all-after: "npm:^5.0.0"
     unist-util-find-all-before: "npm:^5.0.0"
     unist-util-find-between-all: "npm:^1.1.6"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-github-alerts@workspace:packages/remd-github-alerts":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-github-alerts@workspace:packages/remd-github-alerts"
+  dependencies:
+    "@types/hast": "npm:^3.0.4"
+    "@types/mdast": "npm:^4.0.4"
+    unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.1.0"
   peerDependencies:
     unified: ^11.0.0
@@ -2848,6 +2872,16 @@ __metadata:
   resolution: "markdown-denden-furigana@workspace:extensions/markdown-denden-furigana"
   dependencies:
     "@saeris/mdit-ruby": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-github-alerts@workspace:extensions/markdown-github-alerts":
+  version: 0.0.0-use.local
+  resolution: "markdown-github-alerts@workspace:extensions/markdown-github-alerts"
+  dependencies:
+    "@saeris/mdit-github-alerts": "workspace:*"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/vscode": "npm:^1.118.0"
   languageName: unknown

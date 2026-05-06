@@ -1,0 +1,34 @@
+{
+  "name": "markdown-github-alerts",
+  "displayName": "Markdown GitHub Alerts & Obsidian Callouts",
+  "version": "0.0.0",
+  "description": "Adds GitHub Alert and Obsidian Callout syntax support to VSCode's markdown preview",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": "git@github.com:saeris/markdown.git",
+  "publisher": "saeris",
+  "main": "./dist/index.js",
+  "browser": "./dist/index.js",
+  "devDependencies": {
+    "@saeris/mdit-github-alerts": "workspace:*",
+    "@types/markdown-it": "^14.1.2",
+    "@types/vscode": "^1.118.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/github-alerts.css"
+    ]
+  },
+  "engines": {
+    "vscode": "^1.81.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack",
+    "publishCommand": "vsce publish",
+    "skipNpmPublish": true
+  }
+}

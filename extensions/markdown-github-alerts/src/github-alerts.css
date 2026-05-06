@@ -1,0 +1,167 @@
+/*
+  GitHub Alerts & Obsidian Callouts — default stylesheet
+  -------------------------------------------------------
+  All rules live inside @layer markdown-alerts so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  Color tokens use light-dark() so they respond to the nearest `color-scheme`
+  ancestor. Set `color-scheme: light`, `color-scheme: dark`, or
+  `color-scheme: light dark` on :root (or a container) to control the mode.
+
+  To override a specific alert's accent color, set the public custom property
+  on the element or any ancestor:
+
+    [data-alert="warning"] { --markdown-alert-color: oklch(0.65 0.18 50); }
+
+  Structural layout and spacing can be overridden by targeting .markdown-alert
+  with unlayered rules (they win over the layer automatically).
+*/
+
+@layer markdown-alerts {
+  /* ── Structure ─────────────────────────────────────────────────────────── */
+
+  .markdown-alert {
+    --_alert-color: var(--markdown-alert-color, oklch(0.55 0.15 250));
+    --_alert-bg: var(--markdown-alert-bg, oklch(0.97 0.015 250 / 60%));
+    --_alert-border: var(--markdown-alert-border, var(--_alert-color));
+
+    padding: 0.75rem 1rem;
+    margin-block: 1rem;
+    border-inline-start: 0.25rem solid var(--_alert-border);
+    border-radius: 0.25rem;
+    background-color: var(--_alert-bg);
+    color: inherit;
+  }
+
+  .markdown-alert > :first-child {
+    margin-block-start: 0;
+  }
+
+  .markdown-alert > :last-child {
+    margin-block-end: 0;
+  }
+
+  .markdown-alert-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-end: 0.5rem;
+    font-weight: 600;
+    color: var(--_alert-color);
+  }
+
+  /* summary resets for foldable callouts */
+  details.markdown-alert > summary.markdown-alert-title {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  details.markdown-alert > summary.markdown-alert-title::-webkit-details-marker {
+    display: none;
+  }
+
+  details.markdown-alert:not([open]) > :not(summary) {
+    display: none;
+  }
+
+  /* ── GitHub 5 types ─────────────────────────────────────────────────────
+     Light values derived from github-markdown-css confirmed hex values,
+     converted to OKLCH. Dark values use brighter chroma for contrast on
+     dark backgrounds.
+  */
+
+  /* note — blue, ~250° */
+  [data-alert="note"] {
+    --_alert-color: light-dark(oklch(0.45 0.19 258), oklch(0.62 0.2 253));
+    --_alert-bg: light-dark(oklch(0.97 0.012 258 / 50%), oklch(0.2 0.04 258 / 40%));
+  }
+
+  /* tip — green, ~145° */
+  [data-alert="tip"] {
+    --_alert-color: light-dark(oklch(0.44 0.16 145), oklch(0.67 0.2 145));
+    --_alert-bg: light-dark(oklch(0.97 0.012 145 / 50%), oklch(0.2 0.04 145 / 40%));
+  }
+
+  /* important — purple, ~295° */
+  [data-alert="important"] {
+    --_alert-color: light-dark(oklch(0.47 0.22 295), oklch(0.67 0.22 295));
+    --_alert-bg: light-dark(oklch(0.97 0.015 295 / 50%), oklch(0.2 0.05 295 / 40%));
+  }
+
+  /* warning — amber, ~70° */
+  [data-alert="warning"] {
+    --_alert-color: light-dark(oklch(0.52 0.16 68), oklch(0.76 0.17 68));
+    --_alert-bg: light-dark(oklch(0.97 0.018 68 / 50%), oklch(0.2 0.05 68 / 40%));
+  }
+
+  /* caution — red, ~25° */
+  [data-alert="caution"] {
+    --_alert-color: light-dark(oklch(0.47 0.2 25), oklch(0.62 0.22 25));
+    --_alert-bg: light-dark(oklch(0.97 0.015 25 / 50%), oklch(0.2 0.05 25 / 40%));
+  }
+
+  /* ── Obsidian extended types ─────────────────────────────────────────────
+     Hues chosen to avoid collisions with the GitHub 5. Lightness and chroma
+     calibrated to match visual weight across light and dark modes.
+  */
+
+  /* abstract/summary/tldr — cyan, ~195° */
+  [data-alert="abstract"] {
+    --_alert-color: light-dark(oklch(0.47 0.15 195), oklch(0.7 0.16 195));
+    --_alert-bg: light-dark(oklch(0.97 0.012 195 / 50%), oklch(0.2 0.04 195 / 40%));
+  }
+
+  /* info — sky blue, ~225° (distinct from note's ~258°) */
+  [data-alert="info"] {
+    --_alert-color: light-dark(oklch(0.5 0.17 225), oklch(0.68 0.18 225));
+    --_alert-bg: light-dark(oklch(0.97 0.013 225 / 50%), oklch(0.2 0.04 225 / 40%));
+  }
+
+  /* todo — teal, ~175° */
+  [data-alert="todo"] {
+    --_alert-color: light-dark(oklch(0.48 0.14 175), oklch(0.69 0.15 175));
+    --_alert-bg: light-dark(oklch(0.97 0.011 175 / 50%), oklch(0.2 0.04 175 / 40%));
+  }
+
+  /* success/check/done — lime green, ~135° (brighter than tip's ~145°) */
+  [data-alert="success"] {
+    --_alert-color: light-dark(oklch(0.5 0.18 135), oklch(0.7 0.2 135));
+    --_alert-bg: light-dark(oklch(0.97 0.014 135 / 50%), oklch(0.2 0.05 135 / 40%));
+  }
+
+  /* question/help/faq — yellow, ~85° */
+  [data-alert="question"] {
+    --_alert-color: light-dark(oklch(0.56 0.16 85), oklch(0.78 0.17 85));
+    --_alert-bg: light-dark(oklch(0.97 0.018 85 / 50%), oklch(0.2 0.05 85 / 40%));
+  }
+
+  /* failure/fail/missing — soft red-orange, ~18° */
+  [data-alert="failure"] {
+    --_alert-color: light-dark(oklch(0.52 0.18 18), oklch(0.67 0.2 18));
+    --_alert-bg: light-dark(oklch(0.97 0.013 18 / 50%), oklch(0.2 0.05 18 / 40%));
+  }
+
+  /* danger/error — vivid red, ~28° (stronger than caution) */
+  [data-alert="danger"] {
+    --_alert-color: light-dark(oklch(0.44 0.24 28), oklch(0.65 0.25 28));
+    --_alert-bg: light-dark(oklch(0.97 0.018 28 / 50%), oklch(0.2 0.06 28 / 40%));
+  }
+
+  /* bug — muted red, ~12° */
+  [data-alert="bug"] {
+    --_alert-color: light-dark(oklch(0.49 0.17 12), oklch(0.64 0.18 12));
+    --_alert-bg: light-dark(oklch(0.97 0.012 12 / 50%), oklch(0.2 0.04 12 / 40%));
+  }
+
+  /* example — violet, ~285° offset from important's ~295° */
+  [data-alert="example"] {
+    --_alert-color: light-dark(oklch(0.49 0.19 278), oklch(0.69 0.2 278));
+    --_alert-bg: light-dark(oklch(0.97 0.014 278 / 50%), oklch(0.2 0.05 278 / 40%));
+  }
+
+  /* quote/cite — neutral warm gray */
+  [data-alert="quote"] {
+    --_alert-color: light-dark(oklch(0.48 0.02 60), oklch(0.68 0.02 60));
+    --_alert-bg: light-dark(oklch(0.97 0.005 60 / 50%), oklch(0.2 0.01 60 / 40%));
+  }
+}
