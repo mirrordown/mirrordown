@@ -1199,6 +1199,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-unwrap-images@workspace:*, @saeris/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-unwrap-images@workspace:packages/mdit-unwrap-images"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/remd-abbr@workspace:packages/remd-abbr":
   version: 0.0.0-use.local
   resolution: "@saeris/remd-abbr@workspace:packages/remd-abbr"
@@ -1381,6 +1392,19 @@ __metadata:
     unist-util-find-all-after: "npm:^5.0.0"
     unist-util-find-all-before: "npm:^5.0.0"
     unist-util-find-between-all: "npm:^1.1.6"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-unwrap-images@workspace:packages/remd-unwrap-images":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-unwrap-images@workspace:packages/remd-unwrap-images"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    hast-util-whitespace: "npm:^3.0.0"
+    unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.1.0"
   peerDependencies:
     unified: ^11.0.0
@@ -3000,6 +3024,16 @@ __metadata:
   checksum: 10/bc699819e6a15607e5def0f21aa862aa061cf1f49877baa93b0185574f6ab143591afe0e18b94d9b15ea80c6a693894150dbccfacf4f6767160dc32ae393dfe0
   languageName: node
   linkType: hard
+
+"markdown-unwrap-images@workspace:extensions/markdown-unwrap-images":
+  version: 0.0.0-use.local
+  resolution: "markdown-unwrap-images@workspace:extensions/markdown-unwrap-images"
+  dependencies:
+    "@saeris/mdit-unwrap-images": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
 
 "mdast-util-definitions@npm:^6.0.0":
   version: 6.0.0
