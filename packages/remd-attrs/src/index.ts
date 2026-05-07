@@ -159,6 +159,41 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
 
       visit(tree, makeSiblingAttrVisitor("list", check, allowed));
+
+      // ── custom listItem nodes (data.attrsRole === "listItem") ────────────
+      // Third-party plugins opt in by setting data.attrsRole = "listItem" and
+      // exposing their title content in data.attrsTitle: PhrasingContent[].
+      visit(tree, (node: Node) => {
+        const n = node as { type: string; data?: { attrsRole?: string; attrsTitle?: { type: string; value: string }[]; hProperties?: Properties } };
+        if (n.data?.attrsRole !== "listItem" || !n.data.attrsTitle) return;
+        const title = n.data.attrsTitle;
+        const last = title[title.length - 1];
+        if (!last || last.type !== "text") return;
+        const content = last.value.trimEnd();
+        const range = check(content, "end");
+        if (!range) return;
+        applyAttrs(node as AttrNode, content, range, allowed);
+        const attrStart = content.lastIndexOf(left, range[0] - 1);
+        last.value = content.slice(0, attrStart).trimEnd();
+      });
+
+      // ── custom list nodes (data.attrsRole === "list") ─────────────────────
+      // Third-party plugins opt in by setting data.attrsRole = "list".
+      // A standalone attr paragraph after such a node applies to the node itself.
+      visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
+        if (!parent || typeof index === "undefined") return;
+        if (node.type !== "paragraph") return;
+        const para = node as Paragraph;
+        if (para.children.length !== 1 || para.children[0]!.type !== "text") return;
+        const content = (para.children[0] as Text).value.trim();
+        const range = check(content, "only");
+        if (!range) return;
+        const prev = parent.children[index - 1] as { data?: { attrsRole?: string } } | undefined;
+        if (prev?.data?.attrsRole !== "list") return;
+        applyAttrs(prev as unknown as AttrNode, content, range, allowed);
+        parent.children.splice(index, 1);
+        return [SKIP, index];
+      });
     }
 
     // ── table: standalone paragraph after table containing only attrs ─────

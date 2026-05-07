@@ -1,0 +1,154 @@
+/*
+  Markdown Steps — default stylesheet
+  ------------------------------------
+  All rules live inside @layer markdown-steps so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  Color tokens use light-dark() so they respond to the nearest `color-scheme`
+  ancestor. Set `color-scheme: light`, `color-scheme: dark`, or
+  `color-scheme: light dark` on :root (or a container) to control the mode.
+
+  To override the step accent color, set the public custom property on the
+  element or any ancestor:
+
+    .markdown-steps { --markdown-steps-color: oklch(0.55 0.18 145); }
+
+  Structural layout and spacing can be overridden by targeting .markdown-steps
+  with unlayered rules (they win over the layer automatically).
+*/
+
+@layer markdown-steps {
+  /* ── CSS counter reset ──────────────────────────────────────────────────── */
+
+  .markdown-steps {
+    --_steps-color: var(
+      --markdown-steps-color,
+      light-dark(oklch(0.45 0.19 258), oklch(0.62 0.2 253))
+    );
+    --_steps-number-bg: var(
+      --markdown-steps-number-bg,
+      light-dark(oklch(0.45 0.19 258), oklch(0.62 0.2 253))
+    );
+    --_steps-number-fg: var(--markdown-steps-number-fg, oklch(1 0 0));
+    --_steps-line-color: var(
+      --markdown-steps-line-color,
+      light-dark(oklch(0.88 0.02 258), oklch(0.3 0.04 258))
+    );
+    --_steps-number-size: var(--markdown-steps-number-size, 1.75rem);
+    --_steps-gap: var(--markdown-steps-gap, 1rem);
+    --_steps-body-gap: var(--markdown-steps-body-gap, 0.75rem);
+
+    margin-block: 1rem;
+  }
+
+  /* ── Ordered list reset ─────────────────────────────────────────────────── */
+
+  .markdown-steps-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── Step item layout ───────────────────────────────────────────────────── */
+
+  .markdown-steps-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--_steps-number-size) 1fr;
+    grid-template-rows: auto 1fr;
+    column-gap: var(--_steps-gap);
+    padding-block-end: var(--_steps-gap);
+  }
+
+  /* Vertical connector line between steps */
+  .markdown-steps-item:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(var(--_steps-number-size) / 2);
+    inset-block-start: var(--_steps-number-size);
+    inset-block-end: 0;
+    width: 2px;
+    background-color: var(--_steps-line-color);
+  }
+
+  /* ── Step number circle ─────────────────────────────────────────────────── */
+
+  .markdown-steps-item::after {
+    content: attr(data-step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_steps-number-size);
+    height: var(--_steps-number-size);
+    border-radius: 50%;
+    background-color: var(--_steps-number-bg);
+    color: var(--_steps-number-fg);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* ── Step title ─────────────────────────────────────────────────────────── */
+
+  .markdown-steps-title {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    font-weight: 600;
+    line-height: var(--_steps-number-size);
+    color: var(--_steps-color);
+  }
+
+  /* ── Step body ──────────────────────────────────────────────────────────── */
+
+  .markdown-steps-body {
+    grid-column: 2;
+    grid-row: 2;
+    padding-block-start: var(--_steps-body-gap);
+  }
+
+  .markdown-steps-body > :first-child {
+    margin-block-start: 0;
+  }
+
+  .markdown-steps-body > :last-child {
+    margin-block-end: 0;
+  }
+
+  /* ── Nested steps ───────────────────────────────────────────────────────── */
+
+  .markdown-steps-item > .markdown-steps {
+    grid-column: 2;
+    grid-row: 2;
+    --_steps-number-size: 1.4rem;
+    --_steps-number-bg: var(
+      --markdown-steps-nested-number-bg,
+      light-dark(oklch(0.88 0.02 258), oklch(0.3 0.04 258))
+    );
+    --_steps-number-fg: var(
+      --markdown-steps-nested-number-fg,
+      light-dark(oklch(0.45 0.19 258), oklch(0.62 0.2 253))
+    );
+    margin-block: 0;
+  }
+
+  /* ── Completed step style ───────────────────────────────────────────────── */
+
+  .markdown-steps-item[data-completed] {
+    --_steps-color: var(
+      --markdown-steps-completed-color,
+      light-dark(oklch(0.44 0.16 145), oklch(0.67 0.2 145))
+    );
+    --_steps-number-bg: var(
+      --markdown-steps-completed-number-bg,
+      light-dark(oklch(0.44 0.16 145), oklch(0.67 0.2 145))
+    );
+    --_steps-line-color: var(
+      --markdown-steps-completed-line-color,
+      light-dark(oklch(0.44 0.16 145), oklch(0.67 0.2 145))
+    );
+  }
+}

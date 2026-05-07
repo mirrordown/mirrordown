@@ -6,6 +6,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
   const check = getDelimiterChecker(options.left, options.right);
 
   // Rule 1: attrs at end of a list item inline  "- item{.red}"
+  // Structure: list_item_open(-2) paragraph_open(-1) inline(0)
   const listItemEnd: AttrRule = {
     name: "list item end",
     tests: [
@@ -36,9 +37,51 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       const content = lastChild.content.trimEnd();
       const range = check(content, "end")!;
 
-      // Apply to the list_item_open (paragraph_open is at index-1, list_item_open at index-2)
       const listItemOpen = tokens[index - 2]!;
       addAttrs(listItemOpen, content, range, options.allowed);
+
+      const attrStart = content.lastIndexOf(options.left, range[0] - 1);
+      lastChild.content = content.slice(0, attrStart).trimEnd();
+      if (lastChild.content === "" && children.length > 1) children.pop();
+    },
+  };
+
+  // Rule 1b (generic): attrs at end of a custom item title inline
+  // Matches when the open token two before the inline has meta.attrsRole === "listItem"
+  // and the token one before has meta.attrsItemTitle === true.
+  // Third-party plugins opt in by setting these meta fields on their tokens.
+  const customItemEnd: AttrRule = {
+    name: "custom item end",
+    tests: [
+      {
+        shift: 0,
+        type: "inline",
+        children: [
+          {
+            index: -1,
+            type: (t: string) => t !== "code_inline",
+            content: (content: string) => check(content.trim(), "end") !== null,
+          },
+        ],
+      },
+      {
+        shift: -1,
+        meta: (m) => m?.attrsItemTitle === true,
+      },
+      {
+        shift: -2,
+        meta: (m) => m?.attrsRole === "listItem",
+      },
+    ],
+    transform(tokens, index) {
+      const inline = tokens[index]!;
+      const children = inline.children!;
+      const lastChild = children[children.length - 1]!;
+      const content = lastChild.content.trimEnd();
+      const range = check(content, "end")!;
+
+      const itemOpen = tokens[index - 2]!;
+      addAttrs(itemOpen, content, range, options.allowed);
 
       const attrStart = content.lastIndexOf(options.left, range[0] - 1);
       lastChild.content = content.slice(0, attrStart).trimEnd();
@@ -104,5 +147,62 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
     },
   };
 
-  return [listItemEnd, listAttr];
+  // Rule 2b (generic): attrs on own paragraph after a custom list close → apply to list open
+  // Matches when the close token two before the paragraph has meta.attrsRole === "list".
+  // Third-party plugins opt in by setting meta.attrsRole = "list" on their open/close tokens.
+  const customListAttr: AttrRule = {
+    name: "custom list attributes",
+    tests: [
+      {
+        shift: 0,
+        type: "inline",
+        children: [
+          {
+            index: 0,
+            type: "text",
+            content: (content: string) => check(content.trim(), "only") !== null,
+          },
+        ],
+      },
+      {
+        shift: -1,
+        type: "paragraph_open",
+      },
+      {
+        shift: -2,
+        type: (t: string) => t.endsWith("_close"),
+        meta: (m) => m?.attrsRole === "list",
+      },
+    ],
+    transform(tokens, index) {
+      const inline = tokens[index]!;
+      const children = inline.children!;
+      const textChild = children[0]!;
+      const content = textChild.content.trim();
+      const range = check(content, "only")!;
+
+      // Walk back to find the matching open token (same type with _open suffix)
+      const closeToken = tokens[index - 2]!;
+      const openType = closeToken.type.replace("_close", "_open");
+
+      let depth = 1;
+      let listOpenIdx = -1;
+      for (let i = index - 3; i >= 0; i--) {
+        const t = tokens[i]!;
+        if (t.type === closeToken.type) depth++;
+        else if (t.type === openType) {
+          depth--;
+          if (depth === 0) { listOpenIdx = i; break; }
+        }
+      }
+
+      if (listOpenIdx === -1) return;
+      addAttrs(tokens[listOpenIdx]!, content, range, options.allowed);
+
+      // Remove paragraph_open + inline + paragraph_close
+      tokens.splice(index - 1, 3);
+    },
+  };
+
+  return [listItemEnd, customItemEnd, listAttr, customListAttr];
 };

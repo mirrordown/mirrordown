@@ -15,6 +15,8 @@ export interface RuleTest {
   nesting?: number | ((n: number) => boolean);
   /** Inspect token content; called with (content, token, tokens, index). */
   content?: string | ((c: string) => boolean);
+  /** Inspect token.meta; predicate receives the meta object (may be null). */
+  meta?: (meta: Record<string, unknown> | null) => boolean;
   /** Inspect a child token at the given index (negative = from end). */
   children?: Array<Omit<RuleTest, "shift" | "position"> & { index?: number }>;
   /** If set, use this delimiter checker to extract a range from token content. */
@@ -83,6 +85,9 @@ export const testRule = (tokens: Token[], index: number, test: RuleTest): TestRe
     return { match: false, position: null, range: null };
   }
   if (test.content !== undefined && !matches(test.content, token.content)) {
+    return { match: false, position: null, range: null };
+  }
+  if (test.meta !== undefined && !test.meta((token.meta as Record<string, unknown> | null) ?? null)) {
     return { match: false, position: null, range: null };
   }
   if (test.attrChecker) {

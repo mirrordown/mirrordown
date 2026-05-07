@@ -1,0 +1,61 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`steps (remark): 'blank line between steps continues bl…' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Body.</p></div></li></ol><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step two from same block</p><div class="markdown-steps-body"><p>Body.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'body with blockquote' 1`] = `
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with a blockquote</p><div class="markdown-steps-body"><p>> This is a blockquote inside a step.
+>
+> It has multiple lines.</p></div></li></ol>"
+`;
+
+exports[`steps (remark): 'body with code fence' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with code</p><div class="markdown-steps-body"><p><code>ts |  const foo = "bar"; |  </code></p></div></li></ol>"`;
+
+exports[`steps (remark): 'body with emphasis and strong' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with rich body</p><div class="markdown-steps-body"><p>This has <em>emphasis</em> and <strong>strong</strong> text.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'body with horizontal rule' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Content before the rule.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two</p><div class="markdown-steps-body"><p>Content after.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'body with ordered list' 1`] = `
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with an ordered list</p><div class="markdown-steps-body"><p>1. First item
+2. Second item
+3. Third item</p></div></li></ol>"
+`;
+
+exports[`steps (remark): 'body with unordered list' 1`] = `
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with a list</p><div class="markdown-steps-body"><p>- Item one
+- Item two
+- Item three</p></div></li></ol>"
+`;
+
+exports[`steps (remark): 'empty step' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Completed step</p></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Another step</p><div class="markdown-steps-body"><p>Body here.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'manual numbering' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">First</p></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Third skips to three</p></li><li class="markdown-steps-item" data-step="3"><p class="markdown-steps-title">Fourth</p></li></ol>"`;
+
+exports[`steps (remark): 'multiple nested steps with body' 1`] = `
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Clone the repo</p><div class="markdown-steps-body"><p>Run the following command:
+<code>sh |  git clone https://github.com/example/repo.git |  </code></p></div><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Navigate to the directory</p><div class="markdown-steps-body"><p><code>cd repo</code></p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Install dependencies</p><div class="markdown-steps-body"><p><code>npm install</code></p></div></li></ol></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Start the server</p><div class="markdown-steps-body"><p><code>npm start</code></p></div></li></ol>"
+`;
+
+exports[`steps (remark): 'nested steps' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Outer step one</p><div class="markdown-steps-body"><p>Outer body.</p></div><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Inner step one</p><div class="markdown-steps-body"><p>Inner body.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Inner step two</p><div class="markdown-steps-body"><p>More inner body.</p></div></li></ol></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Outer step two</p></li></ol>"`;
+
+exports[`steps (remark): 'single step empty title' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><div class="markdown-steps-body"><p>Body without a title.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'single step no body' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p></li></ol>"`;
+
+exports[`steps (remark): 'single step with body' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>This is the step body.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'step block followed immediately by he…' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Only step</p><div class="markdown-steps-body"><p>Body.</p></div></li></ol><h2>Heading after steps</h2>"`;
+
+exports[`steps (remark): 'step surrounded by paragraphs' 1`] = `"<p>Paragraph before.</p><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Body content.</p></div></li></ol><p>Paragraph after.</p>"`;
+
+exports[`steps (remark): 'step with inline formatted title' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Install <strong>Node.js</strong> and <code>npm</code></p><div class="markdown-steps-body"><p>Follow the official guide.</p></div></li></ol>"`;
+
+exports[`steps (remark): 'step with paragraph body' 1`] = `
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>First paragraph.
+Second paragraph.</p></div></li></ol>"
+`;
+
+exports[`steps (remark): 'three steps auto-increment' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step A</p></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step B</p></li><li class="markdown-steps-item" data-step="3"><p class="markdown-steps-title">Step C</p></li></ol>"`;
+
+exports[`steps (remark): 'two independent step blocks separated…' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Block one step one</p><div class="markdown-steps-body"><p>Body.</p></div></li></ol><p>This paragraph separates the two blocks.</p><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Block two step one</p><div class="markdown-steps-body"><p>Body.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Block two step two</p></li></ol>"`;
+
+exports[`steps (remark): 'two steps' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">First step</p><div class="markdown-steps-body"><p>First body.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Second step</p><div class="markdown-steps-body"><p>Second body.</p></div></li></ol>"`;

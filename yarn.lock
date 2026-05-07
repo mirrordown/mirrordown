@@ -1177,6 +1177,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@saeris/mdit-steps@workspace:*, @saeris/mdit-steps@workspace:packages/mdit-steps":
+  version: 0.0.0-use.local
+  resolution: "@saeris/mdit-steps@workspace:packages/mdit-steps"
+  dependencies:
+    "@types/markdown-it": "npm:^14.1.2"
+    markdown-it: "npm:^14.1.1"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@saeris/mdit-sub@workspace:*, @saeris/mdit-sub@workspace:packages/mdit-sub":
   version: 0.0.0-use.local
   resolution: "@saeris/mdit-sub@workspace:packages/mdit-sub"
@@ -1357,6 +1368,19 @@ __metadata:
     mdast-util-from-markdown: "npm:^2.0.2"
     micromark-util-character: "npm:^2.1.0"
     micromark-util-types: "npm:^2.0.1"
+    unified: "npm:^11.0.5"
+    unist-util-visit: "npm:^5.1.0"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@saeris/remd-steps@workspace:packages/remd-steps":
+  version: 0.0.0-use.local
+  resolution: "@saeris/remd-steps@workspace:packages/remd-steps"
+  dependencies:
+    "@types/hast": "npm:^3.0.4"
+    "@types/mdast": "npm:^4.0.4"
     unified: "npm:^11.0.5"
     unist-util-visit: "npm:^5.1.0"
   peerDependencies:
@@ -2993,6 +3017,16 @@ __metadata:
   resolution: "markdown-mark@workspace:extensions/markdown-mark"
   dependencies:
     "@saeris/mdit-mark": "workspace:*"
+    "@types/markdown-it": "npm:^14.1.2"
+    "@types/vscode": "npm:^1.118.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-steps@workspace:extensions/markdown-steps":
+  version: 0.0.0-use.local
+  resolution: "markdown-steps@workspace:extensions/markdown-steps"
+  dependencies:
+    "@saeris/mdit-steps": "workspace:*"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/vscode": "npm:^1.118.0"
   languageName: unknown
