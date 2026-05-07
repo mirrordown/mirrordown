@@ -4,11 +4,11 @@
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": "git@github.com:saeris/markdown.git",
+  "style": "./dist/steps.css",
   "files": [
     "dist"
   ],
   "type": "module",
-  "style": "./dist/steps.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",

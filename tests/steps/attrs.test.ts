@@ -27,7 +27,7 @@ const remd = (src: string) =>
   );
 
 describe("steps + attrs: class on step container via paragraph attrs", () => {
-  const input = "@1. Only step\n|  Body here.";
+  const input = "@1. Only step\n>  Body here.";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -43,7 +43,7 @@ describe("steps + attrs: class on step container via paragraph attrs", () => {
 });
 
 describe("steps + attrs: attrs on heading before step block", () => {
-  const input = "## Setup {.section}\n\n@1. First step\n|  Content.";
+  const input = "## Setup {.section}\n\n@1. First step\n>  Content.";
   const expected =
     '<h2 class="section">Setup</h2><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">First step</p><div class="markdown-steps-body"><p>Content.</p></div></li></ol>';
 
@@ -52,7 +52,7 @@ describe("steps + attrs: attrs on heading before step block", () => {
 });
 
 describe("steps + attrs: attrs on paragraph after step block", () => {
-  const input = "@1. Only step\n|  Body.\n\nRead more. {.note}";
+  const input = "@1. Only step\n>  Body.\n\nRead more. {.note}";
   const expectedStepClass = 'class="markdown-steps"';
   const expectedParaClass = 'class="note"';
 
@@ -70,7 +70,7 @@ describe("steps + attrs: attrs on paragraph after step block", () => {
 });
 
 describe("steps + attrs: attrs on code fence inside step body", () => {
-  const input = "@1. Install\n|\n|  ```ts {.example}\n|  const x = 1;\n|  ```";
+  const input = "@1. Install\n>\n>  ```ts {.example}\n>  const x = 1;\n>  ```";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -87,7 +87,7 @@ describe("steps + attrs: attrs on code fence inside step body", () => {
 
 describe("steps + attrs: step block and attrs coexist without interference", () => {
   const input =
-    "Some *emphasized* text. {.intro}\n\n@1. Step one\n|  Body.\n@1. Step two\n\nAnother paragraph. {.outro}";
+    "Some *emphasized* text. {.intro}\n\n@1. Step one\n>  Body.\n@1. Step two\n\nAnother paragraph. {.outro}";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -108,7 +108,7 @@ describe("steps + attrs: attr in step title applies to <li>", () => {
   // "@1. Step one {.complete}" → <li class="markdown-steps-item complete" data-step="1">
   // mdit: stepsItemEnd rule matches steps_item_open(-2) steps_title_open(-1) inline(0)
   // remd: stepsItem visitor applies hProperties to the node; buildListHast merges them
-  const input = "@1. Step one {.complete}\n|  Some content.";
+  const input = "@1. Step one {.complete}\n>  Some content.";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -126,10 +126,10 @@ describe("steps + attrs: attr in step title applies to <li>", () => {
 });
 
 describe("steps + attrs: standalone attr paragraph after step list applies to <ol>", () => {
-  // "@1. Step one\n| content\n{#instructions}" → <ol id="instructions" class="markdown-steps">
+  // "@1. Step one\n> content\n{#instructions}" → <ol id="instructions" class="markdown-steps">
   // mdit: stepsListAttr rule matches steps_list_close(-2) paragraph_open(-1) inline(0)
   // remd: stepsList sibling visitor applies hProperties; buildListHast merges them
-  const input = "@1. Step one\n|  Some content.\n\n{#instructions}";
+  const input = "@1. Step one\n>  Some content.\n\n{#instructions}";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -147,7 +147,7 @@ describe("steps + attrs: standalone attr paragraph after step list applies to <o
 });
 
 describe("steps + attrs: multiple step items each with class", () => {
-  const input = "@1. Done {.complete}\n|  Body.\n@1. In progress {.active}\n|  Body.";
+  const input = "@1. Done {.complete}\n>  Body.\n@1. In progress {.active}\n>  Body.";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
@@ -169,7 +169,7 @@ describe("steps + attrs: multiple step items each with class", () => {
 describe("steps + attrs: attrs on standard ordered list adjacent to step block are unaffected", () => {
   // Verify attrs work on real ordered lists alongside steps, with no cross-contamination.
   const input =
-    "@1. A step\n|  Step body.\n\n{#step-list}\n\n1. List item one\n2. List item two\n\n{.my-list}";
+    "@1. A step\n>  Step body.\n\n{#step-list}\n\n1. List item one\n2. List item two\n\n{.my-list}";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));

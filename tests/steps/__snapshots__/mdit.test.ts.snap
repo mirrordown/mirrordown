@@ -1,6 +1,15 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`steps (markdown-it): 'bare continuation is blank body line' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Line one.</p><p>Line two after blank.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two</p><div class="markdown-steps-body"><p>Content for step two.</p></div></li></ol>"`;
+
 exports[`steps (markdown-it): 'blank line between steps continues bl…' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Body.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two from same block</p><div class="markdown-steps-body"><p>Body.</p></div></li></ol>"`;
+
+exports[`steps (markdown-it): 'blank line between steps splits into …' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Content for step one.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two</p><div class="markdown-steps-body"><p>Content for step two.</p></div></li></ol>"`;
+
+exports[`steps (markdown-it): 'blockquote terminated by code fence, …' 1`] = `
+"<blockquote><p>This blockquote is terminated by the code fence that immediately follows it.</p></blockquote><pre><code class="language-js">const x = 1;
+</code></pre><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Content for step one.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two</p><div class="markdown-steps-body"><p>Content for step two.</p></div></li></ol>"
+`;
 
 exports[`steps (markdown-it): 'body with blockquote' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with a blockquote</p><div class="markdown-steps-body"><blockquote><p>This is a blockquote inside a step.</p><p>It has multiple lines.</p></blockquote></div></li></ol>"`;
 
@@ -17,6 +26,10 @@ exports[`steps (markdown-it): 'body with ordered list' 1`] = `"<ol class="markdo
 
 exports[`steps (markdown-it): 'body with unordered list' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with a list</p><div class="markdown-steps-body"><ul><li>Item one</li><li>Item two</li><li>Item three</li></ul></div></li></ol>"`;
 
+exports[`steps (markdown-it): 'depth skip from 1 to 3 terminates gro…' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p></li></ol><p>@@@1. Too Deep</p><blockquote><p>Content here.</p></blockquote>"`;
+
+exports[`steps (markdown-it): 'depth-2 header with no depth-1 parent' 1`] = `"<p>@@1. Orphan</p><blockquote><p>Content here.</p></blockquote>"`;
+
 exports[`steps (markdown-it): 'empty step' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Completed step</p></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Another step</p><div class="markdown-steps-body"><p>Body here.</p></div></li></ol>"`;
 
 exports[`steps (markdown-it): 'manual numbering' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">First</p></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Third skips to three</p></li><li class="markdown-steps-item" data-step="3"><p class="markdown-steps-title">Fourth</p></li></ol>"`;
@@ -27,6 +40,16 @@ exports[`steps (markdown-it): 'multiple nested steps with body' 1`] = `
 `;
 
 exports[`steps (markdown-it): 'nested steps' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Outer step one</p><div class="markdown-steps-body"><p>Outer body.</p></div><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Inner step one</p><div class="markdown-steps-body"><p>Inner body.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Inner step two</p><div class="markdown-steps-body"><p>More inner body.</p></div></li></ol></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Outer step two</p></li></ol>"`;
+
+exports[`steps (markdown-it): 'no title text' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><div class="markdown-steps-body"><p>Content here.</p></div></li></ol>"`;
+
+exports[`steps (markdown-it): 'orphan blockquote before steps: blank…' 1`] = `"<blockquote><p>This blockquote is separated by a blank line.</p></blockquote><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step one</p><div class="markdown-steps-body"><p>Content for step one.</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Step two</p><div class="markdown-steps-body"><p>Content for step two.</p></div></li></ol>"`;
+
+exports[`steps (markdown-it): 'orphan blockquote before steps: no bl…' 1`] = `
+"<blockquote><p>This blockquote has no blank line before the step header below it.
+@1. Step one
+Content for step one.</p></blockquote>"
+`;
 
 exports[`steps (markdown-it): 'single step empty title' 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><div class="markdown-steps-body"><p>Body without a title.</p></div></li></ol>"`;
 

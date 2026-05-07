@@ -1,5 +1,12 @@
 import type { Plugin } from "unified";
-import type { Root, Paragraph, PhrasingContent, BlockContent, DefinitionContent } from "mdast";
+import type {
+  Root,
+  Paragraph,
+  Blockquote,
+  PhrasingContent,
+  BlockContent,
+  DefinitionContent,
+} from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State } from "mdast-util-to-hast";
 import type { StepsOptions } from "./types.js";
@@ -8,8 +15,6 @@ export type { StepsOptions };
 
 // Groups: 1=@ string (depth), 2=number, 3=rest of line (may be empty or title text)
 const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/s;
-
-const CONTINUATION_RE = /^\| ?/;
 
 // ── MDAST node types ──────────────────────────────────────────────────────────
 
@@ -35,7 +40,7 @@ interface StepsItemNode {
 interface ParsedHeader {
   depth: number;
   number: number;
-  rest: string; // remaining text after "@N. " prefix
+  rest: string;
 }
 
 const parseHeaderPrefix = (text: string): ParsedHeader | null => {
@@ -44,126 +49,162 @@ const parseHeaderPrefix = (text: string): ParsedHeader | null => {
   return { depth: m[1]!.length, number: parseInt(m[2]!, 10), rest: m[3]! };
 };
 
-// Convert body inline lines (PhrasingContent[][] with null separators for blank lines)
-// into MDAST block children (paragraphs separated by blank lines).
-const bodyLinesToBlocks = (
-  lines: (PhrasingContent[] | null)[],
-): (BlockContent | DefinitionContent)[] => {
-  const blocks: (BlockContent | DefinitionContent)[] = [];
-  let current: PhrasingContent[] = [];
-
-  const flush = () => {
-    if (current.length > 0) {
-      blocks.push({ type: "paragraph", children: current } satisfies Paragraph);
-      current = [];
-    }
-  };
-
-  for (const line of lines) {
-    if (line === null) {
-      flush();
-    } else if (line.length > 0) {
-      // Add a softbreak between consecutive non-blank lines within a paragraph
-      if (current.length > 0) current.push({ type: "text", value: "\n" });
-      current.push(...line);
-    }
-  }
-
-  flush();
-  return blocks;
-};
-
-// ── Paragraph-level extraction ────────────────────────────────────────────────
+// ── Raw step types ────────────────────────────────────────────────────────────
 
 interface RawStep {
   depth: number;
   number: number;
   titleNodes: PhrasingContent[];
-  // Body stored as inline-node lines; null = blank line (paragraph separator)
-  bodyLines: (PhrasingContent[] | null)[];
+  body: (BlockContent | DefinitionContent)[];
 }
 
-// Expand a paragraph's inline children into line-delimited segments by splitting
-// text nodes on "\n". Returns an array of lines, each being an array of inline nodes.
+// ── Paragraph line splitting ──────────────────────────────────────────────────
+
 const paraToLines = (para: Paragraph): PhrasingContent[][] => {
-  type Segment = PhrasingContent | null; // null = line boundary
-  const segments: Segment[] = [];
+  type Seg = PhrasingContent | null;
+  const segs: Seg[] = [];
 
   for (const child of para.children) {
     if (child.type === "text") {
       const parts = child.value.split("\n");
       for (let p = 0; p < parts.length; p++) {
-        if (p > 0) segments.push(null);
-        if (parts[p] !== "") segments.push({ type: "text", value: parts[p]! });
+        if (p > 0) segs.push(null);
+        if (parts[p] !== "") segs.push({ type: "text", value: parts[p]! });
       }
     } else if (child.type === "break") {
-      segments.push(null);
+      segs.push(null);
     } else {
-      segments.push(child);
+      segs.push(child);
     }
   }
 
   const lines: PhrasingContent[][] = [[]];
-  for (const seg of segments) {
+  for (const seg of segs) {
     if (seg === null) lines.push([]);
     else lines[lines.length - 1]!.push(seg);
   }
   return lines;
 };
 
-const extractFromParagraph = (para: Paragraph): RawStep[] | null => {
+// ── Header paragraph extraction ───────────────────────────────────────────────
+
+// Extract step headers from a paragraph that consists entirely of @N. lines.
+// Returns null if any line is not a valid step header.
+// requireDepthOne: first header must be depth 1.
+const extractHeaderPara = (
+  para: Paragraph,
+  requireDepthOne = true,
+  prevDepth = 0,
+): RawStep[] | null => {
   const lines = paraToLines(para);
   const steps: RawStep[] = [];
   const counters = new Map<number, number>();
-  let currentDepth = 0;
-  let currentStep: RawStep | null = null;
+  let currentDepth = prevDepth;
 
-  const flush = () => {
-    if (currentStep) steps.push(currentStep);
-  };
+  for (const lineSegs of lines) {
+    const first = lineSegs[0];
+    if (!first || first.type !== "text") return null;
 
-  for (const lineSegments of lines) {
-    const firstNode = lineSegments[0];
+    const header = parseHeaderPrefix(first.value);
+    if (!header) return null;
 
-    if (firstNode?.type === "text") {
-      const header = parseHeaderPrefix(firstNode.value);
-      if (header) {
-        flush();
-        const { depth } = header;
-        if (depth > currentDepth + 1) return null; // depth jump — invalid
-        for (const k of counters.keys()) if (k > depth) counters.delete(k);
-        const number = (counters.get(depth) ?? 0) + 1;
-        counters.set(depth, number);
-        currentDepth = depth;
+    const { depth } = header;
+    if (steps.length === 0 && requireDepthOne && depth !== 1) return null;
+    if (depth > currentDepth + 1) return null;
+    currentDepth = depth;
 
-        const titleNodes: PhrasingContent[] = [];
-        if (header.rest) titleNodes.push({ type: "text", value: header.rest });
-        titleNodes.push(...lineSegments.slice(1));
+    for (const k of counters.keys()) if (k > depth) counters.delete(k);
+    const number = (counters.get(depth) ?? 0) + 1;
+    counters.set(depth, number);
 
-        currentStep = { depth, number, titleNodes, bodyLines: [] };
-        continue;
-      }
+    const titleNodes: PhrasingContent[] = header.rest
+      ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
+      : lineSegs.slice(1);
 
-      // Continuation line: strip "| " prefix and one optional leading space from first text
-      if (currentStep !== null && CONTINUATION_RE.test(firstNode.value)) {
-        const stripped = firstNode.value.replace(CONTINUATION_RE, "").replace(/^ /, "");
-        const lineNodes: PhrasingContent[] = stripped
-          ? [{ type: "text", value: stripped }, ...lineSegments.slice(1)]
-          : lineSegments.slice(1);
-        currentStep.bodyLines.push(lineNodes.length > 0 ? lineNodes : []);
-        continue;
-      }
+    steps.push({ depth, number, titleNodes, body: [] });
+  }
+
+  return steps.length > 0 ? steps : null;
+};
+
+// ── Blockquote splitting ──────────────────────────────────────────────────────
+
+// Remark absorbs adjacent non-blank lines after the first @paragraph into one
+// blockquote. We split that blockquote on any embedded @N. step header lines.
+interface BQSegment {
+  header: Omit<RawStep, "body"> | null; // null = pre-header content (goes to previous step)
+  body: (BlockContent | DefinitionContent)[];
+}
+
+const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
+  const children: PhrasingContent[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (i > 0) children.push({ type: "text", value: "\n" });
+    children.push(...lines[i]!);
+  }
+  if (children.length === 0) return null;
+  return { type: "paragraph", children };
+};
+
+const splitBlockquote = (
+  bq: Blockquote,
+  counters: Map<number, number>,
+  currentDepth: number,
+): BQSegment[] => {
+  const segments: BQSegment[] = [];
+  let currentSegment: BQSegment = { header: null, body: [] };
+
+  for (const child of bq.children) {
+    if (child.type !== "paragraph") {
+      currentSegment.body.push(child as BlockContent);
+      continue;
     }
 
-    // Empty line (all segments empty) — blank line separator
-    if (currentStep !== null && lineSegments.length === 0) {
-      currentStep.bodyLines.push(null);
-      continue;
+    const lines = paraToLines(child as Paragraph);
+    let bodyLines: PhrasingContent[][] = [];
+
+    for (const lineSegs of lines) {
+      const first = lineSegs[0];
+      if (first?.type === "text") {
+        const header = parseHeaderPrefix(first.value);
+        if (header && header.depth <= currentDepth + 1) {
+          // Flush accumulated body lines
+          if (bodyLines.length > 0) {
+            const bodyPara = buildParagraph(bodyLines);
+            if (bodyPara) currentSegment.body.push(bodyPara);
+            bodyLines = [];
+          }
+
+          segments.push(currentSegment);
+
+          // Update counter tracking
+          for (const k of counters.keys()) if (k > header.depth) counters.delete(k);
+          const number = (counters.get(header.depth) ?? 0) + 1;
+          counters.set(header.depth, number);
+          currentDepth = header.depth;
+
+          const titleNodes: PhrasingContent[] = header.rest
+            ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
+            : lineSegs.slice(1);
+
+          currentSegment = {
+            header: { depth: header.depth, number, titleNodes },
+            body: [],
+          };
+          continue;
+        }
+      }
+      bodyLines.push(lineSegs);
+    }
+
+    if (bodyLines.length > 0) {
+      const bodyPara = buildParagraph(bodyLines);
+      if (bodyPara) currentSegment.body.push(bodyPara);
     }
   }
 
-  flush();
-  return steps.length > 0 ? steps : null;
+  segments.push(currentSegment);
+  return segments;
 };
 
 // ── Tree builder ──────────────────────────────────────────────────────────────
@@ -187,7 +228,7 @@ const buildTree = (
     let childEnd = i + 1;
     while (childEnd < end && steps[childEnd]!.depth > targetDepth) childEnd++;
 
-    const bodyChildren = bodyLinesToBlocks(s.bodyLines) as StepsItemNode["children"];
+    const bodyChildren: StepsItemNode["children"] = [...s.body] as StepsItemNode["children"];
     const hasDeeper = steps.slice(i + 1, childEnd).some((ss) => ss.depth === targetDepth + 1);
     if (hasDeeper) {
       const nested = buildTree(steps, targetDepth + 1, i + 1, childEnd);
@@ -227,16 +268,64 @@ export const remarkSteps: Plugin<[StepsOptions?], Root> = function (options = {}
       const node = tree.children[i]!;
 
       if (node.type === "paragraph") {
-        const firstChild = node.children[0];
-        if (firstChild?.type === "text" && parseHeaderPrefix(firstChild.value)?.depth === 1) {
-          const steps = extractFromParagraph(node);
-          if (steps && steps.length > 0) {
-            const list = buildTree(steps, 1, 0, steps.length);
-            list.containerClass = containerClass;
-            newChildren.push(list as unknown as Root["children"][number]);
-            i++;
-            continue;
+        const headerSteps = extractHeaderPara(node as Paragraph);
+
+        if (headerSteps && headerSteps.length > 0) {
+          // Consume alternating paragraph(headers) + blockquote(body) pairs.
+          // Counter state must be shared across the whole group.
+          const counters = new Map<number, number>();
+          for (const s of headerSteps) counters.set(s.depth, s.number);
+
+          const rawSteps: RawStep[] = [...headerSteps];
+          let j = i + 1;
+          let currentTabIdx = rawSteps.length - 1;
+          let currentDepth = rawSteps[rawSteps.length - 1]!.depth;
+
+          while (j < tree.children.length) {
+            const sibling = tree.children[j]!;
+
+            if (sibling.type === "blockquote") {
+              const segments = splitBlockquote(sibling as Blockquote, counters, currentDepth);
+
+              // segments[0] has header=null — its body goes to currentTabIdx
+              const firstSeg = segments[0];
+              if (firstSeg?.header === null) {
+                rawSteps[currentTabIdx]!.body.push(...firstSeg.body);
+              }
+
+              // Remaining segments introduce new steps
+              for (let s = 1; s < segments.length; s++) {
+                const seg = segments[s]!;
+                if (seg.header) {
+                  rawSteps.push({ ...seg.header, body: seg.body });
+                  currentTabIdx = rawSteps.length - 1;
+                  currentDepth = seg.header.depth;
+                }
+              }
+
+              j++;
+            } else if (sibling.type === "paragraph") {
+              // Check if it's a continuation header paragraph (no-body step headers)
+              const prevDepth = rawSteps[rawSteps.length - 1]!.depth;
+              const contHeaders = extractHeaderPara(sibling as Paragraph, false, prevDepth);
+              if (contHeaders && contHeaders.length > 0) {
+                rawSteps.push(...contHeaders);
+                currentTabIdx = rawSteps.length - 1;
+                currentDepth = rawSteps[rawSteps.length - 1]!.depth;
+                j++;
+                continue;
+              }
+              break;
+            } else {
+              break;
+            }
           }
+
+          const list = buildTree(rawSteps, 1, 0, rawSteps.length);
+          list.containerClass = containerClass;
+          newChildren.push(list as unknown as Root["children"][number]);
+          i = j;
+          continue;
         }
       }
 
@@ -307,7 +396,6 @@ const buildListHast = (list: StepsListNode, containerClass: string, state: State
     } satisfies Element;
   });
 
-  // Root list uses containerClass directly; nested lists use containerClass-list
   const baseClass = list.depth === 1 ? containerClass : `${containerClass}-list`;
   const olProps: Properties = { class: baseClass };
   if (list.data?.hProperties) {

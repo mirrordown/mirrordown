@@ -8,8 +8,8 @@ export type { StepsOptions };
 // Groups: 1=raw @ string (depth indicator), 2=number, 3=title text
 const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/;
 
-// Matches: | or |<space> continuation line
-const CONTINUATION_RE = /^\| ?/;
+// Matches: > or ><space> continuation line
+const CONTINUATION_RE = /^> ?/;
 
 interface StepFrame {
   depth: number;
