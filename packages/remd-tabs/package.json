@@ -8,12 +8,16 @@
     "dist"
   ],
   "type": "module",
+  "style": "./dist/tabs.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./styles": "./dist/tabs.css"
+    "./styles": {
+      "development": "./src/tabs.css",
+      "default": "./dist/tabs.css"
+    }
   },
   "dependencies": {
     "unist-util-visit": "^5.1.0"
@@ -30,7 +34,7 @@
     "node": ">=24.0.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack",
+    "buildCommand": "vp pack && vp exec postcss src/tabs.css --output dist/tabs.css",
     "publishCommand": [
       "node ../../scripts/sync-jsr-version.mjs",
       "npm publish --access public",

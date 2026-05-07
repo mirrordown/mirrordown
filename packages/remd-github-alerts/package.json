@@ -8,12 +8,16 @@
     "dist"
   ],
   "type": "module",
+  "style": "./dist/github-alerts.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./styles": "./dist/github-alerts.css"
+    "./styles": {
+      "development": "./src/github-alerts.css",
+      "default": "./dist/github-alerts.css"
+    }
   },
   "dependencies": {
     "unist-util-visit": "^5.1.0"
@@ -30,7 +34,7 @@
     "node": ">=24.0.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack",
+    "buildCommand": "vp pack && vp exec postcss src/github-alerts.css --output dist/github-alerts.css",
     "publishCommand": [
       "node ../../scripts/sync-jsr-version.mjs",
       "npm publish --access public",

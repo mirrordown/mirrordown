@@ -1,9 +1,17 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  run: { tasks: { build: { command: "vp pack", cache: true } } },
+  run: {
+    tasks: {
+      build: {
+        command:
+          "vp pack && vp exec postcss src/github-alerts.css --output dist/github-alerts.css",
+        cache: true,
+      },
+    },
+  },
   pack: {
-    entry: ["src/index.ts", "src/github-alerts.css"],
+    entry: ["src/index.ts"],
     deps: { neverBundle: ["unified"], onlyBundle: false },
     dts: true,
   },
