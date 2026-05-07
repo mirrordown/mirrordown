@@ -160,12 +160,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
       visit(tree, makeSiblingAttrVisitor("list", check, allowed));
 
-      // ── custom listItem nodes (data.attrsRole === "listItem") ────────────
-      // Third-party plugins opt in by setting data.attrsRole = "listItem" and
+      // ── custom containerItem nodes (data.attrsRole === "containerItem") ──
+      // Third-party plugins opt in by setting data.attrsRole = "containerItem" and
       // exposing their title content in data.attrsTitle: PhrasingContent[].
       visit(tree, (node: Node) => {
         const n = node as { type: string; data?: { attrsRole?: string; attrsTitle?: { type: string; value: string }[]; hProperties?: Properties } };
-        if (n.data?.attrsRole !== "listItem" || !n.data.attrsTitle) return;
+        if (n.data?.attrsRole !== "containerItem" || !n.data.attrsTitle) return;
         const title = n.data.attrsTitle;
         const last = title[title.length - 1];
         if (!last || last.type !== "text") return;
@@ -177,8 +177,8 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         last.value = content.slice(0, attrStart).trimEnd();
       });
 
-      // ── custom list nodes (data.attrsRole === "list") ─────────────────────
-      // Third-party plugins opt in by setting data.attrsRole = "list".
+      // ── custom container nodes (data.attrsRole === "container") ──────────
+      // Third-party plugins opt in by setting data.attrsRole = "container".
       // A standalone attr paragraph after such a node applies to the node itself.
       visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
         if (!parent || typeof index === "undefined") return;
@@ -189,7 +189,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const range = check(content, "only");
         if (!range) return;
         const prev = parent.children[index - 1] as { data?: { attrsRole?: string } } | undefined;
-        if (prev?.data?.attrsRole !== "list") return;
+        if (prev?.data?.attrsRole !== "container") return;
         applyAttrs(prev as unknown as AttrNode, content, range, allowed);
         parent.children.splice(index, 1);
         return [SKIP, index];

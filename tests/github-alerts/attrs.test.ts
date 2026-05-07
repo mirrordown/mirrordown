@@ -66,3 +66,38 @@ describe("github-alerts + attrs: alerts and attrs coexist", () => {
     expect(result).toContain('data-alert="note"');
   });
 });
+
+describe("github-alerts + attrs: id on standalone paragraph after alert applies to container", () => {
+  const input = "> [!NOTE]\n> Some note content.\n\n{#my-note}";
+
+  test("markdown-it", () => {
+    const result = normalizeHtml(md.render(input));
+    expect(result).toContain('id="my-note"');
+    expect(result).toContain('data-alert="note"');
+    // {#my-note} consumed — not rendered as a standalone paragraph
+    expect(result).not.toContain('<p id="my-note"');
+  });
+
+  test("remark", () => {
+    const result = remd(input);
+    expect(result).toContain('id="my-note"');
+    expect(result).toContain('data-alert="note"');
+    expect(result).not.toContain('<p id="my-note"');
+  });
+});
+
+describe("github-alerts + attrs: class on standalone paragraph after alert applies to container", () => {
+  const input = "> [!TIP]\n> A helpful tip.\n\n{.custom-alert}";
+
+  test("markdown-it", () => {
+    const result = normalizeHtml(md.render(input));
+    expect(result).toContain("markdown-alert custom-alert");
+    expect(result).toContain('data-alert="tip"');
+  });
+
+  test("remark", () => {
+    const result = remd(input);
+    expect(result).toContain("markdown-alert custom-alert");
+    expect(result).toContain('data-alert="tip"');
+  });
+});

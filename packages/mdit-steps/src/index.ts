@@ -191,7 +191,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       olOpen.attrSet("class", targetDepth === 1 ? containerClass : `${containerClass}-list`);
       if (mapStart !== undefined && mapEnd !== undefined) olOpen.map = [mapStart, mapEnd];
       olOpen.block = true;
-      olOpen.meta = { attrsRole: "list" };
+      olOpen.meta = { attrsRole: "container" };
 
       // Emit each <li> at targetDepth within group
       let k = 0;
@@ -206,7 +206,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         liOpen.attrSet("class", `${containerClass}-item`);
         liOpen.attrSet("data-step", String(f.number));
         liOpen.block = true;
-        liOpen.meta = { attrsRole: "listItem" };
+        liOpen.meta = { attrsRole: "containerItem" };
 
         // Step title
         if (f.title.trim()) {
@@ -263,7 +263,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       }
 
       const olClose = state.push("steps_list_close", "ol", -1);
-      olClose.meta = { attrsRole: "list" };
+      olClose.meta = { attrsRole: "container" };
 
       i = j;
     }

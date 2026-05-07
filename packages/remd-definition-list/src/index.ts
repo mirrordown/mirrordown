@@ -21,20 +21,30 @@ export const remarkDefinitionList: Plugin<[], Root> = function () {
 
 const newline = () => u("text", "\n") as ElementContent;
 
+const mergeHProperties = (base: Record<string, unknown>, extra?: Record<string, unknown>): Record<string, unknown> => {
+  if (!extra) return base;
+  const { class: extraClass, ...rest } = extra;
+  const result = { ...base, ...rest };
+  if (extraClass) result.class = base.class ? `${base.class} ${extraClass}` : extraClass;
+  return result;
+};
+
 const defList2hast = (state: State, node: DefinitionList): ElementContent => {
   const items = state.all(node);
   const children: ElementContent[] =
     items.length > 0 ? [...items.flatMap((item) => [newline(), item]), newline()] : [];
-  const result: ElementContent = { type: "element", tagName: "dl", properties: {}, children };
+  const properties = mergeHProperties({}, node.data?.hProperties as Record<string, unknown> | undefined);
+  const result: ElementContent = { type: "element", tagName: "dl", properties, children };
   state.patch(node, result);
   return result;
 };
 
 const defListTerm2hast = (state: State, node: DefinitionTerm): ElementContent => {
+  const properties = mergeHProperties({}, node.data?.hProperties as Record<string, unknown> | undefined);
   const result: ElementContent = {
     type: "element",
     tagName: "dt",
-    properties: {},
+    properties,
     children: state.all(node),
   };
   state.patch(node, result);
@@ -61,7 +71,8 @@ const defListDescription2hast = (state: State, node: DefinitionDescription): Ele
 
   if (!lastChildUnwrapped && children.length > 0) children.push(newline());
 
-  const result: ElementContent = { type: "element", tagName: "dd", properties: {}, children };
+  const properties = mergeHProperties({}, node.data?.hProperties as Record<string, unknown> | undefined);
+  const result: ElementContent = { type: "element", tagName: "dd", properties, children };
   state.patch(node, result);
   return result;
 };

@@ -114,6 +114,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   const listLines: [start: number, end: number] = [startLine, 0];
 
   dlOpenToken.map = listLines;
+  dlOpenToken.meta = { attrsRole: "container" };
 
   //
   // Iterate list items
@@ -136,6 +137,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
     const dtOpenToken = state.push("dt_open", "dt", 1);
 
     dtOpenToken.map = [dtLine, dtLine];
+    dtOpenToken.meta = { attrsRole: "containerItem", attrsItemTitle: true };
 
     const inlineToken = state.push("inline", "", 0);
 
@@ -213,7 +215,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   }
 
   // Finalize list
-  state.push("dl_close", "dl", -1);
+  const dlCloseToken = state.push("dl_close", "dl", -1);
+  dlCloseToken.meta = { attrsRole: "container" };
 
   listLines[1] = nextLine;
 

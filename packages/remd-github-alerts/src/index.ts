@@ -22,6 +22,7 @@ interface AlertData {
   alertTitle: string;
   alertFoldable: boolean;
   alertIcon: string;
+  attrsRole: string;
 }
 
 type AlertNode = Blockquote & { data: AlertData };
@@ -84,6 +85,7 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (options = {}) 
         alertTitle: title,
         alertFoldable: isFoldable,
         alertIcon: iconFor(type),
+        attrsRole: "container",
       };
     });
   };

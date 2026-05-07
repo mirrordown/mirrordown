@@ -47,7 +47,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
   };
 
   // Rule 1b (generic): attrs at end of a custom item title inline
-  // Matches when the open token two before the inline has meta.attrsRole === "listItem"
+  // Matches when the open token two before the inline has meta.attrsRole === "containerItem"
   // and the token one before has meta.attrsItemTitle === true.
   // Third-party plugins opt in by setting these meta fields on their tokens.
   const customItemEnd: AttrRule = {
@@ -70,7 +70,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       },
       {
         shift: -2,
-        meta: (m) => m?.attrsRole === "listItem",
+        meta: (m) => m?.attrsRole === "containerItem",
       },
     ],
     transform(tokens, index) {
@@ -81,6 +81,44 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       const range = check(content, "end")!;
 
       const itemOpen = tokens[index - 2]!;
+      addAttrs(itemOpen, content, range, options.allowed);
+
+      const attrStart = content.lastIndexOf(options.left, range[0] - 1);
+      lastChild.content = content.slice(0, attrStart).trimEnd();
+      if (lastChild.content === "" && children.length > 1) children.pop();
+    },
+  };
+
+  // Rule 1c (direct): attrs at end of a custom item inline where the open token
+  // itself carries both attrsRole === "containerItem" AND attrsItemTitle === true.
+  // Matches dt_open → inline (no intermediate title token).
+  const customItemEndDirect: AttrRule = {
+    name: "custom item end direct",
+    tests: [
+      {
+        shift: 0,
+        type: "inline",
+        children: [
+          {
+            index: -1,
+            type: (t: string) => t !== "code_inline",
+            content: (content: string) => check(content.trim(), "end") !== null,
+          },
+        ],
+      },
+      {
+        shift: -1,
+        meta: (m) => m?.attrsItemTitle === true && m?.attrsRole === "containerItem",
+      },
+    ],
+    transform(tokens, index) {
+      const inline = tokens[index]!;
+      const children = inline.children!;
+      const lastChild = children[children.length - 1]!;
+      const content = lastChild.content.trimEnd();
+      const range = check(content, "end")!;
+
+      const itemOpen = tokens[index - 1]!;
       addAttrs(itemOpen, content, range, options.allowed);
 
       const attrStart = content.lastIndexOf(options.left, range[0] - 1);
@@ -147,9 +185,9 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
     },
   };
 
-  // Rule 2b (generic): attrs on own paragraph after a custom list close → apply to list open
-  // Matches when the close token two before the paragraph has meta.attrsRole === "list".
-  // Third-party plugins opt in by setting meta.attrsRole = "list" on their open/close tokens.
+  // Rule 2b (generic): attrs on own paragraph after a custom container close → apply to container open
+  // Matches when the close token two before the paragraph has meta.attrsRole === "container".
+  // Third-party plugins opt in by setting meta.attrsRole = "container" on their open/close tokens.
   const customListAttr: AttrRule = {
     name: "custom list attributes",
     tests: [
@@ -171,7 +209,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       {
         shift: -2,
         type: (t: string) => t.endsWith("_close"),
-        meta: (m) => m?.attrsRole === "list",
+        meta: (m) => m?.attrsRole === "container",
       },
     ],
     transform(tokens, index) {
@@ -204,5 +242,5 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
     },
   };
 
-  return [listItemEnd, customItemEnd, listAttr, customListAttr];
+  return [listItemEnd, customItemEnd, customItemEndDirect, listAttr, customListAttr];
 };

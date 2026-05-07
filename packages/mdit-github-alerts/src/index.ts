@@ -108,9 +108,11 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (md, options = {}) 
       if (foldMarker === "+") containerOpen.attrSet("open", "");
       containerOpen.map = tokens[i]!.map;
       containerOpen.block = true;
+      containerOpen.meta = { attrsRole: "container" };
 
       const containerClose = new state.Token(`${containerTag}_close`, containerTag, -1);
       containerClose.block = true;
+      containerClose.meta = { attrsRole: "container" };
 
       tokens.splice(i, 1, containerOpen, titleOpen, titleInline, titleClose);
       closeIdx += 3; // 3 tokens inserted before closeIdx

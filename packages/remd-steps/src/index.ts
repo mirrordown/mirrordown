@@ -200,13 +200,13 @@ const buildTree = (
       number: s.number,
       title: s.titleNodes,
       children: bodyChildren,
-      data: { attrsRole: "listItem", attrsTitle: s.titleNodes },
+      data: { attrsRole: "containerItem", attrsTitle: s.titleNodes },
     });
 
     i = childEnd;
   }
 
-  return { type: "stepsList", depth: targetDepth, children: items, data: { attrsRole: "list" } };
+  return { type: "stepsList", depth: targetDepth, children: items, data: { attrsRole: "container" } };
 };
 
 // ── Remark plugin ─────────────────────────────────────────────────────────────
