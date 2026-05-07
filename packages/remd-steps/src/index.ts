@@ -88,34 +88,36 @@ const paraToLines = (para: Paragraph): PhrasingContent[][] => {
 
 // ── Header paragraph extraction ───────────────────────────────────────────────
 
-// Extract step headers from a paragraph that consists entirely of @N. lines.
-// Returns null if any line is not a valid step header.
+// Extract step headers from a paragraph where every line is an @N. header.
+// Mutates `counters` in place so call sites share counter state across siblings.
+// Stops (does not return null) at a depth-skip or non-header line — returns
+// whatever valid steps accumulated before that point.
 // requireDepthOne: first header must be depth 1.
 const extractHeaderPara = (
   para: Paragraph,
+  counters: Map<number, number>,
   requireDepthOne = true,
   prevDepth = 0,
 ): RawStep[] | null => {
   const lines = paraToLines(para);
   const steps: RawStep[] = [];
-  const counters = new Map<number, number>();
   let currentDepth = prevDepth;
 
   for (const lineSegs of lines) {
     const first = lineSegs[0];
-    if (!first || first.type !== "text") return null;
+    if (!first || first.type !== "text") break;
 
     const header = parseHeaderPrefix(first.value);
-    if (!header) return null;
+    if (!header) break;
 
     const { depth } = header;
     if (steps.length === 0 && requireDepthOne && depth !== 1) return null;
-    if (depth > currentDepth + 1) return null;
-    currentDepth = depth;
+    if (depth > currentDepth + 1) break; // depth skip — stop, keep prior steps
 
     for (const k of counters.keys()) if (k > depth) counters.delete(k);
     const number = (counters.get(depth) ?? 0) + 1;
     counters.set(depth, number);
+    currentDepth = depth;
 
     const titleNodes: PhrasingContent[] = header.rest
       ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
@@ -268,13 +270,12 @@ export const remarkSteps: Plugin<[StepsOptions?], Root> = function (options = {}
       const node = tree.children[i]!;
 
       if (node.type === "paragraph") {
-        const headerSteps = extractHeaderPara(node as Paragraph);
+        const counters = new Map<number, number>();
+        const headerSteps = extractHeaderPara(node as Paragraph, counters);
 
         if (headerSteps && headerSteps.length > 0) {
           // Consume alternating paragraph(headers) + blockquote(body) pairs.
-          // Counter state must be shared across the whole group.
-          const counters = new Map<number, number>();
-          for (const s of headerSteps) counters.set(s.depth, s.number);
+          // counters is already populated by extractHeaderPara above.
 
           const rawSteps: RawStep[] = [...headerSteps];
           let j = i + 1;
@@ -307,7 +308,12 @@ export const remarkSteps: Plugin<[StepsOptions?], Root> = function (options = {}
             } else if (sibling.type === "paragraph") {
               // Check if it's a continuation header paragraph (no-body step headers)
               const prevDepth = rawSteps[rawSteps.length - 1]!.depth;
-              const contHeaders = extractHeaderPara(sibling as Paragraph, false, prevDepth);
+              const contHeaders = extractHeaderPara(
+                sibling as Paragraph,
+                counters,
+                false,
+                prevDepth,
+              );
               if (contHeaders && contHeaders.length > 0) {
                 rawSteps.push(...contHeaders);
                 currentTabIdx = rawSteps.length - 1;

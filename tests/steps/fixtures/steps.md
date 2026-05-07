@@ -192,7 +192,7 @@ const x = 1;
 @1. Step two
 > Content for step two.
 
-<!-- @case: blank line between steps splits into two groups -->
+<!-- @case: blank line between adjacent step headers continues block -->
 
 @1. Step one
 > Content for step one.

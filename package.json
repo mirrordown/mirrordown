@@ -9,6 +9,7 @@
     "extensions/*",
     "packages/*"
   ],
+  "type": "module",
   "scripts": {
     "prepare": "vp config"
   },
