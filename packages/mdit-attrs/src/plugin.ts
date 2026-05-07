@@ -8,7 +8,7 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
   md,
   { left = "{", right = "}", allowed = [], rule = "all" } = {},
 ) => {
-  const rules = createRules(md, { left, right, allowed, rule });
+  const rules = createRules({ left, right, allowed, rule });
 
   md.core.ruler.before("linkify", "attrs", (state) => {
     const { tokens } = state;

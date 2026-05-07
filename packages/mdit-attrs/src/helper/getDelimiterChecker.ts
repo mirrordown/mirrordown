@@ -13,32 +13,30 @@ export type DelimiterChecker = (str: string, pos: DelimiterPosition) => Delimite
  * A valid block must contain at least one character (i.e. `{}` is invalid),
  * and the outer delimiters must not be repeated (i.e. `{{}}` is invalid).
  */
-export const getDelimiterChecker =
-  (left: string, right: string): DelimiterChecker =>
-  (str, pos): DelimiterRange | null => {
-    const ll = left.length;
-    const rl = right.length;
-    const minLen = ll + 1 + rl; // at least one char between delimiters
+export const getDelimiterChecker = (left: string, right: string): DelimiterChecker => {
+  const ll = left.length;
+  const rl = right.length;
+  const minLen = ll + 1 + rl;
+  const doubleLeft = left + left;
+  const doubleRight = right + right;
 
+  return (str, pos): DelimiterRange | null => {
     if (str.length < minLen) return null;
 
     if (pos === "start" || pos === "only") {
       if (!str.startsWith(left)) return null;
-      // Reject doubled opening delimiter (e.g. "{{")
-      if (str.startsWith(left + left)) return null;
+      if (str.startsWith(doubleLeft)) return null;
     }
 
     if (pos === "end" || pos === "only") {
       if (!str.endsWith(right)) return null;
-      // Reject doubled closing delimiter (e.g. "}}")
-      if (str.endsWith(right + right)) return null;
+      if (str.endsWith(doubleRight)) return null;
     }
 
     if (pos === "only") {
-      const contentStart = ll;
       const contentEnd = str.length - rl;
-      if (contentEnd <= contentStart) return null;
-      return [contentStart, contentEnd];
+      if (contentEnd <= ll) return null;
+      return [ll, contentEnd];
     }
 
     if (pos === "start") {
@@ -50,7 +48,7 @@ export const getDelimiterChecker =
     // pos === "end"
     const start = str.lastIndexOf(left, str.length - rl - 1);
     if (start === -1) return null;
-    // Ensure no doubled opening delimiter immediately before the found left
     if (str.startsWith(left, start - ll)) return null;
     return [start + ll, str.length - rl];
   };
+};

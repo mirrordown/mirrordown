@@ -1,6 +1,8 @@
 import { visit, SKIP } from "unist-util-visit";
+import type { Visitor } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Root, Text, Heading, Paragraph, ListItem, Code } from "mdast";
+import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
 import { applyAttrs } from "./applyAttrs.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
@@ -8,6 +10,7 @@ import type { AttrsOptions } from "./types.js";
 
 export type { AttrsOptions, AttrRuleName, DelimiterConfig, Attr, DelimiterRange } from "./types.js";
 
+type AttrNode = Node & { data?: { hProperties?: Properties } };
 type RuleSet = Set<string>;
 
 const ALL_RULES = new Set([
@@ -26,6 +29,29 @@ const resolveRules = (rule: AttrsOptions["rule"]): RuleSet => {
   if (rule === "all" || rule === true || rule === undefined) return ALL_RULES;
   return new Set((rule as string[]).filter((r) => ALL_RULES.has(r)));
 };
+
+// Shared visitor for list/table/hr: apply attrs from a standalone paragraph
+// to the preceding sibling of the given type, then remove the paragraph.
+const makeSiblingAttrVisitor =
+  (
+    siblingType: string,
+    check: ReturnType<typeof import("./getDelimiterChecker.js").getDelimiterChecker>,
+    allowed: (string | RegExp)[],
+  ): Visitor =>
+  (node: Node, index: number | undefined, parent: Parent | undefined) => {
+    if (!parent || typeof index === "undefined") return;
+    if (node.type !== "paragraph") return;
+    const para = node as Paragraph;
+    if (para.children.length !== 1 || para.children[0]!.type !== "text") return;
+    const content = (para.children[0] as Text).value.trim();
+    const range = check(content, "only");
+    if (!range) return;
+    const prev = parent.children[index - 1];
+    if (!prev || prev.type !== siblingType) return;
+    applyAttrs(prev as AttrNode, content, range, allowed);
+    parent.children.splice(index, 1);
+    return [SKIP, index];
+  };
 
 export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
   const { left = "{", right = "}", allowed = [], rule } = options;
@@ -62,9 +88,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
     // ── block: paragraph with trailing attrs on last text child ──────────
     if (rules.has("block")) {
-      visit(tree, "paragraph", (node: Paragraph, index, parent) => {
-        /* v8 ignore next */
-        if (!parent || typeof index === "undefined") return;
+      visit(tree, "paragraph", (node: Paragraph) => {
         const last = node.children[node.children.length - 1];
         if (!last || last.type !== "text") return;
         const content = last.value.trimEnd();
@@ -108,24 +132,17 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           const range = check(content, "only");
           if (!range) continue;
 
-          // Preceding child must be an inline element (not text, not break)
           const prevType = prev.type;
           if (prevType === "text" || prevType === "break") continue;
 
-          applyAttrs(
-            prev as Node & { data?: { hProperties?: import("hast").Properties } },
-            content,
-            range,
-            allowed,
-          );
+          applyAttrs(prev as AttrNode, content, range, allowed);
           children.splice(i, 1);
         }
       });
     }
 
-    // ── list: attrs at end of list item content ───────────────────────────
+    // ── list: attrs at end of list item / standalone paragraph after list ─
     if (rules.has("list")) {
-      // list item end attrs
       visit(tree, "listItem", (node: ListItem) => {
         const firstChild = node.children[0];
         if (!firstChild || firstChild.type !== "paragraph") return;
@@ -141,81 +158,17 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         if (last.value === "" && para.children.length > 1) para.children.pop();
       });
 
-      // list-level attrs: standalone paragraph after list containing only attrs
-      visit(tree, (node: Node, index, parent) => {
-        if (!parent || typeof index === "undefined") return;
-        if (node.type !== "paragraph") return;
-        const para = node as Paragraph;
-        if (para.children.length !== 1 || para.children[0]!.type !== "text") return;
-        const content = (para.children[0] as Text).value.trim();
-        const range = check(content, "only");
-        if (!range) return;
-
-        // Previous sibling must be a list
-        const prev = (parent as Parent).children[index - 1];
-        if (!prev || prev.type !== "list") return;
-
-        applyAttrs(
-          prev as Node & { data?: { hProperties?: import("hast").Properties } },
-          content,
-          range,
-          allowed,
-        );
-        (parent as Parent).children.splice(index, 1);
-        return [SKIP, index];
-      });
+      visit(tree, makeSiblingAttrVisitor("list", check, allowed));
     }
 
     // ── table: standalone paragraph after table containing only attrs ─────
     if (rules.has("table")) {
-      visit(tree, (node: Node, index, parent) => {
-        if (!parent || typeof index === "undefined") return;
-        if (node.type !== "paragraph") return;
-        const para = node as Paragraph;
-        if (para.children.length !== 1 || para.children[0]!.type !== "text") return;
-        const content = (para.children[0] as Text).value.trim();
-        const range = check(content, "only");
-        if (!range) return;
-
-        // Previous sibling must be a table
-        const prev = (parent as Parent).children[index - 1];
-        if (!prev || prev.type !== "table") return;
-
-        applyAttrs(
-          prev as Node & { data?: { hProperties?: import("hast").Properties } },
-          content,
-          range,
-          allowed,
-        );
-        (parent as Parent).children.splice(index, 1);
-        return [SKIP, index];
-      });
+      visit(tree, makeSiblingAttrVisitor("table", check, allowed));
     }
 
-    // ── hr: standalone paragraph after hr containing only attrs ──────────
+    // ── hr: standalone paragraph after thematic break containing only attrs
     if (rules.has("hr")) {
-      visit(tree, (node: Node, index, parent) => {
-        if (!parent || typeof index === "undefined") return;
-        if (node.type !== "paragraph") return;
-        const para = node as Paragraph;
-        if (para.children.length !== 1 || para.children[0]!.type !== "text") return;
-        const content = (para.children[0] as Text).value.trim();
-        const range = check(content, "only");
-        if (!range) return;
-
-        // Previous sibling must be a thematic break
-        const prev = (parent as Parent).children[index - 1];
-        if (!prev || prev.type !== "thematicBreak") return;
-
-        applyAttrs(
-          prev as Node & { data?: { hProperties?: import("hast").Properties } },
-          content,
-          range,
-          allowed,
-        );
-        (parent as Parent).children.splice(index, 1);
-        return [SKIP, index];
-      });
+      visit(tree, makeSiblingAttrVisitor("thematicBreak", check, allowed));
     }
   };
 

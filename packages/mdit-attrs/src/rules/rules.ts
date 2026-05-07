@@ -1,4 +1,3 @@
-import type MarkdownIt from "markdown-it";
 import type { AttrsOptions, AttrRuleName, DelimiterConfig } from "../types.js";
 import type { AttrRule } from "./types.js";
 import { createBlockRule } from "./block.js";
@@ -21,22 +20,20 @@ const ALL_RULE_NAMES: AttrRuleName[] = [
   "block",
 ];
 
-export const createRules = (
-  _md: MarkdownIt,
-  options: DelimiterConfig & Pick<AttrsOptions, "rule">,
-): AttrRule[] => {
+const ALL_RULE_SET = new Set<string>(ALL_RULE_NAMES);
+
+export const createRules = (options: DelimiterConfig & Pick<AttrsOptions, "rule">): AttrRule[] => {
   const { rule = "all" } = options;
 
-  let enabledNames: AttrRuleName[];
+  let enabled: Set<string>;
   if (rule === "all" || rule === true) {
-    enabledNames = ALL_RULE_NAMES;
+    enabled = ALL_RULE_SET;
   } else if (!rule || (Array.isArray(rule) && rule.length === 0)) {
     return [];
   } else {
-    enabledNames = (rule as AttrRuleName[]).filter((r) => (ALL_RULE_NAMES as string[]).includes(r));
+    enabled = new Set((rule as AttrRuleName[]).filter((r) => ALL_RULE_SET.has(r)));
   }
 
-  const enabled = new Set(enabledNames);
   const rules: AttrRule[] = [];
 
   if (enabled.has("fence")) rules.push(createFenceRule(options));

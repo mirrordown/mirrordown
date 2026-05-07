@@ -6,16 +6,7 @@ const PAIR_SEPARATOR = 32; // ' '
 const KEY_SEPARATOR = 61; // '='
 const QUOTE_MARKER = 34; // '"'
 
-const isAllowedKeyChar = (code: number): boolean =>
-  code !== 9 &&
-  code !== 10 &&
-  code !== 12 &&
-  code !== 32 &&
-  code !== 47 &&
-  code !== 62 &&
-  code !== 34 &&
-  code !== 39 &&
-  code !== 61;
+const DISALLOWED_KEY_CHARS = new Set([9, 10, 12, 32, 47, 62, 34, 39, 61]);
 
 export const getAttrs = (
   str: string,
@@ -37,12 +28,7 @@ export const getAttrs = (
     }
 
     if (code === CLASS_MARKER && key === "") {
-      if (str.charCodeAt(i + 1) === CLASS_MARKER) {
-        key = "css-module";
-        i++;
-      } else {
-        key = "class";
-      }
+      key = str.charCodeAt(i + 1) === CLASS_MARKER ? (i++, "css-module") : "class";
       parsingKey = false;
       continue;
     }
@@ -53,39 +39,36 @@ export const getAttrs = (
       continue;
     }
 
-    if (code === QUOTE_MARKER && value === "" && !valueInsideQuotes) {
-      valueInsideQuotes = true;
-      continue;
-    }
-
-    if (code === QUOTE_MARKER && valueInsideQuotes) {
-      valueInsideQuotes = false;
+    if (code === QUOTE_MARKER) {
+      if (value === "" && !valueInsideQuotes) {
+        valueInsideQuotes = true;
+      } else if (valueInsideQuotes) {
+        valueInsideQuotes = false;
+      }
       continue;
     }
 
     if (code === PAIR_SEPARATOR && !valueInsideQuotes) {
-      if (key === "") continue;
-      attrs.push([key, value]);
-      key = "";
-      value = "";
-      parsingKey = true;
+      if (key !== "") {
+        attrs.push([key, value]);
+        key = "";
+        value = "";
+        parsingKey = true;
+      }
       continue;
     }
 
-    if (parsingKey && !isAllowedKeyChar(code)) continue;
-
     if (parsingKey) {
-      key += String.fromCharCode(code);
+      if (!DISALLOWED_KEY_CHARS.has(code)) key += str[i];
     } else {
-      value += String.fromCharCode(code);
+      value += str[i];
     }
   }
 
   if (key !== "") attrs.push([key, value]);
 
-  return allowed.length > 0
-    ? attrs.filter(([attr]) =>
-        allowed.some((item) => (item instanceof RegExp ? item.test(attr) : item === attr)),
-      )
-    : attrs;
+  if (allowed.length === 0) return attrs;
+  return attrs.filter(([attr]) =>
+    allowed.some((item) => (item instanceof RegExp ? item.test(attr) : item === attr)),
+  );
 };
