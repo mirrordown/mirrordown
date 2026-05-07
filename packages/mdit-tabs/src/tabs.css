@@ -1,1 +1,156 @@
-/* markdown-tabs — implementation coming in step 6 */
+/*
+  Markdown Tabs — default stylesheet
+  ------------------------------------
+  All rules live inside @layer markdown-tabs so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  Color tokens use light-dark() so they respond to the nearest `color-scheme`
+  ancestor. Set `color-scheme: light`, `color-scheme: dark`, or
+  `color-scheme: light dark` on :root (or a container) to control the mode.
+
+  To override public tokens, set them on .markdown-tabs or any ancestor:
+
+    .markdown-tabs { --markdown-tabs-accent: oklch(0.55 0.18 145); }
+*/
+
+@layer markdown-tabs {
+  /* ── Container ──────────────────────────────────────────────────────────── */
+
+  .markdown-tabs {
+    --_tabs-accent: var(
+      --markdown-tabs-accent,
+      light-dark(oklch(0.55 0.15 250), oklch(0.68 0.17 250))
+    );
+    --_tabs-bg: var(--markdown-tabs-bg, transparent);
+    --_tabs-border: var(
+      --markdown-tabs-border,
+      light-dark(oklch(0.88 0.01 250), oklch(0.3 0.03 250))
+    );
+    --_tabs-label-color: var(--markdown-tabs-label-color, inherit);
+    --_tabs-radius: var(--markdown-tabs-radius, 0.375rem);
+
+    position: relative;
+    display: grid;
+    /* row 1: tab strip (summaries); row 2: open panel */
+    grid-template-rows: auto 1fr;
+    /* one auto column per details child — all summaries align in a shared strip */
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    border: 1px solid var(--_tabs-border);
+    border-radius: var(--_tabs-radius);
+    background: var(--_tabs-bg);
+    overflow: hidden;
+    margin-block: 1rem;
+  }
+
+  /* ── details / summary resets ───────────────────────────────────────────── */
+
+  details.markdown-tabs-item {
+    /* Suppress native disclosure triangle */
+    & > summary.markdown-tabs-label {
+      list-style: none;
+      cursor: pointer;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+    }
+
+    /* Hide panel when closed */
+    &:not([open]) > section.markdown-tabs-panel {
+      display: none;
+    }
+  }
+
+  /* ── Tab strip (summaries in row 1) ─────────────────────────────────────── */
+
+  summary.markdown-tabs-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    color: var(--_tabs-label-color);
+    border-block-end: 2px solid transparent;
+    white-space: nowrap;
+    user-select: none;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+
+    /* Active tab — driven by [open] on the parent details */
+    details[open] > & {
+      color: var(--_tabs-accent);
+      border-block-end-color: var(--_tabs-accent);
+    }
+  }
+
+  /* ── Follow-the-leader indicator (CSS Anchor Positioning) ───────────────── */
+  /*
+    In browsers that support Anchor Positioning (Chromium 125+, Safari 18.2+),
+    the open summary claims a named anchor and a pseudo-element on the container
+    slides to it. The @supports guard keeps the baseline border-block-end as the
+    fallback in unsupported browsers.
+  */
+
+  @supports (anchor-name: --x) {
+    summary.markdown-tabs-label {
+      anchor-name: --tabs-active-label;
+
+      /* Suppress the static border — the follower pseudo-element takes over */
+      details[open] > & {
+        border-block-end-color: transparent;
+      }
+    }
+
+    /* Follower pseudo-element: slides to the open summary via anchor() */
+    .markdown-tabs::after {
+      content: "";
+      position: absolute;
+      position-anchor: --tabs-active-label;
+      left: anchor(left);
+      right: anchor(right);
+      bottom: anchor(bottom);
+      height: 2px;
+      background: var(--_tabs-accent);
+      transition:
+        left 0.25s ease,
+        right 0.25s ease;
+    }
+  }
+
+  /* ── Panel (section in row 2) ───────────────────────────────────────────── */
+
+  section.markdown-tabs-panel {
+    grid-column: 1 / -1; /* span all columns */
+    grid-row: 2;
+    padding: 1rem;
+    border-block-start: 1px solid var(--_tabs-border);
+
+    > :first-child {
+      margin-block-start: 0;
+    }
+
+    > :last-child {
+      margin-block-end: 0;
+    }
+  }
+
+  /* ── Nested tab groups ──────────────────────────────────────────────────── */
+
+  section.markdown-tabs-panel > .markdown-tabs {
+    margin-block: 0;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    summary.markdown-tabs-label {
+      transition: none;
+    }
+
+    .markdown-tabs::after {
+      transition: none;
+    }
+  }
+}

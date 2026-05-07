@@ -8,6 +8,7 @@
     "dist"
   ],
   "type": "module",
+  "style": "./dist/github-alerts.css",
   "exports": {
     ".": {
       "development": "./src/index.ts",

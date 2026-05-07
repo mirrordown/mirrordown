@@ -30,3 +30,4 @@ node_modules
 # Outputs
 **/dist/
 .vite/
+**/*.vsix

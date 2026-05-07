@@ -8,6 +8,7 @@
     "dist"
   ],
   "type": "module",
+  "style": "./dist/steps.css",
   "exports": {
     ".": {
       "development": "./src/index.ts",
