@@ -9,7 +9,6 @@ import {
   groupId,
   blockId,
   CONTINUATION_RE,
-  TAB_HEADER_RE,
 } from "./utils.js";
 
 export type { TabsOptions };

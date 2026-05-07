@@ -10,8 +10,8 @@
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": "git@github.com:saeris/markdown.git",
   "publisher": "saeris",
-  "main": "./dist/index.js",
-  "browser": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
   "devDependencies": {
     "@saeris/mdit-mark": "workspace:*",
     "@types/markdown-it": "^14.1.2",
@@ -20,12 +20,13 @@
   "contributes": {
     "markdown.markdownItPlugins": true
   },
+  "activationEvents": [],
   "engines": {
-    "vscode": "^1.81.0"
+    "vscode": "^1.118.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack",
-    "publishCommand": "vsce publish",
+    "buildCommand": "vp pack && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish",
     "skipNpmPublish": true
   }
 }

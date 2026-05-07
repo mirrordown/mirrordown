@@ -4,8 +4,7 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command:
-          "vp pack && vp exec postcss src/github-alerts.css --output dist/github-alerts.css",
+        command: "vp pack && vp exec postcss src/github-alerts.css --output dist/github-alerts.css",
         cache: true,
       },
     },

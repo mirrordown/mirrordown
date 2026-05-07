@@ -1,7 +1,9 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  run: { tasks: { build: { command: "vp pack", cache: true } } },
+  run: {
+    tasks: { build: { command: "vp pack && vp exec vsce package --no-dependencies", cache: true } },
+  },
   pack: [
     {
       entry: "src/index.ts",

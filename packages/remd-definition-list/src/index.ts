@@ -1,7 +1,7 @@
 import { u } from "unist-builder";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";
-import type { ElementContent } from "hast";
+import type { ElementContent, Properties } from "hast";
 import type { State } from "mdast-util-to-hast";
 import { defList } from "./syntax.js";
 import { defListFromMarkdown } from "./from-markdown.js";
@@ -21,14 +21,12 @@ export const remarkDefinitionList: Plugin<[], Root> = function () {
 
 const newline = () => u("text", "\n") as ElementContent;
 
-const mergeHProperties = (
-  base: Record<string, unknown>,
-  extra?: Record<string, unknown>,
-): Record<string, unknown> => {
+const mergeHProperties = (base: Properties, extra?: Record<string, unknown>): Properties => {
   if (!extra) return base;
   const { class: extraClass, ...rest } = extra;
-  const result = { ...base, ...rest };
-  if (extraClass) result.class = base.class ? `${base.class} ${extraClass}` : extraClass;
+  const result: Properties = { ...base, ...(rest as Properties) };
+  if (extraClass)
+    result.class = base.class ? `${String(base.class)} ${String(extraClass)}` : String(extraClass);
   return result;
 };
 
@@ -36,20 +34,14 @@ const defList2hast = (state: State, node: DefinitionList): ElementContent => {
   const items = state.all(node);
   const children: ElementContent[] =
     items.length > 0 ? [...items.flatMap((item) => [newline(), item]), newline()] : [];
-  const properties = mergeHProperties(
-    {},
-    node.data?.hProperties as Record<string, unknown> | undefined,
-  );
+  const properties = mergeHProperties({}, node.data?.hProperties as Properties | undefined);
   const result: ElementContent = { type: "element", tagName: "dl", properties, children };
   state.patch(node, result);
   return result;
 };
 
 const defListTerm2hast = (state: State, node: DefinitionTerm): ElementContent => {
-  const properties = mergeHProperties(
-    {},
-    node.data?.hProperties as Record<string, unknown> | undefined,
-  );
+  const properties = mergeHProperties({}, node.data?.hProperties as Properties | undefined);
   const result: ElementContent = {
     type: "element",
     tagName: "dt",
@@ -80,10 +72,7 @@ const defListDescription2hast = (state: State, node: DefinitionDescription): Ele
 
   if (!lastChildUnwrapped && children.length > 0) children.push(newline());
 
-  const properties = mergeHProperties(
-    {},
-    node.data?.hProperties as Record<string, unknown> | undefined,
-  );
+  const properties = mergeHProperties({}, node.data?.hProperties as Properties | undefined);
   const result: ElementContent = { type: "element", tagName: "dd", properties, children };
   state.patch(node, result);
   return result;
