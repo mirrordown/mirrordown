@@ -1,0 +1,41 @@
+{
+  "name": "markdown-preview-extended-syntax",
+  "displayName": "Markdown Preview Extended Syntax",
+  "version": "0.0.0",
+  "description": "A collection of syntax extensions for VSCode's Markdown Preview",
+  "categories": [
+    "Extension Packs",
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": "git@github.com:saeris/markdown.git",
+  "publisher": "saeris",
+  "activationEvents": [],
+  "extensionPack": [
+    "Billaferd.vscode-header-sections",
+    "saeris.markdown-abbr",
+    "saeris.markdown-attrs",
+    "saeris.markdown-definition-list",
+    "saeris.markdown-del",
+    "saeris.markdown-denden-furigana",
+    "saeris.markdown-github-alerts",
+    "saeris.markdown-inline-svg",
+    "saeris.markdown-ins",
+    "saeris.markdown-kbd",
+    "saeris.markdown-mark",
+    "saeris.markdown-steps",
+    "saeris.markdown-sub",
+    "saeris.markdown-sup",
+    "saeris.markdown-tabs",
+    "saeris.markdown-unwrap-images"
+  ],
+  "engines": {
+    "vscode": "^1.118.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish",
+    "skipNpmPublish": true
+  }
+}
