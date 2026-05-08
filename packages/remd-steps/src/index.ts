@@ -390,7 +390,7 @@ const buildListHast = (list: StepsListNode, containerClass: string, state: State
     };
     if (item.data?.hProperties) {
       const { class: extraClass, ...rest } = item.data.hProperties;
-      if (extraClass) liProps.class = `${liProps.class} ${extraClass}`;
+      if (extraClass) liProps.class = `${String(liProps.class)} ${String(extraClass)}`;
       Object.assign(liProps, rest);
     }
 
@@ -406,7 +406,7 @@ const buildListHast = (list: StepsListNode, containerClass: string, state: State
   const olProps: Properties = { class: baseClass };
   if (list.data?.hProperties) {
     const { class: extraClass, ...rest } = list.data.hProperties;
-    if (extraClass) olProps.class = `${olProps.class} ${extraClass}`;
+    if (extraClass) olProps.class = `${String(olProps.class)} ${String(extraClass)}`;
     Object.assign(olProps, rest);
   }
 

@@ -21,12 +21,23 @@ export const remarkDefinitionList: Plugin<[], Root> = function () {
 
 const newline = () => u("text", "\n") as ElementContent;
 
-const mergeHProperties = (base: Properties, extra?: Record<string, unknown>): Properties => {
+const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   if (!extra) return base;
   const { class: extraClass, ...rest } = extra;
-  const result: Properties = { ...base, ...(rest as Properties) };
-  if (extraClass)
-    result.class = base.class ? `${String(base.class)} ${String(extraClass)}` : String(extraClass);
+  const result: Properties = { ...base, ...rest };
+  if (extraClass) {
+    const ec = Array.isArray(extraClass)
+      ? extraClass.join(" ")
+      : typeof extraClass === "string"
+        ? extraClass
+        : "";
+    const bc = Array.isArray(base.class)
+      ? base.class.join(" ")
+      : typeof base.class === "string"
+        ? base.class
+        : "";
+    result.class = bc ? `${bc} ${ec}` : ec;
+  }
   return result;
 };
 
