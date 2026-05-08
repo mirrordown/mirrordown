@@ -322,7 +322,9 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (options = {}) 
 
           while (j < tree.children.length) {
             const sibling = tree.children[j]!;
-            const siblingStartLine = sibling.position?.start.line ?? prevEndLine + 1;
+            const siblingStartLine =
+              (sibling as { position?: { start: { line: number } } }).position?.start.line ??
+              prevEndLine + 1;
 
             // A blank line between siblings (gap > 1) terminates the group
             if (siblingStartLine > prevEndLine + 1) break;
