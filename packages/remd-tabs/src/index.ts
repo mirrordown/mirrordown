@@ -11,7 +11,7 @@ import type {
 import type { Element, ElementContent, Properties } from "hast";
 import type { State } from "mdast-util-to-hast";
 import type { TabsOptions, TabsListNode, TabsItemNode } from "./types.js";
-import { parseTabHeader, stripAttrs, slugify, groupId, blockId } from "./utils.js";
+import { parseTabHeader, stripAttrs, groupId, blockId } from "./utils.js";
 
 export type { TabsOptions };
 
@@ -88,7 +88,7 @@ const extractHeaderPara = (
 
     const { depth, open } = header;
     if (tabs.length === 0 && requireDepthOne && depth !== 1) return null;
-    if (depth > currentDepth + 1) return null;
+    if (depth > currentDepth + 1) break;
     currentDepth = depth;
 
     const labelText = header.label;
@@ -317,9 +317,15 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (options = {}) 
 
           // Track which rawTab index is "current" (to assign next blockquote to)
           let currentTabIdx = rawTabs.length - 1;
+          // Track the end line of the last consumed sibling for blank-line detection
+          let prevEndLine = node.position?.end.line ?? 0;
 
           while (j < tree.children.length) {
             const sibling = tree.children[j]!;
+            const siblingStartLine = sibling.position?.start.line ?? prevEndLine + 1;
+
+            // A blank line between siblings (gap > 1) terminates the group
+            if (siblingStartLine > prevEndLine + 1) break;
 
             if (sibling.type === "blockquote") {
               // Split blockquote for any embedded % headers
@@ -344,6 +350,7 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (options = {}) 
                 }
               }
 
+              prevEndLine = sibling.position?.end.line ?? prevEndLine;
               j++;
             } else if (sibling.type === "paragraph") {
               // Check if it's a continuation header paragraph
@@ -352,6 +359,7 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (options = {}) 
               if (contHeaders && contHeaders.length > 0) {
                 rawTabs.push(...contHeaders);
                 currentTabIdx = rawTabs.length - 1;
+                prevEndLine = sibling.position?.end.line ?? prevEndLine;
                 j++;
                 continue;
               }
@@ -383,28 +391,38 @@ const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   if (!extra) return base;
   const { class: extraClass, ...rest } = extra;
   const result: Properties = { ...base, ...rest };
-  if (extraClass) result.class = base.class ? `${base.class} ${extraClass}` : extraClass;
+  if (extraClass)
+    result.class = base.class ? `${String(base.class)} ${String(extraClass)}` : extraClass;
   return result;
 };
 
 const buildTabsHast = (list: TabsListNode, containerClass: string, state: State): Element => {
-  const items: ElementContent[] = list.children.map((item) => {
-    const labelPlain = stripAttrs(item.labelText);
-    const labelSlug = slugify(labelPlain);
-    const detailsChildren: ElementContent[] = [];
+  const labelChildren: ElementContent[] = [];
+  const panelChildren: ElementContent[] = [];
 
-    // <summary>
-    const summaryProps = mergeHProperties(
-      {
-        class: `${containerClass}-label`,
-        "aria-label": labelPlain,
-      },
-      undefined,
+  list.children.forEach((item, idx) => {
+    const labelPlain = stripAttrs(item.labelText);
+    const inputId = `${list.blockId}-${idx}`;
+
+    // <input type="radio">
+    const inputProps: Properties = {
+      type: "radio",
+      name: list.blockId,
+      id: inputId,
+      hidden: true,
+      ...(item.open ? { checked: true } : {}),
+    };
+    labelChildren.push({ type: "element", tagName: "input", properties: inputProps, children: [] });
+
+    // <label>
+    const labelProps = mergeHProperties(
+      { class: `${containerClass}-label`, for: inputId },
+      item.data?.hProperties,
     );
-    detailsChildren.push({
+    labelChildren.push({
       type: "element",
-      tagName: "summary",
-      properties: summaryProps,
+      tagName: "label",
+      properties: labelProps,
       children: state.all({
         type: "paragraph",
         children: item.label,
@@ -437,45 +455,36 @@ const buildTabsHast = (list: TabsListNode, containerClass: string, state: State)
 
     // <section>
     const sectionProps = mergeHProperties(
-      {
-        class: `${containerClass}-panel`,
-        "aria-label": labelPlain,
-      },
+      { class: `${containerClass}-panel`, "aria-label": labelPlain },
       undefined,
     );
-    detailsChildren.push({
+    panelChildren.push({
       type: "element",
       tagName: "section",
       properties: sectionProps,
       children: sectionChildren,
     });
-
-    // <details>
-    const detailsProps = mergeHProperties(
-      {
-        class: `${containerClass}-item`,
-        name: list.blockId,
-        "data-tab": labelSlug,
-        ...(item.open ? { open: true } : {}),
-      },
-      item.data?.hProperties,
-    );
-
-    return {
-      type: "element",
-      tagName: "details",
-      properties: detailsProps,
-      children: detailsChildren,
-    } satisfies Element;
   });
+
+  // <div class="...-labels">
+  const labelsDiv: Element = {
+    type: "element",
+    tagName: "div",
+    properties: { class: `${containerClass}-labels` },
+    children: labelChildren,
+  };
+
+  // <div class="...-panels">
+  const panelsDiv: Element = {
+    type: "element",
+    tagName: "div",
+    properties: { class: `${containerClass}-panels` },
+    children: panelChildren,
+  };
 
   // <div> container
   const divProps = mergeHProperties(
-    {
-      class: containerClass,
-      "data-tabs-group": list.groupId,
-      "aria-label": "Tabs",
-    },
+    { class: containerClass, "data-tabs-group": list.groupId },
     list.data?.hProperties,
   );
 
@@ -483,7 +492,7 @@ const buildTabsHast = (list: TabsListNode, containerClass: string, state: State)
     type: "element",
     tagName: "div",
     properties: divProps,
-    children: items,
+    children: [labelsDiv, panelsDiv],
   };
 
   state.patch(list as unknown as Parameters<typeof state.patch>[0], result);

@@ -5,7 +5,6 @@ import {
   parseTabHeader,
   stripContinuation,
   stripAttrs,
-  slugify,
   groupId,
   blockId,
   CONTINUATION_RE,
@@ -140,65 +139,90 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
 
       // Determine which tab is open: first explicit %+, else first tab
       const explicitOpenIdx = group.findIndex((f) => f.depth === targetDepth && f.open);
-      let openCounter = 0;
 
       // Emit container <div>
       const divOpen = state.push("tabs_open", "div", 1);
       divOpen.attrSet("class", containerClass);
       divOpen.attrSet("data-tabs-group", gId);
-      divOpen.attrSet("aria-label", "Tabs");
       if (mapStart !== undefined && mapEnd !== undefined) divOpen.map = [mapStart, mapEnd];
       divOpen.block = true;
       divOpen.meta = { attrsRole: "container" };
 
-      // Emit each <details> at targetDepth within group
-      let k = 0;
-      while (k < group.length) {
-        const f = group[k]!;
+      // Emit <div class="...-labels"> containing all radio inputs + labels
+      const labelsOpen = state.push("tabs_labels_open", "div", 1);
+      labelsOpen.attrSet("class", `${containerClass}-labels`);
+      labelsOpen.block = true;
+
+      let labelK = 0;
+      let labelIdx = 0;
+      while (labelK < group.length) {
+        const f = group[labelK]!;
         if (f.depth !== targetDepth) {
-          k++;
+          labelK++;
           continue;
         }
+        const isOpen = explicitOpenIdx >= 0 ? labelK === explicitOpenIdx : labelIdx === 0;
+        const inputId = `${bId}-${labelIdx}`;
 
-        // First %+ wins; if none, first tab is open
-        const isOpen = explicitOpenIdx >= 0 ? k === explicitOpenIdx : openCounter === 0;
-        const labelSlug = slugify(f.label);
+        // <input type="radio">
+        const inputTok = state.push("tab_input", "input", 0);
+        inputTok.attrSet("type", "radio");
+        inputTok.attrSet("name", bId);
+        inputTok.attrSet("id", inputId);
+        inputTok.attrSet("hidden", "");
+        if (isOpen) inputTok.attrSet("checked", "");
 
-        // <details>
-        const detailsOpen = state.push("tab_open", "details", 1);
-        detailsOpen.attrSet("class", `${containerClass}-item`);
-        detailsOpen.attrSet("name", bId);
-        detailsOpen.attrSet("data-tab", labelSlug);
-        if (isOpen) detailsOpen.attrSet("open", "");
-        detailsOpen.block = true;
-        detailsOpen.meta = { attrsRole: "containerItem" };
-
-        // <summary> — aria-label uses plain text (strip markdown tokens and any attrs block)
-        const labelPlain = stripAttrs(md.renderInline(f.label).replace(/<[^>]+>/g, ""));
-        const summaryOpen = state.push("tab_label_open", "summary", 1);
-        summaryOpen.attrSet("class", `${containerClass}-label`);
-        summaryOpen.attrSet("aria-label", labelPlain);
-        summaryOpen.meta = { attrsItemTitle: true };
+        // <label>
+        const labelOpen = state.push("tab_label_open", "label", 1);
+        labelOpen.attrSet("class", `${containerClass}-label`);
+        labelOpen.attrSet("for", inputId);
+        labelOpen.meta = { attrsRole: "containerItem", attrsItemTitle: true };
 
         const labelInline = state.push("inline", "", 0);
         labelInline.content = f.label;
         labelInline.children = [];
 
-        state.push("tab_label_close", "summary", -1);
+        state.push("tab_label_close", "label", -1);
 
-        // Panel body — find child frames then emit <section>
-        const childStart = k + 1;
+        // Find child frames for this tab (needed later for panels)
+        const childStart = labelK + 1;
+        let childEnd = childStart;
+        while (childEnd < group.length && group[childEnd]!.depth > targetDepth) childEnd++;
+
+        labelIdx++;
+        labelK = childEnd;
+      }
+
+      state.push("tabs_labels_close", "div", -1);
+
+      // Emit <div class="...-panels"> containing all sections
+      const panelsOpen = state.push("tabs_panels_open", "div", 1);
+      panelsOpen.attrSet("class", `${containerClass}-panels`);
+      panelsOpen.block = true;
+
+      let panelK = 0;
+      while (panelK < group.length) {
+        const f = group[panelK]!;
+        if (f.depth !== targetDepth) {
+          panelK++;
+          continue;
+        }
+
+        const labelPlain = stripAttrs(md.renderInline(f.label).replace(/<[^>]+>/g, ""));
+
+        // Find child frames
+        const childStart = panelK + 1;
         let childEnd = childStart;
         while (childEnd < group.length && group[childEnd]!.depth > targetDepth) childEnd++;
         const children = group.slice(childStart, childEnd);
 
-        // <section> panel
+        // <section>
         const sectionOpen = state.push("tab_panel_open", "section", 1);
         sectionOpen.attrSet("class", `${containerClass}-panel`);
         sectionOpen.attrSet("aria-label", labelPlain);
         sectionOpen.block = true;
 
-        // Tokenize the panel body content
+        // Tokenize panel body
         if (f.bodyLines.length > 0) {
           const bodyContent = f.bodyLines.join("\n");
           const oldParentType = state.parentType;
@@ -223,11 +247,11 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         }
 
         state.push("tab_panel_close", "section", -1);
-        state.push("tab_close", "details", -1);
 
-        openCounter++;
-        k = childEnd;
+        panelK = childEnd;
       }
+
+      state.push("tabs_panels_close", "div", -1);
 
       const divClose = state.push("tabs_close", "div", -1);
       divClose.block = true;

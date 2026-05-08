@@ -1,1 +1,271 @@
-/* markdown-tabs — implementation coming in step 6 */
+/*
+  Markdown Tabs — default stylesheet
+  ------------------------------------
+  All rules live inside @layer markdown-tabs so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  Color tokens use light-dark() so they respond to the nearest `color-scheme`
+  ancestor. Set `color-scheme: light`, `color-scheme: dark`, or
+  `color-scheme: light dark` on :root (or a container) to control the mode.
+
+  To override public tokens, set them on .markdown-tabs or any ancestor:
+
+    .markdown-tabs { --markdown-tabs-accent: oklch(0.55 0.18 145); }
+
+  Panel switching is pure CSS via :has(input:nth-of-type(N):checked), supporting
+  up to 12 tabs per group. The :has() selector is Baseline 2024 (all evergreen
+  browsers as of December 2023).
+*/
+
+@layer markdown-tabs {
+  /* ── Container ──────────────────────────────────────────────────────────── */
+
+  .markdown-tabs {
+    --_tabs-accent: var(
+      --markdown-tabs-accent,
+      light-dark(oklch(0.55 0.15 250), oklch(0.68 0.17 250))
+    );
+    --_tabs-bg: var(--markdown-tabs-bg, transparent);
+    --_tabs-border: var(
+      --markdown-tabs-border,
+      light-dark(oklch(0.88 0.01 250), oklch(0.3 0.03 250))
+    );
+    --_tabs-label-color: var(--markdown-tabs-label-color, inherit);
+    --_tabs-label-hover-color: var(--markdown-tabs-label-hover-color, inherit);
+    --_tabs-label-active-color: var(--markdown-tabs-label-active-color, var(--_tabs-accent));
+    --_tabs-radius: var(--markdown-tabs-radius, 0.375rem);
+    --_tabs-strip-bg: var(--markdown-tabs-strip-bg, transparent);
+
+    margin-block: 1rem;
+    border: 1px solid var(--_tabs-border);
+    border-radius: var(--_tabs-radius);
+    background: var(--_tabs-bg);
+    overflow: hidden;
+  }
+
+  /* ── Label strip ────────────────────────────────────────────────────────── */
+
+  .markdown-tabs-labels {
+    position: relative;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: var(--_tabs-strip-bg);
+    box-shadow: inset 0 -1px var(--_tabs-border);
+  }
+
+  /* Hide radio inputs without removing them from the DOM (needed for :has()) */
+  .markdown-tabs-labels input[type="radio"] {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Tab labels ─────────────────────────────────────────────────────────── */
+
+  label.markdown-tabs-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    line-height: 3rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--_tabs-label-color);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.25s ease;
+
+    &:hover {
+      color: var(--_tabs-label-hover-color);
+    }
+
+    /* Active indicator bar (pseudo-element on each label) */
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0.5rem;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 2px;
+      background-color: transparent;
+      transition: background-color 0.25s ease;
+    }
+  }
+
+  /* ── Active tab — driven by :has() on the container ────────────────────── */
+  /*
+    For each position N (1–12), when the Nth radio is checked, style the Nth
+    label as active and show the Nth panel. Supports up to 12 tabs per group.
+  */
+
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(1):checked) {
+    & label.markdown-tabs-label:nth-of-type(1) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(1) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(2):checked) {
+    & label.markdown-tabs-label:nth-of-type(2) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(2) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(3):checked) {
+    & label.markdown-tabs-label:nth-of-type(3) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(3) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(4):checked) {
+    & label.markdown-tabs-label:nth-of-type(4) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(4) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(5):checked) {
+    & label.markdown-tabs-label:nth-of-type(5) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(5) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(6):checked) {
+    & label.markdown-tabs-label:nth-of-type(6) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(6) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(7):checked) {
+    & label.markdown-tabs-label:nth-of-type(7) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(7) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(8):checked) {
+    & label.markdown-tabs-label:nth-of-type(8) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(8) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(9):checked) {
+    & label.markdown-tabs-label:nth-of-type(9) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(9) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(10):checked) {
+    & label.markdown-tabs-label:nth-of-type(10) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(10) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(11):checked) {
+    & label.markdown-tabs-label:nth-of-type(11) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(11) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(12):checked) {
+    & label.markdown-tabs-label:nth-of-type(12) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & .markdown-tabs-panel:nth-of-type(12) {
+      display: block;
+    }
+  }
+
+  /* ── Panels ─────────────────────────────────────────────────────────────── */
+
+  .markdown-tabs-panels {
+    border-block-start: 1px solid var(--_tabs-border);
+  }
+
+  .markdown-tabs-panel {
+    display: none;
+    padding: 1.25rem 1.5rem;
+
+    > :first-child {
+      margin-block-start: 0;
+    }
+    > :last-child {
+      margin-block-end: 0;
+    }
+  }
+
+  /* ── Nested tab groups ──────────────────────────────────────────────────── */
+
+  .markdown-tabs-panel > .markdown-tabs {
+    margin-block: 0;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    label.markdown-tabs-label {
+      transition: none;
+      &::after {
+        transition: none;
+      }
+    }
+  }
+}

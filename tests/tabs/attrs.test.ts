@@ -27,39 +27,39 @@ const remd = (src: string) =>
     ),
   );
 
-describe("tabs + attrs: class on tab label applies to <details>", () => {
-  // "% Tab One {.active}" → <details class="markdown-tabs-item active">
+describe("tabs + attrs: class on tab label applies to <label>", () => {
+  // "% Tab One {.active}" → <label class="markdown-tabs-label active" ...>
   const input = "% Tab One {.active}\n> Content for tab one.\n% Tab Two\n> Content for tab two.";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
-    expect(result).toContain('class="markdown-tabs-item active"');
-    expect(result).toContain('class="markdown-tabs-item"');
+    expect(result).toContain('class="markdown-tabs-label active"');
+    expect(result).toContain('class="markdown-tabs-label"');
     expect(result).not.toContain("{.active}");
   });
 
   test("remark", () => {
     const result = remd(input);
-    expect(result).toContain('class="markdown-tabs-item active"');
-    expect(result).toContain('class="markdown-tabs-item"');
+    expect(result).toContain('class="markdown-tabs-label active"');
+    expect(result).toContain('class="markdown-tabs-label"');
     expect(result).not.toContain("{.active}");
   });
 });
 
-describe("tabs + attrs: id on tab label applies to <details>", () => {
+describe("tabs + attrs: id on tab label applies to <label>", () => {
   const input = "% Tab One {#first-tab}\n> Content for tab one.\n% Tab Two\n> Content for tab two.";
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('id="first-tab"');
-    expect(result).toContain('class="markdown-tabs-item"');
+    expect(result).toContain('class="markdown-tabs-label"');
     expect(result).not.toContain("{#first-tab}");
   });
 
   test("remark", () => {
     const result = remd(input);
     expect(result).toContain('id="first-tab"');
-    expect(result).toContain('class="markdown-tabs-item"');
+    expect(result).toContain('class="markdown-tabs-label"');
     expect(result).not.toContain("{#first-tab}");
   });
 });
@@ -143,16 +143,16 @@ describe("tabs + attrs: multiple tab labels each with attrs", () => {
 
   test("markdown-it", () => {
     const result = normalizeHtml(md.render(input));
-    expect(result).toContain('class="markdown-tabs-item complete"');
-    expect(result).toContain('class="markdown-tabs-item active"');
+    expect(result).toContain('class="markdown-tabs-label complete"');
+    expect(result).toContain('class="markdown-tabs-label active"');
     expect(result).not.toContain("{.complete}");
     expect(result).not.toContain("{.active}");
   });
 
   test("remark", () => {
     const result = remd(input);
-    expect(result).toContain('class="markdown-tabs-item complete"');
-    expect(result).toContain('class="markdown-tabs-item active"');
+    expect(result).toContain('class="markdown-tabs-label complete"');
+    expect(result).toContain('class="markdown-tabs-label active"');
     expect(result).not.toContain("{.complete}");
     expect(result).not.toContain("{.active}");
   });
