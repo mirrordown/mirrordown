@@ -1,0 +1,64 @@
+@import "./reset.css";
+@import "./theme.css";
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    color: var(--color-fg);
+    background-color: var(--color-bg);
+    scroll-padding-top: calc(var(--nav-height) + 1rem);
+  }
+
+  body {
+    display: grid;
+    grid-template-rows: var(--nav-height) 1fr;
+    min-height: 100dvh;
+  }
+
+  /* ── App shell grid ──────────────────────────────────────────── */
+
+  .app-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
+    grid-template-areas: "sidebar content toc";
+    align-items: start;
+    min-height: 0;
+  }
+
+  .app-sidebar {
+    grid-area: sidebar;
+    position: sticky;
+    top: var(--nav-height);
+    height: calc(100dvh - var(--nav-height));
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+    background-color: var(--color-sidebar-bg);
+  }
+
+  .app-content {
+    grid-area: content;
+    min-width: 0;
+    padding-inline: 2rem;
+    padding-block: 2rem 4rem;
+  }
+
+  .app-toc {
+    grid-area: toc;
+    position: sticky;
+    top: var(--nav-height);
+    height: calc(100dvh - var(--nav-height));
+    overflow-y: auto;
+    padding-inline: 1rem;
+    padding-block: 1.5rem;
+    border-left: 1px solid var(--color-border);
+  }
+
+  /* ── Focus visibility ────────────────────────────────────────── */
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}

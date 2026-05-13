@@ -1,17 +1,108 @@
 ---
+import { getCollection } from "astro:content";
+import Root from "../layouts/Root.astro";
 
+const plugins = await getCollection("plugins");
+plugins.sort((a, b) => a.id.localeCompare(b.id));
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<style>
+  .hero {
+    padding-block: 4rem;
+    text-align: center;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+
+  h1 {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    margin-block-end: 1rem;
+
+    span {
+      color: var(--color-accent);
+    }
+  }
+
+  .tagline {
+    font-size: var(--text-lg);
+    color: var(--color-fg-muted);
+    margin-block-end: 2.5rem;
+    line-height: 1.6;
+  }
+
+  .plugin-grid {
+    padding: 2rem 1.5rem 4rem;
+    max-width: calc(var(--content-max-width) + var(--sidebar-width) + var(--toc-width) + 4rem);
+    margin-inline: auto;
+  }
+
+  .grid-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-fg-muted);
+    margin-block-end: 1rem;
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  a {
+    display: block;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-elevated);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .plugin-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-fg);
+      margin-block-end: 0.25rem;
+    }
+
+    .plugin-desc {
+      font-size: var(--text-xs);
+      color: var(--color-fg-muted);
+      line-height: 1.4;
+    }
+  }
+</style>
+
+<Root title="Home">
+  <div class="hero">
+    <h1>@saeris/<span>markdown</span></h1>
+    <p class="tagline">
+      A collection of markdown syntax extensions for VSCode and the unified/markdown-it ecosystems.
+    </p>
+  </div>
+
+  <div class="plugin-grid">
+    <p class="grid-title">Plugins</p>
+    <ul>
+      {
+        plugins.map((plugin) => (
+          <li>
+            <a href={`/plugins/${plugin.id}/`}>
+              <p class="plugin-name">{plugin.data.title}</p>
+              {plugin.data.description && (
+                <p class="plugin-desc">{plugin.data.description}</p>
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Root>

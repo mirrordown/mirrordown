@@ -8,9 +8,27 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@saeris/remd-attrs": "workspace:*",
+    "@saeris/remd-definition-list": "workspace:*",
+    "@saeris/remd-del": "workspace:*",
+    "@saeris/remd-github-alerts": "workspace:*",
+    "@saeris/remd-inline-svg": "workspace:*",
+    "@saeris/remd-ins": "workspace:*",
+    "@saeris/remd-kbd": "workspace:*",
+    "@saeris/remd-mark": "workspace:*",
+    "@saeris/remd-ruby": "workspace:*",
+    "@saeris/remd-steps": "workspace:*",
+    "@saeris/remd-sub": "workspace:*",
+    "@saeris/remd-sup": "workspace:*",
+    "@saeris/remd-tabs": "workspace:*",
+    "@saeris/remd-unwrap-images": "workspace:*",
     "astro": "^7.0.0-alpha.0"
   },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
+  },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24.0.0"
   }
 }

@@ -20,15 +20,15 @@ The second goal is why content lives in `public/` as raw `.md` files: appending 
 
 ### 2.1 Toolchain
 
-| Concern       | Tool                               |
-| ------------- | ---------------------------------- |
-| Framework     | Astro (existing scaffold in docs/) |
-| Build         | `vp exec astro build` via Vite+    |
-| Dev server    | `vp exec astro dev`                |
-| Styling       | Vanilla CSS, `@layer`, CSS custom properties |
-| JS            | Minimal — progressive enhancement only |
-| Content       | Markdown files in `public/`        |
-| MD rendering  | Astro's built-in MD pipeline + our `remd-*` plugins |
+| Concern      | Tool                                                |
+| ------------ | --------------------------------------------------- |
+| Framework    | Astro (existing scaffold in docs/)                  |
+| Build        | `vp exec astro build` via Vite+                     |
+| Dev server   | `vp exec astro dev`                                 |
+| Styling      | Vanilla CSS, `@layer`, CSS custom properties        |
+| JS           | Minimal — progressive enhancement only              |
+| Content      | Markdown files in `public/`                         |
+| MD rendering | Astro's built-in MD pipeline + our `remd-*` plugins |
 
 The workspace entry is `docs/` (a single workspace package, not a glob). Run all commands from the repo root via `vp run` or from `docs/` directly.
 
@@ -136,6 +136,7 @@ Primary reference: **Vite+ docs layout** — fixed topnav + left sidebar + main 
 ```
 
 **Column widths (initial desktop):**
+
 - Sidebar: ~240px, fixed
 - Main content: max prose width ~720px, centered in remaining space
 - TOC: ~200px, fixed right
@@ -149,23 +150,28 @@ CSS custom properties drive all colors. `color-scheme` and `light-dark()` handle
   color-scheme: light dark; /* OS default */
 }
 
-[data-theme="light"] { color-scheme: light; }
-[data-theme="dark"]  { color-scheme: dark; }
+[data-theme="light"] {
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+}
 ```
 
 Token example:
 
 ```css
 :root {
-  --color-bg:      light-dark(oklch(0.98 0.005 250), oklch(0.12 0.01 250));
-  --color-fg:      light-dark(oklch(0.15 0.01 250), oklch(0.92 0.005 250));
-  --color-accent:  light-dark(oklch(0.55 0.18 250), oklch(0.70 0.18 250));
-  --color-border:  light-dark(oklch(0.88 0.01 250), oklch(0.25 0.02 250));
-  --color-sidebar: light-dark(oklch(0.96 0.005 250), oklch(0.10 0.01 250));
+  --color-bg: light-dark(oklch(0.98 0.005 250), oklch(0.12 0.01 250));
+  --color-fg: light-dark(oklch(0.15 0.01 250), oklch(0.92 0.005 250));
+  --color-accent: light-dark(oklch(0.55 0.18 250), oklch(0.7 0.18 250));
+  --color-border: light-dark(oklch(0.88 0.01 250), oklch(0.25 0.02 250));
+  --color-sidebar: light-dark(oklch(0.96 0.005 250), oklch(0.1 0.01 250));
 }
 ```
 
 Theme toggle behavior (JS progressive enhancement, matching guide-to-japanese pattern):
+
 - No JS: `prefers-color-scheme` controls color via `color-scheme: light dark` on `:root`
 - With JS: `<Theme>` script fires on load, reads `localStorage`, sets `data-theme` and `color-scheme` inline on `<html>` before first paint (prevents FOUC)
 - Toggle cycles: system → dark → light → system
@@ -192,22 +198,22 @@ Standard page sections:
 
 Pages added in order of plugin maturity. Start with plugins that have complete test coverage:
 
-| Page slug       | Plugin              | Status at scaffold time |
-| --------------- | ------------------- | ----------------------- |
-| `/plugins/del`  | del                 | Complete                |
-| `/plugins/ins`  | ins                 | Complete                |
-| `/plugins/mark` | mark                | Complete                |
-| `/plugins/kbd`  | kbd                 | Complete                |
-| `/plugins/sub`  | sub                 | Complete                |
-| `/plugins/sup`  | sup                 | Complete                |
-| `/plugins/abbr` | abbr                | Complete                |
-| `/plugins/ruby` | ruby                | Complete                |
-| `/plugins/definition-list` | definition-list | Complete       |
-| `/plugins/github-alerts`   | github-alerts   | Complete       |
-| `/plugins/attrs`           | attrs           | Complete       |
-| `/plugins/unwrap-images`   | unwrap-images   | Complete       |
-| `/plugins/tabs`            | tabs            | Complete       |
-| `/plugins/steps`           | steps           | Complete       |
+| Page slug                  | Plugin          | Status at scaffold time |
+| -------------------------- | --------------- | ----------------------- |
+| `/plugins/del`             | del             | Complete                |
+| `/plugins/ins`             | ins             | Complete                |
+| `/plugins/mark`            | mark            | Complete                |
+| `/plugins/kbd`             | kbd             | Complete                |
+| `/plugins/sub`             | sub             | Complete                |
+| `/plugins/sup`             | sup             | Complete                |
+| `/plugins/abbr`            | abbr            | Complete                |
+| `/plugins/ruby`            | ruby            | Complete                |
+| `/plugins/definition-list` | definition-list | Complete                |
+| `/plugins/github-alerts`   | github-alerts   | Complete                |
+| `/plugins/attrs`           | attrs           | Complete                |
+| `/plugins/unwrap-images`   | unwrap-images   | Complete                |
+| `/plugins/tabs`            | tabs            | Complete                |
+| `/plugins/steps`           | steps           | Complete                |
 
 ### 4.3 Markdown rendering pipeline
 

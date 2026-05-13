@@ -1,0 +1,56 @@
+---
+import type { MarkdownHeading } from "astro";
+import Root from "./Root.astro";
+import Sidebar from "../components/Sidebar.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+import "../styles/markdown.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  headings: MarkdownHeading[];
+}
+
+const { title, description, headings } = Astro.props as Props;
+const currentPath = new URL(Astro.request.url).pathname;
+
+const sidebarGroups = [
+  {
+    title: "Plugins",
+    items: [
+      { label: "del", href: "/plugins/del/" },
+      { label: "ins", href: "/plugins/ins/" },
+      { label: "mark", href: "/plugins/mark/" },
+      { label: "kbd", href: "/plugins/kbd/" },
+      { label: "sub", href: "/plugins/sub/" },
+      { label: "sup", href: "/plugins/sup/" },
+      { label: "abbr", href: "/plugins/abbr/" },
+      { label: "ruby", href: "/plugins/ruby/" },
+      { label: "definition-list", href: "/plugins/definition-list/" },
+      { label: "github-alerts", href: "/plugins/github-alerts/" },
+      { label: "attrs", href: "/plugins/attrs/" },
+      { label: "unwrap-images", href: "/plugins/unwrap-images/" },
+      { label: "tabs", href: "/plugins/tabs/" },
+      { label: "steps", href: "/plugins/steps/" },
+    ],
+  },
+];
+---
+
+<Root title={title} description={description}>
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <Sidebar groups={sidebarGroups} currentPath={currentPath} />
+    </aside>
+
+    <main class="app-content">
+      <article class="markdown-content">
+        <slot />
+      </article>
+    </main>
+
+    <aside class="app-toc">
+      <TableOfContents headings={headings} />
+    </aside>
+  </div>
+</Root>
