@@ -14,10 +14,7 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./styles": {
-      "development": "./src/steps.css",
-      "default": "./dist/steps.css"
-    }
+    "./*.css": "./dist/*.css"
   },
   "dependencies": {
     "unist-util-visit": "^5.1.0"

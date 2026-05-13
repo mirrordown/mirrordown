@@ -14,10 +14,7 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./styles": {
-      "development": "./src/tabs.css",
-      "default": "./dist/tabs.css"
-    }
+    "./*.css": "./dist/*.css"
   },
   "dependencies": {
     "unist-util-visit": "^5.1.0"

@@ -13,7 +13,14 @@ export default defineConfig({
       },
     },
   },
-  fmt: { ignorePatterns: ["templates/**", "tests/**/fixtures/**", "tests/**/expected/**"] },
+  fmt: {
+    ignorePatterns: [
+      "templates/**",
+      "tests/**/fixtures/**",
+      "tests/**/expected/**",
+      "docs/public/plugins/**",
+    ],
+  },
   lint: { ignorePatterns: ["templates/**"], options: { typeAware: true, typeCheck: true } },
   test: {
     root,

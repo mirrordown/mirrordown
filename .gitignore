@@ -22,6 +22,10 @@ node_modules
 # Claude
 .claude/
 
+# Debug / browser automation artifacts
+.playwright-mcp/
+.debug/
+
 # Environment
 .env
 .env.local

@@ -4,7 +4,10 @@ description: Adds strikethrough/delete syntax using --double dashes--.
 ---
 
 <style>
-  @import url("../../../src/styles/markdown.css");
+  @import url("../../markdown.css");
+  @import url("../../tabs.css");
+  @import url("../../github-alerts.css");
+  @import url("../../steps.css");
 </style>
 
 ## Overview
@@ -26,7 +29,6 @@ You can use it inline: the price was --$50-- $35.
 ## Usage
 
 % remd
-
 > Install `@saeris/remd-del` and add it to your remark pipeline:
 >
 > ```sh
@@ -46,9 +48,7 @@ You can use it inline: the price was --$50-- $35.
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
-
 % mdit
-
 > Install `@saeris/mdit-del` and register it with your markdown-it instance:
 >
 > ```sh

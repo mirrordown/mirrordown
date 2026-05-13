@@ -22,6 +22,7 @@ const currentPath = new URL(Astro.request.url).pathname;
     {description && <meta name="description" content={description} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <slot name="head" />
     <Theme />
   </head>
   <body>

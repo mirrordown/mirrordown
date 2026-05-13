@@ -3,7 +3,9 @@ import type { MarkdownHeading } from "astro";
 import Root from "./Root.astro";
 import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
-import "../styles/markdown.css";
+import "@saeris/remd-tabs/tabs.css";
+import "@saeris/remd-github-alerts/github-alerts.css";
+import "@saeris/remd-steps/steps.css";
 
 interface Props {
   title: string;
@@ -38,6 +40,7 @@ const sidebarGroups = [
 ---
 
 <Root title={title} description={description}>
+  <link slot="head" rel="stylesheet" href="/markdown.css" />
   <div class="app-shell">
     <aside class="app-sidebar">
       <Sidebar groups={sidebarGroups} currentPath={currentPath} />

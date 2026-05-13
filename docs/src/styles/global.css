@@ -1,3 +1,5 @@
+@layer reset, base, markdown-tabs, markdown-alerts, markdown-steps;
+
 @import "./reset.css";
 @import "./theme.css";
 
@@ -12,8 +14,9 @@
 
   body {
     display: grid;
-    grid-template-rows: var(--nav-height) 1fr;
+    grid-template-columns: 1fr;
     min-height: 100dvh;
+    padding-top: var(--nav-height);
   }
 
   /* ── App shell grid ──────────────────────────────────────────── */

@@ -18,6 +18,7 @@ import { rehypeUnwrapImages } from "@saeris/remd-unwrap-images";
 export default defineConfig({
   integrations: [],
   markdown: {
+    smartypants: false,
     remarkPlugins: [
       remarkAbbr,
       remarkAttrs,

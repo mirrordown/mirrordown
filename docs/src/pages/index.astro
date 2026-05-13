@@ -31,6 +31,10 @@ plugins.sort((a, b) => a.id.localeCompare(b.id));
     line-height: 1.6;
   }
 
+  .page-content {
+    min-width: 0;
+  }
+
   .plugin-grid {
     padding: 2rem 1.5rem 4rem;
     max-width: calc(var(--content-max-width) + var(--sidebar-width) + var(--toc-width) + 4rem);
@@ -81,28 +85,30 @@ plugins.sort((a, b) => a.id.localeCompare(b.id));
 </style>
 
 <Root title="Home">
-  <div class="hero">
-    <h1>@saeris/<span>markdown</span></h1>
-    <p class="tagline">
-      A collection of markdown syntax extensions for VSCode and the unified/markdown-it ecosystems.
-    </p>
-  </div>
+  <div class="page-content">
+    <div class="hero">
+      <h1>@saeris/<span>markdown</span></h1>
+      <p class="tagline">
+        A collection of markdown syntax extensions for VSCode and the unified/markdown-it ecosystems.
+      </p>
+    </div>
 
-  <div class="plugin-grid">
-    <p class="grid-title">Plugins</p>
-    <ul>
-      {
-        plugins.map((plugin) => (
-          <li>
-            <a href={`/plugins/${plugin.id}/`}>
-              <p class="plugin-name">{plugin.data.title}</p>
-              {plugin.data.description && (
-                <p class="plugin-desc">{plugin.data.description}</p>
-              )}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="plugin-grid">
+      <p class="grid-title">Plugins</p>
+      <ul>
+        {
+          plugins.map((plugin) => (
+            <li>
+              <a href={`/plugins/${plugin.id}/`}>
+                <p class="plugin-name">{plugin.data.title}</p>
+                {plugin.data.description && (
+                  <p class="plugin-desc">{plugin.data.description}</p>
+                )}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
   </div>
 </Root>
