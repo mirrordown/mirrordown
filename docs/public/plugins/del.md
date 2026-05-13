@@ -4,10 +4,7 @@ description: Adds strikethrough/delete syntax using --double dashes--.
 ---
 
 <style>
-  @import url("../../markdown.css");
-  @import url("../../tabs.css");
-  @import url("../../github-alerts.css");
-  @import url("../../steps.css");
+  @import url("../markdown.css");
 </style>
 
 ## Overview
@@ -28,13 +25,12 @@ You can use it inline: the price was --$50-- $35.
 
 ## Usage
 
-% remd
-> Install `@saeris/remd-del` and add it to your remark pipeline:
->
+% Remark
 > ```sh
 > npm install @saeris/remd-del
 > ```
 >
+%% Unified
 > ```ts
 > import { unified } from "unified";
 > import remarkParse from "remark-parse";
@@ -48,16 +44,51 @@ You can use it inline: the price was --$50-- $35.
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
-% mdit
-> Install `@saeris/mdit-del` and register it with your markdown-it instance:
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { remarkDel } from "@saeris/remd-del";
 >
+> export default defineConfig({
+>   markdown: {
+>     remarkPlugins: [remarkDel],
+>   },
+> });
+> ```
+%% VitePress
+> ```ts
+> // .vitepress/config.ts
+> import { defineConfig } from "vitepress";
+> import { remarkDel } from "@saeris/remd-del";
+>
+> export default defineConfig({
+>   markdown: {
+>     remarkPlugins: [remarkDel],
+>   },
+> });
+> ```
+% Markdown-It
 > ```sh
 > npm install @saeris/mdit-del
 > ```
 >
+%% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
 > import { del } from "@saeris/mdit-del";
 >
 > const md = new MarkdownIt().use(del);
+> ```
+%% VitePress
+> ```ts
+> // .vitepress/config.ts
+> import { defineConfig } from "vitepress";
+> import { del } from "@saeris/mdit-del";
+>
+> export default defineConfig({
+>   markdown: {
+>     config: (md) => md.use(del),
+>   },
+> });
 > ```

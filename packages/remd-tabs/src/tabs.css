@@ -37,6 +37,10 @@
     --_tabs-label-active-color: var(--markdown-tabs-label-active-color, var(--_tabs-accent));
     --_tabs-radius: var(--markdown-tabs-radius, 0.375rem);
     --_tabs-strip-bg: var(--markdown-tabs-strip-bg, transparent);
+    --_tabs-hover-bg: var(
+      --markdown-tabs-hover-bg,
+      light-dark(oklch(0.88 0.04 250 / 0.8), oklch(0.32 0.05 250 / 0.7))
+    );
 
     margin-block: 1rem;
     border: 1px solid var(--_tabs-border);
@@ -97,6 +101,52 @@
     }
   }
 
+  /* ── Follow-the-leader hover pill (CSS Anchor Positioning) ──────────────── */
+  /*
+    Requires: Chrome 125+, Edge 125+, Firefox 147+, Safari 26+.
+    Falls back to bare color change on hover in older browsers (no @supports guard
+    needed — anchor-name is simply ignored by non-supporting engines).
+
+    Each label registers itself as --tabs-hover when hovered. anchor-scope on the
+    strip limits visibility to that strip so multiple tab groups on the same page
+    don't interfere with each other. The ::before pill on the strip follows the
+    active anchor with position:absolute + anchor() coordinates.
+  */
+
+  @supports (anchor-name: --x) {
+    .markdown-tabs-labels {
+      anchor-scope: --tabs-hover;
+
+      &::before {
+        content: "";
+        position: absolute;
+        position-anchor: --tabs-hover;
+        top: anchor(top);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        right: anchor(right);
+        background-color: var(--_tabs-hover-bg);
+        border-radius: var(--_tabs-radius);
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          top 0.2s ease,
+          left 0.2s ease,
+          right 0.2s ease,
+          bottom 0.2s ease,
+          opacity 0.15s ease;
+      }
+
+      &:has(label:hover)::before {
+        opacity: 1;
+      }
+    }
+
+    label.markdown-tabs-label:hover {
+      anchor-name: --tabs-hover;
+    }
+  }
+
   /* ── Panels ─────────────────────────────────────────────────────────────── */
 
   .markdown-tabs-panels {
@@ -122,135 +172,135 @@
     instead, which handles any number of tabs.
   */
 
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(1):checked) {
-    & label.markdown-tabs-label:nth-of-type(1) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(1):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(1) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(1) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(1) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(2):checked) {
-    & label.markdown-tabs-label:nth-of-type(2) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(2):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(2) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(2) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(2) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(3):checked) {
-    & label.markdown-tabs-label:nth-of-type(3) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(3):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(3) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(3) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(3) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(4):checked) {
-    & label.markdown-tabs-label:nth-of-type(4) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(4):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(4) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(4) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(4) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(5):checked) {
-    & label.markdown-tabs-label:nth-of-type(5) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(5):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(5) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(5) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(5) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(6):checked) {
-    & label.markdown-tabs-label:nth-of-type(6) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(6):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(6) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(6) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(6) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(7):checked) {
-    & label.markdown-tabs-label:nth-of-type(7) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(7):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(7) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(7) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(7) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(8):checked) {
-    & label.markdown-tabs-label:nth-of-type(8) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(8):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(8) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(8) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(8) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(9):checked) {
-    & label.markdown-tabs-label:nth-of-type(9) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(9):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(9) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(9) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(9) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(10):checked) {
-    & label.markdown-tabs-label:nth-of-type(10) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(10):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(10) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(10) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(10) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(11):checked) {
-    & label.markdown-tabs-label:nth-of-type(11) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(11):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(11) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(11) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(11) {
       display: block;
     }
   }
-  .markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(12):checked) {
-    & label.markdown-tabs-label:nth-of-type(12) {
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(12):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(12) {
       color: var(--_tabs-label-active-color);
       &::after {
         background-color: var(--_tabs-accent);
       }
     }
-    & .markdown-tabs-panel:nth-of-type(12) {
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(12) {
       display: block;
     }
   }
@@ -269,8 +319,8 @@
   */
 
   @supports (width: calc(1px * sibling-index())) {
-    label.markdown-tabs-label {
-      &:is(.markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(sibling-index()):checked) *) {
+    .markdown-tabs-labels > label.markdown-tabs-label {
+      &:is(.markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked) > .markdown-tabs-labels > *) {
         color: var(--_tabs-label-active-color);
         &::after {
           background-color: var(--_tabs-accent);
@@ -278,8 +328,8 @@
       }
     }
 
-    .markdown-tabs-panel {
-      &:is(.markdown-tabs:has(.markdown-tabs-labels input:nth-of-type(sibling-index()):checked) *) {
+    .markdown-tabs-panels > .markdown-tabs-panel {
+      &:is(.markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked) > .markdown-tabs-panels > *) {
         display: block;
       }
     }

@@ -1,9 +1,9 @@
 ---
 import { getCollection, render } from "astro:content";
-import Markdown from "../../layouts/Markdown.astro";
+import Markdown from "../layouts/Markdown.astro";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("plugins");
+  const entries = await getCollection("docs");
   return entries.map((entry) => ({
     params: { slug: entry.id },
     props: { entry },

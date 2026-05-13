@@ -1,5 +1,6 @@
 ---
 import type { MarkdownHeading } from "astro";
+import { getCollection } from "astro:content";
 import Root from "./Root.astro";
 import Sidebar from "../components/Sidebar.astro";
 import TableOfContents from "../components/TableOfContents.astro";
@@ -16,27 +17,21 @@ interface Props {
 const { title, description, headings } = Astro.props as Props;
 const currentPath = new URL(Astro.request.url).pathname;
 
-const sidebarGroups = [
-  {
-    title: "Plugins",
-    items: [
-      { label: "del", href: "/plugins/del/" },
-      { label: "ins", href: "/plugins/ins/" },
-      { label: "mark", href: "/plugins/mark/" },
-      { label: "kbd", href: "/plugins/kbd/" },
-      { label: "sub", href: "/plugins/sub/" },
-      { label: "sup", href: "/plugins/sup/" },
-      { label: "abbr", href: "/plugins/abbr/" },
-      { label: "ruby", href: "/plugins/ruby/" },
-      { label: "definition-list", href: "/plugins/definition-list/" },
-      { label: "github-alerts", href: "/plugins/github-alerts/" },
-      { label: "attrs", href: "/plugins/attrs/" },
-      { label: "unwrap-images", href: "/plugins/unwrap-images/" },
-      { label: "tabs", href: "/plugins/tabs/" },
-      { label: "steps", href: "/plugins/steps/" },
-    ],
-  },
-];
+const entries = await getCollection("docs");
+
+const groupMap = new Map<string, { label: string; href: string }[]>();
+for (const entry of entries.sort((a, b) => a.id.localeCompare(b.id))) {
+  const slash = entry.id.indexOf("/");
+  const group = slash === -1 ? "" : entry.id.slice(0, slash);
+  const items = groupMap.get(group) ?? [];
+  items.push({ label: entry.data.title, href: `/${entry.id}` });
+  groupMap.set(group, items);
+}
+
+const sidebarGroups = [...groupMap.entries()].map(([group, items]) => ({
+  title: group.charAt(0).toUpperCase() + group.slice(1),
+  items,
+}));
 ---
 
 <Root title={title} description={description}>

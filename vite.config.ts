@@ -11,6 +11,10 @@ export default defineConfig({
         command: "vp run -r build",
         cache: true,
       },
+      dev: {
+        command: "vp run --parallel --filter '@saeris/remd-*' --filter '@saeris/mdit-*' --filter '@saeris/markdown-docs' dev",
+        cache: false,
+      },
     },
   },
   fmt: {

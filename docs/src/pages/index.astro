@@ -2,8 +2,10 @@
 import { getCollection } from "astro:content";
 import Root from "../layouts/Root.astro";
 
-const plugins = await getCollection("plugins");
-plugins.sort((a, b) => a.id.localeCompare(b.id));
+const allEntries = await getCollection("docs");
+const plugins = allEntries
+  .filter((e) => e.id.startsWith("plugins/"))
+  .sort((a, b) => a.id.localeCompare(b.id));
 ---
 
 <style>
@@ -99,7 +101,7 @@ plugins.sort((a, b) => a.id.localeCompare(b.id));
         {
           plugins.map((plugin) => (
             <li>
-              <a href={`/plugins/${plugin.id}/`}>
+              <a href={`/${plugin.id}`}>
                 <p class="plugin-name">{plugin.data.title}</p>
                 {plugin.data.description && (
                   <p class="plugin-desc">{plugin.data.description}</p>
