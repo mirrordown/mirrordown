@@ -4,7 +4,10 @@ export default defineConfig({
   run: { tasks: { build: { command: "vp pack", cache: true } } },
   pack: {
     entry: "src/index.ts",
-    deps: { neverBundle: ["unified"], onlyBundle: false },
+    deps: {
+      neverBundle: ["unified", "mdast", "hast", "unist", "hast-util-whitespace"],
+      onlyBundle: false,
+    },
     dts: true,
   },
 });

@@ -11,7 +11,7 @@ export default defineConfig({
   },
   pack: {
     entry: ["src/index.ts"],
-    deps: { neverBundle: [] },
+    deps: { neverBundle: ["unified", "mdast", "hast", "unist"] },
     dts: true,
   },
 });
