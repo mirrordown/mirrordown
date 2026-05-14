@@ -320,7 +320,11 @@
 
   @supports (width: calc(1px * sibling-index())) {
     .markdown-tabs-labels > label.markdown-tabs-label {
-      &:is(.markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked) > .markdown-tabs-labels > *) {
+      &:is(
+        .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked)
+          > .markdown-tabs-labels
+          > *
+      ) {
         color: var(--_tabs-label-active-color);
         &::after {
           background-color: var(--_tabs-accent);
@@ -329,7 +333,11 @@
     }
 
     .markdown-tabs-panels > .markdown-tabs-panel {
-      &:is(.markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked) > .markdown-tabs-panels > *) {
+      &:is(
+        .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(sibling-index()):checked)
+          > .markdown-tabs-panels
+          > *
+      ) {
         display: block;
       }
     }
