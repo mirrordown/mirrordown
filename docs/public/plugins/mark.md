@@ -19,9 +19,16 @@ The `mark` plugin renders `==text==` as an HTML `<mark>` element, representing h
 
 Wrap text in double equals signs to highlight it:
 
-==This text is highlighted.==
-
-You can use it inline: remember to ==save your work== before closing.
+% Demo
+> ==This text is highlighted.==
+>
+> You can use it inline: remember to ==save your work== before closing.
+% Code
+> ````markdown
+> ==This text is highlighted.==
+>
+> You can use it inline: remember to ==save your work== before closing.
+> ````
 
 ## Usage
 

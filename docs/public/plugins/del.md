@@ -19,9 +19,16 @@ The `del` plugin renders `--text--` as an HTML `<del>` element, representing del
 
 Wrap text in double dashes to mark it as deleted:
 
---This text has been deleted.--
-
-You can use it inline: the price was --$50-- $35.
+% Demo
+> --This text has been deleted.--
+>
+> You can use it inline: the price was --$50-- $35.
+% Code
+> ````markdown
+> --This text has been deleted.--
+>
+> You can use it inline: the price was --$50-- $35.
+> ````
 
 ## Usage
 

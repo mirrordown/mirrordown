@@ -3,7 +3,7 @@ import { remarkAbbr } from "@saeris/remd-abbr";
 import { remarkAttrs } from "@saeris/remd-attrs";
 import { remarkDefinitionList, defListHastHandlers } from "@saeris/remd-definition-list";
 import { remarkDel } from "@saeris/remd-del";
-import { remarkGithubAlerts } from "@saeris/remd-github-alerts";
+import { remarkGithubAlerts, githubAlertsHastHandlers } from "@saeris/remd-github-alerts";
 import { remarkIns } from "@saeris/remd-ins";
 import { remarkKbd } from "@saeris/remd-kbd";
 import { remarkMark } from "@saeris/remd-mark";
@@ -38,6 +38,7 @@ export default defineConfig({
     remarkRehype: {
       handlers: {
         ...defListHastHandlers,
+        ...githubAlertsHastHandlers,
         ...stepsHastHandlers,
         ...tabsHastHandlers,
       },

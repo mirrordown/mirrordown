@@ -22,18 +22,34 @@ The `definition-list` plugin renders Pandoc-style definition lists as HTML `<dl>
 
 Write a term on one line, then follow it with one or more definitions prefixed by `: ` or `~ `:
 
-Apple
-: A round fruit with red or green skin.
-: Also a technology company.
-
-Orange
-: A citrus fruit with orange skin.
-
-Multiple terms can share definitions:
-
-HTTP
-HTTPS
-: Protocols for transferring data on the web.
+% Demo
+> Apple
+> : A round fruit with red or green skin.
+> : Also a technology company.
+>
+> Orange
+> : A citrus fruit with orange skin.
+>
+> Multiple terms can share definitions:
+>
+> HTTP
+> HTTPS
+> : Protocols for transferring data on the web.
+% Code
+> ````markdown
+> Apple
+> : A round fruit with red or green skin.
+> : Also a technology company.
+>
+> Orange
+> : A citrus fruit with orange skin.
+>
+> Multiple terms can share definitions:
+>
+> HTTP
+> HTTPS
+> : Protocols for transferring data on the web.
+> ````
 
 ## Usage
 

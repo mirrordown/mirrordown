@@ -19,9 +19,16 @@ The `kbd` plugin renders `[[key]]` as an HTML `<kbd>` element, representing keyb
 
 Wrap a key name in double square brackets:
 
-Press [[Enter]] to confirm.
-
-You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
+% Demo
+> Press [[Enter]] to confirm.
+>
+> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
+% Code
+> ````markdown
+> Press [[Enter]] to confirm.
+>
+> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
+> ````
 
 ## Usage
 

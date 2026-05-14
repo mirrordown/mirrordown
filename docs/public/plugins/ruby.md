@@ -19,9 +19,16 @@ The `ruby` plugin renders `{base|reading}` as HTML `<ruby>` annotations, used fo
 
 Use `{base text|reading}` inline to annotate characters with their pronunciation or reading:
 
-{漢字|かんじ} are Chinese-derived characters used in Japanese writing.
-
-{東京|とうきょう} is the capital of Japan.
+% Demo
+> {漢字|かんじ} are Chinese-derived characters used in Japanese writing.
+>
+> {東京|とうきょう} is the capital of Japan.
+% Code
+> ````markdown
+> {漢字|かんじ} are Chinese-derived characters used in Japanese writing.
+>
+> {東京|とうきょう} is the capital of Japan.
+> ````
 
 Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 

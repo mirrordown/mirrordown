@@ -22,48 +22,92 @@ The `tabs` plugin converts `%`-prefixed headers and `>`-prefixed blockquote bodi
 
 Write a `% Label` line followed by a `>` blockquote for each tab's content:
 
-% JavaScript
-> ```js
-> console.log("Hello, world!");
-> ```
-% TypeScript
-> ```ts
-> const greeting: string = "Hello, world!";
-> console.log(greeting);
-> ```
-% Python
-> ```py
-> print("Hello, world!")
-> ```
+% Demo
+> % JavaScript
+> > ```js
+> > console.log("Hello, world!");
+> > ```
+> % TypeScript
+> > ```ts
+> > const greeting: string = "Hello, world!";
+> > console.log(greeting);
+> > ```
+> % Python
+> > ```py
+> > print("Hello, world!")
+> > ```
+% Code
+> ````markdown
+> % JavaScript
+> > ```js
+> > console.log("Hello, world!");
+> > ```
+> % TypeScript
+> > ```ts
+> > const greeting: string = "Hello, world!";
+> > console.log(greeting);
+> > ```
+> % Python
+> > ```py
+> > print("Hello, world!")
+> > ```
+> ````
 
 ### Default open tab
 
 Mark a tab with `%+` to make it open by default (the first tab is open by default otherwise):
 
-% Option A
-> This tab is not selected by default.
-% Option B+
-> This tab opens by default.
-% Option C
-> This tab is not selected by default.
+% Demo
+> % Option A
+> > This tab is not selected by default.
+> % Option B+
+> > This tab opens by default.
+> % Option C
+> > This tab is not selected by default.
+% Code
+> ````markdown
+> % Option A
+> > This tab is not selected by default.
+> % Option B+
+> > This tab opens by default.
+> % Option C
+> > This tab is not selected by default.
+> ````
 
 ### Nested tabs
 
 Use `%%` for a second level of nesting inside a tab:
 
-% Frontend
-%% React
-> ```tsx
-> export function App() {
->   return <h1>Hello</h1>;
-> }
-> ```
-%% Vue
-> ```vue
-> <template><h1>Hello</h1></template>
-> ```
-% Backend
-> Node.js or any server runtime.
+% Demo
+> % Frontend
+> %% React
+> > ```tsx
+> > export function App() {
+> >   return <h1>Hello</h1>;
+> > }
+> > ```
+> %% Vue
+> > ```vue
+> > <template><h1>Hello</h1></template>
+> > ```
+> % Backend
+> > Node.js or any server runtime.
+% Code
+> ````markdown
+> % Frontend
+> %% React
+> > ```tsx
+> > export function App() {
+> >   return <h1>Hello</h1>;
+> > }
+> > ```
+> %% Vue
+> > ```vue
+> > <template><h1>Hello</h1></template>
+> > ```
+> % Backend
+> > Node.js or any server runtime.
+> ````
 
 ## Usage
 

@@ -19,9 +19,16 @@ The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing super
 
 Wrap text in single carets to render it as superscript:
 
-E = mc^2^
-
-The Pythagorean theorem: a^2^ + b^2^ = c^2^
+% Demo
+> E = mc^2^
+>
+> The Pythagorean theorem: a^2^ + b^2^ = c^2^
+% Code
+> ````markdown
+> E = mc^2^
+>
+> The Pythagorean theorem: a^2^ + b^2^ = c^2^
+> ````
 
 ## Usage
 

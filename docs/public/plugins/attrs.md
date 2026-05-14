@@ -25,28 +25,58 @@ Attributes are written in curly braces using CSS-like shorthand:
 
 ### Headings
 
-## My Section {#my-section .highlight}
+% Demo
+> ## My Section {#my-section .highlight}
+% Code
+> ````markdown
+> ## My Section {#my-section .highlight}
+> ````
 
 ### Code fences
 
-```ts {.language-typescript data-filename="example.ts"}
-const x = 1;
-```
+% Demo
+> ```ts {.language-typescript data-filename="example.ts"}
+> const x = 1;
+> ```
+% Code
+> ````markdown
+> ```ts {.language-typescript data-filename="example.ts"}
+> const x = 1;
+> ```
+> ````
 
 ### Paragraphs
 
-A paragraph with a custom class.
-{.note}
+% Demo
+> A paragraph with a custom class.
+> {.note}
+% Code
+> ````markdown
+> A paragraph with a custom class.
+> {.note}
+> ````
 
 ### Inline elements
 
-This is **important**{.warning} text.
+% Demo
+> This is **important**{.warning} text.
+% Code
+> ````markdown
+> This is **important**{.warning} text.
+> ````
 
 ### After lists and tables
 
-- Item one
-- Item two
-{.checklist}
+% Demo
+> - Item one
+> - Item two
+> {.checklist}
+% Code
+> ````markdown
+> - Item one
+> - Item two
+> {.checklist}
+> ````
 
 ## Usage
 

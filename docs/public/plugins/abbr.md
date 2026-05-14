@@ -19,10 +19,18 @@ The `abbr` plugin lets you define abbreviations once and automatically wraps eve
 
 Define abbreviations anywhere in the document using the `*[ABBR]: Full text` syntax. Definitions are removed from the output and all matching words are wrapped automatically.
 
-*[HTML]: HyperText Markup Language
-*[CSS]: Cascading Style Sheets
-
-Write HTML and CSS as normal — they are automatically expanded with tooltips.
+% Demo
+> *[HTML]: HyperText Markup Language
+> *[CSS]: Cascading Style Sheets
+>
+> Write HTML and CSS as normal — they are automatically expanded with tooltips.
+% Code
+> ````markdown
+> *[HTML]: HyperText Markup Language
+> *[CSS]: Cascading Style Sheets
+>
+> Write HTML and CSS as normal — they are automatically expanded with tooltips.
+> ````
 
 ## Usage
 

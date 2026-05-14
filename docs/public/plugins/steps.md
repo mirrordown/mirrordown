@@ -24,43 +24,82 @@ The `steps` plugin converts `@N.`-prefixed headers and `>`-prefixed blockquote b
 
 Write `@1. Title` lines followed by `>` blockquote bodies for each step:
 
-@1. Install dependencies
-> ```sh
-> npm install
-> ```
-@2. Configure your environment
-> Copy `.env.example` to `.env` and fill in your values.
-@3. Start the development server
-> ```sh
-> npm run dev
-> ```
+% Demo
+> @1. Install dependencies
+> > ```sh
+> > npm install
+> > ```
+> @2. Configure your environment
+> > Copy `.env.example` to `.env` and fill in your values.
+> @3. Start the development server
+> > ```sh
+> > npm run dev
+> > ```
+% Code
+> ````markdown
+> @1. Install dependencies
+> > ```sh
+> > npm install
+> > ```
+> @2. Configure your environment
+> > Copy `.env.example` to `.env` and fill in your values.
+> @3. Start the development server
+> > ```sh
+> > npm run dev
+> > ```
+> ````
 
 ### Step titles are optional
 
 Steps can have no title — just a body:
 
-@1.
-> First thing to do.
-@2.
-> Second thing to do.
+% Demo
+> @1.
+> > First thing to do.
+> @2.
+> > Second thing to do.
+% Code
+> ````markdown
+> @1.
+> > First thing to do.
+> @2.
+> > Second thing to do.
+> ````
 
 ### Nested steps
 
 Use `@@` to nest steps inside a parent step:
 
-@1. Set up the project
-@@1. Create a new directory
-> ```sh
-> mkdir my-project && cd my-project
-> ```
-@@2. Initialize git
-> ```sh
-> git init
-> ```
-@2. Install dependencies
-> ```sh
-> npm install
-> ```
+% Demo
+> @1. Set up the project
+> @@1. Create a new directory
+> > ```sh
+> > mkdir my-project && cd my-project
+> > ```
+> @@2. Initialize git
+> > ```sh
+> > git init
+> > ```
+> @2. Install dependencies
+> > ```sh
+> > npm install
+> > ```
+% Code
+> ````markdown
+> @1. Set up the project
+> @@1. Create a new directory
+> > ```sh
+> > mkdir my-project && cd my-project
+> > ```
+> @@2. Initialize git
+> > ```sh
+> > git init
+> > ```
+> @2. Install dependencies
+> > ```sh
+> > npm install
+> > ```
+> ````
 
 ## Usage
 

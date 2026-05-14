@@ -25,11 +25,20 @@ The `unwrap-images` plugin removes the `<p>` wrapper that Markdown adds around s
 
 Any image that stands alone on a paragraph — with no other text or inline content — is unwrapped:
 
-![An example image](https://picsum.photos/400/200)
-
-Images mixed with text are **not** unwrapped:
-
-Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
+% Demo
+> ![An example image](https://picsum.photos/400/200)
+>
+> Images mixed with text are **not** unwrapped:
+>
+> Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
+% Code
+> ````markdown
+> ![An example image](https://picsum.photos/400/200)
+>
+> Images mixed with text are **not** unwrapped:
+>
+> Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
+> ````
 
 ## Usage
 
