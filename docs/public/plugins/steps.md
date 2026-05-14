@@ -35,6 +35,7 @@ Write `@1. Title` lines followed by `>` blockquote bodies for each step:
 > > ```sh
 > > npm run dev
 > > ```
+>
 % Code
 > ````markdown
 > @1. Install dependencies
@@ -58,6 +59,7 @@ Steps can have no title — just a body:
 > > First thing to do.
 > @2.
 > > Second thing to do.
+>
 % Code
 > ````markdown
 > @1.
@@ -84,6 +86,7 @@ Use `@@` to nest steps inside a parent step:
 > > ```sh
 > > npm install
 > > ```
+>
 % Code
 > ````markdown
 > @1. Set up the project

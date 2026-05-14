@@ -1,3 +1,4 @@
+import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
 import type {
   Root,
@@ -259,87 +260,97 @@ const buildTree = (
 
 // ── Remark plugin ─────────────────────────────────────────────────────────────
 
+// Process all step groups found in a children array in-place.
+// Used at root level and recursively inside any parent node's children.
+const processStepsInChildren = (
+  children: (BlockContent | DefinitionContent | Root["children"][number])[],
+  containerClass: string,
+): void => {
+  const newChildren: typeof children = [];
+  let i = 0;
+
+  while (i < children.length) {
+    const node = children[i]!;
+
+    if (node.type === "paragraph") {
+      const counters = new Map<number, number>();
+      const headerSteps = extractHeaderPara(node as Paragraph, counters);
+
+      if (headerSteps && headerSteps.length > 0) {
+        const rawSteps: RawStep[] = [...headerSteps];
+        let j = i + 1;
+        let currentStepIdx = rawSteps.length - 1;
+        let currentDepth = rawSteps[rawSteps.length - 1]!.depth;
+
+        while (j < children.length) {
+          const sibling = children[j]!;
+
+          if (sibling.type === "blockquote") {
+            const segments = splitBlockquote(sibling as Blockquote, counters, currentDepth);
+
+            const firstSeg = segments[0];
+            if (firstSeg?.header === null) {
+              rawSteps[currentStepIdx]!.body.push(...firstSeg.body);
+            }
+
+            for (let s = 1; s < segments.length; s++) {
+              const seg = segments[s]!;
+              if (seg.header) {
+                rawSteps.push({ ...seg.header, body: seg.body });
+                currentStepIdx = rawSteps.length - 1;
+                currentDepth = seg.header.depth;
+              }
+            }
+
+            j++;
+          } else if (sibling.type === "paragraph") {
+            const prevDepth = rawSteps[rawSteps.length - 1]!.depth;
+            const contHeaders = extractHeaderPara(sibling as Paragraph, counters, false, prevDepth);
+            if (contHeaders && contHeaders.length > 0) {
+              rawSteps.push(...contHeaders);
+              currentStepIdx = rawSteps.length - 1;
+              currentDepth = rawSteps[rawSteps.length - 1]!.depth;
+              j++;
+              continue;
+            }
+            break;
+          } else {
+            break;
+          }
+        }
+
+        const list = buildTree(rawSteps, 1, 0, rawSteps.length);
+        list.containerClass = containerClass;
+        newChildren.push(list as unknown as Root["children"][number]);
+        i = j;
+        continue;
+      }
+    }
+
+    newChildren.push(node);
+    i++;
+  }
+
+  children.splice(0, children.length, ...newChildren);
+};
+
 export const remarkSteps: Plugin<[StepsOptions?], Root> = function (options = {}) {
   const { containerClass = "markdown-steps" } = options;
 
   return (tree) => {
-    const newChildren: Root["children"] = [];
-    let i = 0;
+    // Process steps at root level first
+    processStepsInChildren(tree.children, containerClass);
 
-    while (i < tree.children.length) {
-      const node = tree.children[i]!;
-
-      if (node.type === "paragraph") {
-        const counters = new Map<number, number>();
-        const headerSteps = extractHeaderPara(node as Paragraph, counters);
-
-        if (headerSteps && headerSteps.length > 0) {
-          // Consume alternating paragraph(headers) + blockquote(body) pairs.
-          // counters is already populated by extractHeaderPara above.
-
-          const rawSteps: RawStep[] = [...headerSteps];
-          let j = i + 1;
-          let currentTabIdx = rawSteps.length - 1;
-          let currentDepth = rawSteps[rawSteps.length - 1]!.depth;
-
-          while (j < tree.children.length) {
-            const sibling = tree.children[j]!;
-
-            if (sibling.type === "blockquote") {
-              const segments = splitBlockquote(sibling as Blockquote, counters, currentDepth);
-
-              // segments[0] has header=null — its body goes to currentTabIdx
-              const firstSeg = segments[0];
-              if (firstSeg?.header === null) {
-                rawSteps[currentTabIdx]!.body.push(...firstSeg.body);
-              }
-
-              // Remaining segments introduce new steps
-              for (let s = 1; s < segments.length; s++) {
-                const seg = segments[s]!;
-                if (seg.header) {
-                  rawSteps.push({ ...seg.header, body: seg.body });
-                  currentTabIdx = rawSteps.length - 1;
-                  currentDepth = seg.header.depth;
-                }
-              }
-
-              j++;
-            } else if (sibling.type === "paragraph") {
-              // Check if it's a continuation header paragraph (no-body step headers)
-              const prevDepth = rawSteps[rawSteps.length - 1]!.depth;
-              const contHeaders = extractHeaderPara(
-                sibling as Paragraph,
-                counters,
-                false,
-                prevDepth,
-              );
-              if (contHeaders && contHeaders.length > 0) {
-                rawSteps.push(...contHeaders);
-                currentTabIdx = rawSteps.length - 1;
-                currentDepth = rawSteps[rawSteps.length - 1]!.depth;
-                j++;
-                continue;
-              }
-              break;
-            } else {
-              break;
-            }
-          }
-
-          const list = buildTree(rawSteps, 1, 0, rawSteps.length);
-          list.containerClass = containerClass;
-          newChildren.push(list as unknown as Root["children"][number]);
-          i = j;
-          continue;
+    // Then visit every parent node whose children may contain step syntax —
+    // this handles steps nested inside tab bodies or other block containers.
+    visit(tree, (node) => {
+      if ("children" in node && node.type !== "root") {
+        const parent = node as { children: (BlockContent | DefinitionContent)[] };
+        if (parent.children.length > 0) {
+          processStepsInChildren(parent.children, containerClass);
         }
       }
-
-      newChildren.push(node);
-      i++;
-    }
-
-    tree.children = newChildren;
+    });
   };
 };
 

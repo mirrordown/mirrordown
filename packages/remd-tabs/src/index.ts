@@ -1,3 +1,4 @@
+import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
 import type {
   Root,
@@ -281,109 +282,112 @@ const buildTree = (
 
 // ── Remark plugin ─────────────────────────────────────────────────────────────
 
+// Process all tab groups found in a children array in-place.
+// Used at root level and recursively inside any parent node's children.
+// checkBlankLines: when false, skip the line-gap termination check (for nested contexts
+// where blank lines inside blockquotes produce position gaps but are still part of the group).
+const processTabsInChildren = (
+  children: (BlockContent | DefinitionContent | RootContent)[],
+  containerClass: string,
+  checkBlankLines = true,
+): void => {
+  const newChildren: typeof children = [];
+  let i = 0;
+
+  while (i < children.length) {
+    const node = children[i]!;
+
+    if (node.type === "paragraph") {
+      const headerTabs = extractHeaderPara(node as Paragraph);
+
+      if (headerTabs && headerTabs.length > 0) {
+        const rawTabs: RawTab[] = [...headerTabs];
+        const startLine = (node.position?.start.line ?? 1) - 1;
+        let j = i + 1;
+        let currentTabIdx = rawTabs.length - 1;
+        let prevEndLine = node.position?.end.line ?? 0;
+
+        while (j < children.length) {
+          const sibling = children[j]!;
+          const siblingStartLine =
+            (sibling as { position?: { start: { line: number } } }).position?.start.line ??
+            prevEndLine + 1;
+
+          if (checkBlankLines && siblingStartLine > prevEndLine + 1) break;
+
+          if (sibling.type === "blockquote") {
+            const segments = splitBlockquote(sibling as Blockquote);
+
+            const firstSeg = segments[0];
+            if (firstSeg?.header === null) {
+              rawTabs[currentTabIdx]!.body.push(...firstSeg.body);
+            }
+
+            for (let s = 1; s < segments.length; s++) {
+              const seg = segments[s]!;
+              if (seg.header) {
+                const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
+                if (seg.header.depth <= prevDepth + 1) {
+                  seg.header.body.push(...seg.body);
+                  rawTabs.push(seg.header);
+                  currentTabIdx = rawTabs.length - 1;
+                }
+              }
+            }
+
+            prevEndLine = sibling.position?.end.line ?? prevEndLine;
+            j++;
+          } else if (sibling.type === "paragraph") {
+            const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
+            const contHeaders = extractHeaderPara(sibling as Paragraph, false, prevDepth);
+            if (contHeaders && contHeaders.length > 0) {
+              rawTabs.push(...contHeaders);
+              currentTabIdx = rawTabs.length - 1;
+              prevEndLine = sibling.position?.end.line ?? prevEndLine;
+              j++;
+              continue;
+            }
+            break;
+          } else {
+            break;
+          }
+        }
+
+        const list = buildTree(rawTabs, 1, 0, rawTabs.length, containerClass, startLine);
+        list.containerClass = containerClass;
+        newChildren.push(list as unknown as RootContent);
+        i = j;
+        continue;
+      }
+    }
+
+    newChildren.push(node);
+    i++;
+  }
+
+  children.splice(0, children.length, ...newChildren);
+};
+
 export const remarkTabs: Plugin<[TabsOptions?], Root> = function (options = {}) {
   const { containerClass = "markdown-tabs" } = options;
 
   return (tree) => {
-    const newChildren: Root["children"] = [];
-    let i = 0;
+    // Process tabs at root level first
+    processTabsInChildren(tree.children, containerClass);
 
-    while (i < tree.children.length) {
-      const node = tree.children[i]!;
-
-      // Look for a paragraph that consists entirely of % tab headers
-      if (node.type === "paragraph") {
-        const headerTabs = extractHeaderPara(node as Paragraph);
-
-        if (headerTabs && headerTabs.length > 0) {
-          // We have a header paragraph. Now consume alternating
-          // paragraph(headers) + blockquote(body) pairs as one tab group.
-          //
-          // Two AST patterns can occur:
-          //   A) paragraph("% A\n% B") + blockquote(mixed body+headers)
-          //      — remark folds adjacent non-blank lines into the blockquote
-          //   B) paragraph("% A") + blockquote(body) + paragraph("% B") + blockquote(body)
-          //      — each tab's body is a clean blockquote (e.g. fenced code blocks)
-          //
-          // We handle both by:
-          //   1. Building rawTabs from the header paragraph
-          //   2. Consuming the next blockquote (splitting it for embedded headers)
-          //   3. If after the blockquote there's another header paragraph, merge it
-          //      into the same group and repeat from step 2
-
-          const rawTabs: RawTab[] = [...headerTabs];
-          const startLine = (node.position?.start.line ?? 1) - 1;
-          let j = i + 1;
-
-          // Track which rawTab index is "current" (to assign next blockquote to)
-          let currentTabIdx = rawTabs.length - 1;
-          // Track the end line of the last consumed sibling for blank-line detection
-          let prevEndLine = node.position?.end.line ?? 0;
-
-          while (j < tree.children.length) {
-            const sibling = tree.children[j]!;
-            const siblingStartLine =
-              (sibling as { position?: { start: { line: number } } }).position?.start.line ??
-              prevEndLine + 1;
-
-            // A blank line between siblings (gap > 1) terminates the group
-            if (siblingStartLine > prevEndLine + 1) break;
-
-            if (sibling.type === "blockquote") {
-              // Split blockquote for any embedded % headers
-              const segments = splitBlockquote(sibling as Blockquote);
-
-              // segments[0] has header=null — its body goes to currentTabIdx
-              const firstSeg = segments[0];
-              if (firstSeg?.header === null) {
-                rawTabs[currentTabIdx]!.body.push(...firstSeg.body);
-              }
-
-              // Remaining segments each introduce a new tab
-              for (let s = 1; s < segments.length; s++) {
-                const seg = segments[s]!;
-                if (seg.header) {
-                  const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
-                  if (seg.header.depth <= prevDepth + 1) {
-                    seg.header.body.push(...seg.body);
-                    rawTabs.push(seg.header);
-                    currentTabIdx = rawTabs.length - 1;
-                  }
-                }
-              }
-
-              prevEndLine = sibling.position?.end.line ?? prevEndLine;
-              j++;
-            } else if (sibling.type === "paragraph") {
-              // Check if it's a continuation header paragraph
-              const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
-              const contHeaders = extractHeaderPara(sibling as Paragraph, false, prevDepth);
-              if (contHeaders && contHeaders.length > 0) {
-                rawTabs.push(...contHeaders);
-                currentTabIdx = rawTabs.length - 1;
-                prevEndLine = sibling.position?.end.line ?? prevEndLine;
-                j++;
-                continue;
-              }
-              break;
-            } else {
-              break;
-            }
-          }
-
-          const list = buildTree(rawTabs, 1, 0, rawTabs.length, containerClass, startLine);
-          list.containerClass = containerClass;
-          newChildren.push(list as unknown as RootContent);
-          i = j;
-          continue;
+    // Then visit every parent node whose children may contain tab syntax —
+    // this handles tabs nested inside step bodies or other block containers.
+    // Blank-line position checks are disabled for nested content: blank lines
+    // inside a blockquote produce position gaps that would incorrectly terminate
+    // a tab group when the content has been lifted out of its blockquote context.
+    visit(tree, (node) => {
+      if ("children" in node && node.type !== "root") {
+        const parent = node as { children: (BlockContent | DefinitionContent)[] };
+        if (parent.children.length > 0) {
+          processTabsInChildren(parent.children, containerClass, false);
         }
       }
-
-      newChildren.push(node);
-      i++;
-    }
-
-    tree.children = newChildren;
+    });
   };
 };
 
