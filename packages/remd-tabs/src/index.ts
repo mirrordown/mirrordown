@@ -139,13 +139,85 @@ const isExplicitBQ = (bq: Blockquote): boolean =>
     return first?.type === "text" && parseTabHeader(first.value.split("\n")[0]!) !== null;
   });
 
+// Walk to the deepest last child of a node and return its paragraph if it
+// has a trailing tab header line, along with the truncated paragraph and the
+// extracted RawTab header. Returns null if no trailing tab header is found.
+// This handles cases where remark plugins (e.g. remarkDefinitionList) transform
+// absorbed paragraphs into custom nodes — the trailing "% Code" line ends up
+// inside a nested paragraph rather than at the blockquote's top level.
+const extractTrailingTabHeader = (
+  node: BlockContent | DefinitionContent,
+): { header: RawTab; truncatedPara: Paragraph | null; path: (BlockContent | DefinitionContent)[] } | null => {
+  // Walk to the deepest last child that is a paragraph
+  const path: (BlockContent | DefinitionContent)[] = [];
+  let current: BlockContent | DefinitionContent = node;
+  while ("children" in current && current.children.length > 0) {
+    const last = current.children[current.children.length - 1] as BlockContent | DefinitionContent;
+    if (last.type === "paragraph") {
+      path.push(current);
+      // Check if this paragraph's last line is a tab header
+      const para = last as Paragraph;
+      const lines = paraToLines(para);
+      const lastLine = lines[lines.length - 1];
+      if (!lastLine) return null;
+      const first = lastLine[0];
+      if (first?.type !== "text") return null;
+      const header = parseTabHeader(first.value);
+      if (!header) return null;
+      const labelText = header.label;
+      const labelNodes: PhrasingContent[] = labelText
+        ? [{ type: "text", value: labelText }, ...lastLine.slice(1)]
+        : lastLine.slice(1);
+      const rawTab: RawTab = {
+        depth: header.depth,
+        open: header.open,
+        labelNodes,
+        labelText: toPlainText(labelNodes),
+        body: [],
+      };
+      // Build truncated paragraph without the last line
+      const truncatedLines = lines.slice(0, -1);
+      const truncatedPara = buildParagraph(truncatedLines);
+      return { header: rawTab, truncatedPara, path };
+    }
+    if (!("children" in last)) break;
+    path.push(current);
+    current = last;
+  }
+  return null;
+};
+
 const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
   const segments: BQSegment[] = [];
   let currentSegment: BQSegment = { header: null, body: [], explicit };
 
   for (const child of bq.children) {
     if (child.type !== "paragraph") {
-      currentSegment.body.push(child as BlockContent);
+      // For non-paragraph children (e.g. defList from remarkDefinitionList),
+      // check if the deepest last-child paragraph has a trailing tab header.
+      // Remark may have absorbed a "% NextTab" line into that nested paragraph.
+      const extracted = extractTrailingTabHeader(child as BlockContent | DefinitionContent);
+      if (extracted) {
+        // Clone the child with the trailing header line removed from its nested paragraph
+        const cloned = JSON.parse(JSON.stringify(child)) as BlockContent | DefinitionContent;
+        // Navigate to the deepest last child and replace the paragraph
+        let target: any = cloned;
+        for (let pi = 1; pi < extracted.path.length; pi++) {
+          target = target.children[target.children.length - 1];
+        }
+        const deepestParent = target;
+        if (extracted.truncatedPara) {
+          deepestParent.children[deepestParent.children.length - 1] = extracted.truncatedPara;
+        } else {
+          deepestParent.children.splice(deepestParent.children.length - 1, 1);
+        }
+        currentSegment.body.push(cloned);
+        // Start a new segment for the extracted tab header
+        segments.push(currentSegment);
+        currentSegment = { header: extracted.header, body: [], explicit };
+      } else {
+        currentSegment.body.push(child as BlockContent);
+      }
       continue;
     }
 
