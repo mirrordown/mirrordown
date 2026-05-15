@@ -60,7 +60,7 @@ Mark a tab with `%+` to make it open by default (the first tab is open by defaul
 % Demo
 > % Option A
 > > This tab is not selected by default.
-> % Option B+
+> %+ Option B
 > > This tab opens by default.
 > % Option C
 > > This tab is not selected by default.
@@ -68,7 +68,7 @@ Mark a tab with `%+` to make it open by default (the first tab is open by defaul
 > ````markdown
 > % Option A
 > > This tab is not selected by default.
-> % Option B+
+> %+ Option B
 > > This tab opens by default.
 > % Option C
 > > This tab is not selected by default.

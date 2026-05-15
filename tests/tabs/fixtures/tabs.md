@@ -184,3 +184,109 @@ const x = 1;
 
 %
 > Content here.
+
+<!-- @case: blockquote-depth nesting: > % pattern as children -->
+
+% Demo
+> % JavaScript
+> > ```js
+> > console.log("Hello");
+> > ```
+> % TypeScript
+> > ```ts
+> > const x: string = "Hello";
+> > ```
+% Code
+> ````markdown
+> % JavaScript
+> > ```js
+> > console.log("Hello");
+> > ```
+> % TypeScript
+> > ```ts
+> > const x: string = "Hello";
+> > ```
+> ````
+
+<!-- @case: blockquote-depth nesting: explicit open via %+ inside > % -->
+
+% Demo
+> % Option A
+> > ```sh
+> > echo "not default"
+> > ```
+> %+ Option B
+> > ```sh
+> > echo "default"
+> > ```
+> % Option C
+> > ```sh
+> > echo "not default either"
+> > ```
+% Code
+> ````markdown
+> % Option A
+> > ```sh
+> > echo "not default"
+> > ```
+> %+ Option B
+> > ```sh
+> > echo "default"
+> > ```
+> % Option C
+> > ```sh
+> > echo "not default either"
+> > ```
+> ````
+
+<!-- @case: > % with mixed %% depth-2 inside outer blockquote -->
+
+% Demo
+> % Frontend
+> %% React
+> > ```tsx
+> > export function App() { return <h1>Hello</h1>; }
+> > ```
+> %% Vue
+> > ```vue
+> > <template><h1>Hello</h1></template>
+> > ```
+> % Backend
+> > ```sh
+> > node server.js
+> > ```
+% Code
+> ````markdown
+> % Frontend
+> %% React
+> > ```tsx
+> > export function App() { return <h1>Hello</h1>; }
+> > ```
+> %% Vue
+> > ```vue
+> > <template><h1>Hello</h1></template>
+> > ```
+> % Backend
+> > ```sh
+> > node server.js
+> > ```
+> ````
+
+<!-- @case: flat %% nesting after % with body (usage section pattern) -->
+
+% Remark
+> Install the package.
+%% Unified
+> ```ts
+> unified();
+> ```
+%% Astro
+> ```ts
+> defineConfig();
+> ```
+% Markdown-It
+> Install the package.
+%% Standalone
+> ```ts
+> new MarkdownIt();
+> ```

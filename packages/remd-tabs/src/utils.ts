@@ -1,4 +1,4 @@
-// Matches: %{1,6}+? label text
+// Matches: %{1,6}+? label text  (prefix-plus form: %+ Label)
 // Groups: 1=% string (depth), 2=+ (open marker, optional), 3=label text
 export const TAB_HEADER_RE = /^(%{1,6})(\+)? (.*)/;
 

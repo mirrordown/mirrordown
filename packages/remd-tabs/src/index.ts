@@ -120,11 +120,28 @@ const extractHeaderPara = (
 interface BQSegment {
   header: RawTab | null; // null means pre-header content (goes to prev tab)
   body: (BlockContent | DefinitionContent)[];
+  // true when this blockquote was written with explicit `> %` nesting (multiple
+  // block children) rather than being the standard absorbed-tabs pattern where
+  // remark collapses consecutive `% Tab\n> body` lines into one blockquote.
+  // Used to apply a depth offset and to unwrap nested blockquote bodies.
+  explicit: boolean;
 }
 
-const splitBlockquote = (bq: Blockquote): BQSegment[] => {
+// A blockquote is "explicit" (`> % Label` nesting) when at least one of its
+// direct paragraph children starts with a tab header. The absorbed pattern
+// (remark collapsing consecutive `% Tab\n> body` lines into one blockquote)
+// never produces standalone header paragraphs — headers are only embedded
+// inside multi-line text nodes.
+const isExplicitBQ = (bq: Blockquote): boolean =>
+  bq.children.some((child) => {
+    if (child.type !== "paragraph") return false;
+    const first = (child as Paragraph).children[0];
+    return first?.type === "text" && parseTabHeader(first.value.split("\n")[0]!) !== null;
+  });
+
+const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
   const segments: BQSegment[] = [];
-  let currentSegment: BQSegment = { header: null, body: [] };
+  let currentSegment: BQSegment = { header: null, body: [], explicit };
 
   for (const child of bq.children) {
     if (child.type !== "paragraph") {
@@ -165,6 +182,7 @@ const splitBlockquote = (bq: Blockquote): BQSegment[] => {
               body: [],
             },
             body: [],
+            explicit,
           };
           continue;
         }
@@ -316,22 +334,106 @@ const processTabsInChildren = (
           if (checkBlankLines && siblingStartLine > prevEndLine + 1) break;
 
           if (sibling.type === "blockquote") {
-            const segments = splitBlockquote(sibling as Blockquote);
+            const bq = sibling as Blockquote;
+            const explicit = isExplicitBQ(bq);
+            const segments = splitBlockquote(bq, explicit);
 
             const firstSeg = segments[0];
             if (firstSeg?.header === null) {
               rawTabs[currentTabIdx]!.body.push(...firstSeg.body);
             }
 
+            // Explicit blockquotes (`> % Label` nesting) have their headers
+            // implicitly one level deeper than the owning tab. Apply a depth
+            // offset so they nest correctly.
+            // Absorbed blockquotes (standard `% Tab\n> body` pattern) keep
+            // literal depths — remark collapses them into a single paragraph child.
+            const depthOffset = explicit ? rawTabs[rawTabs.length - 1]!.depth : 0;
+
             for (let s = 1; s < segments.length; s++) {
               const seg = segments[s]!;
-              if (seg.header) {
-                const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
-                if (seg.header.depth <= prevDepth + 1) {
-                  seg.header.body.push(...seg.body);
-                  rawTabs.push(seg.header);
+              if (!seg.header) continue;
+
+              const adjustedDepth = depthOffset + seg.header.depth;
+              const prevDepth = rawTabs[rawTabs.length - 1]!.depth;
+              if (adjustedDepth > prevDepth + 1) continue;
+
+              seg.header.depth = adjustedDepth;
+
+              if (explicit) {
+                // For explicit `> %` blockquotes, body items are wrapped in a
+                // nested `> >` blockquote. Unwrap each nested blockquote:
+                // - Non-explicit (absorbed) inner BQs are re-split to extract
+                //   tab headers that remark collapsed into a single paragraph.
+                // - Explicit inner BQs use their children directly.
+                //
+                // "Escaped" segments: when remark absorbs an outer-level tab header
+                // (e.g. `% Code` at root depth) into an inner BQ paragraph, the tab's
+                // body node (code fence etc.) is hoisted to the outer BQ as a direct
+                // child after that inner BQ. Re-split segments with an empty body had
+                // their body hoisted — they are outer-level siblings, not inner children.
+                // Subsequent non-blockquote nodes in seg.body belong to those escaped tabs.
+                const deferredInnerSegs: BQSegment[] = [];
+                // Tracks which re-split segments have empty bodies (body hoisted to outer BQ)
+                const escapedSegs: RawTab[] = [];
+
+                for (const b of seg.body) {
+                  if (b.type !== "blockquote") {
+                    // Non-BQ outer sibling — belongs to the first escaped seg's body
+                    if (escapedSegs.length > 0) {
+                      escapedSegs[escapedSegs.length - 1]!.body.push(
+                        b as BlockContent | DefinitionContent,
+                      );
+                    } else {
+                      seg.header.body.push(b as BlockContent | DefinitionContent);
+                    }
+                    continue;
+                  }
+                  const innerBq = b as Blockquote;
+                  if (!isExplicitBQ(innerBq)) {
+                    // Re-split absorbed inner blockquote to extract sibling headers
+                    const innerSegs = splitBlockquote(innerBq, false);
+                    const innerFirst = innerSegs[0];
+                    if (innerFirst?.header === null) {
+                      seg.header.body.push(...innerFirst.body);
+                    }
+                    for (let is = 1; is < innerSegs.length; is++) {
+                      const innerSeg = innerSegs[is]!;
+                      if (!innerSeg.header) continue;
+                      // If the re-split segment has no body, its body was hoisted to
+                      // the outer BQ as a direct child — it is an outer-level escaped
+                      // tab (originally root-level, absorbed by remark into this inner BQ).
+                      // Push it at depthOffset (the owning explicit BQ's parent depth).
+                      if (innerSeg.body.length === 0) {
+                        innerSeg.header.depth = depthOffset;
+                        escapedSegs.push(innerSeg.header);
+                        deferredInnerSegs.push(innerSeg);
+                        continue;
+                      }
+                      const tentativeDepth = depthOffset + innerSeg.header.depth;
+                      const innerPrevDepth = rawTabs[rawTabs.length - 1]!.depth;
+                      if (tentativeDepth > innerPrevDepth + 1) continue;
+                      innerSeg.header.depth = tentativeDepth;
+                      innerSeg.header.body.push(...innerSeg.body);
+                      deferredInnerSegs.push(innerSeg);
+                    }
+                  } else {
+                    // Explicit inner blockquote — use children directly
+                    seg.header.body.push(...innerBq.children);
+                  }
+                }
+                // Push the current seg first, then any deferred inner siblings
+                rawTabs.push(seg.header);
+                currentTabIdx = rawTabs.length - 1;
+                for (const innerSeg of deferredInnerSegs) {
+                  if (!innerSeg.header) continue;
+                  rawTabs.push(innerSeg.header);
                   currentTabIdx = rawTabs.length - 1;
                 }
+              } else {
+                seg.header.body.push(...seg.body);
+                rawTabs.push(seg.header);
+                currentTabIdx = rawTabs.length - 1;
               }
             }
 
