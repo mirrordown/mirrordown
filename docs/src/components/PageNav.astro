@@ -111,8 +111,8 @@ const next = idx < pages.length - 1 ? pages[idx + 1]! : null;
     align-items: center;
     justify-content: space-between;
     margin: 0 0 1rem;
-    font-size: var(--text-sm);
-    font-weight: 300;
+    font-size: var(--lm);
+    font-weight: var(--fw-regular);
     color: var(--color-fg-muted);
   }
 
@@ -189,8 +189,8 @@ const next = idx < pages.length - 1 ? pages[idx + 1]! : null;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: var(--text-lg);
-    font-weight: 300;
+    font-size: var(--bl);
+    font-weight: var(--fw-regular);
     color: var(--color-fg-muted);
 
     .page-nav-link:hover & {
@@ -213,8 +213,8 @@ const next = idx < pages.length - 1 ? pages[idx + 1]! : null;
   }
 
   .page-nav-direction {
-    font-size: var(--text-sm);
-    font-weight: 200;
+    font-size: var(--lm);
+    font-weight: var(--fw-regular);
     color: var(--color-fg-muted);
   }
 
@@ -230,9 +230,9 @@ const next = idx < pages.length - 1 ? pages[idx + 1]! : null;
     align-items: center;
     justify-content: center;
     padding: 0.1em 0.375em;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 600;
+    font-family: var(--family-mono);
+    font-size: var(--lt);
+    font-weight: var(--fw-semibold);
     color: var(--color-fg-muted);
     background-color: color-mix(in oklch, var(--color-accent) 4%, transparent);
     border: 1px solid color-mix(in oklch, var(--color-accent) 20%, var(--color-border));

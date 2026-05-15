@@ -5,8 +5,10 @@
 
 @layer base {
   html {
-    font-family: var(--font-sans);
-    font-size: var(--text-base);
+    font-family: var(--family-sans);
+    font-size: var(--bm);
+    font-weight: var(--fw-regular);
+    line-height: var(--lh-body);
     color: var(--color-fg);
     background-color: var(--color-bg);
     scroll-padding-top: calc(var(--nav-height) + 1rem);

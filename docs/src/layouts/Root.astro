@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import Theme from "../components/Theme.astro";
 import Header from "../components/Header.astro";
 import "../styles/global.css";
@@ -22,6 +23,12 @@ const currentPath = new URL(Astro.request.url).pathname;
     {description && <meta name="description" content={description} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <Font cssVariable="--font-mona-sans" preload />
+    <Font cssVariable="--font-monaspace-neon" preload />
+    <Font cssVariable="--font-monaspace-argon" />
+    <Font cssVariable="--font-monaspace-krypton" />
+    <Font cssVariable="--font-monaspace-xenon" />
+    <Font cssVariable="--font-monaspace-radon" />
     <slot name="head" />
     <Theme />
   </head>

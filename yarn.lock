@@ -711,6 +711,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource-variable/mona-sans@npm:^5.2.8":
+  version: 5.2.8
+  resolution: "@fontsource-variable/mona-sans@npm:5.2.8"
+  checksum: 10/1a13d3d57d87ca2d48af2d62895ad71f142917d91f90b268e317ce2aa61de69242586f2ab97ff929c980f1b810e5854ddd71599fbb37ca417ee79ae989c5654c
+  languageName: node
+  linkType: hard
+
+"@fontsource/monaspace-argon@npm:^5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/monaspace-argon@npm:5.2.5"
+  checksum: 10/d112f09a5b9b6a7cf8234ec8abd5e1ce654a9a9c79fab4d61c9128eccee659985abc8178da0539948da55caf77a8bcb51a10896340a78adf1bb856ad3d9d8d64
+  languageName: node
+  linkType: hard
+
+"@fontsource/monaspace-krypton@npm:^5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/monaspace-krypton@npm:5.2.5"
+  checksum: 10/9a79404ef2156c24c34e3a6256bdb7e80c33eae4d3ba2f76466aec07e710014eeb938ab035f443acfac02273a22f6804678b16ea8511103de8b8daac4951f189
+  languageName: node
+  linkType: hard
+
+"@fontsource/monaspace-neon@npm:^5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/monaspace-neon@npm:5.2.5"
+  checksum: 10/bec9fa5367a353b80cae93193981d71d6fc87b9faf50527151413c772641f82d61ee40979e7bd48c6bc8fe762a2bd3ab906fbe00fd694834b677bb2ae5aa37f6
+  languageName: node
+  linkType: hard
+
+"@fontsource/monaspace-radon@npm:^5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/monaspace-radon@npm:5.2.5"
+  checksum: 10/89d516ba71fcbdd3aedd47453bda458df833be49d78e0b798fd2759dd4041c7b1967bf750bd5050f7a346ed7f1663ae91c98432f06d880dfe8bf677af218891b
+  languageName: node
+  linkType: hard
+
+"@fontsource/monaspace-xenon@npm:^5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/monaspace-xenon@npm:5.2.5"
+  checksum: 10/cc0ef538d2d605ff5f45ea5f36fe8896de83c4cb43e7374477e398d6a87e2a865d6cf4924d6b0dcbdc5f3959ce8f96db7d89eebdfe0fd4cff748ebf4c55ec669
+  languageName: node
+  linkType: hard
+
 "@img/colour@npm:^1.0.0":
   version: 1.1.0
   resolution: "@img/colour@npm:1.1.0"
@@ -1357,6 +1399,12 @@ __metadata:
   resolution: "@saeris/markdown-docs@workspace:docs"
   dependencies:
     "@astrojs/check": "npm:^0.9.9"
+    "@fontsource-variable/mona-sans": "npm:^5.2.8"
+    "@fontsource/monaspace-argon": "npm:^5.2.5"
+    "@fontsource/monaspace-krypton": "npm:^5.2.5"
+    "@fontsource/monaspace-neon": "npm:^5.2.5"
+    "@fontsource/monaspace-radon": "npm:^5.2.5"
+    "@fontsource/monaspace-xenon": "npm:^5.2.5"
     "@saeris/remd-attrs": "workspace:*"
     "@saeris/remd-definition-list": "workspace:*"
     "@saeris/remd-del": "workspace:*"

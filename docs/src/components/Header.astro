@@ -26,8 +26,8 @@ const { currentPath = "/" } = Astro.props as Props;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-weight: 700;
-    font-size: var(--text-lg);
+    font-weight: var(--fw-bold);
+    font-size: var(--bl);
     color: var(--color-fg);
     flex-shrink: 0;
 
@@ -44,8 +44,8 @@ const { currentPath = "/" } = Astro.props as Props;
   }
 
   nav a {
-    font-size: var(--text-sm);
-    font-weight: 500;
+    font-size: var(--lm);
+    font-weight: var(--fw-medium);
     color: var(--color-fg-muted);
     padding: 0.375rem 0.625rem;
     border-radius: var(--radius-md);

@@ -8,6 +8,12 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@fontsource-variable/mona-sans": "^5.2.8",
+    "@fontsource/monaspace-argon": "^5.2.5",
+    "@fontsource/monaspace-krypton": "^5.2.5",
+    "@fontsource/monaspace-neon": "^5.2.5",
+    "@fontsource/monaspace-radon": "^5.2.5",
+    "@fontsource/monaspace-xenon": "^5.2.5",
     "@saeris/remd-attrs": "workspace:*",
     "@saeris/remd-definition-list": "workspace:*",
     "@saeris/remd-del": "workspace:*",

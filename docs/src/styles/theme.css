@@ -2,39 +2,149 @@
   :root {
     color-scheme: light dark;
 
-    --color-bg: light-dark(oklch(0.98 0.004 250), oklch(0.12 0.008 250));
-    --color-bg-elevated: light-dark(oklch(1 0 0), oklch(0.15 0.008 250));
-    --color-fg: light-dark(oklch(0.18 0.01 250), oklch(0.92 0.005 250));
-    --color-fg-muted: light-dark(oklch(0.48 0.02 250), oklch(0.62 0.02 250));
-    --color-accent: light-dark(oklch(0.52 0.18 250), oklch(0.68 0.18 250));
-    --color-accent-hover: light-dark(oklch(0.44 0.2 250), oklch(0.74 0.16 250));
-    --color-border: light-dark(oklch(0.88 0.01 250), oklch(0.24 0.02 250));
-    --color-sidebar-bg: light-dark(oklch(0.96 0.005 250), oklch(0.1 0.008 250));
-    --color-code-bg: light-dark(oklch(0.94 0.006 250), oklch(0.17 0.01 250));
+    /* ── Font families ──────────────────────────────────────────── */
 
-    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+    --family-sans: var(--font-mona-sans);
+    --family-mono: var(--font-monaspace-neon);
+    --family-mono-comment: var(--font-monaspace-argon);
+    --family-mono-string: var(--font-monaspace-krypton);
+    --family-mono-keyword: var(--font-monaspace-xenon);
+    --family-mono-heading: var(--font-monaspace-radon);
 
-    --text-xs: 0.75rem;
-    --text-sm: 0.875rem;
-    --text-base: 1rem;
-    --text-lg: 1.125rem;
-    --text-xl: 1.25rem;
-    --text-2xl: 1.5rem;
-    --text-3xl: 1.875rem;
-    --text-4xl: 2.25rem;
+    /* ── Type scale — Major Second (×1.125) ─────────────────────── */
+    /*    --fs-100 = 18px (body Medium, the anchor)                  */
+    /*    Every step is exactly one ratio from its neighbor.         */
+    /*    Steps below 100 divide; steps above 100 multiply.         */
 
-    --radius-sm: 0.25rem;
-    --radius-md: 0.375rem;
-    --radius-lg: 0.5rem;
+    --font-base: 18px;
+    --scale: 1.125;
 
-    --nav-height: 56px;
-    --sidebar-width: 240px;
-    --toc-width: 200px;
-    --content-max-width: 720px;
+    --fs-50:  calc(var(--fs-75)  / var(--scale)); /* ≈14.2px */
+    --fs-75:  calc(var(--fs-100) / var(--scale)); /* ≈16px   */
+    --fs-100: var(--font-base);                   /*  18px   ← anchor */
+    --fs-200: calc(var(--fs-100) * var(--scale)); /* ≈20.25px */
+    --fs-300: calc(var(--fs-200) * var(--scale)); /* ≈22.8px  */
+    --fs-400: calc(var(--fs-300) * var(--scale)); /* ≈25.6px  */
+    --fs-500: calc(var(--fs-400) * var(--scale)); /* ≈28.8px  */
+    --fs-600: calc(var(--fs-500) * var(--scale)); /* ≈32.4px  */
+    --fs-700: calc(var(--fs-600) * var(--scale)); /* ≈36.5px  */
+    --fs-800: calc(var(--fs-700) * var(--scale)); /* ≈41px    */
+    --fs-900: calc(var(--fs-800) * var(--scale)); /* ≈46px    */
+
+    /* ── Heading sizes (H6→Tiny … H1→Ultra) ────────────────────── */
+    /*    clamp() for fluid scaling between narrow and wide viewports */
+
+    --ht: var(--fs-200);                            /* h6 — Tiny    ≈20px  */
+    --hs: var(--fs-300);                            /* h5 — Small   ≈22.8px */
+    --hm: var(--fs-400);                            /* h4 — Medium  ≈25.6px */
+    --hl: clamp(var(--fs-400), 3vw, var(--fs-500)); /* h3 — Large   ≈28.8px */
+    --hh: clamp(var(--fs-500), 4vw, var(--fs-600)); /* h2 — Huge    ≈32px  */
+    --hu: clamp(var(--fs-600), 5vw, var(--fs-700)); /* h1 — Ultra   ≈36px  */
+
+    /* ── Body sizes (Tiny … Large) ─────────────────────────────── */
+    /*    Medium (--bm) maps to --font-base, our reading size.      */
+
+    --bt: var(--fs-50);  /* Tiny   ≈14.2px — timestamps, hints */
+    --bs: var(--fs-75);  /* Small  ≈16px   — captions, metadata */
+    --bm: var(--fs-100); /* Medium  18px   — main prose ← default */
+    --bl: var(--fs-200); /* Large  ≈20px   — lead paragraphs */
+
+    /* ── Label sizes (Tiny … Medium) ───────────────────────────── */
+    /*    Labels use the lower end of the body scale.               */
+
+    --lt: var(--fs-50);  /* Tiny   ≈14.2px — kbd hints, timestamps */
+    --ls: var(--fs-75);  /* Small  ≈16px   — section group titles  */
+    --lm: var(--fs-100); /* Medium  18px   — nav links, sidebar    */
+
+    /* ── Default semantic aliases ───────────────────────────────── */
+
+    --fs-heading: var(--hu);
+    --fs-body:    var(--bm);
+    --fs-label:   var(--lm);
+
+    /* ── Margins — derived from font size × ratio ───────────────── */
+    /*    top  = size / ratio  (proportional breathing room above)  */
+    /*    bottom = size * 0.25 (compact spacing below)              */
+
+    --margin-top-ratio: var(--scale); /* Major Second on desktop */
+    --header-margin: calc(var(--fs-heading) / var(--margin-top-ratio))
+      calc(var(--fs-heading) * 0.25);
+    --body-margin:   calc(var(--fs-body) / var(--margin-top-ratio))
+      calc(var(--fs-body) * 0.25);
+    --label-margin:  calc(var(--fs-label) / var(--margin-top-ratio))
+      calc(var(--fs-label) * 0.25);
+
+    /* Tighter ratio on narrow screens (Golden Ratio = more breathing room) */
+    @media (width <= 640px) {
+      --margin-top-ratio: 1.618;
+    }
+
+    /* ── Font weight — light/dark irradiation compensation ──────── */
+    /*    Dark backgrounds make glyphs bloom (irradiation illusion). */
+    /*    Lighter weight in dark mode keeps perceived stroke width   */
+    /*    consistent across themes without layout shift.             */
+
+    --fw-regular:  light-dark(400, 350);
+    --fw-medium:   light-dark(500, 450);
+    --fw-semibold: light-dark(600, 550);
+    --fw-bold:     light-dark(700, 650);
+
+    /* ── Line heights ───────────────────────────────────────────── */
+
+    --lh-heading: 1.25;
+    --lh-body:    1.75;
+    --lh-body-sm: 1.6;
+    --lh-label:   1.4;
+    --lh-code:    1.6;
+
+    /* ── Colors — light-dark() pairs, hue 250 accent ───────────── */
+
+    --color-bg:          light-dark(oklch(0.98 0.004 250), oklch(0.12 0.008 250));
+    --color-bg-elevated: light-dark(oklch(1 0 0),          oklch(0.15 0.008 250));
+    --color-sidebar-bg:  light-dark(oklch(0.96 0.005 250), oklch(0.10 0.008 250));
+    --color-code-bg:     light-dark(oklch(0.94 0.006 250), oklch(0.17 0.010 250));
+
+    --color-fg:          light-dark(oklch(0.18 0.010 250), oklch(0.92 0.005 250));
+    --color-fg-muted:    light-dark(oklch(0.48 0.020 250), oklch(0.62 0.020 250));
+    --color-fg-subtle:   light-dark(oklch(0.64 0.015 250), oklch(0.48 0.015 250));
+
+    /* Accent ramp derived via relative color syntax from a single base */
+    --color-accent-base: oklch(0.52 0.18 250);
+    --color-accent: light-dark(
+      var(--color-accent-base),
+      oklch(from var(--color-accent-base) calc(l + 0.16) c h)
+    );
+    --color-accent-hover: light-dark(
+      oklch(from var(--color-accent-base) calc(l - 0.08) calc(c + 0.02) h),
+      oklch(from var(--color-accent-base) calc(l + 0.22) calc(c - 0.02) h)
+    );
+    --color-accent-subtle: light-dark(
+      oklch(from var(--color-accent-base) 0.94 0.04 h),
+      oklch(from var(--color-accent-base) 0.18 0.04 h)
+    );
+
+    --color-border:       light-dark(oklch(0.88 0.010 250), oklch(0.24 0.020 250));
+    --color-border-muted: light-dark(oklch(0.93 0.006 250), oklch(0.20 0.012 250));
+
+    /* ── Radius ─────────────────────────────────────────────────── */
+
+    --radius-sm:   0.25rem;
+    --radius-md:   0.375rem;
+    --radius-lg:   0.5rem;
+    --radius-xl:   0.75rem;
+    --radius-full: 9999px;
+
+    /* ── Shadows ────────────────────────────────────────────────── */
 
     --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.06);
     --shadow-md: 0 4px 6px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.06);
+
+    /* ── Layout ─────────────────────────────────────────────────── */
+
+    --nav-height:        56px;
+    --sidebar-width:     240px;
+    --toc-width:         200px;
+    --content-max-width: 720px;
   }
 
   [data-theme="light"] {
