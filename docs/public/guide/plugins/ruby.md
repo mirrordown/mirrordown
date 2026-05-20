@@ -4,7 +4,7 @@ description: Adds ruby annotation syntax for East Asian typography using {base|r
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

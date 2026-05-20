@@ -74,6 +74,32 @@
     --label-margin:  calc(var(--fs-label) / var(--margin-top-ratio))
       calc(var(--fs-label) * 0.25);
 
+    /* ── Mobile type scale (Adobe Spectrum guidelines) ─────────────
+       Shift base down to --fs-75 (≈16px) and reduce heading sizes
+       one step. Line heights tighten: body 1.75→1.6, code 1.6→1.5.
+    ──────────────────────────────────────────────────────────────── */
+    @media (width < 768px) {
+      --font-base: 16px;
+
+      --bt: calc(var(--fs-75)  / var(--scale)); /* ≈14.2px */
+      --bs: var(--fs-75);                        /* ≈16px   */
+      --bm: var(--fs-100);                       /* ≈18px (paragraph prose, unchanged) */
+      --bl: var(--fs-200);                       /* ≈20px */
+
+      /* Headings shift one step down */
+      --ht: var(--fs-100);                       /* h6 ≈16px */
+      --hs: var(--fs-200);                       /* h5 ≈18px */
+      --hm: var(--fs-300);                       /* h4 ≈20px */
+      --hl: clamp(var(--fs-300), 5vw, var(--fs-400)); /* h3 ≈22–25px */
+      --hh: clamp(var(--fs-400), 6vw, var(--fs-500)); /* h2 ≈25–28px */
+      --hu: clamp(var(--fs-500), 7vw, var(--fs-600)); /* h1 ≈28–32px */
+
+      /* Tighter line heights on small screens */
+      --lh-body:    1.6;
+      --lh-body-sm: 1.5;
+      --lh-code:    1.5;
+    }
+
     /* Tighter ratio on narrow screens (Golden Ratio = more breathing room) */
     @media (width <= 640px) {
       --margin-top-ratio: 1.618;
@@ -142,9 +168,9 @@
     /* ── Layout ─────────────────────────────────────────────────── */
 
     --nav-height:        56px;
-    --sidebar-width:     240px;
+    --sidebar-width:     256px;
     --toc-width:         200px;
-    --content-max-width: 720px;
+    --content-max-width: 760px;
   }
 
   [data-theme="light"] {

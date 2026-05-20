@@ -4,7 +4,7 @@ description: Adds strikethrough/delete syntax using --double dashes--.
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

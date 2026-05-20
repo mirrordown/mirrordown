@@ -4,7 +4,7 @@ description: Renders CSS-only tab groups using % tab headers and > blockquote bo
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

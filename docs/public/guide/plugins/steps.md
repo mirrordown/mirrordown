@@ -4,7 +4,7 @@ description: Renders numbered step lists using @N. headers and > blockquote bodi
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

@@ -4,7 +4,7 @@ description: Removes the wrapping paragraph from standalone images so they rende
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

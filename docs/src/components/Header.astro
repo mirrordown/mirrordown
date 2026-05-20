@@ -1,26 +1,87 @@
 ---
 interface Props {
   currentPath?: string;
+  hasSidebar?: boolean;
 }
 
-const { currentPath = "/" } = Astro.props as Props;
+const { currentPath = "/", hasSidebar = false } = Astro.props as Props;
 ---
 
 <style>
-  header {
+  /* ── Shared bar styles ───────────────────────────────────────── */
+
+  .bar {
+    display: flex;
+    align-items: center;
+    height: var(--nav-height);
+    padding-inline: 1.5rem;
+    background-color: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* ── Primary bar ─────────────────────────────────────────────── */
+
+  .primary-bar {
     position: fixed;
     inset-block-start: 0;
     inset-inline: 0;
     z-index: 100;
-    height: var(--nav-height);
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding-inline: 1.5rem;
-    background-color: var(--color-bg-elevated);
-    border-bottom: 1px solid var(--color-border);
+    gap: 0.75rem;
     box-shadow: var(--shadow-sm);
   }
+
+  /* ── Sidebar collapse toggle (desktop only) ──────────────────── */
+
+  .sidebar-toggle[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    input {
+      appearance: none;
+      position: absolute;
+      width: 0;
+      height: 0;
+      margin: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .icon-collapse { display: block; }
+    .icon-expand   { display: none;  }
+  }
+
+  /* Swap icons when checkbox is checked (sidebar collapsed) */
+  .sidebar-toggle:has(input:checked) {
+    .icon-collapse { display: none;  }
+    .icon-expand   { display: block; }
+  }
+
+  /* ── Logo ────────────────────────────────────────────────────── */
 
   .logo {
     display: flex;
@@ -29,26 +90,40 @@ const { currentPath = "/" } = Astro.props as Props;
     font-weight: var(--fw-bold);
     font-size: var(--bl);
     color: var(--color-fg);
+    text-decoration: none;
     flex-shrink: 0;
 
-    span {
+    .logo-text span {
       color: var(--color-accent);
     }
   }
 
-  nav {
+  /* ── Primary nav links (desktop, right-aligned) ──────────────── */
+
+  .primary-nav {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    flex: 1;
+    margin-inline-start: auto;
   }
 
-  nav a {
+  /* ── Primary actions group (search + prev/next, right-aligned) ── */
+
+  .primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+  }
+
+  .primary-nav a {
     font-size: var(--lm);
     font-weight: var(--fw-medium);
     color: var(--color-fg-muted);
     padding: 0.375rem 0.625rem;
     border-radius: var(--radius-md);
+    text-decoration: none;
     transition: color 0.15s ease, background-color 0.15s ease;
 
     &:hover {
@@ -61,17 +136,376 @@ const { currentPath = "/" } = Astro.props as Props;
     }
   }
 
+  /* ── Search placeholder (mobile primary bar) ─────────────────── */
+
+  .search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  /* ── Prev/Next nav buttons (mobile primary bar) ──────────────── */
+
+  .primary-prev,
+  .primary-next {
+    display: none; /* shown at mobile via breakpoints */
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg-muted);
+    text-decoration: none;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  /* ── Drawer open button (tablet only 768–1023px, in primary bar) */
+
+  .drawer-open {
+    display: none; /* hidden at desktop; shown at tablet/mobile via breakpoints */
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  /* ── Secondary bar (mobile only, <768px) ─────────────────────── */
+
+  .secondary-bar {
+    display: none; /* hidden at desktop and tablet */
+    position: fixed;
+    inset-block-start: var(--nav-height);
+    inset-inline: 0;
+    z-index: 90;
+    gap: 0.5rem;
+  }
+
+  .page-title {
+    flex: 1;
+    font-size: var(--lm);
+    font-weight: var(--fw-medium);
+    color: var(--color-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .secondary-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-inline-start: auto;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  /* ── Logo text (hidden on mobile, show icon-only) ────────────── */
+
+  .logo-text {
+    /* shown at all sizes by default */
+  }
+
+  /* ── Responsive breakpoints ──────────────────────────────────── */
+
+  /* Tablet (768–1023px): hide collapse toggle, show drawer-open in primary bar */
+  @media (768px <= width < 1024px) {
+    .sidebar-toggle { display: none; }
+    .drawer-open    { display: flex; }
+    .primary-nav    { display: none; }
+  }
+
+  /* Mobile (<768px): show secondary bar, prev/next in primary bar, hide logotype */
+  @media (width < 768px) {
+    .secondary-bar { display: flex; }
+    .search-btn    { display: flex; }
+    .logo-text     { display: none; }
+    .primary-prev  { display: flex; }
+    .primary-next  { display: flex; }
+    .sidebar-toggle { display: none; }
+    .drawer-open    { display: none; }
+    .primary-nav    { display: none; }
+
+    /* Auto-hide primary bar on scroll, secondary bar follows it up */
+    @supports (animation-timeline: scroll()) {
+      .primary-bar {
+        animation: primary-bar-hide linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px calc(var(--nav-height) * 2);
+      }
+
+      /* Secondary bar shifts up by the same amount as primary slides away */
+      .secondary-bar {
+        animation: secondary-bar-shift linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px calc(var(--nav-height) * 2);
+      }
+
+      @keyframes primary-bar-hide {
+        to {
+          translate: 0 -100%;
+          box-shadow: none;
+        }
+      }
+
+      @keyframes secondary-bar-shift {
+        to {
+          top: 0;
+        }
+      }
+    }
+  }
+
+  /* Tablet + desktop (≥768px): hide mobile-only prev/next from primary bar */
+  @media (width >= 768px) {
+    .primary-prev { display: none !important; }
+    .primary-next { display: none !important; }
+  }
+
+  /* Desktop (≥1024px): ensure secondary bar and mobile-only items never show */
+  @media (width >= 1024px) {
+    .secondary-bar    { display: none !important; }
+    .drawer-open      { display: none !important; }
+    .primary-actions  { display: none !important; }
+  }
 </style>
 
-<header>
+<!-- Primary bar: fixed, full width -->
+<div class="bar primary-bar">
+  <!-- Sidebar collapse toggle: desktop only, left of logo. aria-hidden preserves space when no sidebar -->
+  <label class="sidebar-toggle" for="sidebar-toggle" aria-label="Toggle sidebar" aria-hidden={!hasSidebar ? "true" : undefined}>
+    <input type="checkbox" id="sidebar-toggle" />
+    <!-- Collapse icon (sidebar open → click to close) -->
+    <svg class="icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M9 3v18"/>
+    </svg>
+    <!-- Expand icon (sidebar closed → click to open) -->
+    <svg class="icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M9 3v18M15 9l3 3-3 3"/>
+    </svg>
+  </label>
+
+  <!-- Drawer open button: tablet + mobile, replaces collapse toggle -->
+  <button
+    class="drawer-open"
+    id="drawer-open"
+    commandfor="sidebar-drawer"
+    command="show-modal"
+    aria-label="Open navigation"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
   <a class="logo" href="/">
-    @saeris/<span>markdown</span>
+    <span class="logo-text">@saeris/<span>markdown</span></span>
   </a>
 
-  <nav>
-    <a href="/plugins/del" aria-current={currentPath.startsWith("/plugins") ? "page" : undefined}>
-      Plugins
+  <!-- Desktop nav links, right-aligned -->
+  <nav class="primary-nav" aria-label="Site navigation">
+    <a href="/guide/introduction/getting-started" aria-current={currentPath.startsWith("/guide") ? "page" : undefined}>
+      Guide
     </a>
   </nav>
 
-</header>
+  <!-- Right-side actions: search (mobile) + prev/next (mobile) -->
+  <div class="primary-actions">
+    <button class="search-btn" aria-label="Search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+    </button>
+
+    <!-- Prev page: mobile primary bar -->
+    <a class="primary-prev" id="primary-prev" href="#" aria-label="Previous page" rel="prev" style="display: none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </a>
+
+    <!-- Next page: mobile primary bar -->
+    <a class="primary-next" id="primary-next" href="#" aria-label="Next page" rel="next" style="display: none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- Secondary bar: mobile only (<768px), below primary bar -->
+<div class="bar secondary-bar" aria-label="Page navigation bar">
+  <!-- Drawer open button: mobile secondary bar only -->
+  <button
+    class="icon-btn"
+    id="secondary-drawer-open"
+    commandfor="sidebar-drawer"
+    command="show-modal"
+    aria-label="Open navigation"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <span class="page-title" id="mobile-page-title" aria-hidden="true"></span>
+
+  <div class="secondary-actions">
+    <!-- Scroll to top -->
+    <button class="icon-btn" id="scroll-to-top" aria-label="Scroll to top">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 19V5M5 12l7-7 7 7"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  // Sync drawer open button aria-expanded with dialog open state
+  function syncDrawerTriggers(open: boolean) {
+    document.querySelectorAll<HTMLElement>("[aria-haspopup='dialog']").forEach((btn) => {
+      btn.setAttribute("aria-expanded", String(open));
+    });
+  }
+
+  const dialog = document.querySelector<HTMLDialogElement>("#sidebar-drawer");
+  dialog?.addEventListener("close", () => syncDrawerTriggers(false));
+
+  // Invoker Commands fallback for drawer-open buttons (tablet primary + mobile secondary)
+  if (!("commandForElement" in HTMLButtonElement.prototype)) {
+    ["#drawer-open", "#secondary-drawer-open"].forEach((id) => {
+      document.querySelector<HTMLButtonElement>(id)
+        ?.addEventListener("click", () => {
+          dialog?.showModal();
+          syncDrawerTriggers(true);
+        });
+    });
+  }
+
+  // Scroll to top
+  function bindScrollToTop() {
+    document.querySelector<HTMLButtonElement>("#scroll-to-top")
+      ?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  }
+  bindScrollToTop();
+  document.addEventListener("astro:after-swap", bindScrollToTop);
+
+  // Populate page title + prev/next from PageNav
+  function syncMobileNav() {
+    const titleEl = document.querySelector<HTMLElement>("#mobile-page-title");
+    if (titleEl) {
+      titleEl.textContent = document.title.replace(/\s*—.*$/, "").trim();
+    }
+
+    const prevEl = document.querySelector<HTMLAnchorElement>("a.page-nav-prev");
+    const nextEl = document.querySelector<HTMLAnchorElement>("a.page-nav-next");
+    const primaryPrev = document.querySelector<HTMLAnchorElement>("#primary-prev");
+    const primaryNext = document.querySelector<HTMLAnchorElement>("#primary-next");
+
+    if (primaryPrev) {
+      if (prevEl) {
+        primaryPrev.href = prevEl.href;
+        primaryPrev.style.display = "flex";
+      } else {
+        primaryPrev.style.display = "none";
+      }
+    }
+
+    if (primaryNext) {
+      if (nextEl) {
+        primaryNext.href = nextEl.href;
+        primaryNext.style.display = "flex";
+      } else {
+        primaryNext.style.display = "none";
+      }
+    }
+  }
+
+  syncMobileNav();
+  document.addEventListener("astro:after-swap", syncMobileNav);
+</script>

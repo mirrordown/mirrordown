@@ -4,7 +4,7 @@ description: Adds attribute syntax to attach HTML attributes to headings, blocks
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

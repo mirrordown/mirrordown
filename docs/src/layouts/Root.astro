@@ -1,5 +1,6 @@
 ---
 import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
 import Theme from "../components/Theme.astro";
 import Header from "../components/Header.astro";
 import "../styles/global.css";
@@ -7,9 +8,10 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  hasSidebar?: boolean;
 }
 
-const { title, description } = Astro.props as Props;
+const { title, description, hasSidebar = false } = Astro.props as Props;
 const currentPath = new URL(Astro.request.url).pathname;
 ---
 
@@ -31,9 +33,10 @@ const currentPath = new URL(Astro.request.url).pathname;
     <Font cssVariable="--font-monaspace-radon" />
     <slot name="head" />
     <Theme />
+    <ClientRouter />
   </head>
   <body>
-    <Header currentPath={currentPath} />
+    <Header currentPath={currentPath} hasSidebar={hasSidebar} />
     <slot />
   </body>
 </html>

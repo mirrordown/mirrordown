@@ -1,40 +1,40 @@
 ---
-title: mark
-description: Adds highlight syntax using ==double equals==.
+title: sub
+description: Adds subscript syntax using ~tilde~.
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview
 
-The `mark` plugin renders `==text==` as an HTML `<mark>` element, representing highlighted or marked text.
+The `sub` plugin renders `~text~` as an HTML `<sub>` element, representing subscript text.
 
 ```html
-<mark>text</mark>
+<sub>text</sub>
 ```
 
 ## Syntax
 
-Wrap text in double equals signs to highlight it:
+Wrap text in single tildes to render it as subscript:
 
 % Demo
-> ==This text is highlighted.==
+> The chemical formula for water is H~2~O.
 >
-> You can use it inline: remember to ==save your work== before closing.
+> Carbon dioxide is CO~2~.
 % Code
 > ````markdown
-> ==This text is highlighted.==
+> The chemical formula for water is H~2~O.
 >
-> You can use it inline: remember to ==save your work== before closing.
+> Carbon dioxide is CO~2~.
 > ````
 
 ## Usage
 
 % Remark
 > ```sh
-> npm install @saeris/remd-mark
+> npm install @saeris/remd-sub
 > ```
 %% Unified
 > ```ts
@@ -42,11 +42,11 @@ Wrap text in double equals signs to highlight it:
 > import remarkParse from "remark-parse";
 > import remarkRehype from "remark-rehype";
 > import rehypeStringify from "rehype-stringify";
-> import { remarkMark } from "@saeris/remd-mark";
+> import { remarkSub } from "@saeris/remd-sub";
 >
 > const processor = unified()
 >   .use(remarkParse)
->   .use(remarkMark)
+>   .use(remarkSub)
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
@@ -54,11 +54,11 @@ Wrap text in double equals signs to highlight it:
 > ```ts
 > // astro.config.ts
 > import { defineConfig } from "astro/config";
-> import { remarkMark } from "@saeris/remd-mark";
+> import { remarkSub } from "@saeris/remd-sub";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkMark],
+>     remarkPlugins: [remarkSub],
 >   },
 > });
 > ```
@@ -66,34 +66,34 @@ Wrap text in double equals signs to highlight it:
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { remarkMark } from "@saeris/remd-mark";
+> import { remarkSub } from "@saeris/remd-sub";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkMark],
+>     remarkPlugins: [remarkSub],
 >   },
 > });
 > ```
 % Markdown-It
 > ```sh
-> npm install @saeris/mdit-mark
+> npm install @saeris/mdit-sub
 > ```
 %% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
-> import { mark } from "@saeris/mdit-mark";
+> import { sub } from "@saeris/mdit-sub";
 >
-> const md = new MarkdownIt().use(mark);
+> const md = new MarkdownIt().use(sub);
 > ```
 %% VitePress
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { mark } from "@saeris/mdit-mark";
+> import { sub } from "@saeris/mdit-sub";
 >
 > export default defineConfig({
 >   markdown: {
->     config: (md) => md.use(mark),
+>     config: (md) => md.use(sub),
 >   },
 > });
 > ```

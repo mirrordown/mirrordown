@@ -1,40 +1,40 @@
 ---
-title: sub
-description: Adds subscript syntax using ~tilde~.
+title: mark
+description: Adds highlight syntax using ==double equals==.
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview
 
-The `sub` plugin renders `~text~` as an HTML `<sub>` element, representing subscript text.
+The `mark` plugin renders `==text==` as an HTML `<mark>` element, representing highlighted or marked text.
 
 ```html
-<sub>text</sub>
+<mark>text</mark>
 ```
 
 ## Syntax
 
-Wrap text in single tildes to render it as subscript:
+Wrap text in double equals signs to highlight it:
 
 % Demo
-> The chemical formula for water is H~2~O.
+> ==This text is highlighted.==
 >
-> Carbon dioxide is CO~2~.
+> You can use it inline: remember to ==save your work== before closing.
 % Code
 > ````markdown
-> The chemical formula for water is H~2~O.
+> ==This text is highlighted.==
 >
-> Carbon dioxide is CO~2~.
+> You can use it inline: remember to ==save your work== before closing.
 > ````
 
 ## Usage
 
 % Remark
 > ```sh
-> npm install @saeris/remd-sub
+> npm install @saeris/remd-mark
 > ```
 %% Unified
 > ```ts
@@ -42,11 +42,11 @@ Wrap text in single tildes to render it as subscript:
 > import remarkParse from "remark-parse";
 > import remarkRehype from "remark-rehype";
 > import rehypeStringify from "rehype-stringify";
-> import { remarkSub } from "@saeris/remd-sub";
+> import { remarkMark } from "@saeris/remd-mark";
 >
 > const processor = unified()
 >   .use(remarkParse)
->   .use(remarkSub)
+>   .use(remarkMark)
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
@@ -54,11 +54,11 @@ Wrap text in single tildes to render it as subscript:
 > ```ts
 > // astro.config.ts
 > import { defineConfig } from "astro/config";
-> import { remarkSub } from "@saeris/remd-sub";
+> import { remarkMark } from "@saeris/remd-mark";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkSub],
+>     remarkPlugins: [remarkMark],
 >   },
 > });
 > ```
@@ -66,34 +66,34 @@ Wrap text in single tildes to render it as subscript:
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { remarkSub } from "@saeris/remd-sub";
+> import { remarkMark } from "@saeris/remd-mark";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkSub],
+>     remarkPlugins: [remarkMark],
 >   },
 > });
 > ```
 % Markdown-It
 > ```sh
-> npm install @saeris/mdit-sub
+> npm install @saeris/mdit-mark
 > ```
 %% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
-> import { sub } from "@saeris/mdit-sub";
+> import { mark } from "@saeris/mdit-mark";
 >
-> const md = new MarkdownIt().use(sub);
+> const md = new MarkdownIt().use(mark);
 > ```
 %% VitePress
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { sub } from "@saeris/mdit-sub";
+> import { mark } from "@saeris/mdit-mark";
 >
 > export default defineConfig({
 >   markdown: {
->     config: (md) => md.use(sub),
+>     config: (md) => md.use(mark),
 >   },
 > });
 > ```

@@ -1,40 +1,40 @@
 ---
-title: sup
-description: Adds superscript syntax using ^caret^.
+title: kbd
+description: Adds keyboard key syntax using [[double brackets]].
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview
 
-The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing superscript text.
+The `kbd` plugin renders `[[key]]` as an HTML `<kbd>` element, representing keyboard input or a key name.
 
 ```html
-<sup>text</sup>
+<kbd>key</kbd>
 ```
 
 ## Syntax
 
-Wrap text in single carets to render it as superscript:
+Wrap a key name in double square brackets:
 
 % Demo
-> E = mc^2^
+> Press [[Enter]] to confirm.
 >
-> The Pythagorean theorem: a^2^ + b^2^ = c^2^
+> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
 % Code
 > ````markdown
-> E = mc^2^
+> Press [[Enter]] to confirm.
 >
-> The Pythagorean theorem: a^2^ + b^2^ = c^2^
+> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
 > ````
 
 ## Usage
 
 % Remark
 > ```sh
-> npm install @saeris/remd-sup
+> npm install @saeris/remd-kbd
 > ```
 %% Unified
 > ```ts
@@ -42,11 +42,11 @@ Wrap text in single carets to render it as superscript:
 > import remarkParse from "remark-parse";
 > import remarkRehype from "remark-rehype";
 > import rehypeStringify from "rehype-stringify";
-> import { remarkSup } from "@saeris/remd-sup";
+> import { remarkKbd } from "@saeris/remd-kbd";
 >
 > const processor = unified()
 >   .use(remarkParse)
->   .use(remarkSup)
+>   .use(remarkKbd)
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
@@ -54,11 +54,11 @@ Wrap text in single carets to render it as superscript:
 > ```ts
 > // astro.config.ts
 > import { defineConfig } from "astro/config";
-> import { remarkSup } from "@saeris/remd-sup";
+> import { remarkKbd } from "@saeris/remd-kbd";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkSup],
+>     remarkPlugins: [remarkKbd],
 >   },
 > });
 > ```
@@ -66,34 +66,34 @@ Wrap text in single carets to render it as superscript:
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { remarkSup } from "@saeris/remd-sup";
+> import { remarkKbd } from "@saeris/remd-kbd";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkSup],
+>     remarkPlugins: [remarkKbd],
 >   },
 > });
 > ```
 % Markdown-It
 > ```sh
-> npm install @saeris/mdit-sup
+> npm install @saeris/mdit-kbd
 > ```
 %% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
-> import { sup } from "@saeris/mdit-sup";
+> import { kbd } from "@saeris/mdit-kbd";
 >
-> const md = new MarkdownIt().use(sup);
+> const md = new MarkdownIt().use(kbd);
 > ```
 %% VitePress
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { sup } from "@saeris/mdit-sup";
+> import { kbd } from "@saeris/mdit-kbd";
 >
 > export default defineConfig({
 >   markdown: {
->     config: (md) => md.use(sup),
+>     config: (md) => md.use(kbd),
 >   },
 > });
 > ```

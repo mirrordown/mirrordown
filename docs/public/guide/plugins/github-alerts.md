@@ -4,7 +4,7 @@ description: Renders GitHub-flavored alert blockquotes with icons and styled con
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

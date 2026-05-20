@@ -2,24 +2,33 @@
 ---
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>('button[data-theme-set]');
-
-  const sync = () => {
+  function syncAll() {
     const current = document.documentElement.getAttribute("data-theme") ?? "system";
-    buttons.forEach((btn) => {
+    document.querySelectorAll<HTMLButtonElement>('button[data-theme-set]').forEach((btn) => {
       btn.dataset.active = String(btn.dataset.themeSet === current);
     });
-  };
+  }
 
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.dispatchEvent(new CustomEvent("set-theme", { detail: btn.dataset.themeSet }));
-      sync();
+  function initThemeSwitchers() {
+    document.querySelectorAll<HTMLElement>(".theme-switcher:not([data-init])").forEach((root) => {
+      root.dataset.init = "true";
+      root.querySelectorAll<HTMLButtonElement>('button[data-theme-set]').forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.dispatchEvent(new CustomEvent("set-theme", { detail: btn.dataset.themeSet }));
+          syncAll();
+        });
+      });
     });
-  });
+    syncAll();
+  }
 
-  document.addEventListener("astro:after-swap", sync);
-  sync();
+  initThemeSwitchers();
+  document.addEventListener("astro:after-swap", () => {
+    document.querySelectorAll<HTMLElement>(".theme-switcher").forEach((el) => {
+      delete el.dataset.init;
+    });
+    initThemeSwitchers();
+  });
 </script>
 
 <style>

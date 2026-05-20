@@ -4,7 +4,7 @@ description: Adds insertion syntax using ++double plus signs++.
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

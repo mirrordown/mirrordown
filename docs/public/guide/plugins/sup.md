@@ -1,40 +1,40 @@
 ---
-title: kbd
-description: Adds keyboard key syntax using [[double brackets]].
+title: sup
+description: Adds superscript syntax using ^caret^.
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview
 
-The `kbd` plugin renders `[[key]]` as an HTML `<kbd>` element, representing keyboard input or a key name.
+The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing superscript text.
 
 ```html
-<kbd>key</kbd>
+<sup>text</sup>
 ```
 
 ## Syntax
 
-Wrap a key name in double square brackets:
+Wrap text in single carets to render it as superscript:
 
 % Demo
-> Press [[Enter]] to confirm.
+> E = mc^2^
 >
-> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
+> The Pythagorean theorem: a^2^ + b^2^ = c^2^
 % Code
 > ````markdown
-> Press [[Enter]] to confirm.
+> E = mc^2^
 >
-> You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
+> The Pythagorean theorem: a^2^ + b^2^ = c^2^
 > ````
 
 ## Usage
 
 % Remark
 > ```sh
-> npm install @saeris/remd-kbd
+> npm install @saeris/remd-sup
 > ```
 %% Unified
 > ```ts
@@ -42,11 +42,11 @@ Wrap a key name in double square brackets:
 > import remarkParse from "remark-parse";
 > import remarkRehype from "remark-rehype";
 > import rehypeStringify from "rehype-stringify";
-> import { remarkKbd } from "@saeris/remd-kbd";
+> import { remarkSup } from "@saeris/remd-sup";
 >
 > const processor = unified()
 >   .use(remarkParse)
->   .use(remarkKbd)
+>   .use(remarkSup)
 >   .use(remarkRehype)
 >   .use(rehypeStringify);
 > ```
@@ -54,11 +54,11 @@ Wrap a key name in double square brackets:
 > ```ts
 > // astro.config.ts
 > import { defineConfig } from "astro/config";
-> import { remarkKbd } from "@saeris/remd-kbd";
+> import { remarkSup } from "@saeris/remd-sup";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkKbd],
+>     remarkPlugins: [remarkSup],
 >   },
 > });
 > ```
@@ -66,34 +66,34 @@ Wrap a key name in double square brackets:
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { remarkKbd } from "@saeris/remd-kbd";
+> import { remarkSup } from "@saeris/remd-sup";
 >
 > export default defineConfig({
 >   markdown: {
->     remarkPlugins: [remarkKbd],
+>     remarkPlugins: [remarkSup],
 >   },
 > });
 > ```
 % Markdown-It
 > ```sh
-> npm install @saeris/mdit-kbd
+> npm install @saeris/mdit-sup
 > ```
 %% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
-> import { kbd } from "@saeris/mdit-kbd";
+> import { sup } from "@saeris/mdit-sup";
 >
-> const md = new MarkdownIt().use(kbd);
+> const md = new MarkdownIt().use(sup);
 > ```
 %% VitePress
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { kbd } from "@saeris/mdit-kbd";
+> import { sup } from "@saeris/mdit-sup";
 >
 > export default defineConfig({
 >   markdown: {
->     config: (md) => md.use(kbd),
+>     config: (md) => md.use(sup),
 >   },
 > });
 > ```

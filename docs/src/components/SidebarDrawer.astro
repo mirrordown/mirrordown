@@ -1,0 +1,257 @@
+---
+import SidebarNav from "./SidebarNav.astro";
+import ThemeSwitcher from "./ThemeSwitcher.astro";
+
+interface NavItem {
+  label: string;
+  href: string;
+  root?: boolean;
+}
+
+interface NavCategory {
+  title: string;
+  items: NavItem[];
+}
+
+interface NavSection {
+  title: string;
+  rootHref?: string;
+  categories: NavCategory[];
+}
+
+interface Props {
+  sections: NavSection[];
+  currentPath?: string;
+}
+
+const { sections, currentPath = "/" } = Astro.props as Props;
+---
+
+<style>
+  dialog {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    width: min(85vw, 320px);
+    height: 100dvh;
+    max-height: 100dvh;
+    border: none;
+    border-right: 1px solid var(--color-border);
+    background-color: var(--color-sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    translate: -100% 0;
+    transition:
+      translate 0.25s ease,
+      display 0.25s allow-discrete,
+      overlay 0.25s allow-discrete;
+
+    &[open] {
+      translate: 0 0;
+    }
+
+    @starting-style {
+      &[open] {
+        translate: -100% 0;
+      }
+    }
+  }
+
+  dialog::backdrop {
+    background-color: transparent;
+    backdrop-filter: blur(4px);
+    transition:
+      backdrop-filter 0.25s ease,
+      display 0.25s allow-discrete,
+      overlay 0.25s allow-discrete;
+  }
+
+  @starting-style {
+    dialog[open]::backdrop {
+      backdrop-filter: blur(0px);
+    }
+  }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--nav-height);
+    padding-inline: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: var(--fw-bold);
+    font-size: var(--bl);
+    color: var(--color-fg);
+    text-decoration: none;
+
+    span {
+      color: var(--color-accent);
+    }
+  }
+
+  .drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+
+    svg {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .drawer-nav {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .drawer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .drawer-socials {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-md);
+    color: var(--color-fg-muted);
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+      color: var(--color-fg);
+      background-color: var(--color-border);
+    }
+  }
+
+  .social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+</style>
+
+<dialog id="sidebar-drawer" closedby="any" aria-label="Site navigation">
+  <div class="drawer-header">
+    <a class="logo" href="/">
+      @saeris/<span>markdown</span>
+    </a>
+    <button
+      class="drawer-close"
+      id="drawer-close"
+      commandfor="sidebar-drawer"
+      command="close"
+      aria-label="Close navigation"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="drawer-nav">
+    <SidebarNav sections={sections} currentPath={currentPath} />
+  </div>
+
+  <div class="drawer-footer">
+    <div class="drawer-socials">
+      <a
+        class="social-link"
+        href="https://github.com/saeris/markdown"
+        aria-label="GitHub"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span class="social-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+    <ThemeSwitcher />
+  </div>
+</dialog>
+
+<script>
+  function initDrawer() {
+    const dialog = document.querySelector<HTMLDialogElement>("#sidebar-drawer");
+    const shell = document.querySelector<HTMLElement>(".app-shell");
+    if (!dialog) return;
+
+    const lockBackground = () => {
+      if (shell) shell.inert = true;
+      document.body.style.overflow = "hidden";
+    };
+
+    const unlockBackground = () => {
+      if (shell) shell.inert = false;
+      document.body.style.overflow = "";
+    };
+
+    dialog.addEventListener("close", unlockBackground);
+
+    // Fallback for browsers without commandfor/command (pre-Chrome 135, pre-Safari 26.2)
+    if (!("commandForElement" in HTMLButtonElement.prototype)) {
+      document.querySelector<HTMLButtonElement>("#drawer-close")
+        ?.addEventListener("click", () => dialog.requestClose());
+
+      document.querySelectorAll<HTMLButtonElement>("[data-opens-drawer]")
+        .forEach((btn) => btn.addEventListener("click", () => {
+          dialog.showModal();
+          lockBackground();
+        }));
+    } else {
+      // Invoker Commands fires before the dialog opens; use toggle event instead
+      dialog.addEventListener("toggle", (e) => {
+        if ((e as ToggleEvent).newState === "open") lockBackground();
+      });
+    }
+  }
+
+  initDrawer();
+  document.addEventListener("astro:after-swap", initDrawer);
+</script>

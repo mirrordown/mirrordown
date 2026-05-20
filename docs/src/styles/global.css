@@ -15,48 +15,123 @@
   }
 
   body {
-    display: grid;
-    grid-template-columns: 1fr;
     min-height: 100dvh;
+    /* Space for the fixed primary header */
     padding-top: var(--nav-height);
   }
 
-  /* ── App shell grid ──────────────────────────────────────────── */
+  /* ── App shell ───────────────────────────────────────────────── */
 
   .app-shell {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr var(--toc-width);
-    grid-template-areas: "sidebar content toc";
-    align-items: start;
-    min-height: 0;
+    display: flex;
+    min-height: calc(100dvh - var(--nav-height));
   }
 
+  /* ── Sidebar (desktop sticky) ────────────────────────────────── */
+
   .app-sidebar {
-    grid-area: sidebar;
     position: sticky;
     top: var(--nav-height);
     height: calc(100dvh - var(--nav-height));
+    width: var(--sidebar-width);
+    flex-shrink: 0;
     overflow-y: auto;
     border-right: 1px solid var(--color-border);
     background-color: var(--color-sidebar-bg);
+    transform: translateX(0);
+    transition: transform 0.25s ease, width 0.25s ease;
   }
+
+  /* ── Content area ────────────────────────────────────────────── */
 
   .app-content {
-    grid-area: content;
+    flex: 1;
     min-width: 0;
+    --content-padding-inline: 4rem; /* must stay in sync with padding-inline × 2 */
     padding-inline: 2rem;
     padding-block: 2rem 4rem;
+    transition: margin-left 0.25s ease;
   }
 
+  /* max-width and margin-inline: auto live in markdown.css (wins cascade over @layer base) */
+
+  /* ── ToC (right aside) ───────────────────────────────────────── */
+
   .app-toc {
-    grid-area: toc;
     position: sticky;
     top: var(--nav-height);
     height: calc(100dvh - var(--nav-height));
+    width: var(--toc-width);
+    flex-shrink: 0;
     overflow-y: auto;
     padding-inline: 1rem;
     padding-block: 1.5rem;
     border-left: 1px solid var(--color-border);
+  }
+
+  /* ── Sidebar collapse — checkbox :has() ──────────────────────── */
+  /*
+    The #sidebar-toggle checkbox lives in the header.
+    body:has() lets us reach across to siblings in .app-shell.
+  */
+
+  body:has(#sidebar-toggle:checked) {
+    .app-sidebar {
+      width: 0;
+      transform: translateX(-100%);
+      overflow: hidden;
+      border-right: none;
+    }
+  }
+
+  /* ── Responsive breakpoints ──────────────────────────────────── */
+
+  /* Narrow desktop (1024–1279px): hide ToC */
+  @media (width < 1280px) {
+    .app-toc {
+      display: none;
+    }
+  }
+
+  /* Tablet + mobile (<1024px): hide desktop sidebar entirely */
+  @media (width < 1024px) {
+    .app-sidebar {
+      display: none;
+    }
+
+    .app-content {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  /* Mobile (<768px): no container padding — breakout elements go edge-to-edge.
+     Prose padding lives on .markdown-content instead (see markdown.css). */
+  @media (width < 768px) {
+    .app-content {
+      --content-padding-inline: 0px;
+      padding-inline: 0;
+      padding-block: 0.75rem 3rem;
+      /* Only pre elements may scroll horizontally; cancel rubberbanding on the content area */
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+    }
+
+    /* Bump prose in from the screen edge.
+       --prose-padding-inline lets breakout elements in markdown.css cancel this too. */
+    .markdown-content {
+      --prose-padding-inline: max(1rem, env(safe-area-inset-left));
+      padding-inline: var(--prose-padding-inline);
+    }
+
+    /* PageNav sits outside .markdown-content but must align with prose text */
+    .page-nav-wrapper {
+      padding-inline: var(--prose-padding-inline, 1rem);
+    }
+
+    /* Body also needs space for the secondary sticky bar */
+    body {
+      padding-top: calc(var(--nav-height) * 2);
+    }
   }
 
   /* ── Focus visibility ────────────────────────────────────────── */

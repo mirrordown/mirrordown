@@ -4,7 +4,7 @@ description: "Adds definition list syntax using terms followed by : or ~ descrip
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

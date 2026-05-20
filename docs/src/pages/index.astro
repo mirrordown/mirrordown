@@ -4,7 +4,7 @@ import Root from "../layouts/Root.astro";
 
 const allEntries = await getCollection("docs");
 const plugins = allEntries
-  .filter((e) => e.id.startsWith("plugins/"))
+  .filter((e) => e.id.startsWith("guide/plugins/"))
   .sort((a, b) => a.id.localeCompare(b.id));
 ---
 

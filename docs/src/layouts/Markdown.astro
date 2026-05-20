@@ -3,6 +3,7 @@ import type { MarkdownHeading } from "astro";
 import { getCollection } from "astro:content";
 import Root from "./Root.astro";
 import Sidebar from "../components/Sidebar.astro";
+import SidebarDrawer from "../components/SidebarDrawer.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import PageNav from "../components/PageNav.astro";
 import "@saeris/remd-tabs/tabs.css";
@@ -21,26 +22,59 @@ const currentPath = new URL(Astro.request.url).pathname;
 
 const entries = await getCollection("docs");
 
-const groupMap = new Map<string, { label: string; href: string }[]>();
-for (const entry of entries.sort((a, b) => a.id.localeCompare(b.id))) {
-  const slash = entry.id.indexOf("/");
-  const group = slash === -1 ? "" : entry.id.slice(0, slash);
-  const items = groupMap.get(group) ?? [];
-  items.push({ label: entry.data.title, href: `/${entry.id}` });
-  groupMap.set(group, items);
+function slugToLabel(slug: string) {
+  return slug.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
 }
 
-const sidebarGroups = [...groupMap.entries()].map(([group, items]) => ({
-  title: group.charAt(0).toUpperCase() + group.slice(1),
-  items,
-}));
+// Build: section → category → items
+// Path format: <section>/<category>/<slug> or <section>/<slug>
+type NavItem = { label: string; href: string; root?: boolean };
+type NavCategory = { title: string; items: NavItem[] };
+type NavSection = { title: string; rootHref?: string; categories: NavCategory[] };
+
+const sectionMap = new Map<string, NavSection>();
+
+for (const entry of entries.sort((a, b) => a.id.localeCompare(b.id))) {
+  const parts = entry.id.split("/");
+  const sectionSlug = parts[0]!;
+  const item: NavItem = { label: entry.data.title, href: `/${entry.id}`, root: entry.data.root };
+
+  if (!sectionMap.has(sectionSlug)) {
+    sectionMap.set(sectionSlug, { title: slugToLabel(sectionSlug), categories: [] });
+  }
+  const section = sectionMap.get(sectionSlug)!;
+
+  if (item.root) section.rootHref = item.href;
+
+  if (parts.length === 3) {
+    // <section>/<category>/<slug>
+    const categorySlug = parts[1]!;
+    let cat = section.categories.find((c) => c.title === slugToLabel(categorySlug));
+    if (!cat) {
+      cat = { title: slugToLabel(categorySlug), items: [] };
+      section.categories.push(cat);
+    }
+    cat.items.push(item);
+  } else {
+    // <section>/<slug> — flat item under an implicit unnamed category
+    let cat = section.categories.find((c) => c.title === "");
+    if (!cat) {
+      cat = { title: "", items: [] };
+      section.categories.push(cat);
+    }
+    cat.items.push(item);
+  }
+}
+
+const sidebarSections = [...sectionMap.values()];
 ---
 
-<Root title={title} description={description}>
+<Root title={title} description={description} hasSidebar={true}>
   <link slot="head" rel="stylesheet" href="/markdown.css" />
+  <SidebarDrawer sections={sidebarSections} currentPath={currentPath} />
   <div class="app-shell">
     <aside class="app-sidebar">
-      <Sidebar groups={sidebarGroups} currentPath={currentPath} />
+      <Sidebar sections={sidebarSections} currentPath={currentPath} />
     </aside>
 
     <main class="app-content">

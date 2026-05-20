@@ -4,7 +4,7 @@ description: Adds abbreviation definitions that auto-expand matching text with t
 ---
 
 <style>
-  @import url("../markdown.css");
+  @import url("../../markdown.css");
 </style>
 
 ## Overview

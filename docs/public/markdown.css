@@ -5,7 +5,8 @@
 */
 
 .markdown-content {
-  max-width: var(--content-max-width, 720px);
+  max-width: var(--content-max-width, 760px);
+  margin-inline: auto;
 
   /* ── Headings ──────────────────────────────────────────────── */
 
@@ -24,6 +25,7 @@
 
   h1 {
     font-size: var(--hu, 2.25rem);
+    margin-block-start: 0;
     margin-block-end: 1.5rem;
   }
 
@@ -145,7 +147,7 @@
   /* ── Table ─────────────────────────────────────────────────── */
 
   table {
-    width: 100%;
+    width: stretch;
     border-collapse: collapse;
     margin-block-end: 1rem;
     font-size: var(--bs, 0.875rem);
@@ -184,5 +186,47 @@
   p img {
     display: inline;
     vertical-align: middle;
+  }
+
+  /* ── Block-level breakout (mobile only) ───────────────────────
+     At mobile, --content-padding-inline is 0 and
+     --prose-padding-inline provides edge-to-edge breakout.
+     On desktop these elements stay within the prose width.
+  ─────────────────────────────────────────────────────────────── */
+
+  @media (width < 768px) {
+    pre,
+    .markdown-alert,
+    .markdown-tabs,
+    .markdown-steps {
+      --_outer: var(--content-padding-inline, 0px);
+      --_inner: var(--prose-padding-inline, 1rem);
+      width: calc(100% + var(--_inner) * 2);
+      margin-inline: calc(var(--_inner) * -1);
+    }
+
+    pre {
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      font-size: var(--bs, 0.875rem);
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+
+      code {
+        font-size: inherit;
+        white-space: pre;
+      }
+    }
+
+    .markdown-alert {
+      border-radius: 0;
+    }
+
+    /* Re-indent steps content so number circles align with prose text */
+    .markdown-steps {
+      padding-inline: var(--prose-padding-inline, 1rem);
+    }
   }
 }
