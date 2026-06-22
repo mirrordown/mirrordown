@@ -1,1 +1,1 @@
-export function activate() {}
+export function activate(): void {}
