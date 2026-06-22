@@ -400,7 +400,7 @@ function tokenizeDefListStart(
 
   const tail = this.events[this.events.length - 1];
   let initialSize =
-    tail?.[1].type === "linePrefix"
+    tail[1].type === "linePrefix"
       ? tail[2].sliceSerialize(tail[1], true).length
       : 0;
 
@@ -522,7 +522,7 @@ function tokenizeIndent(
 ): State {
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
-    return tail?.[1].type === "linePrefix" &&
+    return tail[1].type === "linePrefix" &&
       tail[2].sliceSerialize(tail[1], true).length === this.containerState!.size
       ? ok(code)
       : nok(code);
@@ -544,7 +544,6 @@ function tokenizeDefListDescriptionPrefixWhitespace(
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
     return !markdownSpace(code) &&
-      tail &&
       tail[1].type === tokenTypes.defListDescriptionPrefixWhitespace
       ? ok(code)
       : nok(code);

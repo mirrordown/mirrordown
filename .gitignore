@@ -21,6 +21,7 @@ node_modules
 
 # Claude
 .claude/
+superpowers/
 
 # Debug / browser automation artifacts
 .playwright-mcp/

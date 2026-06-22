@@ -108,8 +108,8 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       },
       {
         shift: -1,
-        meta: (m) =>
-          m?.attrsItemTitle === true && m?.attrsRole === "containerItem"
+        meta: (m: Record<string, unknown> | null) =>
+          m?.attrsItemTitle === true && m.attrsRole === "containerItem"
       }
     ],
     transform(tokens, index) {

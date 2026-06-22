@@ -9,8 +9,7 @@ export interface RubyOptions {
 }
 
 function makeRule(rp: [string, string] | undefined) {
-  const hasRp =
-    Array.isArray(rp) && rp.length === 2 && rp[0] !== "" && rp[1] !== "";
+  const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   return (state: StateInline, silent: boolean): boolean => {
     if (silent) return false;
@@ -67,8 +66,7 @@ function makeRule(rp: [string, string] | undefined) {
 
 export const ruby = (md: MarkdownIt, options: RubyOptions = {}): void => {
   const { rp } = options;
-  const hasRp =
-    Array.isArray(rp) && rp.length === 2 && rp[0] !== "" && rp[1] !== "";
+  const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   if (hasRp) {
     md.renderer.rules["rp_open"] = (tokens, idx): string =>

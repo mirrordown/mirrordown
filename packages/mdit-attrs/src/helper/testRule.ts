@@ -81,7 +81,6 @@ export const testRule = (
   }
 
   const token = tokens[tokenIndex];
-  if (!token) return { match: false, position: null, range: null };
 
   let range: DelimiterRange | null = null;
 
@@ -120,7 +119,6 @@ export const testRule = (
 
       if (idx >= 0) {
         const child = children[idx];
-        if (!child) return { match: false, position: null, range: null };
         const result = testChild(child, childTest);
         if (!result.match) return { match: false, position: null, range: null };
         if (result.range) range = result.range;

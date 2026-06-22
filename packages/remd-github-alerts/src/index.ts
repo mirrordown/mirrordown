@@ -40,24 +40,30 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   } = options;
 
   const aliasMap: Record<string, string> = { ...ALERT_ALIASES, ...extraTypes };
-  const titles = customTitles as Record<string, string>;
+  const titles: Partial<Record<AlertType, string>> = customTitles;
 
   const resolve = (keyword: string): string | undefined =>
     aliasMap[matchCaseInsensitive ? keyword.toLowerCase() : keyword];
 
+  // `type` may be a user-defined alert type from `options.types` that
+  // isn't in DEFAULT_TITLE; capitalize the keyword as a last resort.
+  /* oxlint-disable typescript/no-unnecessary-condition */
   const titleFor = (type: string): string =>
-    titles[type] ?? DEFAULT_TITLE[type as AlertType] ?? capitalize(type);
+    titles[type as AlertType] ??
+    DEFAULT_TITLE[type as AlertType] ??
+    capitalize(type);
+  /* oxlint-enable typescript/no-unnecessary-condition */
 
   const iconFor = (type: string): string =>
-    showIcons ? (ICONS[type as AlertType] ?? "") : "";
+    showIcons ? ICONS[type as AlertType] : "";
 
   return (tree) => {
     visit(tree, "blockquote", (node: Blockquote) => {
       const firstChild = node.children[0];
-      if (firstChild?.type !== "paragraph") return;
+      if (firstChild.type !== "paragraph") return;
 
       const firstText = firstChild.children[0];
-      if (firstText?.type !== "text") return;
+      if (firstText.type !== "text") return;
 
       const firstLine = firstText.value.split("\n")[0];
       const match = ALERT_RE.exec(firstLine.trim());
@@ -68,7 +74,7 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
       if (!type) return;
 
       const isFoldable = foldMarker === "+" || foldMarker === "-";
-      const title = customTitle?.trim() || titleFor(type);
+      const title = customTitle.trim() || titleFor(type);
 
       // Strip the marker line; keep any body text on subsequent lines
       const rest = firstText.value.slice(firstLine.length).replace(/^\n/, "");
@@ -129,7 +135,7 @@ const nl: ElementContent = { type: "text", value: "\n" };
 
 export const githubAlertsHastHandlers = {
   blockquote(state: State, node: Blockquote): ElementContent {
-    const data = (node as AlertNode).data;
+    const data = (node as Partial<AlertNode>).data;
 
     // Non-alert blockquotes fall through to the default handler
     if (!data?.alertType) {
@@ -144,7 +150,9 @@ export const githubAlertsHastHandlers = {
     }
 
     const containerClass =
-      (data.hProperties.class as string) ?? "markdown-alert";
+      typeof data.hProperties.class === "string"
+        ? data.hProperties.class
+        : "markdown-alert";
     const titleTag = data.alertFoldable ? "summary" : "p";
     const titleEl = buildTitleElement(
       titleTag,

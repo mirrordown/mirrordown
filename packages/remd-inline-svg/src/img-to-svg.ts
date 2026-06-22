@@ -35,9 +35,7 @@ const getInjectionParent = (tree: Root): Parent => {
   for (const child of tree.children) {
     const node = child as unknown as Record<string, unknown>;
     if (node.type === `element` && node.tagName === `html`) {
-      for (const htmlChild of (node.children as Array<
-        Record<string, unknown>
-      >) ?? []) {
+      for (const htmlChild of node.children as Array<Record<string, unknown>>) {
         if (htmlChild.type === `element` && htmlChild.tagName === `body`) {
           return htmlChild as unknown as Parent;
         }

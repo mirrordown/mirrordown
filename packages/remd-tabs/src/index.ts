@@ -84,7 +84,7 @@ const extractHeaderPara = (
 
   for (const lineSegs of lines) {
     const first = lineSegs[0];
-    if (first?.type !== "text") return null;
+    if (first.type !== "text") return null;
 
     const header = parseTabHeader(first.value);
     if (!header) return null;
@@ -145,7 +145,7 @@ const isExplicitBQ = (bq: Blockquote): boolean =>
     if (child.type !== "paragraph") return false;
     const first = child.children[0];
     return (
-      first?.type === "text" &&
+      first.type === "text" &&
       parseTabHeader(first.value.split("\n")[0]) !== null
     );
   });
@@ -176,9 +176,8 @@ const extractTrailingTabHeader = (
       const para = last;
       const lines = paraToLines(para);
       const lastLine = lines[lines.length - 1];
-      if (!lastLine) return null;
       const first = lastLine[0];
-      if (first?.type !== "text") return null;
+      if (first.type !== "text") return null;
       const header = parseTabHeader(first.value);
       if (!header) return null;
       const labelText = header.label;
@@ -254,7 +253,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
 
     for (const lineSegs of lines) {
       const first = lineSegs[0];
-      if (first?.type === "text") {
+      if (first.type === "text") {
         const header = parseTabHeader(first.value);
         if (header) {
           // Flush accumulated body lines into current segment
@@ -442,7 +441,7 @@ const processTabsInChildren = (
             const segments = splitBlockquote(bq, explicit);
 
             const firstSeg = segments[0];
-            if (firstSeg?.header === null) {
+            if (firstSeg.header === null) {
               rawTabs[currentTabIdx].body.push(...firstSeg.body);
             }
 
@@ -501,7 +500,7 @@ const processTabsInChildren = (
                     // Re-split absorbed inner blockquote to extract sibling headers
                     const innerSegs = splitBlockquote(innerBq, false);
                     const innerFirst = innerSegs[0];
-                    if (innerFirst?.header === null) {
+                    if (innerFirst.header === null) {
                       seg.header.body.push(...innerFirst.body);
                     }
                     for (let is = 1; is < innerSegs.length; is++) {

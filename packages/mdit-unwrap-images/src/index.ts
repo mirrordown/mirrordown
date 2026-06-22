@@ -16,8 +16,8 @@ export const unwrapImages: PluginSimple = (md) => {
 
       if (
         open.type !== "paragraph_open" ||
-        inline?.type !== "inline" ||
-        close?.type !== "paragraph_close"
+        inline.type !== "inline" ||
+        close.type !== "paragraph_close"
       ) {
         i++;
         continue;

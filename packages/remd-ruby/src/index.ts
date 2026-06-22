@@ -197,11 +197,10 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
   options = {}
 ) {
   const { rp } = options;
-  const hasRp =
-    Array.isArray(rp) && rp.length === 2 && rp[0] !== "" && rp[1] !== "";
+  const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   // oxlint-disable-next-line typescript/no-explicit-any
-  const data = this.data() as Record<string, any[]>;
+  const data = this.data() as Partial<Record<string, any[]>>;
   (data.micromarkExtensions ??= []).push(rubyMicromarkExtension);
   (data.fromMarkdownExtensions ??= []).push(rubyFromMarkdownExtension);
 

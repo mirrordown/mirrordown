@@ -110,7 +110,7 @@ const extractHeaderPara = (
 
   for (const lineSegs of lines) {
     const first = lineSegs[0];
-    if (first?.type !== "text") break;
+    if (first.type !== "text") break;
 
     const header = parseHeaderPrefix(first.value);
     if (!header) break;
@@ -172,7 +172,7 @@ const splitBlockquote = (
 
     for (const lineSegs of lines) {
       const first = lineSegs[0];
-      if (first?.type === "text") {
+      if (first.type === "text") {
         const header = parseHeaderPrefix(first.value);
         if (header && header.depth <= currentDepth + 1) {
           // Flush accumulated body lines
@@ -298,7 +298,7 @@ const processStepsInChildren = (
             const segments = splitBlockquote(sibling, counters, currentDepth);
 
             const firstSeg = segments[0];
-            if (firstSeg?.header === null) {
+            if (firstSeg.header === null) {
               rawSteps[currentStepIdx].body.push(...firstSeg.body);
             }
 

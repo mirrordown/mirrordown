@@ -20,16 +20,20 @@ export type GroupedImageNodes = Map<string, ImageNode[]>;
 export type ImageNodeGroup = [string, ImageNode[]];
 
 export const isImageNode = (node: unknown): node is ImageNode => {
-  const img = node as ImageNode;
+  if (typeof node !== "object" || node === null) return false;
+  const img = node as {
+    type?: string;
+    tagName?: string;
+    properties?: { src?: unknown };
+  };
   return (
     img.type === `element` &&
     img.tagName === `img` &&
-    img.properties &&
-    typeof img.properties.src === `string`
+    typeof img.properties?.src === `string`
   );
 };
 
 export const isSvgNode = (node: Node): node is SvgNode => {
-  const svg = node as SvgNode;
+  const svg = node as { type?: string; tagName?: string };
   return svg.type === `element` && svg.tagName === `svg`;
 };

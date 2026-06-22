@@ -10,7 +10,6 @@ export const getMatchingOpeningToken = (
   index: number
 ): Token | null => {
   const token = tokens[index];
-  if (!token) return null;
   if (token.type === "softbreak") return null;
   if (token.nesting === 0) return token;
 
