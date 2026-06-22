@@ -17,7 +17,7 @@ import { tokenTypes, clonePoint } from "./types.js";
 import { analyzeDefTermFlow, subtokenizeDefTerm } from "./def-term-flow.js";
 import type { FlowToken } from "./types.js";
 
-type EventTuple = [string, Token, TokenizeContext];
+type EventTuple = Event;
 interface LazyParser {
   parser: { lazy: Record<number, boolean> };
 }
@@ -108,12 +108,12 @@ function resolveAllDefinitionTerm(
         nextDlOffset++;
       }
       if (nextDlOffset > 0 && index + nextDlOffset < evts.length) {
-        // adjacent defList found — extend current token and splice out the gap+enter
+        // adjacent defList found â€” extend current token and splice out the gap+enter
         event[1].end = clonePoint(evts[index + nextDlOffset][1].end);
         splice(events, index, nextDlOffset + 1, []);
         index -= nextDlOffset;
       } else {
-        // no adjacent defList — fix up exit token to reference the enter token
+        // no adjacent defList â€” fix up exit token to reference the enter token
         event[1] = dlStack.pop()!;
       }
     }
@@ -207,9 +207,7 @@ function resolveDefList(
       _loose: loose
     };
     allDescriptionTokens.push(defListDescriptionToken);
-    splice(events as Event[], index + 1, 0, [
-      ["enter", defListDescriptionToken, context] as Event
-    ]);
+    splice(events, index + 1, 0, [["enter", defListDescriptionToken, context]]);
     return 1;
   }
 
@@ -219,9 +217,7 @@ function resolveDefList(
     // _prevLoose is set on the next prefix when the current description had internal blanks
     // (handled in the enter defListDescriptionPrefix block)
 
-    splice(events as Event[], index, 0, [
-      ["exit", defListDescriptionToken!, context] as Event
-    ]);
+    splice(events, index, 0, [["exit", defListDescriptionToken!, context]]);
     return 1;
   }
 }
@@ -243,9 +239,9 @@ function createDefTermEvent(
       start: clonePoint(defListEnterEvent[1].start),
       end: clonePoint(defListEnterEvent[1].start)
     };
-    splice(events as Event[], defListStartIndex, 0, [
-      ["enter", termToken, context] as Event,
-      ["exit", termToken, context] as Event
+    splice(events, defListStartIndex, 0, [
+      ["enter", termToken, context],
+      ["exit", termToken, context]
     ]);
     return defListStartIndex;
   }
@@ -306,10 +302,10 @@ function resolveDefinitionTermTo(
   }
 
   const defListEnterEvent = events[defListStartIndex];
-  splice(events as Event[], defListStartIndex, 1, []);
+  splice(events, defListStartIndex, 1, []);
 
   if (blockQuoteExitIndex != null) {
-    splice(events as Event[], blockQuoteExitIndex, 1, []);
+    splice(events, blockQuoteExitIndex, 1, []);
   }
 
   let newDefListStartIndex = createDefTermEvent(
@@ -323,18 +319,14 @@ function resolveDefinitionTermTo(
     blockQuoteExit![1].end = clonePoint(
       events[newDefListStartIndex - 1][1].end
     );
-    splice(events as Event[], newDefListStartIndex, 0, [
-      blockQuoteExit! as Event
-    ]);
+    splice(events, newDefListStartIndex, 0, [blockQuoteExit!]);
     newDefListStartIndex += 1;
   }
 
   defListEnterEvent[1].start = clonePoint(
     events[newDefListStartIndex][1].start
   );
-  splice(events as Event[], newDefListStartIndex, 0, [
-    defListEnterEvent as Event
-  ]);
+  splice(events, newDefListStartIndex, 0, [defListEnterEvent]);
   return newDefListStartIndex - defListStartIndex;
 }
 
@@ -502,7 +494,7 @@ function tokenizeDefListContinuation(
     const hadBlank = this.containerState!.lastBlankLine;
     this.containerState!.furtherBlankLines = undefined;
     this.containerState!.lastBlankLine = undefined;
-    // indentOk is the success branch of the attempt — only reached when indented
+    // indentOk is the success branch of the attempt â€” only reached when indented
     // continuation is accepted, meaning the preceding blank was genuinely internal
     const indentOk = (code: number | null): State | undefined => {
       if (hadBlank) this.containerState!.hadBlankInDescription = true;

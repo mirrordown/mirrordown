@@ -102,12 +102,17 @@ export const remarkDel: Plugin<[], Root> = () => {
 
     const openingNode = node;
 
-    const closingNode = findAfter(parent, openingNode, (n) => {
+    const closingNode = findAfter(parent, openingNode, (n): n is Text => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       return n.type === `text` && REGEX_ENDING.test((n as Text).value);
     });
 
     if (!closingNode) return;
 
+    // unist-util-find-all-* are generic over Parent; we know paragraph
+    // siblings are PhrasingContent. The cast narrows the lib's `Node[]`
+    // return to the concrete child type we know we're working with.
+    /* oxlint-disable typescript/no-unsafe-type-assertion */
     const beforeChildren = findAllBefore(
       parent,
       openingNode
@@ -121,6 +126,7 @@ export const remarkDel: Plugin<[], Root> = () => {
       parent,
       closingNode
     ) as PhrasingContent[];
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     const value = openingNode.value;
     const match = Array.from(value.matchAll(REGEX_STARTING_GLOBAL))[0];
@@ -136,7 +142,7 @@ export const remarkDel: Plugin<[], Root> = () => {
       mainChildren.unshift(u(`text`, value.slice(mIndex + mLength)));
     }
 
-    const value_ = (closingNode as Text).value;
+    const value_ = closingNode.value;
     const match_ = Array.from(value_.matchAll(REGEX_ENDING_GLOBAL))[0];
     const [matched_] = match_;
     const mIndex_ = match_.index;
