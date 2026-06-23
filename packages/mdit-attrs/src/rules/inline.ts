@@ -23,7 +23,8 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
 
         // The preceding sibling must be nesting === 0 but not a softbreak
         const prev = children[i - 1];
-        if (prev.nesting !== 0 || prev.type === "softbreak") continue;
+        // oxlint-disable-next-line typescript/no-unnecessary-condition
+        if (prev?.nesting !== 0 || prev.type === "softbreak") continue;
 
         addAttrs(prev, child.content, range, options.allowed);
         children.splice(i, 1);
@@ -57,7 +58,8 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
 
         // The preceding sibling must be a closing tag (nesting === -1)
         const prev = children[i - 1];
-        if (prev.nesting !== -1) continue;
+        // oxlint-disable-next-line typescript/no-unnecessary-condition
+        if (!prev || prev.nesting !== -1) continue;
 
         // Find the matching opening token among children
         const openType = prev.type.replace(/_close$/, "_open");

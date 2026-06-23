@@ -1,5 +1,29 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`inline-svg (rehype) > inline-svg (rehype): 'external svg url' 1`] = `"<p><img src="https://example.com/icon.svg" alt="icon"></p>"`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'no images' 1`] = `"<p>Plain text paragraph with no images.</p>"`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'non-svg image' 1`] = `"<p><img src="./fixtures/logo.png" alt="logo"></p>"`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'same svg twice' 1`] = `
+"<p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" alt="icon"><path fill="#2e7d32" d="M5 24c0 18.9 14.8 19 17 19h4S24.1 26.5 5 24"></path><path fill="#388e3c" d="M22 26h4v17h-4z"></path><path fill="#c62828" d="M34 16c0 5.1-5.2 8.2-8 8.2s-2-3.1-2-8.2 5-9.2 5-9.2 5 4.1 5 9.2"></path><path fill="#c62828" d="M14 16c0 5.1 5.2 8.2 8 8.2s2-3.1 2-8.2-5-9.2-5-9.2-5 4.1-5 9.2"></path><path fill="#e53935" d="M24 27c-2.2-1.6-1.9-4.5 2.4-8.8C30.8 13.8 32 7 32 7s5 3.4 5 9c0 5.9-5.7 11-13 11"></path><path fill="#e53935" d="M24 27c2.2-1.6 1.9-4.5-2.4-8.8C17.2 13.8 16 7 16 7s-5 3.4-5 9c0 5.9 5.7 11 13 11"></path><path fill="#f44336" d="M30 16c0 6.1-2.7 11-6 11s-6-4.9-6-11 6-11 6-11 6 4.9 6 11"></path><path fill="#4caf50" d="M22 43h4c2.2 0 17-.1 17-19-19.1 2.5-21 19-21 19"></path></svg></p>
+<p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" alt="icon"><path fill="#2e7d32" d="M5 24c0 18.9 14.8 19 17 19h4S24.1 26.5 5 24"></path><path fill="#388e3c" d="M22 26h4v17h-4z"></path><path fill="#c62828" d="M34 16c0 5.1-5.2 8.2-8 8.2s-2-3.1-2-8.2 5-9.2 5-9.2 5 4.1 5 9.2"></path><path fill="#c62828" d="M14 16c0 5.1 5.2 8.2 8 8.2s2-3.1 2-8.2-5-9.2-5-9.2-5 4.1-5 9.2"></path><path fill="#e53935" d="M24 27c-2.2-1.6-1.9-4.5 2.4-8.8C30.8 13.8 32 7 32 7s5 3.4 5 9c0 5.9-5.7 11-13 11"></path><path fill="#e53935" d="M24 27c2.2-1.6 1.9-4.5-2.4-8.8C17.2 13.8 16 7 16 7s-5 3.4-5 9c0 5.9 5.7 11 13 11"></path><path fill="#f44336" d="M30 16c0 6.1-2.7 11-6 11s-6-4.9-6-11 6-11 6-11 6 4.9 6 11"></path><path fill="#4caf50" d="M22 43h4c2.2 0 17-.1 17-19-19.1 2.5-21 19-21 19"></path></svg></p>"
+`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'simple inline' 1`] = `"<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" alt=""><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity="0.5"></circle></svg></p>"`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'typical document' 1`] = `
+"<h1>Hello</h1>
+<p>This is a test markdown document.</p>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" alt="Inline SVG"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity="0.5"></circle></svg></p>
+<p>Cheers</p>"
+`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'utf-8 path' 1`] = `"<p><svg xmlns="http://www.w3.org/2000/svg" class="acjk" viewBox="0 0 1024 1024" alt="一"><path d="M512 532c96-10 232-21 370 0 28 4 52-17 34-36-24-24-63-48-84-54-13-4-29-5-50 0-50 10-108 20-270 38-158 16-305 24-392 27-11 0-21 7-20 17 0 18 23 36 45 47 34 17 61 6 95 0 96-19 190-32 272-39"></path></svg></p>"`;
+
+exports[`inline-svg (rehype) > inline-svg (rehype): 'with alt text' 1`] = `"<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" alt="Inline SVG"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity="0.5"></circle></svg></p>"`;
+
 exports[`inline-svg (rehype): 'external svg url' 1`] = `"<p><img src="https://example.com/icon.svg" alt="icon"></p>"`;
 
 exports[`inline-svg (rehype): 'no images' 1`] = `"<p>Plain text paragraph with no images.</p>"`;

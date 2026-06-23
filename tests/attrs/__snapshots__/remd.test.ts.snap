@@ -51,3 +51,55 @@ exports[`attrs (remark): 'softbreak: block via softbreak attr l…' 1`] = `"<p c
 exports[`attrs (remark): 'table: cell attr' 1`] = `"<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>cell {.cell-class}</td></tr></tbody></table>"`;
 
 exports[`attrs (remark): 'table: table-level attr' 1`] = `"<table class="my-table"><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>"`;
+
+exports[`attrs/remd > attrs (remark): 'block: paragraph with id' 1`] = `"<p id="para-id">Some text.</p>"`;
+
+exports[`attrs/remd > attrs (remark): 'block: paragraph with trailing class' 1`] = `"<p class="intro">Hello world.</p>"`;
+
+exports[`attrs/remd > attrs (remark): 'fence: language with class' 1`] = `
+"<pre><code class="language-js">const x = 1;
+</code></pre>"
+`;
+
+exports[`attrs/remd > attrs (remark): 'fence: language with id' 1`] = `
+"<pre><code class="language-python">print("hello")
+</code></pre>"
+`;
+
+exports[`attrs/remd > attrs (remark): 'fence: multiple attrs' 1`] = `
+"<pre><code class="language-ts">type T = string;
+</code></pre>"
+`;
+
+exports[`attrs/remd > attrs (remark): 'fence: no language with attr' 1`] = `
+"<pre><code class="plain">plain text
+</code></pre>"
+`;
+
+exports[`attrs/remd > attrs (remark): 'heading: h1 with class' 1`] = `"<h1 class="title">Hello World</h1>"`;
+
+exports[`attrs/remd > attrs (remark): 'heading: h2 with id' 1`] = `"<h2 id="section-2">Section Two</h2>"`;
+
+exports[`attrs/remd > attrs (remark): 'heading: multiple attrs' 1`] = `"<h3 class="active" id="deep" data-level="3">Deep Section</h3>"`;
+
+exports[`attrs/remd > attrs (remark): 'hr: thematic break with class' 1`] = `"<hr class="divider">"`;
+
+exports[`attrs/remd > attrs (remark): 'inline: code span with class' 1`] = `"<p><code class="code-class">code</code></p>"`;
+
+exports[`attrs/remd > attrs (remark): 'inline: em with class' 1`] = `"<p><em class="em-class">emphasized</em></p>"`;
+
+exports[`attrs/remd > attrs (remark): 'inline: image with class' 1`] = `"<p><img src="img.png" alt="alt" class="img-class"></p>"`;
+
+exports[`attrs/remd > attrs (remark): 'inline: strikethrough with class' 1`] = `"<p><del class="del-class">struck</del></p>"`;
+
+exports[`attrs/remd > attrs (remark): 'inline: strong with class' 1`] = `"<p><strong class="bold-class">bold</strong></p>"`;
+
+exports[`attrs/remd > attrs (remark): 'list: item end attr' 1`] = `"<ul><li>item one</li><li>item two</li></ul>"`;
+
+exports[`attrs/remd > attrs (remark): 'list: list-level attr via softbreak' 1`] = `"<ul class="my-list"><li>alpha</li><li>beta</li></ul>"`;
+
+exports[`attrs/remd > attrs (remark): 'softbreak: block via softbreak attr l…' 1`] = `"<p class="softbreak-class">A paragraph with attrs</p>"`;
+
+exports[`attrs/remd > attrs (remark): 'table: cell attr' 1`] = `"<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>cell {.cell-class}</td></tr></tbody></table>"`;
+
+exports[`attrs/remd > attrs (remark): 'table: table-level attr' 1`] = `"<table class="my-table"><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>"`;

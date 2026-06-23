@@ -1,5 +1,7 @@
-// AlertType narrowing via cast — keys may be user-defined and fall through to capitalize.
+// AlertType narrowing via cast — keys may be user-defined and fall through
+// to capitalize. Defensive optional chains on array[i] accesses are also kept.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
 import type { PluginWithOptions } from "markdown-it";
 import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
 import { ICONS } from "./icons.js";
@@ -34,12 +36,10 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
 
   // `type` may be a user-defined alert type from `options.types` that
   // isn't in DEFAULT_TITLE; capitalize the keyword as a last resort.
-  /* oxlint-disable typescript/no-unnecessary-condition */
   const titleFor = (type: string): string =>
     titles[type as AlertType] ??
     DEFAULT_TITLE[type as AlertType] ??
     capitalize(type);
-  /* oxlint-enable typescript/no-unnecessary-condition */
 
   const iconFor = (type: string): string =>
     showIcons ? ICONS[type as AlertType] : "";
@@ -61,11 +61,11 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
 
       // The first inline token inside the blockquote holds the first line
       const firstInline = tokens[i + 2];
-      if (firstInline.type !== "inline" || !firstInline.children) continue;
+      if (firstInline?.type !== "inline" || !firstInline.children) continue;
 
       // Check first child text token for the [!TYPE] marker
       const firstChild = firstInline.children[0];
-      if (firstChild.type !== "text") continue;
+      if (firstChild?.type !== "text") continue;
 
       const firstLine = firstChild.content.split("\n")[0];
       const match = ALERT_RE.exec(firstLine.trim());
@@ -76,7 +76,7 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       if (!type) continue;
 
       const isFoldable = foldMarker === "+" || foldMarker === "-";
-      const title = customTitle.trim() || titleFor(type);
+      const title = customTitle?.trim() || titleFor(type);
 
       // Strip the marker line from the first inline token's children.
       // The first text child holds only the marker ("[!NOTE]") because mdit

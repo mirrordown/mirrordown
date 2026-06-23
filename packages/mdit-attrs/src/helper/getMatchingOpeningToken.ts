@@ -10,6 +10,8 @@ export const getMatchingOpeningToken = (
   index: number
 ): Token | null => {
   const token = tokens[index];
+  // oxlint-disable-next-line typescript/no-unnecessary-condition
+  if (!token) return null;
   if (token.type === "softbreak") return null;
   if (token.nesting === 0) return token;
 

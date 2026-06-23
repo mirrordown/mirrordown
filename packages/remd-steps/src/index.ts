@@ -1,8 +1,10 @@
 // This plugin performs heavy tree-rewriting across mdast/hast/unist types
 // that don't unify cleanly; type assertions bridging those boundaries are
 // reviewed and intentional, so the rule is disabled file-wide rather than
-// per-cast.
+// per-cast. Defensive optional chains on array[i] accesses are also kept
+// because TS doesn't model index access as fallible.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
 import type {
@@ -115,7 +117,7 @@ const extractHeaderPara = (
 
   for (const lineSegs of lines) {
     const first = lineSegs[0];
-    if (first.type !== "text") break;
+    if (first?.type !== "text") break;
 
     const header = parseHeaderPrefix(first.value);
     if (!header) break;
@@ -177,7 +179,7 @@ const splitBlockquote = (
 
     for (const lineSegs of lines) {
       const first = lineSegs[0];
-      if (first.type === "text") {
+      if (first?.type === "text") {
         const header = parseHeaderPrefix(first.value);
         if (header && header.depth <= currentDepth + 1) {
           // Flush accumulated body lines
@@ -303,7 +305,7 @@ const processStepsInChildren = (
             const segments = splitBlockquote(sibling, counters, currentDepth);
 
             const firstSeg = segments[0];
-            if (firstSeg.header === null) {
+            if (firstSeg?.header === null) {
               rawSteps[currentStepIdx].body.push(...firstSeg.body);
             }
 

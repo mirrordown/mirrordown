@@ -127,3 +127,131 @@ exports[`tabs (remark): 'three tabs first open by default' 1`] = `
 </code></pre></section><section class="markdown-tabs-panel" aria-label="yarn"><pre><code class="language-sh">yarn add my-package
 </code></pre></section></div></div>"
 `;
+
+exports[`tabs/remd > tabs (remark): '> % with mixed %% depth-2 inside oute…' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="6f872f32"><div class="markdown-tabs-labels"><input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked><label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label><input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden><label class="markdown-tabs-label" for="tabs-64131697-1">Code</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Demo"><div class="markdown-tabs" data-tabs-group="7f3c7bba"><div class="markdown-tabs-labels"><input type="radio" name="tabs-47ca099e" id="tabs-47ca099e-0" hidden checked><label class="markdown-tabs-label" for="tabs-47ca099e-0">Frontend</label><input type="radio" name="tabs-47ca099e" id="tabs-47ca099e-1" hidden><label class="markdown-tabs-label" for="tabs-47ca099e-1">Backend</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Frontend"><div class="markdown-tabs" data-tabs-group="218d6231"><div class="markdown-tabs-labels"><input type="radio" name="tabs-c66cd21a" id="tabs-c66cd21a-0" hidden checked><label class="markdown-tabs-label" for="tabs-c66cd21a-0">React</label><input type="radio" name="tabs-c66cd21a" id="tabs-c66cd21a-1" hidden><label class="markdown-tabs-label" for="tabs-c66cd21a-1">Vue</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="React"><pre><code class="language-tsx">export function App() { return &#x3C;h1>Hello&#x3C;/h1>; }
+</code></pre></section><section class="markdown-tabs-panel" aria-label="Vue"><pre><code class="language-vue">&#x3C;template>&#x3C;h1>Hello&#x3C;/h1>&#x3C;/template></code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Backend"><pre><code class="language-sh">node server.js
+</code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Code"><pre><code class="language-markdown">% Frontend
+%% React
+> \`\`\`tsx
+> export function App() { return &#x3C;h1>Hello&#x3C;/h1>; }
+> \`\`\`
+%% Vue
+> \`\`\`vue
+> &#x3C;template>&#x3C;h1>Hello&#x3C;/h1>&#x3C;/template>
+> \`\`\`
+% Backend
+> \`\`\`sh
+> node server.js
+> \`\`\`
+</code></pre></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'bare continuation keeps block open' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Line one.</p><p>Line two after blank.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'basic two tabs' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'blank line between tabs splits into t…' 1`] = `"<div class="markdown-tabs" data-tabs-group="ce6f7f0b"><div class="markdown-tabs-labels"><input type="radio" name="tabs-9d563182" id="tabs-9d563182-0" hidden checked><label class="markdown-tabs-label" for="tabs-9d563182-0">Tab One</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section></div></div><div class="markdown-tabs" data-tabs-group="ce6f9583"><div class="markdown-tabs-labels"><input type="radio" name="tabs-a9762e0f" id="tabs-a9762e0f-0" hidden checked><label class="markdown-tabs-label" for="tabs-a9762e0f-0">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'blockquote terminated by code fence, …' 1`] = `
+"<blockquote><p>This blockquote is terminated by the code fence that immediately follows it.</p></blockquote><pre><code class="language-js">const x = 1;
+</code></pre><div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-3e078663" id="tabs-3e078663-0" hidden checked><label class="markdown-tabs-label" for="tabs-3e078663-0">Tab One</label><input type="radio" name="tabs-3e078663" id="tabs-3e078663-1" hidden><label class="markdown-tabs-label" for="tabs-3e078663-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'blockquote-depth nesting: > % pattern…' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="6f872f32"><div class="markdown-tabs-labels"><input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked><label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label><input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden><label class="markdown-tabs-label" for="tabs-64131697-1">Code</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Demo"><div class="markdown-tabs" data-tabs-group="c4215d00"><div class="markdown-tabs-labels"><input type="radio" name="tabs-d45bb9e2" id="tabs-d45bb9e2-0" hidden checked><label class="markdown-tabs-label" for="tabs-d45bb9e2-0">JavaScript</label><input type="radio" name="tabs-d45bb9e2" id="tabs-d45bb9e2-1" hidden><label class="markdown-tabs-label" for="tabs-d45bb9e2-1">TypeScript</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="JavaScript"><pre><code class="language-js">console.log("Hello");
+</code></pre></section><section class="markdown-tabs-panel" aria-label="TypeScript"><pre><code class="language-ts">const x: string = "Hello";
+</code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Code"><pre><code class="language-markdown">% JavaScript
+> \`\`\`js
+> console.log("Hello");
+> \`\`\`
+% TypeScript
+> \`\`\`ts
+> const x: string = "Hello";
+> \`\`\`
+</code></pre></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'blockquote-depth nesting: explicit op…' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="6f872f32"><div class="markdown-tabs-labels"><input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked><label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label><input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden><label class="markdown-tabs-label" for="tabs-64131697-1">Code</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Demo"><div class="markdown-tabs" data-tabs-group="a2422b17"><div class="markdown-tabs-labels"><input type="radio" name="tabs-669e52e4" id="tabs-669e52e4-0" hidden><label class="markdown-tabs-label" for="tabs-669e52e4-0">Option A</label><input type="radio" name="tabs-669e52e4" id="tabs-669e52e4-1" hidden checked><label class="markdown-tabs-label" for="tabs-669e52e4-1">Option B</label><input type="radio" name="tabs-669e52e4" id="tabs-669e52e4-2" hidden><label class="markdown-tabs-label" for="tabs-669e52e4-2">Option C</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Option A"><pre><code class="language-sh">echo "not default"
+</code></pre></section><section class="markdown-tabs-panel" aria-label="Option B"><pre><code class="language-sh">echo "default"
+</code></pre></section><section class="markdown-tabs-panel" aria-label="Option C"><pre><code class="language-sh">echo "not default either"
+</code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Code"><pre><code class="language-markdown">% Option A
+> \`\`\`sh
+> echo "not default"
+> \`\`\`
+%+ Option B
+> \`\`\`sh
+> echo "default"
+> \`\`\`
+% Option C
+> \`\`\`sh
+> echo "not default either"
+> \`\`\`
+</code></pre></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'depth skip from 1 to 3 terminates gro…' 1`] = `"<div class="markdown-tabs" data-tabs-group="ce6f7f0b"><div class="markdown-tabs-labels"><input type="radio" name="tabs-9d563182" id="tabs-9d563182-0" hidden checked><label class="markdown-tabs-label" for="tabs-9d563182-0">Tab One</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content here.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'depth-2 header with no depth-1 parent' 1`] = `"<p>%% Orphan</p><blockquote><p>Content here.</p></blockquote>"`;
+
+exports[`tabs/remd > tabs (remark): 'explicit open on first tab is redunda…' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'explicit open tab with %+' 1`] = `"<div class="markdown-tabs" data-tabs-group="a36cbb5f"><div class="markdown-tabs-labels"><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-0" hidden><label class="markdown-tabs-label" for="tabs-bbd3e47b-0">Tab One</label><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-1" hidden checked><label class="markdown-tabs-label" for="tabs-bbd3e47b-1">Tab Two</label><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-2" hidden><label class="markdown-tabs-label" for="tabs-bbd3e47b-2">Tab Three</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section><section class="markdown-tabs-panel" aria-label="Tab Three"><p>Content for tab three.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'flat %% nesting after % with body (us…' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="d36e5c21"><div class="markdown-tabs-labels"><input type="radio" name="tabs-80a4eabc" id="tabs-80a4eabc-0" hidden checked><label class="markdown-tabs-label" for="tabs-80a4eabc-0">Remark</label><input type="radio" name="tabs-80a4eabc" id="tabs-80a4eabc-1" hidden><label class="markdown-tabs-label" for="tabs-80a4eabc-1">Markdown-It</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Remark"><p>Install the package.</p><div class="markdown-tabs" data-tabs-group="f82a0fbf"><div class="markdown-tabs-labels"><input type="radio" name="tabs-d06c14fe" id="tabs-d06c14fe-0" hidden checked><label class="markdown-tabs-label" for="tabs-d06c14fe-0">Unified</label><input type="radio" name="tabs-d06c14fe" id="tabs-d06c14fe-1" hidden><label class="markdown-tabs-label" for="tabs-d06c14fe-1">Astro</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Unified"><pre><code class="language-ts">unified();
+</code></pre></section><section class="markdown-tabs-panel" aria-label="Astro"><pre><code class="language-ts">defineConfig();
+</code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Markdown-It"><p>Install the package.</p><div class="markdown-tabs" data-tabs-group="57a4512e"><div class="markdown-tabs-labels"><input type="radio" name="tabs-b54e164d" id="tabs-b54e164d-0" hidden checked><label class="markdown-tabs-label" for="tabs-b54e164d-0">Standalone</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Standalone"><pre><code class="language-ts">new MarkdownIt();
+</code></pre></section></div></div></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'multiple explicit open markers' 1`] = `"<div class="markdown-tabs" data-tabs-group="a36cbb5f"><div class="markdown-tabs-labels"><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-0" hidden><label class="markdown-tabs-label" for="tabs-bbd3e47b-0">Tab One</label><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-1" hidden checked><label class="markdown-tabs-label" for="tabs-bbd3e47b-1">Tab Two</label><input type="radio" name="tabs-bbd3e47b" id="tabs-bbd3e47b-2" hidden><label class="markdown-tabs-label" for="tabs-bbd3e47b-2">Tab Three</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section><section class="markdown-tabs-panel" aria-label="Tab Three"><p>Content for tab three.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'nested tabs depth two' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="aa7507fb"><div class="markdown-tabs-labels"><input type="radio" name="tabs-8fc3750c" id="tabs-8fc3750c-0" hidden checked><label class="markdown-tabs-label" for="tabs-8fc3750c-0">Node.js</label><input type="radio" name="tabs-8fc3750c" id="tabs-8fc3750c-1" hidden><label class="markdown-tabs-label" for="tabs-8fc3750c-1">Deno</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Node.js"><div class="markdown-tabs" data-tabs-group="af273f98"><div class="markdown-tabs-labels"><input type="radio" name="tabs-52371c9" id="tabs-52371c9-0" hidden checked><label class="markdown-tabs-label" for="tabs-52371c9-0">npm</label><input type="radio" name="tabs-52371c9" id="tabs-52371c9-1" hidden><label class="markdown-tabs-label" for="tabs-52371c9-1">pnpm</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="npm"><pre><code class="language-sh">npm install
+</code></pre></section><section class="markdown-tabs-panel" aria-label="pnpm"><pre><code class="language-sh">pnpm add
+</code></pre></section></div></div></section><section class="markdown-tabs-panel" aria-label="Deno"><pre><code class="language-sh">deno add my-package
+</code></pre></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'no label text' 1`] = `"<p>%</p><blockquote><p>Content here.</p></blockquote>"`;
+
+exports[`tabs/remd > tabs (remark): 'orphan blockquote before tabs: blank …' 1`] = `"<blockquote><p>This blockquote is separated by a blank line.</p></blockquote><div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-35f26421" id="tabs-35f26421-0" hidden checked><label class="markdown-tabs-label" for="tabs-35f26421-0">Tab One</label><input type="radio" name="tabs-35f26421" id="tabs-35f26421-1" hidden><label class="markdown-tabs-label" for="tabs-35f26421-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'orphan blockquote before tabs: no bla…' 1`] = `
+"<blockquote><p>This blockquote has no blank line before the tab header below it.
+% Tab One
+Content for tab one.</p></blockquote>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'single tab' 1`] = `"<div class="markdown-tabs" data-tabs-group="45a12cb"><div class="markdown-tabs-labels"><input type="radio" name="tabs-75c8bfa1" id="tabs-75c8bfa1-0" hidden checked><label class="markdown-tabs-label" for="tabs-75c8bfa1-0">Only Tab</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Only Tab"><p>Content here.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'tab with code block body' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="af273f98"><div class="markdown-tabs-labels"><input type="radio" name="tabs-52371c9" id="tabs-52371c9-0" hidden checked><label class="markdown-tabs-label" for="tabs-52371c9-0">npm</label><input type="radio" name="tabs-52371c9" id="tabs-52371c9-1" hidden><label class="markdown-tabs-label" for="tabs-52371c9-1">pnpm</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="npm"><pre><code class="language-sh">npm install
+</code></pre></section><section class="markdown-tabs-panel" aria-label="pnpm"><pre><code class="language-sh">pnpm add
+</code></pre></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'tab with empty body' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'tab with inline markup in label' 1`] = `"<div class="markdown-tabs" data-tabs-group="9f5d1908"><div class="markdown-tabs-labels"><input type="radio" name="tabs-25061dd9" id="tabs-25061dd9-0" hidden checked><label class="markdown-tabs-label" for="tabs-25061dd9-0"><strong>Bold</strong> label</label><input type="radio" name="tabs-25061dd9" id="tabs-25061dd9-1" hidden><label class="markdown-tabs-label" for="tabs-25061dd9-1"><code>code</code> label</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Bold label"><p>Content here.</p></section><section class="markdown-tabs-panel" aria-label="code label"><p>Content here.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'tab with multi-paragraph body' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>First paragraph.</p><p>Second paragraph.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Only paragraph.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'tab with nested blockquote body' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="ce6f7f0b"><div class="markdown-tabs-labels"><input type="radio" name="tabs-9d563182" id="tabs-9d563182-0" hidden checked><label class="markdown-tabs-label" for="tabs-9d563182-0">Tab One</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>First paragraph.</p><blockquote><p>This is a nested blockquote.
+% Tab Two
+Content for tab two.</p></blockquote></section></div></div>"
+`;
+
+exports[`tabs/remd > tabs (remark): 'tab with table body' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><table><thead><tr><th>Col A</th><th>Col B</th></tr></thead><tbody><tr><td>Cell</td><td>Cell</td></tr></tbody></table></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div>"`;
+
+exports[`tabs/remd > tabs (remark): 'tabs followed by paragraph' 1`] = `"<div class="markdown-tabs" data-tabs-group="dd19bdb6"><div class="markdown-tabs-labels"><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-0" hidden checked><label class="markdown-tabs-label" for="tabs-2ddd41df-0">Tab One</label><input type="radio" name="tabs-2ddd41df" id="tabs-2ddd41df-1" hidden><label class="markdown-tabs-label" for="tabs-2ddd41df-1">Tab Two</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="Tab One"><p>Content for tab one.</p></section><section class="markdown-tabs-panel" aria-label="Tab Two"><p>Content for tab two.</p></section></div></div><p>This paragraph is outside the tab group.</p>"`;
+
+exports[`tabs/remd > tabs (remark): 'three tabs first open by default' 1`] = `
+"<div class="markdown-tabs" data-tabs-group="9a8912df"><div class="markdown-tabs-labels"><input type="radio" name="tabs-a8183367" id="tabs-a8183367-0" hidden checked><label class="markdown-tabs-label" for="tabs-a8183367-0">npm</label><input type="radio" name="tabs-a8183367" id="tabs-a8183367-1" hidden><label class="markdown-tabs-label" for="tabs-a8183367-1">pnpm</label><input type="radio" name="tabs-a8183367" id="tabs-a8183367-2" hidden><label class="markdown-tabs-label" for="tabs-a8183367-2">yarn</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="npm"><pre><code class="language-sh">npm install my-package
+</code></pre></section><section class="markdown-tabs-panel" aria-label="pnpm"><pre><code class="language-sh">pnpm add my-package
+</code></pre></section><section class="markdown-tabs-panel" aria-label="yarn"><pre><code class="language-sh">yarn add my-package
+</code></pre></section></div></div>"
+`;

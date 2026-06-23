@@ -16,8 +16,10 @@ export const unwrapImages: PluginSimple = (md) => {
 
       if (
         open.type !== "paragraph_open" ||
-        inline.type !== "inline" ||
-        close.type !== "paragraph_close"
+        // oxlint-disable-next-line typescript/no-unnecessary-condition
+        inline?.type !== "inline" ||
+        // oxlint-disable-next-line typescript/no-unnecessary-condition
+        close?.type !== "paragraph_close"
       ) {
         i++;
         continue;

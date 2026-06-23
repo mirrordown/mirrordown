@@ -1,8 +1,11 @@
 // This plugin performs heavy tree-rewriting across mdast/hast/unist types
 // that don't unify cleanly; type assertions bridging those boundaries are
 // reviewed and intentional, so the rule is disabled file-wide rather than
-// per-cast.
+// per-cast. Defensive optional chains on array[i] accesses are also kept
+// because TS doesn't model index access as fallible (noUncheckedIndexedAccess
+// is off project-wide).
 /* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
 import type {
@@ -22,7 +25,7 @@ import { parseTabHeader, stripAttrs, groupId, blockId } from "./utils.js";
 
 export type { TabsOptions };
 
-// ── Raw extraction types ──────────────────────────────────────────────────────
+// â”€â”€ Raw extraction types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface RawTab {
   depth: number;
@@ -32,7 +35,7 @@ interface RawTab {
   body: Array<BlockContent | DefinitionContent>; // blockquote contents
 }
 
-// ── Paragraph line splitting ──────────────────────────────────────────────────
+// â”€â”€ Paragraph line splitting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Split a paragraph's inline children into lines by text "\n" boundaries.
 const paraToLines = (para: Paragraph): PhrasingContent[][] => {
@@ -72,7 +75,7 @@ const toPlainText = (nodes: PhrasingContent[]): string =>
     })
     .join("");
 
-// ── Tab group extraction ──────────────────────────────────────────────────────
+// â”€â”€ Tab group extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Parse a paragraph node that consists entirely of % tab headers (no body
 // content). Returns null if the paragraph isn't all headers.
@@ -89,7 +92,7 @@ const extractHeaderPara = (
 
   for (const lineSegs of lines) {
     const first = lineSegs[0];
-    if (first.type !== "text") return null;
+    if (first?.type !== "text") return null;
 
     const header = parseTabHeader(first.value);
     if (!header) return null;
@@ -143,14 +146,14 @@ interface BQSegment {
 // A blockquote is "explicit" (`> % Label` nesting) when at least one of its
 // direct paragraph children starts with a tab header. The absorbed pattern
 // (remark collapsing consecutive `% Tab\n> body` lines into one blockquote)
-// never produces standalone header paragraphs — headers are only embedded
+// never produces standalone header paragraphs â€” headers are only embedded
 // inside multi-line text nodes.
 const isExplicitBQ = (bq: Blockquote): boolean =>
   bq.children.some((child) => {
     if (child.type !== "paragraph") return false;
     const first = child.children[0];
     return (
-      first.type === "text" &&
+      first?.type === "text" &&
       parseTabHeader(first.value.split("\n")[0]) !== null
     );
   });
@@ -159,7 +162,7 @@ const isExplicitBQ = (bq: Blockquote): boolean =>
 // has a trailing tab header line, along with the truncated paragraph and the
 // extracted RawTab header. Returns null if no trailing tab header is found.
 // This handles cases where remark plugins (e.g. remarkDefinitionList) transform
-// absorbed paragraphs into custom nodes — the trailing "% Code" line ends up
+// absorbed paragraphs into custom nodes â€” the trailing "% Code" line ends up
 // inside a nested paragraph rather than at the blockquote's top level.
 const extractTrailingTabHeader = (
   node: BlockContent | DefinitionContent
@@ -181,8 +184,9 @@ const extractTrailingTabHeader = (
       const para = last;
       const lines = paraToLines(para);
       const lastLine = lines[lines.length - 1];
+      if (!lastLine) return null;
       const first = lastLine[0];
-      if (first.type !== "text") return null;
+      if (first?.type !== "text") return null;
       const header = parseTabHeader(first.value);
       if (!header) return null;
       const labelText = header.label;
@@ -226,7 +230,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
           | BlockContent
           | DefinitionContent;
         // Navigate to the deepest last child and replace the paragraph.
-        // Tree walking through heterogeneous mdast Parent shapes — no narrow
+        // Tree walking through heterogeneous mdast Parent shapes â€” no narrow
         // type fits all the intermediate nodes we descend through.
         interface ParentLike {
           children: ParentLike[];
@@ -258,7 +262,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
 
     for (const lineSegs of lines) {
       const first = lineSegs[0];
-      if (first.type === "text") {
+      if (first?.type === "text") {
         const header = parseTabHeader(first.value);
         if (header) {
           // Flush accumulated body lines into current segment
@@ -315,7 +319,7 @@ const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
   return { type: "paragraph", children };
 };
 
-// ── Tree builder ──────────────────────────────────────────────────────────────
+// â”€â”€ Tree builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const buildTree = (
   rawTabs: RawTab[],
@@ -405,7 +409,7 @@ const buildTree = (
   };
 };
 
-// ── Remark plugin ─────────────────────────────────────────────────────────────
+// â”€â”€ Remark plugin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Process all tab groups found in a children array in-place.
 // Used at root level and recursively inside any parent node's children.
@@ -446,7 +450,7 @@ const processTabsInChildren = (
             const segments = splitBlockquote(bq, explicit);
 
             const firstSeg = segments[0];
-            if (firstSeg.header === null) {
+            if (firstSeg?.header === null) {
               rawTabs[currentTabIdx].body.push(...firstSeg.body);
             }
 
@@ -454,7 +458,7 @@ const processTabsInChildren = (
             // implicitly one level deeper than the owning tab. Apply a depth
             // offset so they nest correctly.
             // Absorbed blockquotes (standard `% Tab\n> body` pattern) keep
-            // literal depths — remark collapses them into a single paragraph child.
+            // literal depths â€” remark collapses them into a single paragraph child.
             const depthOffset = explicit
               ? rawTabs[rawTabs.length - 1].depth
               : 0;
@@ -480,7 +484,7 @@ const processTabsInChildren = (
                 // (e.g. `% Code` at root depth) into an inner BQ paragraph, the tab's
                 // body node (code fence etc.) is hoisted to the outer BQ as a direct
                 // child after that inner BQ. Re-split segments with an empty body had
-                // their body hoisted — they are outer-level siblings, not inner children.
+                // their body hoisted â€” they are outer-level siblings, not inner children.
                 // Subsequent non-blockquote nodes in seg.body belong to those escaped tabs.
                 const deferredInnerSegs: BQSegment[] = [];
                 // Tracks which re-split segments have empty bodies (body hoisted to outer BQ)
@@ -488,7 +492,7 @@ const processTabsInChildren = (
 
                 for (const b of seg.body) {
                   if (b.type !== "blockquote") {
-                    // Non-BQ outer sibling — belongs to the first escaped seg's body
+                    // Non-BQ outer sibling â€” belongs to the first escaped seg's body
                     if (escapedSegs.length > 0) {
                       escapedSegs[escapedSegs.length - 1].body.push(
                         b as BlockContent | DefinitionContent
@@ -505,14 +509,14 @@ const processTabsInChildren = (
                     // Re-split absorbed inner blockquote to extract sibling headers
                     const innerSegs = splitBlockquote(innerBq, false);
                     const innerFirst = innerSegs[0];
-                    if (innerFirst.header === null) {
+                    if (innerFirst?.header === null) {
                       seg.header.body.push(...innerFirst.body);
                     }
                     for (let is = 1; is < innerSegs.length; is++) {
                       const innerSeg = innerSegs[is];
                       if (!innerSeg.header) continue;
                       // If the re-split segment has no body, its body was hoisted to
-                      // the outer BQ as a direct child — it is an outer-level escaped
+                      // the outer BQ as a direct child â€” it is an outer-level escaped
                       // tab (originally root-level, absorbed by remark into this inner BQ).
                       // Push it at depthOffset (the owning explicit BQ's parent depth).
                       if (innerSeg.body.length === 0) {
@@ -530,7 +534,7 @@ const processTabsInChildren = (
                       deferredInnerSegs.push(innerSeg);
                     }
                   } else {
-                    // Explicit inner blockquote — use children directly
+                    // Explicit inner blockquote â€” use children directly
                     seg.header.body.push(...innerBq.children);
                   }
                 }
@@ -598,7 +602,7 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (
     // Process tabs at root level first
     processTabsInChildren(tree.children, containerClass);
 
-    // Then visit every parent node whose children may contain tab syntax —
+    // Then visit every parent node whose children may contain tab syntax â€”
     // this handles tabs nested inside step bodies or other block containers.
     // Blank-line position checks are disabled for nested content: blank lines
     // inside a blockquote produce position gaps that would incorrectly terminate
@@ -616,7 +620,7 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (
   };
 };
 
-// ── HAST handlers ─────────────────────────────────────────────────────────────
+// â”€â”€ HAST handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   if (!extra) return base;

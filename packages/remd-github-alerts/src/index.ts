@@ -1,7 +1,9 @@
 // AlertType cast and the AlertNode subtype bridging across the
 // remark visitor and rehype hast handler require casts the public
-// mdast types cannot carry through.
+// mdast types cannot carry through. Defensive optional chains on
+// array[i] accesses are also kept (noUncheckedIndexedAccess off).
 /* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
 import type { Root, Blockquote } from "mdast";
@@ -51,12 +53,10 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
 
   // `type` may be a user-defined alert type from `options.types` that
   // isn't in DEFAULT_TITLE; capitalize the keyword as a last resort.
-  /* oxlint-disable typescript/no-unnecessary-condition */
   const titleFor = (type: string): string =>
     titles[type as AlertType] ??
     DEFAULT_TITLE[type as AlertType] ??
     capitalize(type);
-  /* oxlint-enable typescript/no-unnecessary-condition */
 
   const iconFor = (type: string): string =>
     showIcons ? ICONS[type as AlertType] : "";
@@ -64,10 +64,10 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   return (tree) => {
     visit(tree, "blockquote", (node: Blockquote) => {
       const firstChild = node.children[0];
-      if (firstChild.type !== "paragraph") return;
+      if (firstChild?.type !== "paragraph") return;
 
       const firstText = firstChild.children[0];
-      if (firstText.type !== "text") return;
+      if (firstText?.type !== "text") return;
 
       const firstLine = firstText.value.split("\n")[0];
       const match = ALERT_RE.exec(firstLine.trim());
@@ -78,7 +78,7 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
       if (!type) return;
 
       const isFoldable = foldMarker === "+" || foldMarker === "-";
-      const title = customTitle.trim() || titleFor(type);
+      const title = customTitle?.trim() || titleFor(type);
 
       // Strip the marker line; keep any body text on subsequent lines
       const rest = firstText.value.slice(firstLine.length).replace(/^\n/, "");

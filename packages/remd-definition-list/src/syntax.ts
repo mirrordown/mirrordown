@@ -1,6 +1,8 @@
 // micromark tokenizer construct — bridges into the micromark-util-types
-// shapes with casts the lib API can't infer.
+// shapes with casts the lib API can't infer. Defensive optional chains on
+// array[i] accesses are also kept.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
 import { factorySpace } from "micromark-factory-space";
 import { markdownSpace } from "micromark-util-character";
 import { blankLine } from "micromark-core-commonmark";
@@ -395,7 +397,7 @@ function tokenizeDefListStart(
 
   const tail = this.events[this.events.length - 1];
   let initialSize =
-    tail[1].type === "linePrefix"
+    tail?.[1].type === "linePrefix"
       ? tail[2].sliceSerialize(tail[1], true).length
       : 0;
 
@@ -517,7 +519,7 @@ function tokenizeIndent(
 ): State {
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
-    return tail[1].type === "linePrefix" &&
+    return tail?.[1].type === "linePrefix" &&
       tail[2].sliceSerialize(tail[1], true).length === this.containerState!.size
       ? ok(code)
       : nok(code);
@@ -539,6 +541,7 @@ function tokenizeDefListDescriptionPrefixWhitespace(
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
     return !markdownSpace(code) &&
+      tail &&
       tail[1].type === tokenTypes.defListDescriptionPrefixWhitespace
       ? ok(code)
       : nok(code);
