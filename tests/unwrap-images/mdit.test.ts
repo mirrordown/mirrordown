@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, it, test, describe } from "vite-plus/test";
+import { expect, it, describe } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { unwrapImages } from "../../packages/mdit-unwrap-images/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";

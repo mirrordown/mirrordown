@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, it, test, describe } from "vite-plus/test";
+import { expect, it, describe } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { inlineSvg, type Options } from "../../packages/mdit-inline-svg/src";
 import { parseCases } from "../utils/index.js";

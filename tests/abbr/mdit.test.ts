@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, test, it } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { abbr } from "../../packages/mdit-abbr/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
