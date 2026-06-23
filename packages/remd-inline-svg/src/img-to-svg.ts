@@ -1,3 +1,5 @@
+// hast/svg cross-type bridging in buildSpriteContainer cannot be expressed through Element's strict types.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import { unified, type Processor } from "unified";
 import rehypeParse from "rehype-parse";
 import type { Root, Element } from "hast";

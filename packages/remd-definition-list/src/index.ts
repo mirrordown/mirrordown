@@ -1,3 +1,5 @@
+// this.data() in remark plugin context returns generic shape; cast narrows the known extension arrays.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import { u } from "unist-builder";
 import type { Plugin } from "unified";
 import type { Root } from "mdast";

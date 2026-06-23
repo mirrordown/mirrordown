@@ -1,3 +1,5 @@
+// Token.meta is typed `any` by markdown-it; casts bridge to our richer rule-test predicates.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import type Token from "markdown-it/lib/token.mjs";
 import type { DelimiterRange } from "../types.js";
 import type { DelimiterChecker } from "./getDelimiterChecker.js";

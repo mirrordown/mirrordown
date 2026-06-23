@@ -1,3 +1,5 @@
+// TableMeta lives on Token.meta which markdown-it types as any — casts narrow to the rule-specific shape.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { DelimiterConfig } from "../types.js";
 import { addAttrs, getDelimiterChecker } from "../helper/index.js";
 import type { AttrRule } from "./types.js";
@@ -5,7 +7,7 @@ import type { AttrRule } from "./types.js";
 export const createTableRules = (options: DelimiterConfig): AttrRule[] => {
   const check = getDelimiterChecker(options.left, options.right);
 
-  // Rule 1: table-level attrs — standalone paragraph after the table  "\n{.class}"
+  // Rule 1: table-level attrs â€” standalone paragraph after the table  "\n{.class}"
   const tableAttrs: AttrRule = {
     name: "table attributes",
     tests: [
@@ -57,7 +59,7 @@ export const createTableRules = (options: DelimiterConfig): AttrRule[] => {
     }
   };
 
-  // Rule 2: table cell attrs — "cell content {.class}" inside td/th
+  // Rule 2: table cell attrs â€” "cell content {.class}" inside td/th
   const tableCellAttrs: AttrRule = {
     name: "table cell attributes",
     tests: [
@@ -125,7 +127,7 @@ export const createTableRules = (options: DelimiterConfig): AttrRule[] => {
     }
   };
 
-  // Rule 4: colspan/rowspan calculation — remove phantom cells, adjust span values
+  // Rule 4: colspan/rowspan calculation â€” remove phantom cells, adjust span values
   const spanCalc: AttrRule = {
     name: "table span calculator",
     tests: [{ shift: 0, type: "tbody_open" }],

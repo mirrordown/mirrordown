@@ -1,3 +1,5 @@
+// Visitor callbacks receive generic Node — narrowing casts after a type discriminator are unavoidable.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import { visit, SKIP } from "unist-util-visit";
 import type { Visitor } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
@@ -66,7 +68,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
   const check = getDelimiterChecker(left, right);
 
   const transformer: Transformer<Root> = (tree) => {
-    // ── fence: code block with attrs in lang string ──────────────────────
+    // â”€â”€ fence: code block with attrs in lang string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("fence")) {
       visit(tree, "code", (node: Code) => {
         const lang = node.lang?.trim() ?? "";
@@ -79,7 +81,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // ── heading: attrs at end of heading ─────────────────────────────────
+    // â”€â”€ heading: attrs at end of heading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("heading")) {
       visit(tree, "heading", (node: Heading) => {
         const last = node.children[node.children.length - 1];
@@ -94,7 +96,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // ── block: paragraph with trailing attrs on last text child ──────────
+    // â”€â”€ block: paragraph with trailing attrs on last text child â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("block")) {
       visit(tree, "paragraph", (node: Paragraph) => {
         const last = node.children[node.children.length - 1];
@@ -109,7 +111,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // ── softbreak: attr block after softbreak in paragraph ────────────────
+    // â”€â”€ softbreak: attr block after softbreak in paragraph â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("softbreak")) {
       visit(tree, "paragraph", (node: Paragraph) => {
         const children = node.children;
@@ -126,7 +128,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // ── inline: attrs after inline elements (em, strong, etc.) ───────────
+    // â”€â”€ inline: attrs after inline elements (em, strong, etc.) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("inline")) {
       visit(tree, "paragraph", (node: Paragraph) => {
         const children = node.children;
@@ -148,7 +150,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // ── list: attrs at end of list item / standalone paragraph after list ─
+    // â”€â”€ list: attrs at end of list item / standalone paragraph after list â”€
     if (rules.has("list")) {
       visit(tree, "listItem", (node: ListItem) => {
         const firstChild = node.children[0];
@@ -167,7 +169,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
       visit(tree, makeSiblingAttrVisitor("list", check, allowed));
 
-      // ── custom containerItem nodes (data.attrsRole === "containerItem") ──
+      // â”€â”€ custom containerItem nodes (data.attrsRole === "containerItem") â”€â”€
       // Third-party plugins opt in by setting data.attrsRole = "containerItem" and
       // exposing their title content in data.attrsTitle: PhrasingContent[].
       visit(tree, (node: Node) => {
@@ -191,7 +193,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         last.value = content.slice(0, attrStart).trimEnd();
       });
 
-      // ── custom container nodes (data.attrsRole === "container") ──────────
+      // â”€â”€ custom container nodes (data.attrsRole === "container") â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Third-party plugins opt in by setting data.attrsRole = "container".
       // A standalone attr paragraph after such a node applies to the node itself.
       visit(
@@ -216,12 +218,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       );
     }
 
-    // ── table: standalone paragraph after table containing only attrs ─────
+    // â”€â”€ table: standalone paragraph after table containing only attrs â”€â”€â”€â”€â”€
     if (rules.has("table")) {
       visit(tree, makeSiblingAttrVisitor("table", check, allowed));
     }
 
-    // ── hr: standalone paragraph after thematic break containing only attrs
+    // â”€â”€ hr: standalone paragraph after thematic break containing only attrs
     if (rules.has("hr")) {
       visit(tree, makeSiblingAttrVisitor("thematicBreak", check, allowed));
     }

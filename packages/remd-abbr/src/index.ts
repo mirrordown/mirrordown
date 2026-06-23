@@ -1,3 +1,5 @@
+// Custom abbr node type isn't in the mdast union; cast bridges parent.type check.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import { visit, CONTINUE } from "unist-util-visit";
 import type { VisitorResult } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";

@@ -1,3 +1,5 @@
+// markdown-it block state subclassing requires casting state.constructor; no narrower type exists.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
 import type { StepsOptions } from "./types.js";
@@ -85,7 +87,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       if (header) {
         const { depth, title } = header;
 
-        // No depth jumps — depth can only be currentDepth+1 or <=currentDepth
+        // No depth jumps â€” depth can only be currentDepth+1 or <=currentDepth
         if (depth > block.currentDepth + 1) break;
 
         // Validate: going deeper is only +1
@@ -116,7 +118,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           let peek = nextLine + 1;
           while (peek < endLine && state.isEmpty(peek)) peek++;
           if (peek >= endLine) {
-            // End of input — block terminates here
+            // End of input â€” block terminates here
             break;
           }
           const peekPos = state.bMarks[peek] + state.tShift[peek];
@@ -139,7 +141,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         }
       }
 
-      // Line is neither a header nor a continuation — block ends
+      // Line is neither a header nor a continuation â€” block ends
       break;
     }
 
@@ -199,7 +201,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         j++;
       }
 
-      // Emit <ol> — top-level list gets containerClass, nested lists get containerClass-list
+      // Emit <ol> â€” top-level list gets containerClass, nested lists get containerClass-list
       const olOpen = state.push("steps_list_open", "ol", 1);
       olOpen.attrSet(
         "class",
@@ -238,7 +240,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           state.push("steps_title_close", "p", -1);
         }
 
-        // Step body — parse as nested block content
+        // Step body â€” parse as nested block content
         if (f.bodyLines.length > 0) {
           const bodyOpen = state.push("steps_body_open", "div", 1);
           bodyOpen.attrSet("class", `${containerClass}-body`);

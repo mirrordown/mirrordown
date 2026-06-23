@@ -1,3 +1,5 @@
+// markdown-it core internals (lib.ucmicro) are typed loose; the regex source casts are reviewed.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 // Forked and modified from https://github.com/markdown-it/markdown-it-abbr/blob/master/index.mjs
 
 import type { PluginSimple } from "markdown-it";

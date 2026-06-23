@@ -1,3 +1,5 @@
+// Renderer rule callbacks receive `env: unknown`; casts to object are intentional for planMap keying.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

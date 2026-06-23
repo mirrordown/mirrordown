@@ -18,6 +18,9 @@ export async function getLastEditTime(path: string): Promise<Date | null> {
 
   if (!res.ok) return null;
 
+  // GitHub API JSON response: typed at the trust boundary; no runtime guard
+  // because we control the endpoint.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const data = (await res.json()) as CommitResponse[];
   if (data.length === 0) return null;
 

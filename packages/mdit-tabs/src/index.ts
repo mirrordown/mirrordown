@@ -1,3 +1,5 @@
+// markdown-it block state subclassing requires casting state.constructor; no narrower type exists.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
 import type { TabFrame, TabsBlock, TabsOptions } from "./types.js";
@@ -70,7 +72,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       }
 
       if (currentFrame !== null) {
-        // Blank line — tabs are adjacent so blank terminates the block
+        // Blank line â€” tabs are adjacent so blank terminates the block
         if (state.isEmpty(nextLine)) break;
 
         // Bare > is a blank continuation line within the panel body
@@ -87,7 +89,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         }
       }
 
-      // Line is neither a header nor a continuation — block ends
+      // Line is neither a header nor a continuation â€” block ends
       break;
     }
 

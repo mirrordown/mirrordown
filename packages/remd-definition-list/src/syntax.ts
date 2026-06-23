@@ -80,7 +80,7 @@ function resolveAllDefinitionTerm(
   events: Event[],
   context: TokenizeContext
 ): Event[] {
-  const evts = events as EventTuple[];
+  const evts = events;
 
   let index = 0;
   while (index < evts.length) {
@@ -400,7 +400,7 @@ function tokenizeDefListStart(
       : 0;
 
   if (this.containerState.type == null) {
-    if (checkPossibleDefTerm(this.events as EventTuple[])) {
+    if (checkPossibleDefTerm(this.events)) {
       effects.enter(tokenTypes.defList, { _container: true });
       this.containerState.type = tokenTypes.defList;
     } else {

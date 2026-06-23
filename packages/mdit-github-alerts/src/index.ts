@@ -1,3 +1,5 @@
+// AlertType narrowing via cast — keys may be user-defined and fall through to capitalize.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
 import { ICONS } from "./icons.js";
