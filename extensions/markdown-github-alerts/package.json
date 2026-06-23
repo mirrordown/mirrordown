@@ -15,7 +15,7 @@
   "devDependencies": {
     "@saeris/mdit-github-alerts": "workspace:*",
     "@types/markdown-it": "catalog:",
-    "@types/vscode": "catalog:"
+    "@types/vscode": "^1.125.0"
   },
   "contributes": {
     "markdown.markdownItPlugins": true,
@@ -25,7 +25,7 @@
   },
   "activationEvents": [],
   "engines": {
-    "vscode": "^1.118.0"
+    "vscode": "^1.125.0"
   },
   "bumpy": {
     "buildCommand": "vp pack && vp exec postcss src/github-alerts.css --output dist/github-alerts.css && vp exec vsce package --no-dependencies",

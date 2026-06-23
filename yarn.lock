@@ -4920,7 +4920,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-abbr": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4930,7 +4930,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-attrs": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4940,7 +4940,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-definition-list": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4950,7 +4950,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-del": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4960,7 +4960,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-ruby": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4970,7 +4970,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-github-alerts": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4978,7 +4978,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "markdown-inline-svg@workspace:extensions/markdown-inline-svg"
   dependencies:
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -4988,7 +4988,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-ins": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5030,7 +5030,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-kbd": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5040,7 +5040,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-mark": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5056,7 +5056,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-steps": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5066,7 +5066,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-sub": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5076,7 +5076,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-sup": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5093,7 +5093,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-tabs": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 
@@ -5103,7 +5103,7 @@ __metadata:
   dependencies:
     "@saeris/mdit-unwrap-images": "workspace:*"
     "@types/markdown-it": "catalog:"
-    "@types/vscode": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
 

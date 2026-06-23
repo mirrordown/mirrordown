@@ -13,7 +13,7 @@
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",
   "devDependencies": {
-    "@types/vscode": "catalog:"
+    "@types/vscode": "^1.125.0"
   },
   "contributes": {
     "markdown.previewScripts": [
@@ -22,7 +22,7 @@
   },
   "activationEvents": [],
   "engines": {
-    "vscode": "^1.118.0"
+    "vscode": "^1.125.0"
   },
   "bumpy": {
     "buildCommand": "vp pack && vp exec vsce package --no-dependencies",

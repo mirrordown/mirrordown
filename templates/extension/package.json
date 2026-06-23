@@ -15,13 +15,13 @@
   "scripts": {},
   "devDependencies": {
     "@saeris/mdit-<name>": "workspace:*",
-    "@types/vscode": "^1.80.0"
+    "@types/vscode": "^1.125.0"
   },
   "contributes": {
     "markdown.markdownItPlugins": true
   },
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.125.0"
   },
   "bumpy": {
     "buildCommand": "vp pack",
