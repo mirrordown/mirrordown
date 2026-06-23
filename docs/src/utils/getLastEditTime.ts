@@ -5,6 +5,7 @@ interface CommitResponse {
 }
 
 export async function getLastEditTime(path: string): Promise<Date | null> {
+  // @ts-expect-error
   const token = import.meta.env.GITHUB_TOKEN;
   const params = new URLSearchParams({ path, page: "1", per_page: "1" });
 

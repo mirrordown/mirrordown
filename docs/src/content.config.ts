@@ -1,3 +1,4 @@
+// @ts-expect-error
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "zod";
