@@ -1,7 +1,14 @@
 {
   "extends": "@saeris/configs/tsconfig",
   "include": ["./**/*.{j,t}s?(x)", "./**/*.spec.ts"],
-  "exclude": ["node_modules", ".yarn", ".claude", "templates", "**/dist/**"],
+  "exclude": [
+    "node_modules",
+    ".yarn",
+    ".claude",
+    "templates",
+    "**/dist/**",
+    "docs"
+  ],
   "compilerOptions": {
     // Add DOM on top of the base's ESNext lib for verifyKey's
     // window/crypto feature-detection and any other client-runtime checks.
