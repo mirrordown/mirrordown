@@ -1,5 +1,17 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-06-25</sub>
+
+- *(patch)*
+  fix: resolve `catalog:` protocol in published dependencies
+
+  0.1.0 was published with Yarn's `catalog:` specifier left literally in
+  `dependencies`/`devDependencies`, so consumers could not install the affected
+  packages. Packages are now packed with `yarn pack` (which resolves `catalog:`
+  to the concrete version ranges from `.yarnrc.yml`) before `npm publish`.
+
 ## 0.1.0
 
 <sub>2026-06-23</sub>
