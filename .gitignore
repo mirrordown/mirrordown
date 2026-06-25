@@ -36,3 +36,5 @@ superpowers/
 **/dist/
 .vite/
 **/*.vsix
+# Library pack artifact (created transiently during publish)
+**/package.tgz

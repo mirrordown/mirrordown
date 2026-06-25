@@ -31,8 +31,8 @@
     "buildCommand": "vp pack",
     "publishCommand": [
       "node ../../scripts/sync-jsr-version.mjs",
-      "npm publish --access public",
-      "npx jsr publish"
+      "yarn pack -o package.tgz",
+      "npm publish package.tgz --access public"
     ]
   }
 }
