@@ -13,7 +13,7 @@ export default defineConfig({
     {
       entry: "src/index.ts",
       deps: {
-        neverBundle: []
+        alwaysBundle: [/^@mirrordown\//]
       },
       dts: false,
       format: "cjs"
@@ -21,7 +21,7 @@ export default defineConfig({
     {
       entry: "src/preview.ts",
       deps: {
-        neverBundle: []
+        alwaysBundle: [/^@mirrordown\//]
       },
       dts: false,
       format: "esm"

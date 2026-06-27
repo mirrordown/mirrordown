@@ -12,7 +12,7 @@ export default defineConfig({
   },
   pack: {
     entry: ["src/index.ts"],
-    deps: { neverBundle: [] },
+    deps: { alwaysBundle: [/^@mirrordown\//] },
     dts: false,
     format: "cjs"
   }
