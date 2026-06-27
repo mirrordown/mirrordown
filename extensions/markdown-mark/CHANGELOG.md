@@ -1,5 +1,13 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-06-27</sub>
+
+- *(patch)*
+  Initial VSCode Marketplace release (pilot). Validates the `vsce` publish
+  pipeline before enabling the remaining extensions.
+
 ## 0.1.0
 
 <sub>2026-06-23</sub>
