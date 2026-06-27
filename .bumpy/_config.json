@@ -3,22 +3,5 @@
   "baseBranch": "main",
   "changelog": "default",
   "allowCustomCommands": true,
-  "ignore": [
-    "@mirrordown/markdown-docs",
-    "markdown-abbr",
-    "markdown-attrs",
-    "markdown-definition-list",
-    "markdown-del",
-    "markdown-denden-furigana",
-    "markdown-github-alerts",
-    "markdown-inline-svg",
-    "markdown-ins",
-    "markdown-kbd",
-    "markdown-preview-extended-syntax",
-    "markdown-steps",
-    "markdown-sub",
-    "markdown-sup",
-    "markdown-tabs",
-    "markdown-unwrap-images"
-  ]
+  "ignore": ["@mirrordown/markdown-docs"]
 }
