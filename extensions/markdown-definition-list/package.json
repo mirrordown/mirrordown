@@ -1,7 +1,7 @@
 {
   "name": "markdown-definition-list",
   "displayName": "Markdown Definition List <dl>",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Adds HTML Definition List <dl> support to VSCode's markdown preview",
   "categories": [
     "Other"

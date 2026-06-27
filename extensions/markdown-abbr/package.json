@@ -1,7 +1,7 @@
 {
   "name": "markdown-abbr",
   "displayName": "Markdown Abbreviation <abbr>",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Adds HTML Abbreviation <abbr> support to VSCode's markdown preview",
   "categories": [
     "Other"

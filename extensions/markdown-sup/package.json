@@ -1,7 +1,7 @@
 {
   "name": "markdown-superscript",
   "displayName": "Markdown Superscript <sup>",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Adds HTML Superscript <sup> support to VSCode's markdown preview",
   "categories": [
     "Other"

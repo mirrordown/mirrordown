@@ -1,6 +1,17 @@
 # Changelog
 
 
+
+## 0.1.2
+<sub>2026-06-27</sub>
+
+- *(patch)*
+  Fix broken syntax rendering: the published 0.1.1 vsix files externalized the
+  bundled markdown-it plugin (a bare `require("@mirrordown/mdit-*")` that isn't in
+  the vsix), so no extension actually loaded its plugin. Force-bundle the plugin
+  via `pack.deps.alwaysBundle`, and build the plugin packages before the
+  extensions in CI so there is a dist to bundle.
+
 ## 0.1.1
 <sub>2026-06-27</sub>
 
