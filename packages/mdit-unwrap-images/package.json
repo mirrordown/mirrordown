@@ -33,7 +33,8 @@
     "publishCommand": [
       "node ../../scripts/sync-jsr-version.mjs",
       "yarn pack -o package.tgz",
-      "npm publish package.tgz --access public"
+      "npm publish package.tgz --access public",
+      "npx jsr publish --token \"$JSR_TOKEN\" --allow-dirty --allow-slow-types"
     ]
   }
 }
