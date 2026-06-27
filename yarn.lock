@@ -4924,9 +4924,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"markdown-attrs@workspace:extensions/markdown-attrs":
+"markdown-attributes@workspace:extensions/markdown-attrs":
   version: 0.0.0-use.local
-  resolution: "markdown-attrs@workspace:extensions/markdown-attrs"
+  resolution: "markdown-attributes@workspace:extensions/markdown-attrs"
   dependencies:
     "@mirrordown/mdit-attrs": "workspace:*"
     "@types/markdown-it": "catalog:"
@@ -5024,9 +5024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-kbd@workspace:extensions/markdown-kbd":
+"markdown-keyboard@workspace:extensions/markdown-kbd":
   version: 0.0.0-use.local
-  resolution: "markdown-kbd@workspace:extensions/markdown-kbd"
+  resolution: "markdown-keyboard@workspace:extensions/markdown-kbd"
   dependencies:
     "@mirrordown/mdit-kbd": "workspace:*"
     "@types/markdown-it": "catalog:"
@@ -5060,9 +5060,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"markdown-sub@workspace:extensions/markdown-sub":
+"markdown-subscript@workspace:extensions/markdown-sub":
   version: 0.0.0-use.local
-  resolution: "markdown-sub@workspace:extensions/markdown-sub"
+  resolution: "markdown-subscript@workspace:extensions/markdown-sub"
   dependencies:
     "@mirrordown/mdit-sub": "workspace:*"
     "@types/markdown-it": "catalog:"
@@ -5070,9 +5070,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"markdown-sup@workspace:extensions/markdown-sup":
+"markdown-superscript@workspace:extensions/markdown-sup":
   version: 0.0.0-use.local
-  resolution: "markdown-sup@workspace:extensions/markdown-sup"
+  resolution: "markdown-superscript@workspace:extensions/markdown-sup"
   dependencies:
     "@mirrordown/mdit-sup": "workspace:*"
     "@types/markdown-it": "catalog:"
