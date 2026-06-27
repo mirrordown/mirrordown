@@ -1,5 +1,5 @@
 {
-  "name": "markdown-attrs",
+  "name": "markdown-attributes",
   "displayName": "Markdown Attrs",
   "version": "0.1.1",
   "description": "Adds curly-brace attribute syntax to VSCode's markdown preview",
@@ -8,7 +8,10 @@
   ],
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
-  "repository": "git@github.com:mirrordown/mirrordown.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
   "publisher": "saeris",
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",

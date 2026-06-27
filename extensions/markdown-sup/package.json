@@ -1,5 +1,5 @@
 {
-  "name": "markdown-sup",
+  "name": "markdown-superscript",
   "displayName": "Markdown Superscript <sup>",
   "version": "0.1.1",
   "description": "Adds HTML Superscript <sup> support to VSCode's markdown preview",
@@ -8,7 +8,10 @@
   ],
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
-  "repository": "git@github.com:mirrordown/mirrordown.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
   "publisher": "saeris",
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",
