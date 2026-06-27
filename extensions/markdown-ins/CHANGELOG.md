@@ -1,5 +1,14 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-06-27</sub>
+
+- *(patch)*
+  Initial VSCode Marketplace release for the remaining syntax extensions and the
+  extension pack, now that the vsce publish pipeline is proven (markdown-mark@0.1.1
+  shipped cleanly).
+
 ## 0.1.0
 
 <sub>2026-06-23</sub>

@@ -1,7 +1,7 @@
 {
   "name": "markdown-github-alerts",
   "displayName": "Markdown GitHub Alerts & Obsidian Callouts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Adds GitHub Alert and Obsidian Callout syntax support to VSCode's markdown preview",
   "categories": [
     "Other"
