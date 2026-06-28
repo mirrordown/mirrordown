@@ -32,13 +32,11 @@
     "node": ">=24.0.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack",
     "publishCommand": [
       "node ../../scripts/sync-jsr-version.mjs",
-      "yarn pack -o package.tgz",
       "node ../../scripts/npm-publish.mjs",
       "node ../../scripts/jsr-resolve-deps.mjs",
-      "npx jsr publish --allow-dirty --allow-slow-types"
+      "node ../../scripts/jsr-publish.mjs"
     ]
   }
 }

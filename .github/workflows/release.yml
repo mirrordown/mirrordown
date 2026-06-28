@@ -22,10 +22,25 @@ jobs:
           node-version: "24"
           cache: true
 
-      # Build the plugin packages first so the VSCode extensions can bundle
-      # them. vp pack resolves @mirrordown/* deps to their dist; without a
-      # built dist it silently externalizes the plugin and ships a broken vsix.
-      - run: for d in packages/mdit-*/; do (cd "$d" && vp pack); done
+      # The VSCode extensions bundle the plugin source, so their build (vp pack)
+      # needs the mdit-* dist present, otherwise vp pack silently externalizes
+      # the plugin and ships a broken vsix. Build those dists only when an
+      # extension will actually publish (its <name>@<version> tag is missing) —
+      # a package-only release/retry skips this entirely.
+      - name: Pre-build plugin dists for extension bundling
+        run: |
+          need=0
+          for ext in extensions/*/; do
+            [ -f "$ext/package.json" ] || continue
+            nv=$(node -p "const p=require('./$ext/package.json'); p.name + '@' + p.version")
+            git rev-parse -q --verify "refs/tags/$nv" >/dev/null || { need=1; break; }
+          done
+          if [ "$need" = 1 ]; then
+            echo "An extension needs publishing — building plugin dists"
+            for d in packages/mdit-*/; do (cd "$d" && vp pack); done
+          else
+            echo "No extension to publish — skipping plugin pre-build"
+          fi
 
       - run: vp dlx @varlock/bumpy ci release
         env:

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /* oxlint-disable no-console */
-// Idempotent npm publish of the package.tgz built by `yarn pack`. Skips when the
-// version is already on the registry, so a release that failed *after* the npm
-// step (e.g. a later JSR step) can be retried without an "already published"
-// error — the publishCommand's npm + JSR steps stay independently recoverable.
+// Idempotent npm publish. Builds the dist, packs a tarball (resolving
+// catalog:/workspace: for the published manifest) and publishes — but ONLY when
+// the version isn't already on the registry. So a retry, or a JSR-only recovery,
+// skips the build + pack + publish entirely. JSR publishes from source, so the
+// dist build belongs here: it's needed for npm and nothing else.
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
@@ -18,7 +19,9 @@ try {
 }
 
 if (onRegistry) {
-  console.log(`  ${name}@${version} already on npm — skipping`);
+  console.log(`  ${name}@${version} already on npm — skipping build + publish`);
 } else {
+  execSync("vp pack", { stdio: "inherit" });
+  execSync("yarn pack -o package.tgz", { stdio: "inherit" });
   execSync("npm publish package.tgz --access public", { stdio: "inherit" });
 }
