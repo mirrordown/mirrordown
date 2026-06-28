@@ -3,5 +3,9 @@
   "version": "0.0.0",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "imports": {
+    "mdast": "npm:@types/mdast@^4",
+    "hast": "npm:@types/hast@^3"
   }
 }

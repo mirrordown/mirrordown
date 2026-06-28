@@ -8,35 +8,30 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
-interface DeleteData extends Data {}
+export interface MarkData extends Data {}
 
-interface Delete extends Parent {
-  type: `delete`;
+export interface Mark extends Parent {
+  type: `mark`;
   children: PhrasingContent[];
-  data?: DeleteData | undefined;
+  data?: MarkData | undefined;
 }
 
-// Note: `delete` is a built-in mdast node type (@types/mdast already registers
-// `delete: Delete` in its content maps), so no module augmentation is needed —
-// the local Delete is structurally identical and used internally.
+// Lookahead/lookbehind prevent false positives on equality operators (e.g. `if a == b`)
+export const REGEX = /==(?![\s=])([\s\S]*?)(?<![\s=])==/;
+export const REGEX_GLOBAL = /==(?![\s=])([\s\S]*?)(?<![\s=])==/g;
 
-export const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
-export const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
+export const REGEX_STARTING = /==(?![\s]|=+\s)/;
+export const REGEX_STARTING_GLOBAL = /==(?![\s]|=+\s)/g;
 
-export const REGEX_STARTING = /--(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
+export const REGEX_ENDING = /(?<!\s|\s=|\s==|\s===|\s====)==/;
+export const REGEX_ENDING_GLOBAL = /(?<!\s|\s=|\s==|\s===|\s====)==/g;
 
-export const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
-
-export const remarkDel: Plugin<[], Root> = () => {
-  const constructDeleteNode = (children: PhrasingContent[]): Delete => {
-    return {
-      type: `delete`,
-      children,
-      data: { hName: `del` }
-    };
-  };
+export const remarkMark: Plugin<[], Root> = () => {
+  const constructMarkNode = (children: PhrasingContent[]): Mark => ({
+    type: `mark`,
+    children,
+    data: { hName: `mark` }
+  });
 
   const visitorFirst: Visitor<Text, Parent> = (
     node,
@@ -57,7 +52,7 @@ export const remarkDel: Plugin<[], Root> = () => {
     const matches = Array.from(value.matchAll(REGEX_GLOBAL));
 
     for (const match of matches) {
-      const [matched, insertedText] = match;
+      const [matched, markedText] = match;
       const mIndex = match.index;
       const mLength = matched.length;
 
@@ -71,7 +66,7 @@ export const remarkDel: Plugin<[], Root> = () => {
       }
 
       children.push(
-        constructDeleteNode([{ type: `text`, value: insertedText.trim() }])
+        constructMarkNode([{ type: `text`, value: markedText.trim() }])
       );
 
       tempValue = value.slice(mIndex + mLength);
@@ -152,7 +147,7 @@ export const remarkDel: Plugin<[], Root> = () => {
 
     parent.children = [
       ...beforeChildren,
-      constructDeleteNode(mainChildren),
+      constructMarkNode(mainChildren),
       ...afterChildren
     ];
 

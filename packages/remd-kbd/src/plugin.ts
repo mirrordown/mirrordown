@@ -8,35 +8,30 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
-interface DeleteData extends Data {}
+export interface KbdData extends Data {}
 
-interface Delete extends Parent {
-  type: `delete`;
+export interface Kbd extends Parent {
+  type: `kbd`;
   children: PhrasingContent[];
-  data?: DeleteData | undefined;
+  data?: KbdData | undefined;
 }
 
-// Note: `delete` is a built-in mdast node type (@types/mdast already registers
-// `delete: Delete` in its content maps), so no module augmentation is needed —
-// the local Delete is structurally identical and used internally.
+// [[ and ]] delimiters; no ] or newline allowed in content (single-node case)
+export const REGEX = /\[\[([^\]\n]*?)\]\]/;
+export const REGEX_GLOBAL = /\[\[([^\]\n]*?)\]\]/g;
 
-export const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
-export const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
+export const REGEX_STARTING = /\[\[/;
+export const REGEX_STARTING_GLOBAL = /\[\[/g;
 
-export const REGEX_STARTING = /--(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
+export const REGEX_ENDING = /\]\]/;
+export const REGEX_ENDING_GLOBAL = /\]\]/g;
 
-export const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
-
-export const remarkDel: Plugin<[], Root> = () => {
-  const constructDeleteNode = (children: PhrasingContent[]): Delete => {
-    return {
-      type: `delete`,
-      children,
-      data: { hName: `del` }
-    };
-  };
+export const remarkKbd: Plugin<[], Root> = () => {
+  const constructKbdNode = (children: PhrasingContent[]): Kbd => ({
+    type: `kbd`,
+    children,
+    data: { hName: `kbd` }
+  });
 
   const visitorFirst: Visitor<Text, Parent> = (
     node,
@@ -57,7 +52,7 @@ export const remarkDel: Plugin<[], Root> = () => {
     const matches = Array.from(value.matchAll(REGEX_GLOBAL));
 
     for (const match of matches) {
-      const [matched, insertedText] = match;
+      const [matched, kbdText] = match;
       const mIndex = match.index;
       const mLength = matched.length;
 
@@ -70,9 +65,7 @@ export const remarkDel: Plugin<[], Root> = () => {
         children.push(u(`text`, value.substring(textPartIndex, mIndex)));
       }
 
-      children.push(
-        constructDeleteNode([{ type: `text`, value: insertedText.trim() }])
-      );
+      children.push(constructKbdNode([{ type: `text`, value: kbdText }]));
 
       tempValue = value.slice(mIndex + mLength);
     }
@@ -92,13 +85,13 @@ export const remarkDel: Plugin<[], Root> = () => {
     /* v8 ignore next */
     if (!parent || typeof index === `undefined`) return;
 
-    if (!REGEX_STARTING.test(node.value)) return;
+    if (!node.value.includes("[[")) return;
 
     const openingNode = node;
 
     const closingNode = findAfter(parent, openingNode, (n): n is Text => {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      return n.type === `text` && REGEX_ENDING.test((n as Text).value);
+      return n.type === `text` && (n as Text).value.includes("]]");
     });
 
     if (!closingNode) return;
@@ -152,7 +145,7 @@ export const remarkDel: Plugin<[], Root> = () => {
 
     parent.children = [
       ...beforeChildren,
-      constructDeleteNode(mainChildren),
+      constructKbdNode(mainChildren),
       ...afterChildren
     ];
 

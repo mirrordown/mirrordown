@@ -8,33 +8,29 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
-interface DeleteData extends Data {}
+export interface InsertData extends Data {}
 
-interface Delete extends Parent {
-  type: `delete`;
+export interface Insert extends Parent {
+  type: `insert`;
   children: PhrasingContent[];
-  data?: DeleteData | undefined;
+  data?: InsertData | undefined;
 }
 
-// Note: `delete` is a built-in mdast node type (@types/mdast already registers
-// `delete: Delete` in its content maps), so no module augmentation is needed —
-// the local Delete is structurally identical and used internally.
+export const REGEX = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/;
+export const REGEX_GLOBAL = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/g;
 
-export const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
-export const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
+export const REGEX_STARTING = /\+\+(?![\s]|\++\s)/;
+export const REGEX_STARTING_GLOBAL = /\+\+(?![\s]|\++\s)/g;
 
-export const REGEX_STARTING = /--(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
+export const REGEX_ENDING = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/;
+export const REGEX_ENDING_GLOBAL = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/g;
 
-export const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
-
-export const remarkDel: Plugin<[], Root> = () => {
-  const constructDeleteNode = (children: PhrasingContent[]): Delete => {
+export const remarkIns: Plugin<[], Root> = () => {
+  const constructInsertNode = (children: PhrasingContent[]): Insert => {
     return {
-      type: `delete`,
+      type: `insert`,
       children,
-      data: { hName: `del` }
+      data: { hName: `ins` }
     };
   };
 
@@ -71,7 +67,7 @@ export const remarkDel: Plugin<[], Root> = () => {
       }
 
       children.push(
-        constructDeleteNode([{ type: `text`, value: insertedText.trim() }])
+        constructInsertNode([{ type: `text`, value: insertedText.trim() }])
       );
 
       tempValue = value.slice(mIndex + mLength);
@@ -152,7 +148,7 @@ export const remarkDel: Plugin<[], Root> = () => {
 
     parent.children = [
       ...beforeChildren,
-      constructDeleteNode(mainChildren),
+      constructInsertNode(mainChildren),
       ...afterChildren
     ];
 

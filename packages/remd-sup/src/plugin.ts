@@ -8,35 +8,31 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
-interface DeleteData extends Data {}
+export interface SuperscriptData extends Data {}
 
-interface Delete extends Parent {
-  type: `delete`;
+export interface Superscript extends Parent {
+  type: `superscript`;
   children: PhrasingContent[];
-  data?: DeleteData | undefined;
+  data?: SuperscriptData | undefined;
 }
 
-// Note: `delete` is a built-in mdast node type (@types/mdast already registers
-// `delete: Delete` in its content maps), so no module augmentation is needed —
-// the local Delete is structurally identical and used internally.
+export const REGEX = /\^(?!\s)([\s\S]*?)(?<!\s)\^/;
+export const REGEX_GLOBAL = /\^(?!\s)([\s\S]*?)(?<!\s)\^/g;
 
-export const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
-export const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
+export const REGEX_STARTING = /\^(?!\s)/;
+export const REGEX_STARTING_GLOBAL = /\^(?!\s)/g;
 
-export const REGEX_STARTING = /--(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
+export const REGEX_ENDING = /(?<!\s)\^/;
+export const REGEX_ENDING_GLOBAL = /(?<!\s)\^/g;
 
-export const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
-
-export const remarkDel: Plugin<[], Root> = () => {
-  const constructDeleteNode = (children: PhrasingContent[]): Delete => {
-    return {
-      type: `delete`,
-      children,
-      data: { hName: `del` }
-    };
-  };
+export const remarkSup: Plugin<[], Root> = () => {
+  const constructSuperscriptNode = (
+    children: PhrasingContent[]
+  ): Superscript => ({
+    type: `superscript`,
+    children,
+    data: { hName: `sup` }
+  });
 
   const visitorFirst: Visitor<Text, Parent> = (
     node,
@@ -57,7 +53,7 @@ export const remarkDel: Plugin<[], Root> = () => {
     const matches = Array.from(value.matchAll(REGEX_GLOBAL));
 
     for (const match of matches) {
-      const [matched, insertedText] = match;
+      const [matched, superscriptText] = match;
       const mIndex = match.index;
       const mLength = matched.length;
 
@@ -71,7 +67,9 @@ export const remarkDel: Plugin<[], Root> = () => {
       }
 
       children.push(
-        constructDeleteNode([{ type: `text`, value: insertedText.trim() }])
+        constructSuperscriptNode([
+          { type: `text`, value: superscriptText.trim() }
+        ])
       );
 
       tempValue = value.slice(mIndex + mLength);
@@ -152,11 +150,11 @@ export const remarkDel: Plugin<[], Root> = () => {
 
     parent.children = [
       ...beforeChildren,
-      constructDeleteNode(mainChildren),
+      constructSuperscriptNode(mainChildren),
       ...afterChildren
     ];
 
-    return index; // re-visit after restructuring children
+    return index;
   };
 
   const transformer: Transformer<Root> = (tree) => {

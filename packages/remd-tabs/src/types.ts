@@ -31,14 +31,3 @@ export interface TabsItemNode {
     hProperties?: Properties;
   };
 }
-
-// Extend mdast type maps
-declare module "mdast" {
-  interface RootContentMap {
-    tabsList: TabsListNode;
-    tabsItem: TabsItemNode;
-  }
-  interface BlockContentMap {
-    tabsList: TabsListNode;
-  }
-}

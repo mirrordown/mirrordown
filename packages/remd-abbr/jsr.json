@@ -2,6 +2,9 @@
   "name": "@mirrordown/remd-abbr",
   "version": "0.0.0",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/jsr.ts"
+  },
+  "imports": {
+    "mdast": "npm:@types/mdast@^4"
   }
 }
