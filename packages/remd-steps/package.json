@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/remd-steps",
+  "description": "A remark plugin for numbered step sequences, rendering ordered step lists.",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",

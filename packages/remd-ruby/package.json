@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/remd-ruby",
+  "description": "A remark plugin for ruby annotation syntax ({base|reading}), rendering <ruby> elements for furigana.",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",

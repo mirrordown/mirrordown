@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/remd-sup",
+  "description": "A remark plugin for superscript syntax (^text^), rendering <sup> elements.",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",

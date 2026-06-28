@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/remd-attrs",
+  "description": "A remark plugin for attribute lists ({.class #id key=value}) that set classes, IDs, and attributes on elements.",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",

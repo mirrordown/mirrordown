@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/remd-github-alerts",
+  "description": "A remark plugin for GitHub-style alerts/admonitions (> [!NOTE], > [!TIP], > [!WARNING], …).",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",

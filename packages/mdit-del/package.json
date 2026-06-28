@@ -1,5 +1,6 @@
 {
   "name": "@mirrordown/mdit-del",
+  "description": "A markdown-it plugin for deletion syntax (--text--), rendering <del> elements.",
   "version": "0.1.2",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
