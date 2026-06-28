@@ -1,6 +1,15 @@
 # Changelog
 
 
+
+## 0.1.2
+<sub>2026-06-28</sub>
+
+- *(patch)*
+  First publish to JSR (alongside npm). All 30 packages are claimed on the
+  @mirrordown JSR scope with the repo linked, so `npx jsr publish` authenticates
+  via GitHub Actions OIDC — no token. Publishes 0.1.2 to npm and JSR together.
+
 ## 0.1.1
 <sub>2026-06-25</sub>
 
