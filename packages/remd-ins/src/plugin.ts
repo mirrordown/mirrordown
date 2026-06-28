@@ -8,23 +8,29 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
+/** Optional data carried by an {@link Insert} node. */
 export interface InsertData extends Data {}
 
+/** An mdast node for `++inserted++` text, rendered as an `<ins>` element. */
 export interface Insert extends Parent {
   type: `insert`;
   children: PhrasingContent[];
   data?: InsertData | undefined;
 }
 
-export const REGEX = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/;
-export const REGEX_GLOBAL = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/g;
+const REGEX = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/;
+const REGEX_GLOBAL = /\+\+(?![\s+])([\s\S]*?)(?<![\s+])\+\+/g;
 
-export const REGEX_STARTING = /\+\+(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /\+\+(?![\s]|\++\s)/g;
+const REGEX_STARTING = /\+\+(?![\s]|\++\s)/;
+const REGEX_STARTING_GLOBAL = /\+\+(?![\s]|\++\s)/g;
 
-export const REGEX_ENDING = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/g;
+const REGEX_ENDING = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/;
+const REGEX_ENDING_GLOBAL = /(?<!\s|\s\+|\s\+|\s\+|\s\+)\+\+/g;
 
+/**
+ * remark plugin for insertion syntax (`++text++`), wrapping each match in an
+ * {@link Insert} node that renders as an `<ins>` element.
+ */
 export const remarkIns: Plugin<[], Root> = () => {
   const constructInsertNode = (children: PhrasingContent[]): Insert => {
     return {

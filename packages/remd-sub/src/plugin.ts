@@ -8,23 +8,29 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
+/** Optional data carried by a {@link Subscript} node. */
 export interface SubscriptData extends Data {}
 
+/** An mdast node for `~subscript~` text, rendered as a `<sub>` element. */
 export interface Subscript extends Parent {
   type: `subscript`;
   children: PhrasingContent[];
   data?: SubscriptData | undefined;
 }
 
-export const REGEX = /~(?!\s)([\s\S]*?)(?<!\s)~/;
-export const REGEX_GLOBAL = /~(?!\s)([\s\S]*?)(?<!\s)~/g;
+const REGEX = /~(?!\s)([\s\S]*?)(?<!\s)~/;
+const REGEX_GLOBAL = /~(?!\s)([\s\S]*?)(?<!\s)~/g;
 
-export const REGEX_STARTING = /~(?!\s)/;
-export const REGEX_STARTING_GLOBAL = /~(?!\s)/g;
+const REGEX_STARTING = /~(?!\s)/;
+const REGEX_STARTING_GLOBAL = /~(?!\s)/g;
 
-export const REGEX_ENDING = /(?<!\s)~/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s)~/g;
+const REGEX_ENDING = /(?<!\s)~/;
+const REGEX_ENDING_GLOBAL = /(?<!\s)~/g;
 
+/**
+ * remark plugin for subscript syntax (`~text~`), wrapping each match in a
+ * {@link Subscript} node that renders as a `<sub>` element.
+ */
 export const remarkSub: Plugin<[], Root> = () => {
   const constructSubscriptNode = (children: PhrasingContent[]): Subscript => ({
     type: `subscript`,

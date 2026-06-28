@@ -20,15 +20,19 @@ interface Delete extends Parent {
 // `delete: Delete` in its content maps), so no module augmentation is needed —
 // the local Delete is structurally identical and used internally.
 
-export const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
-export const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
+const REGEX = /--(?![\s+])([\s\S]*?)(?<![\s+])--/;
+const REGEX_GLOBAL = /--(?![\s+])([\s\S]*?)(?<![\s+])--/g;
 
-export const REGEX_STARTING = /--(?![\s]|\++\s)/;
-export const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
+const REGEX_STARTING = /--(?![\s]|\++\s)/;
+const REGEX_STARTING_GLOBAL = /--(?![\s]|-+\s)/g;
 
-export const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
+const REGEX_ENDING = /(?<!\s|\s-|\s-|\s-|\s-)--/;
+const REGEX_ENDING_GLOBAL = /(?<!\s|\s-|\s-|\s-|\s-)--/g;
 
+/**
+ * remark plugin for deletion syntax (`--text--`), wrapping each match in a
+ * `delete` mdast node that renders as a `<del>` element.
+ */
 export const remarkDel: Plugin<[], Root> = () => {
   const constructDeleteNode = (children: PhrasingContent[]): Delete => {
     return {

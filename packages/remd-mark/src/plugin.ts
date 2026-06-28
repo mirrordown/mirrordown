@@ -8,8 +8,10 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
+/** Optional data carried by a {@link Mark} node. */
 export interface MarkData extends Data {}
 
+/** An mdast node for `==highlighted==` text, rendered as a `<mark>` element. */
 export interface Mark extends Parent {
   type: `mark`;
   children: PhrasingContent[];
@@ -17,15 +19,19 @@ export interface Mark extends Parent {
 }
 
 // Lookahead/lookbehind prevent false positives on equality operators (e.g. `if a == b`)
-export const REGEX = /==(?![\s=])([\s\S]*?)(?<![\s=])==/;
-export const REGEX_GLOBAL = /==(?![\s=])([\s\S]*?)(?<![\s=])==/g;
+const REGEX = /==(?![\s=])([\s\S]*?)(?<![\s=])==/;
+const REGEX_GLOBAL = /==(?![\s=])([\s\S]*?)(?<![\s=])==/g;
 
-export const REGEX_STARTING = /==(?![\s]|=+\s)/;
-export const REGEX_STARTING_GLOBAL = /==(?![\s]|=+\s)/g;
+const REGEX_STARTING = /==(?![\s]|=+\s)/;
+const REGEX_STARTING_GLOBAL = /==(?![\s]|=+\s)/g;
 
-export const REGEX_ENDING = /(?<!\s|\s=|\s==|\s===|\s====)==/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s|\s=|\s==|\s===|\s====)==/g;
+const REGEX_ENDING = /(?<!\s|\s=|\s==|\s===|\s====)==/;
+const REGEX_ENDING_GLOBAL = /(?<!\s|\s=|\s==|\s===|\s====)==/g;
 
+/**
+ * remark plugin for highlight syntax (`==text==`), wrapping each match in a
+ * {@link Mark} node that renders as a `<mark>` element.
+ */
 export const remarkMark: Plugin<[], Root> = () => {
   const constructMarkNode = (children: PhrasingContent[]): Mark => ({
     type: `mark`,

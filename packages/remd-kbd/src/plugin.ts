@@ -8,8 +8,10 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
+/** Optional data carried by a {@link Kbd} node. */
 export interface KbdData extends Data {}
 
+/** An mdast node for `[[key]]` syntax, rendered as a `<kbd>` element. */
 export interface Kbd extends Parent {
   type: `kbd`;
   children: PhrasingContent[];
@@ -17,15 +19,17 @@ export interface Kbd extends Parent {
 }
 
 // [[ and ]] delimiters; no ] or newline allowed in content (single-node case)
-export const REGEX = /\[\[([^\]\n]*?)\]\]/;
-export const REGEX_GLOBAL = /\[\[([^\]\n]*?)\]\]/g;
+const REGEX = /\[\[([^\]\n]*?)\]\]/;
+const REGEX_GLOBAL = /\[\[([^\]\n]*?)\]\]/g;
 
-export const REGEX_STARTING = /\[\[/;
-export const REGEX_STARTING_GLOBAL = /\[\[/g;
+const REGEX_STARTING_GLOBAL = /\[\[/g;
 
-export const REGEX_ENDING = /\]\]/;
-export const REGEX_ENDING_GLOBAL = /\]\]/g;
+const REGEX_ENDING_GLOBAL = /\]\]/g;
 
+/**
+ * remark plugin for keyboard-key syntax (`[[Ctrl]]`), wrapping each match in a
+ * {@link Kbd} node that renders as a `<kbd>` element.
+ */
 export const remarkKbd: Plugin<[], Root> = () => {
   const constructKbdNode = (children: PhrasingContent[]): Kbd => ({
     type: `kbd`,

@@ -8,23 +8,29 @@ import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
 
+/** Optional data carried by a {@link Superscript} node. */
 export interface SuperscriptData extends Data {}
 
+/** An mdast node for `^superscript^` text, rendered as a `<sup>` element. */
 export interface Superscript extends Parent {
   type: `superscript`;
   children: PhrasingContent[];
   data?: SuperscriptData | undefined;
 }
 
-export const REGEX = /\^(?!\s)([\s\S]*?)(?<!\s)\^/;
-export const REGEX_GLOBAL = /\^(?!\s)([\s\S]*?)(?<!\s)\^/g;
+const REGEX = /\^(?!\s)([\s\S]*?)(?<!\s)\^/;
+const REGEX_GLOBAL = /\^(?!\s)([\s\S]*?)(?<!\s)\^/g;
 
-export const REGEX_STARTING = /\^(?!\s)/;
-export const REGEX_STARTING_GLOBAL = /\^(?!\s)/g;
+const REGEX_STARTING = /\^(?!\s)/;
+const REGEX_STARTING_GLOBAL = /\^(?!\s)/g;
 
-export const REGEX_ENDING = /(?<!\s)\^/;
-export const REGEX_ENDING_GLOBAL = /(?<!\s)\^/g;
+const REGEX_ENDING = /(?<!\s)\^/;
+const REGEX_ENDING_GLOBAL = /(?<!\s)\^/g;
 
+/**
+ * remark plugin for superscript syntax (`^text^`), wrapping each match in a
+ * {@link Superscript} node that renders as a `<sup>` element.
+ */
 export const remarkSup: Plugin<[], Root> = () => {
   const constructSuperscriptNode = (
     children: PhrasingContent[]
