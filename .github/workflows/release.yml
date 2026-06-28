@@ -32,4 +32,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUMPY_GH_TOKEN: ${{ secrets.BUMPY_GH_TOKEN }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-          JSR_TOKEN: ${{ secrets.JSR_TOKEN }}
