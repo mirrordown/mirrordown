@@ -6,6 +6,7 @@
   },
   "imports": {
     "mdast": "npm:@types/mdast@^4",
-    "hast": "npm:@types/hast@^3"
+    "hast": "npm:@types/hast@^3",
+    "mdast-util-to-hast": "npm:mdast-util-to-hast@^13"
   }
 }
