@@ -5,6 +5,7 @@ const isImageOnly = (children: Token[]): boolean =>
   children.some((c) => c.type === "image") &&
   children.every((c) => c.type === "image" || c.type === "softbreak");
 
+/** markdown-it plugin that unwraps block-level images out of their paragraph. */
 export const unwrapImages: PluginSimple = (md) => {
   md.core.ruler.push("unwrap_images", (state) => {
     let i = 0;

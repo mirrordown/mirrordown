@@ -82,6 +82,7 @@ const buildUseHtml = (
   return `<svg ${attrs}><use href="#${id}"></use></svg>`;
 };
 
+/** markdown-it plugin that inlines referenced `.svg` images as `<svg>` elements. */
 export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
   const options = applyDefaults(config);
   const svgCache = new SvgCache();

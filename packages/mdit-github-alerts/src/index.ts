@@ -16,6 +16,7 @@ const ALERT_RE = /^\[!([^\]]+)\]([+-])?\s*(.*)?$/s;
 const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
 
+/** markdown-it plugin for GitHub-style alerts/admonitions (`> [!NOTE]`, `> [!WARNING]`, …). */
 export const githubAlerts: PluginWithOptions<AlertOptions> = (
   md,
   options = {}

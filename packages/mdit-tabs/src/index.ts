@@ -14,6 +14,7 @@ import {
 
 export type { TabsOptions };
 
+/** markdown-it plugin for tabbed content blocks. */
 export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-tabs" } = options;
 

@@ -3,6 +3,7 @@ import type { AttrsOptions, DelimiterRange } from "./types.js";
 import { createRules } from "./rules/index.js";
 import { testRule } from "./helper/index.js";
 
+/** markdown-it plugin for attribute lists (`{.class #id key=value}`) on elements. */
 export const attrs: PluginWithOptions<AttrsOptions> = (
   md,
   { left = "{", right = "}", allowed = [], rule = "all" } = {}

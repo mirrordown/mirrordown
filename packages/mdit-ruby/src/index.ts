@@ -4,7 +4,9 @@ import type MarkdownIt from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 import type StateInline from "markdown-it/lib/rules_inline/state_inline.mjs";
 
+/** Options for the {@link ruby} plugin. */
 export interface RubyOptions {
+  /** Fallback parenthesis characters emitted as `<rp>` for browsers without ruby support. */
   rp?: [string, string];
 }
 
@@ -64,6 +66,7 @@ function makeRule(rp: [string, string] | undefined) {
   };
 }
 
+/** markdown-it plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const ruby = (md: MarkdownIt, options: RubyOptions = {}): void => {
   const { rp } = options;
   const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";

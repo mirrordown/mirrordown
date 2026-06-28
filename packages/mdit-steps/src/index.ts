@@ -38,6 +38,7 @@ const parseStepHeader = (
 const stripContinuation = (line: string): string =>
   line.replace(CONTINUATION_RE, "");
 
+/** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-steps" } = options;
 

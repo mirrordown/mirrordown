@@ -1,3 +1,4 @@
+/** A markdown-it rule that attribute lists can be attached to. */
 export type AttrRuleName =
   | "fence"
   | "inline"
@@ -8,12 +9,17 @@ export type AttrRuleName =
   | "softbreak"
   | "block";
 
+/** Delimiters and allowed characters for the attribute-list syntax. */
 export interface DelimiterConfig {
+  /** Opening delimiter (default `{`). */
   left: string;
+  /** Closing delimiter (default `}`). */
   right: string;
+  /** Characters/patterns permitted inside the delimiters. */
   allowed: Array<string | RegExp>;
 }
 
+/** Options for the {@link attrs} plugin. */
 export interface AttrsOptions extends Partial<DelimiterConfig> {
   /**
    * Which rules to enable. "all" enables everything (default). false or []
@@ -22,6 +28,7 @@ export interface AttrsOptions extends Partial<DelimiterConfig> {
   rule?: "all" | boolean | AttrRuleName[];
 }
 
+/** A parsed `[key, value]` attribute pair. */
 export type Attr = [key: string, value: string];
 
 /** [startIndex, endIndex] within the token content string, exclusive of delimiters */

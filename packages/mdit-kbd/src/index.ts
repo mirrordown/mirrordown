@@ -63,6 +63,7 @@ function tokenize(state: StateInline, silent: boolean): boolean {
   return true;
 }
 
+/** markdown-it plugin for `[[key]]` syntax, rendering `<kbd>` elements. */
 export function kbd(md: MarkdownIt): void {
   md.inline.ruler.before(`link`, `kbd`, tokenize);
 }

@@ -2,6 +2,7 @@ import type MDit from "markdown-it";
 
 const UNESCAPED_SPACE_RE = /(^|[^\\])(\\\\)*\s/u;
 
+/** markdown-it plugin for `~subscript~` syntax, rendering `<sub>` elements. */
 export function sub(md: MDit): void {
   md.inline.ruler.after(`emphasis`, `sub`, (state, silent) => {
     const start = state.pos;

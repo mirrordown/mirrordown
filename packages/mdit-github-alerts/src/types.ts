@@ -1,3 +1,4 @@
+/** A recognized alert keyword (e.g. `note`, `warning`, `caution`). */
 export type AlertType =
   | "note"
   | "tip"
@@ -17,6 +18,7 @@ export type AlertType =
 
 // Maps every recognized keyword (lowercase) to its canonical AlertType.
 // Aliases collapse so CSS only needs one selector per canonical type.
+/** Maps every recognized alert keyword (lowercase) to its canonical {@link AlertType}. */
 export const ALERT_ALIASES: Record<string, AlertType> = {
   // GitHub 5
   note: "note",
@@ -49,6 +51,7 @@ export const ALERT_ALIASES: Record<string, AlertType> = {
   cite: "quote"
 };
 
+/** Default display title for each {@link AlertType}. */
 export const DEFAULT_TITLE: Record<AlertType, string> = {
   note: "Note",
   tip: "Tip",
@@ -67,6 +70,7 @@ export const DEFAULT_TITLE: Record<AlertType, string> = {
   quote: "Quote"
 };
 
+/** Options for the {@link githubAlerts} plugin. */
 export interface AlertOptions {
   /**
    * Extra alert types beyond the built-in set. Keys are lowercase keywords

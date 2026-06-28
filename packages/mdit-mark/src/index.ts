@@ -5,6 +5,7 @@ import type {
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 import type Token from "markdown-it/lib/token.mjs";
 
+/** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. */
 export function mark(md: MDit): void {
   md.inline.ruler.before(`emphasis`, `mark`, (state, silent) => {
     const marker = state.src.charCodeAt(state.pos);

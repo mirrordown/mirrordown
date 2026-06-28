@@ -2,6 +2,7 @@ import type MDit from "markdown-it";
 
 const UNESCAPED_SPACE_RE = /(^|[^\\])(\\\\)*\s/u;
 
+/** markdown-it plugin for `^superscript^` syntax, rendering `<sup>` elements. */
 export function sup(md: MDit): void {
   md.inline.ruler.after(`emphasis`, `sup`, (state, silent) => {
     const start = state.pos;

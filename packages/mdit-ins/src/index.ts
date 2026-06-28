@@ -5,6 +5,7 @@ import type {
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 import type Token from "markdown-it/lib/token.mjs";
 
+/** markdown-it plugin for `++insertion++` syntax, rendering `<ins>` elements. */
 export function ins(md: MDit): void {
   md.inline.ruler.before(`emphasis`, `ins`, (state, silent) => {
     const marker = state.src.charCodeAt(state.pos);

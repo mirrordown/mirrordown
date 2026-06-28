@@ -1,4 +1,6 @@
+/** Options for the tabs plugin. */
 export interface TabsOptions {
+  /** Class applied to the tabs container element (default `markdown-tabs`). */
   containerClass?: string;
 }
 

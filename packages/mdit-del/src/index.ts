@@ -5,6 +5,7 @@ import type {
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 import type Token from "markdown-it/lib/token.mjs";
 
+/** markdown-it plugin for `--deletion--` syntax, rendering `<del>` elements. */
 export function del(md: MDit): void {
   md.inline.ruler.before(`emphasis`, `del`, (state, silent) => {
     const marker = state.src.charCodeAt(state.pos);

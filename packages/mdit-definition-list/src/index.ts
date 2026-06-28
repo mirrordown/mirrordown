@@ -239,6 +239,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   return true;
 };
 
+/** markdown-it plugin for definition lists, rendering `<dl>`, `<dt>`, and `<dd>` elements. */
 export const dl: PluginSimple = (md) => {
   md.block.ruler.before("paragraph", "dl", dlRule, {
     alt: ["paragraph", "reference", "blockquote"]

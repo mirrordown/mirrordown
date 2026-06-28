@@ -69,6 +69,7 @@ const abbrDefinition: RuleBlock = (
   return true;
 };
 
+/** markdown-it plugin for abbreviations (`*[term]: definition`), rendering `<abbr>` elements. */
 export const abbr: PluginSimple = (md) => {
   const { arrayReplaceAt, escapeRE, lib } = md.utils;
 
