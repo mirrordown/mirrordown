@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-definition-list",
   "description": "A remark plugin for definition lists (term / : definition), rendering <dl>, <dt>, and <dd> elements.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

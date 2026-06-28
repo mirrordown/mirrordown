@@ -2,6 +2,13 @@
 
 
 
+
+## 0.1.3
+<sub>2026-06-28</sub>
+
+- *(patch)*
+  Improve JSR package scores: add package descriptions, document all exported symbols (JSDoc), add READMEs for the inline-svg packages, clear slow-type errors on the exported hast handlers, and trim internal regex constants from the public API.
+
 ## 0.1.2
 <sub>2026-06-28</sub>
 
