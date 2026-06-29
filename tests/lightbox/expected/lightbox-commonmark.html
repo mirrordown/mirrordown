@@ -1,0 +1,69 @@
+<!-- @case: basic opt-in -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti"><img src="photo.jpg" alt="Alt text"></button></p>
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image"><img src="photo.jpg" alt="Alt text"></button></dialog>
+
+<!-- @case: opt-in with title -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti"><img src="photo.jpg" alt="Alt text" title="Title text"></button></p>
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image"><img src="photo.jpg" alt="Alt text" title="Title text"></button></dialog>
+
+<!-- @case: normal image is untouched -->
+<p><img src="photo.jpg" alt="Alt text"></p>
+
+<!-- @case: opt-in mid-paragraph keeps surrounding text -->
+<p>See this <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti"><img src="photo.jpg" alt="Alt text"></button> right here.</p>
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image"><img src="photo.jpg" alt="Alt text"></button></dialog>
+
+<!-- @case: distinct images get distinct dialogs -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-s0e3ep"><img src="a.jpg" alt="one"></button> and <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-e50xyk"><img src="b.jpg" alt="two"></button></p>
+<dialog id="markdown-lightbox-s0e3ep" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-s0e3ep" aria-label="Close image"><img src="a.jpg" alt="one"></button></dialog>
+<dialog id="markdown-lightbox-e50xyk" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-e50xyk" aria-label="Close image"><img src="b.jpg" alt="two"></button></dialog>
+
+<!-- @case: repeated image shares a single dialog -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1kwfx8u"><img src="same.jpg" alt="first ref"></button> and again <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1kwfx8u"><img src="same.jpg" alt="second ref"></button></p>
+<dialog id="markdown-lightbox-1kwfx8u" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1kwfx8u" aria-label="Close image"><img src="same.jpg" alt="first ref"></button></dialog>
+
+<!-- @case: mixed normal and opt-in -->
+<p><img src="a.jpg" alt="plain"> then <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-e50xyk"><img src="b.jpg" alt="zoom"></button></p>
+<dialog id="markdown-lightbox-e50xyk" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-e50xyk" aria-label="Close image"><img src="b.jpg" alt="zoom"></button></dialog>
+
+<!-- @case: false positive sentence ending in bang -->
+<p>Wow! <img src="photo.jpg" alt="Alt text"></p>
+
+<!-- @case: false positive mid-word bang -->
+<p>C++!<img src="photo.jpg" alt="Alt text"></p>
+
+<!-- @case: empty alt -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti"><img src="photo.jpg" alt=""></button></p>
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image"><img src="photo.jpg" alt=""></button></dialog>
+
+<!-- @case: scattered across paragraphs collects dialogs at the end -->
+<p>First paragraph with <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-s0e3ep"><img src="a.jpg" alt="first"></button> inline.</p>
+<p>A second paragraph of plain text in between.</p>
+<p>Then <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-e50xyk"><img src="b.jpg" alt="second"></button> much later in the document.</p>
+<dialog id="markdown-lightbox-s0e3ep" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-s0e3ep" aria-label="Close image"><img src="a.jpg" alt="first"></button></dialog>
+<dialog id="markdown-lightbox-e50xyk" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-e50xyk" aria-label="Close image"><img src="b.jpg" alt="second"></button></dialog>
+
+<!-- @case: reference-style opt-in image -->
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti"><img src="photo.jpg" alt="A wild rice field"></button></p>
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image"><img src="photo.jpg" alt="A wild rice field"></button></dialog>
+
+<!-- @case: inside a list item -->
+<ul>
+<li><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-s0e3ep"><img src="a.jpg" alt="in a list"></button></li>
+</ul>
+<dialog id="markdown-lightbox-s0e3ep" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-s0e3ep" aria-label="Close image"><img src="a.jpg" alt="in a list"></button></dialog>
+
+<!-- @case: inside a blockquote -->
+<blockquote>
+<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-s0e3ep"><img src="a.jpg" alt="in a quote"></button></p>
+</blockquote>
+<dialog id="markdown-lightbox-s0e3ep" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-s0e3ep" aria-label="Close image"><img src="a.jpg" alt="in a quote"></button></dialog>
+
+<!-- @case: inside a link is not lightboxed, marker stays literal -->
+<p><a href="https://example.com">!<img src="a.jpg" alt="linked"></a></p>
+
+<!-- @case: nested inside a link is not lightboxed -->
+<p><a href="https://example.com"><strong>!<img src="a.jpg" alt="nested"></strong></a></p>
+
+<!-- @case: inside a reference-style link is not lightboxed -->
+<p><a href="https://example.com">!<img src="a.jpg" alt="ref linked"></a></p>

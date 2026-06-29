@@ -1,0 +1,7 @@
+{
+  "name": "@mirrordown/mdit-lightbox",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

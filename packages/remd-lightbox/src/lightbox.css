@@ -1,0 +1,141 @@
+/*
+  Lightbox — default stylesheet
+  -----------------------------------------------------------------------------
+  A fully declarative, JavaScript-free image lightbox built on <dialog> +
+  the Invoker Commands API (command/commandfor) + closedby="any". All rules
+  live inside @layer markdown-lightbox so any unlayered consumer CSS overrides
+  them without !important.
+
+  Tunable via public custom properties (set on :root or any ancestor):
+    --markdown-lightbox-backdrop   backdrop color (default black @ 72%)
+    --markdown-lightbox-blur       backdrop blur radius (default 3px)
+    --markdown-lightbox-radius     image corner radius (default 0.375rem)
+    --markdown-lightbox-duration   open/close transition duration (default 0.25s)
+*/
+
+@layer markdown-lightbox {
+  /* ── Trigger: the inline thumbnail becomes a zoomable button ───────────── */
+  .markdown-lightbox-trigger {
+    all: unset;
+    display: inline-block;
+    cursor: zoom-in;
+    border-radius: var(--markdown-lightbox-radius, 0.375rem);
+  }
+
+  .markdown-lightbox-trigger:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .markdown-lightbox-trigger img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--markdown-lightbox-radius, 0.375rem);
+    transition:
+      filter 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .markdown-lightbox-trigger:hover img {
+    filter: brightness(1.05);
+    transform: scale(1.01);
+  }
+
+  /* ── The modal dialog ──────────────────────────────────────────────────── */
+  dialog.markdown-lightbox {
+    margin: auto;
+    max-width: 100vw;
+    max-height: 100vh;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .markdown-lightbox-close {
+    all: unset;
+    display: block;
+    cursor: zoom-out;
+  }
+
+  .markdown-lightbox-close img {
+    display: block;
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--markdown-lightbox-radius, 0.375rem);
+    box-shadow: 0 0.5rem 2.5rem rgb(0 0 0 / 50%);
+  }
+
+  /* ── Backdrop ──────────────────────────────────────────────────────────── */
+  dialog.markdown-lightbox::backdrop {
+    background: var(--markdown-lightbox-backdrop, rgb(0 0 0 / 72%));
+    backdrop-filter: blur(var(--markdown-lightbox-blur, 3px));
+  }
+
+  /* ── JS-free open/close transition (@starting-style + allow-discrete) ──── */
+  dialog.markdown-lightbox {
+    opacity: 0;
+    transform: scale(0.9);
+    transition:
+      opacity var(--markdown-lightbox-duration, 0.25s) ease,
+      transform var(--markdown-lightbox-duration, 0.25s) ease,
+      overlay var(--markdown-lightbox-duration, 0.25s) ease allow-discrete,
+      display var(--markdown-lightbox-duration, 0.25s) ease allow-discrete;
+  }
+
+  dialog.markdown-lightbox[open] {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  @starting-style {
+    dialog.markdown-lightbox[open] {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+
+  dialog.markdown-lightbox::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--markdown-lightbox-duration, 0.25s) ease,
+      overlay var(--markdown-lightbox-duration, 0.25s) ease allow-discrete,
+      display var(--markdown-lightbox-duration, 0.25s) ease allow-discrete;
+  }
+
+  dialog.markdown-lightbox[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    dialog.markdown-lightbox[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Respect reduced-motion: skip the zoom/fade, keep the open/close instant. */
+  @media (prefers-reduced-motion: reduce) {
+    dialog.markdown-lightbox,
+    dialog.markdown-lightbox::backdrop {
+      transition: none;
+    }
+  }
+}
+
+/*
+  Lock background scroll while the lightbox is open. A modal dialog makes the
+  page inert (no clicks/focus) but does not stop it from scrolling; :has() ties
+  an `overflow: clip` lock to the dialog's open state. `clip` (not `hidden`)
+  prevents scrolling entirely without establishing a scroll container.
+
+  Deliberately UNLAYERED: a host's unlayered `html { overflow-y: scroll }` would
+  beat a layered rule regardless of specificity, so this functional lock lives
+  outside @layer where its much higher selector specificity wins instead.
+*/
+:root:has(dialog.markdown-lightbox[open]) {
+  overflow: clip;
+}

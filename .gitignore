@@ -19,8 +19,8 @@ node_modules
 .DS_Store
 .vscode/settings.json
 
-# Claude
-.claude/
+# Claude — commit shared config (skills, commands); keep personal settings local
+.claude/settings.local.json
 superpowers/
 
 # Debug / browser automation artifacts
