@@ -1,0 +1,22 @@
+@import "../../../packages/mdit-lightbox/src/lightbox.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  VSCode's markdown preview ships an unlayered base rule, roughly
+  `img { max-width: 100%; height: auto }`. The plugin keeps its image sizing in
+  @layer markdown-lightbox (correct on the web, so consumers can override without
+  !important) — but a cascade layer always loses to the host's unlayered CSS, so
+  VSCode would cap the zoomed image at 100% of its container instead of letting it
+  fill the viewport.
+
+  Re-assert the zoomed image's sizing here, unlayered, since this is a
+  host-integration concern rather than a plugin one.
+*/
+.markdown-lightbox-close img {
+  max-width: 95vw;
+  max-height: 95vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}

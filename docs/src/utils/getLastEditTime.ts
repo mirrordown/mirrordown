@@ -5,7 +5,7 @@ interface CommitResponse {
 }
 
 export async function getLastEditTime(path: string): Promise<Date | null> {
-  // @ts-expect-error
+  // @ts-expect-error import.meta.env is typed by Astro's generated types (astro sync/build), not present in CI's `vp check`
   const token = import.meta.env.GITHUB_TOKEN;
   const params = new URLSearchParams({ path, page: "1", per_page: "1" });
 

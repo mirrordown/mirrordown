@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "^7.2.0",
     "@fontsource-variable/mona-sans": "^5.2.8",
     "@fontsource/monaspace-argon": "^5.2.5",
     "@fontsource/monaspace-krypton": "^5.2.5",
@@ -22,6 +23,7 @@
     "@mirrordown/remd-inline-svg": "workspace:*",
     "@mirrordown/remd-ins": "workspace:*",
     "@mirrordown/remd-kbd": "workspace:*",
+    "@mirrordown/remd-lightbox": "workspace:*",
     "@mirrordown/remd-mark": "workspace:*",
     "@mirrordown/remd-ruby": "workspace:*",
     "@mirrordown/remd-steps": "workspace:*",
@@ -29,7 +31,7 @@
     "@mirrordown/remd-sup": "workspace:*",
     "@mirrordown/remd-tabs": "workspace:*",
     "@mirrordown/remd-unwrap-images": "workspace:*",
-    "astro": "^7.0.0-beta.5"
+    "astro": "^7.0.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

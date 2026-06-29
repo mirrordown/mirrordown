@@ -1,0 +1,10 @@
+{
+  "name": "@mirrordown/remd-lightbox",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "imports": {
+    "hast": "npm:@types/hast@^3"
+  }
+}

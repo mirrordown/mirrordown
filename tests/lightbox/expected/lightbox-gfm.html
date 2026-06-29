@@ -1,0 +1,31 @@
+<!-- @case: inside a table cell -->
+<table>
+<thead>
+<tr>
+<th>Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-s0e3ep"><img src="a.jpg" alt="in a cell"></button></td>
+</tr>
+</tbody>
+</table>
+<dialog id="markdown-lightbox-s0e3ep" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-s0e3ep" aria-label="Close image"><img src="a.jpg" alt="in a cell"></button></dialog>
+
+<!-- @case: table cell with normal and opt-in images -->
+<table>
+<thead>
+<tr>
+<th>Plain</th>
+<th>Zoom</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="a.jpg" alt="p"></td>
+<td><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-e50xyk"><img src="b.jpg" alt="z"></button></td>
+</tr>
+</tbody>
+</table>
+<dialog id="markdown-lightbox-e50xyk" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-e50xyk" aria-label="Close image"><img src="b.jpg" alt="z"></button></dialog>
