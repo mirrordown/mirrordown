@@ -1118,6 +1118,7 @@ __metadata:
     "@fontsource/monaspace-radon": "npm:^5.2.5"
     "@fontsource/monaspace-xenon": "npm:^5.2.5"
     "@mirrordown/remd-attrs": "workspace:*"
+    "@mirrordown/remd-autolink-headings": "workspace:*"
     "@mirrordown/remd-definition-list": "workspace:*"
     "@mirrordown/remd-del": "workspace:*"
     "@mirrordown/remd-github-alerts": "workspace:*"
@@ -1127,6 +1128,7 @@ __metadata:
     "@mirrordown/remd-lightbox": "workspace:*"
     "@mirrordown/remd-mark": "workspace:*"
     "@mirrordown/remd-ruby": "workspace:*"
+    "@mirrordown/remd-slug": "workspace:*"
     "@mirrordown/remd-steps": "workspace:*"
     "@mirrordown/remd-sub": "workspace:*"
     "@mirrordown/remd-sup": "workspace:*"
@@ -1174,6 +1176,17 @@ __metadata:
 "@mirrordown/mdit-attrs@workspace:*, @mirrordown/mdit-attrs@workspace:packages/mdit-attrs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-attrs@workspace:packages/mdit-attrs"
+  dependencies:
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-autolink-headings@workspace:*, @mirrordown/mdit-autolink-headings@workspace:packages/mdit-autolink-headings":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-autolink-headings@workspace:packages/mdit-autolink-headings"
   dependencies:
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
@@ -1282,6 +1295,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-slug@workspace:*, @mirrordown/mdit-slug@workspace:packages/mdit-slug":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-slug@workspace:packages/mdit-slug"
+  dependencies:
+    "@types/markdown-it": "catalog:"
+    github-slugger: "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-steps@workspace:*, @mirrordown/mdit-steps@workspace:packages/mdit-steps":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-steps@workspace:packages/mdit-steps"
@@ -1355,6 +1380,18 @@ __metadata:
   dependencies:
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-autolink-headings@workspace:*, @mirrordown/remd-autolink-headings@workspace:packages/remd-autolink-headings":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-autolink-headings@workspace:packages/remd-autolink-headings"
+  dependencies:
+    "@types/hast": "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
@@ -1496,6 +1533,19 @@ __metadata:
     mdast-util-from-markdown: "catalog:"
     micromark-util-character: "catalog:"
     micromark-util-types: "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-slug@workspace:*, @mirrordown/remd-slug@workspace:packages/remd-slug":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-slug@workspace:packages/remd-slug"
+  dependencies:
+    "@types/hast": "catalog:"
+    github-slugger: "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
@@ -5080,6 +5130,17 @@ __metadata:
   resolution: "markdown-attributes@workspace:extensions/markdown-attrs"
   dependencies:
     "@mirrordown/mdit-attrs": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-autolink-headings@workspace:extensions/markdown-autolink-headings":
+  version: 0.0.0-use.local
+  resolution: "markdown-autolink-headings@workspace:extensions/markdown-autolink-headings"
+  dependencies:
+    "@mirrordown/mdit-autolink-headings": "workspace:*"
+    "@mirrordown/mdit-slug": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

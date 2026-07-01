@@ -1,0 +1,18 @@
+@import "../../../packages/mdit-autolink-headings/src/autolink-headings.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  VSCode's markdown preview ships unlayered `a { ... }` rules (a link color and,
+  on hover, an underline). The plugin keeps the anchor's appearance in
+  @layer markdown-autolink-headings so consumers can override it without
+  `!important` — but a cascade layer always loses to the host's unlayered CSS, so
+  the preview would paint the `#` marker in VSCode's link color and underline it.
+
+  Re-assert the anchor's appearance here, unlayered, since this is a
+  host-integration concern rather than a plugin one.
+*/
+.anchor {
+  color: inherit;
+  text-decoration: none;
+}

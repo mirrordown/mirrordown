@@ -14,9 +14,10 @@ single package:
 - `docs/public/guide/plugins/<name>.md` — the guide (also the README source)
 - `extensions/markdown-<name>/` — VSCode preview extension
 
-Scaffolds live in `templates/{mdit,remd,extension}`. General repo/tooling facts
-(the `vp` CLI, Vite+ rules, monorepo layout) are in `CLAUDE.md` — don't re-derive
-them; this skill only covers what's specific to authoring a plugin set.
+Scaffolds live in `templates/{mdit,remd,extension}` **at the repo root** (not in
+this skill directory). General repo/tooling facts (the `vp` CLI, Vite+ rules,
+monorepo layout) are in `CLAUDE.md` — don't re-derive them; this skill only
+covers what's specific to authoring a plugin set.
 
 **The invariant that governs everything: `mdit-<name>` and `remd-<name>` must
 emit byte-identical HTML for the same input.** Verify parity continuously, not at
@@ -26,6 +27,15 @@ the end.
 
 Do not start coding. Hold a short design conversation and converge on these before
 building. Use `AskUserQuestion` for genuine forks; recommend a default otherwise.
+
+**Not every plugin introduces syntax.** Some are _transforms_ that act on existing
+elements (e.g. `slug`/`autolink-headings` add ids/links to headings; `unwrap-images`
+restructures images). For these, items 1 and 3 below largely collapse — there's no
+sigil and nothing to "degrade to" — and the design surface shifts to **algorithm
+parity** (both engines must compute the _same_ output, e.g. identical id slugs) and
+**option scope** (how much of a ported plugin's option surface to support). When
+porting an existing plugin (rehype/remark/markdown-it), read its source first and
+decide faithfulness vs. simplification explicitly with the user.
 
 1. **Syntax.** What does the author type? Pick a sigil/delimiter and confirm it
    doesn't collide with existing plugins (`~~`, `==`, `++`, `~`, `^`, `[[ ]]`,
@@ -65,6 +75,24 @@ recent package uses for `package.json` / `jsr.json` exports, peer deps, and the
 
 markdown-it is always a core or inline rule plus a renderer rule.
 
+**Dependencies — inline tiny one-offs, share the parity-critical ones.** Prefer
+inlining small, single-purpose utilities (e.g. `hast-util-heading-rank`,
+`hast-util-to-string`, a trimmed `convertElement`) as local helpers rather than
+adding a dependency the suite doesn't already share — keeps the dependency graph
+small. _But_ keep a real dependency when it is the **parity contract itself**: e.g.
+both `slug` packages depend on `github-slugger` (a ~2KB Unicode regex + GitHub's
+dedup rules) via a shared catalog entry, because hand-vendoring it into two
+independently-published packages invites the one-character drift that silently
+breaks byte-parity. Add shared deps to the `.yarnrc.yml` `catalog:` block.
+
+**CSS export paths differ by engine** (a real gotcha): `mdit-*` exposes its
+stylesheet at `./styles`, `remd-*` at `./*.css`. Type-only deps (`hast`, `mdast`)
+go in the `remd` package's `jsr.json` `imports` map; runtime npm deps go in
+`package.json` as `"catalog:"` and JSR resolves them via byonm (no `jsr.json`
+entry). Some `remd-*` packages also use a separate `./src/jsr.ts` JSR entry to
+keep type augmentation out of the public API (avoids slow types) — don't "fix"
+that back to `index.ts`.
+
 ## Phase 2 — Implement to parity
 
 Build both, comparing output as you go (render the same snippets through each and
@@ -82,6 +110,15 @@ diff). Cross-engine traps that have actually bitten this codebase:
   and it lets repeated references dedupe to one target.
 - **`<dialog>` / flow content can't live inside a `<p>`.** Emit such elements at
   the document end and link them by id; keep only the inline trigger in place.
+- **Text extraction differs.** markdown-it's `renderInlineAsText` includes an
+  image's `alt`; hast's `toString` (what `rehype-slug` uses) does _not_. If you
+  derive anything from heading/inline text (a slug, a label), replicate the hast
+  semantics in markdown-it — walk the inline token children collecting `text`/
+  `code_inline` and **skip `image`** — or the two engines diverge.
+- **Entity encoding differs and isn't yours to fix.** markdown-it emits `&amp;`
+  where rehype-stringify emits `&#x26;` for a literal `&`. Like `<s>` vs `<del>`,
+  keep such constructs out of _shared_ fixtures (your plugin's own output — the
+  id, the wrapper — still matches; only the surrounding text encoding differs).
 
 **CSS (if any):** visual defaults go inside `@layer markdown-<name>` so consumers
 override without `!important`. Functional rules that must beat a host's _unlayered_
@@ -113,6 +150,27 @@ Model on an existing `tests/<plugin>/` suite. Structure:
   the same content (for image plugins: `unwrap-images`, `inline-svg`). Some
   conflicts are architectural and unfixable by ordering — surface them and decide
   with the user rather than forcing a green test.
+
+**Parity boundary for engine-specific options.** A ported plugin may have options
+that are inherently shaped for one engine — e.g. rehype options taking **hast
+nodes or callbacks** (`content`, `properties`, `group`, `test`) have no markdown-it
+equivalent. Support them on the `remd-*` side, give the `mdit-*` side an analogous
+but simpler surface (e.g. a `class` string), and **don't force them into shared
+fixtures**: shared fixtures cover only what both engines express identically (the
+defaults, static behaviors); engine-only options get a per-engine `it()`. State
+this boundary in the guide.
+
+**Lint conventions these tests must follow** (from `vp check`):
+
+- Put `expect(...)` **directly in each `it()` body**, not inside a shared helper —
+  the `expect-expect` rule can't see assertions hidden in a helper. Use `it.each`
+  with the expects inline to stay DRY.
+- No second message argument to `expect()` (Vitest allows it; the lint rule
+  forbids it).
+- markdown-it renderer rules assigned to `md.renderer.rules.X` need an explicit
+  `: string` return type; derive the rule type locally with
+  `type RenderRule = NonNullable<typeof md.renderer.rules.heading_open>` rather
+  than importing it.
 
 Run the full suite; `mdit` and `remd` must be identical on every shared case.
 
@@ -151,6 +209,14 @@ Then:
 `scripts/generate-extension-readmes.mjs` (extension README), then run them. The
 guide is the single source. (`inline-svg` is the only hand-authored exception.)
 
+The generators rewrite **every** README, and their raw output (e.g. 4-backtick
+fences, trailing commas) isn't formatter-clean — the committed form is
+post-`vp fmt`. So the workflow is **generate → `vp fmt` → commit**; after
+formatting, unrelated READMEs revert to no-diff and only yours change. If one
+_doesn't_ revert, the drift is pre-existing (the generator changed, or a source
+`package.json` `displayName`/`description` went stale) — fix the source, don't
+hand-edit the README, and flag it.
+
 ## Phase 6 — VSCode extension
 
 From `templates/extension`: contribute `markdown.markdownItPlugins: true` and, if
@@ -162,6 +228,38 @@ override in the extension (host-integration concern), not the plugin. Force-bund
 the plugin (`pack.deps.alwaysBundle`) so the vsix isn't shipping a bare `require`.
 Build with `vp run build` and confirm the vsix bundles the plugin and inlines the
 CSS. Add `saeris.markdown-<name>` to the `extensionPack`.
+
+**Extension granularity — research the host, don't assume one-plugin-one-extension.**
+The npm packages stay separate (composable primitives), but the _extension_ story
+can differ. When one plugin is useless without another (e.g. `autolink-headings`
+needs ids from `slug`), consider shipping a **single combined extension** that
+applies both rather than two. Before deciding, check what the VSCode preview
+already does: it slugs headings itself with the **same GitHub algorithm** (so ids
+won't conflict) and drives **scroll-sync off `data-line` attributes, not ids** (so
+adding ids/anchors is safe). A combined extension that bundles both plugins is
+self-contained and idempotent against the host's own ids. The extension's package
+`name` (not its folder) is the marketplace id used in `extensionPack`.
+
+## Phase 7 — Publishing
+
+New packages start at `version: 0.0.0` and need a **bump file** to get a first
+release via CI. Add a changeset-style file under `.bumpy/<slug>.md`:
+
+```md
+---
+"@mirrordown/remd-<name>": minor
+"@mirrordown/mdit-<name>": minor
+---
+
+One-line changelog description of the new plugin set.
+```
+
+Use `minor` for a first `0.1.0` release (matches the suite), `patch` for the pack
+entry (`"markdown-preview-extended-syntax": patch`) and small metadata fixes. One
+file per logical change; the description becomes the changelog entry for every
+package listed. The `bumpy` "Version packages" CI job consumes these to bump
+versions, write `CHANGELOG.md`, and trigger publish — so the working branch just
+needs the bump files committed, not the version bumps themselves.
 
 ## Quality gates (all must pass)
 

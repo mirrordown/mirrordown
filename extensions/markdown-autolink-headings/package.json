@@ -1,8 +1,8 @@
 {
-  "name": "markdown-subscript",
-  "displayName": "Markdown Subscript <sub>",
-  "version": "0.1.2",
-  "description": "Adds HTML Subscript <sub> support to VSCode's markdown preview",
+  "name": "markdown-autolink-headings",
+  "displayName": "Markdown Heading Anchors",
+  "version": "0.0.0",
+  "description": "Adds shareable anchor links to headings in VSCode's markdown preview",
   "categories": [
     "Other"
   ],
@@ -16,19 +16,23 @@
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",
   "devDependencies": {
-    "@mirrordown/mdit-sub": "workspace:*",
+    "@mirrordown/mdit-autolink-headings": "workspace:*",
+    "@mirrordown/mdit-slug": "workspace:*",
     "@types/markdown-it": "catalog:",
     "@types/vscode": "^1.125.0"
   },
   "contributes": {
-    "markdown.markdownItPlugins": true
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/autolink-headings.css"
+    ]
   },
   "activationEvents": [],
   "engines": {
     "vscode": "^1.125.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack && vp exec vsce package --no-dependencies",
+    "buildCommand": "vp pack && vp exec postcss src/autolink-headings.css --output dist/autolink-headings.css && vp exec vsce package --no-dependencies",
     "publishCommand": "vp exec vsce publish --no-dependencies",
     "skipNpmPublish": true
   }

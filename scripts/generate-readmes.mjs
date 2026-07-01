@@ -30,6 +30,7 @@ const repoRoot = join(__dirname, "..");
 const slugs = [
   "abbr",
   "attrs",
+  "autolink-headings",
   "definition-list",
   "del",
   "github-alerts",
@@ -37,6 +38,7 @@ const slugs = [
   "kbd",
   "mark",
   "ruby",
+  "slug",
   "steps",
   "sub",
   "sup",

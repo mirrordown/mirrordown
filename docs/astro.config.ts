@@ -18,6 +18,8 @@ import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
 import { remarkSub } from "@mirrordown/remd-sub";
 import { remarkSup } from "@mirrordown/remd-sup";
 import { remarkTabs, tabsHastHandlers } from "@mirrordown/remd-tabs";
+import { rehypeSlug } from "@mirrordown/remd-slug";
+import { rehypeAutolinkHeadings } from "@mirrordown/remd-autolink-headings";
 import { rehypeInlineSvg } from "@mirrordown/remd-inline-svg";
 import { rehypeLightbox } from "@mirrordown/remd-lightbox";
 import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
@@ -97,7 +99,13 @@ export default defineConfig({
       remarkSup,
       remarkTabs
     ],
-    rehypePlugins: [rehypeLightbox, rehypeInlineSvg, rehypeUnwrapImages],
+    rehypePlugins: [
+      rehypeSlug,
+      rehypeAutolinkHeadings,
+      rehypeLightbox,
+      rehypeInlineSvg,
+      rehypeUnwrapImages
+    ],
     remarkRehype: {
       handlers: {
         ...defListHastHandlers,
