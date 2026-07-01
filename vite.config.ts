@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { configDefaults, defineConfig } from "vite-plus";
 import { lint, fmt, mergeLint } from "@saeris/configs";
+import { playwright } from "vite-plus/test/browser/providers/playwright";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 
@@ -32,12 +33,46 @@ export default defineConfig({
     ]
   },
   lint: mergeLint(lint, {
-    ignorePatterns: ["templates/**", "docs/public/**/*.md"],
+    ignorePatterns: [
+      "templates/**",
+      "docs/public/**/*.md",
+      // Browser-mode VRT: the jest/expect-expect rule can't see the assertion
+      // inside the file's `screenshot()` helper (and the browser matcher is only
+      // reachable via a cast around vite-plus's mis-typed `expect` export). The
+      // file is fully type-checked in the editor and validated at runtime by the
+      // "visual regression tests" vitest project, so the type-aware lint skips it.
+      "tests/**/*.browser.test.ts"
+    ],
     options: { typeAware: true, typeCheck: true }
   }),
   test: {
     root,
-    include: ["tests/**/*.test.ts"],
-    exclude: [...configDefaults.exclude, "docs/**"]
+    projects: [
+      {
+        test: {
+          name: "unit",
+          include: ["tests/**/*.test.ts"],
+          exclude: [
+            ...configDefaults.exclude,
+            "**/*.browser.test.{js,ts}",
+            "docs/**"
+          ],
+          environment: "node"
+        }
+      },
+      {
+        test: {
+          name: "visual regression tests",
+          include: ["tests/**/*.browser.test.ts"],
+          exclude: [...configDefaults.exclude, "docs/**"],
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            headless: true,
+            instances: [{ browser: "chromium" }]
+          }
+        }
+      }
+    ]
   }
 });

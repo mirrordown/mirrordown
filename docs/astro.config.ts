@@ -15,6 +15,7 @@ import { remarkKbd } from "@mirrordown/remd-kbd";
 import { remarkMark } from "@mirrordown/remd-mark";
 import { remarkRuby } from "@mirrordown/remd-ruby";
 import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
+import { remarkSpoiler, spoilerHastHandlers } from "@mirrordown/remd-spoiler";
 import { remarkSub } from "@mirrordown/remd-sub";
 import { remarkSup } from "@mirrordown/remd-sup";
 import { remarkTabs, tabsHastHandlers } from "@mirrordown/remd-tabs";
@@ -95,6 +96,7 @@ export default defineConfig({
       remarkMark,
       remarkRuby,
       remarkSteps,
+      remarkSpoiler,
       remarkSub,
       remarkSup,
       remarkTabs
@@ -111,6 +113,7 @@ export default defineConfig({
         ...defListHastHandlers,
         ...githubAlertsHastHandlers,
         ...stepsHastHandlers,
+        ...spoilerHastHandlers,
         ...tabsHastHandlers
       }
     }

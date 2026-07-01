@@ -29,10 +29,13 @@
 // so it returns 403 missingPermission. Used once, locally — it does NOT go into
 // CI (publishing afterwards is OIDC, token-less). Not needed for --dry-run.
 //
-// Usage:
-//   JSR_TOKEN=jsr_xxx node scripts/jsr-claim.mjs            # scaffold + claim
+// Usage (cross-platform — the token is read from ~/.env, see below):
+//   node scripts/jsr-claim.mjs                              # scaffold + claim
 //   node scripts/jsr-claim.mjs --dry-run                    # show the plan only
 //   [--repo owner/name]   override the GitHub repo (default: git remote origin)
+//
+// Auth token: put `JSR_TOKEN=jsr_xxx` in your personal ~/.env (loaded by
+// ./load-env.mjs). An explicit `JSR_TOKEN=… node …` (POSIX) still overrides it.
 //
 // Targets are every non-private package under packages/*/package.json.
 // ---------------------------------------------------------------------------
@@ -41,6 +44,10 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+// Side-effect import: loads ~/.env into process.env. Runs during the import
+// phase (before any top-level code reads JSR_TOKEN), so its position among the
+// imports doesn't matter — the node: imports above don't touch process.env.
+import "./load-env.mjs";
 
 const API = "https://api.jsr.io";
 const MAX_RETRIES = 6; // 429 backoff attempts per request
@@ -113,17 +120,35 @@ const repo = resolveRepo();
 // ── Phase 1: scaffold / validate jsr.json ───────────────────────────────────
 // Owns the manifest *structure* (name + exports); creating one also seeds the
 // current version. Version stays in sync at publish time via sync-jsr-version.
+//
+// An EXISTING jsr.json `.` export is authoritative and preserved: some remd-*
+// packages deliberately point their JSR entry at `./src/jsr.ts` (not index.ts)
+// to keep module augmentation — which JSR rejects — out of the public API. This
+// scaffolder only supplies a default entry when CREATING a manifest or when the
+// existing one has no usable `.` export; it never rewrites a valid one.
+function hasValidDotExport(exports) {
+  const dot = exports?.["."];
+  return typeof dot === "string" && dot.length > 0;
+}
 function ensureManifest(t) {
   const file = join(t.dir, "jsr.json");
-  const exports = { ".": t.entry };
   if (!existsSync(file)) {
     if (!dryRun) {
-      const manifest = { name: t.fullName, version: t.version, exports };
+      const manifest = {
+        name: t.fullName,
+        version: t.version,
+        exports: { ".": t.entry }
+      };
       writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
     }
     return "created";
   }
   const cur = JSON.parse(readFileSync(file, "utf8"));
+  // Keep the existing exports if they're valid; only synthesize a default when
+  // missing/empty. This protects intentional `./src/jsr.ts` entries.
+  const exports = hasValidDotExport(cur.exports)
+    ? cur.exports
+    : { ".": t.entry };
   const drifted =
     cur.name !== t.fullName ||
     JSON.stringify(cur.exports) !== JSON.stringify(exports);

@@ -1,0 +1,11 @@
+{
+  "name": "@mirrordown/remd-spoiler",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/jsr.ts"
+  },
+  "imports": {
+    "mdast": "npm:@types/mdast@^4",
+    "hast": "npm:@types/hast@^3"
+  }
+}

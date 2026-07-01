@@ -10,14 +10,20 @@
 // pure AST transformers — is also marked browser- and workerd-compatible.
 //
 // Auth: a full-access JSR token in JSR_TOKEN (jsr.io -> Tokens), used once,
-// locally — it does NOT go into CI. Not needed for --dry-run.
+// locally — it does NOT go into CI. Not needed for --dry-run. Keep it in your
+// personal ~/.env (loaded by ./load-env.mjs); an explicit `JSR_TOKEN=… node …`
+// (POSIX) still overrides it.
 //
-// Usage:
-//   JSR_TOKEN=jsr_xxx node scripts/jsr-meta.mjs
+// Usage (cross-platform):
+//   node scripts/jsr-meta.mjs
 //   node scripts/jsr-meta.mjs --dry-run
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+// Side-effect import: loads ~/.env into process.env. Runs during the import
+// phase (before any top-level code reads JSR_TOKEN), so its position among the
+// imports doesn't matter — the node: imports above don't touch process.env.
+import "./load-env.mjs";
 
 const API = "https://api.jsr.io";
 const MAX_RETRIES = 6; // 429 backoff attempts

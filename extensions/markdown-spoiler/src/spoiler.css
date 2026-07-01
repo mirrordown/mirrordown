@@ -1,0 +1,28 @@
+@import "../../../packages/mdit-spoiler/src/spoiler.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  VSCode's markdown preview ships an unlayered base rule, roughly
+  `img { max-width: 100%; height: auto }`. The image-spoiler treatment (blur +
+  the anti-vignette upscale) lives in @layer markdown-spoiler so web consumers can
+  override it without !important — but a cascade layer always loses to the host's
+  unlayered CSS, so VSCode would strip the `scale` off the blurred media and the
+  dark-edge vignette would return.
+
+  Re-assert the media rules here, unlayered, since this is a host-integration
+  concern rather than a plugin one. Mirrors the plugin's @layer rules exactly.
+*/
+.markdown-spoiler-toggle:not(:checked)
+  ~ .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger)
+  > * {
+  scale: 1.35;
+  filter: blur(var(--markdown-spoiler-media-blur, 2.5rem));
+}
+
+.markdown-spoiler-toggle:checked
+  ~ .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger)
+  > * {
+  scale: 1;
+  filter: none;
+}

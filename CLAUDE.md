@@ -73,6 +73,10 @@ If you genuinely think a convention is harmful, surface it. Don't fork silently.
 "Tests pass" is wrong if any were skipped.
 Default to surfacing uncertainty, not hiding it.
 
+## Rule 13 — Soft-wrap markdown-format prose
+
+Do not hard-wrap lines in markdown-format text: markdown files, code comments, and commit/PR messages. Write each paragraph as a single soft-wrapped line and let the editor wrap it. Hard line breaks belong only where they are semantic (list items, headings, code blocks).
+
 <!--VITE PLUS START-->
 
 # Using Vite+, the Unified Toolchain for the Web

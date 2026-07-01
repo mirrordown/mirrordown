@@ -1,0 +1,79 @@
+<!-- @case: basic word -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">spoiler</span></label></p>
+
+<!-- @case: start of sentence -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">the butler</span></label> did it</p>
+
+<!-- @case: end of sentence -->
+<p>the killer was <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">the butler</span></label></p>
+
+<!-- @case: middle of sentence -->
+<p>the killer was <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">the butler</span></label> all along</p>
+
+<!-- @case: multiple spoilers -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">first secret</span></label> and <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">second secret</span></label></p>
+
+<!-- @case: lone pipe -->
+<p>a | b then c | d</p>
+
+<!-- @case: adjacent to word chars -->
+<p>foo<label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">bar</span></label>baz</p>
+
+<!-- @case: wrapping strong -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><strong>bold spoiler</strong></span></label></p>
+
+<!-- @case: wrapping emphasis -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><em>italic spoiler</em></span></label></p>
+
+<!-- @case: inside strong -->
+<p><strong><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">spoiler inside bold</span></label></strong></p>
+
+<!-- @case: inside emphasis -->
+<p><em><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">spoiler inside italic</span></label></em></p>
+
+<!-- @case: in heading -->
+<h2><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">spoiler heading</span></label></h2>
+
+<!-- @case: in list items -->
+<ul>
+<li><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">first item</span></label></li>
+<li><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">second item</span></label></li>
+</ul>
+
+<!-- @case: in blockquote -->
+<blockquote>
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">blockquote content</span></label></p>
+</blockquote>
+
+<!-- @case: mixed inline content -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><strong>bold</strong> and regular</span></label></p>
+
+<!-- @case: wrapping a link -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">see <a href="https://example.com">the reveal</a> here</span></label></p>
+
+<!-- @case: inside a link -->
+<p><a href="https://example.com"><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">spoiler in link</span></label></a></p>
+
+<!-- @case: wrapping an image -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><img src="reveal.jpg" alt="hidden art"></span></label></p>
+
+<!-- @case: image with surrounding text -->
+<p>behold <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><img src="reveal.jpg" alt="hidden art"></span></label> the reveal</p>
+
+<!-- @case: image mixed with text inside -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">caption then <img src="reveal.jpg" alt="hidden art"> after</span></label></p>
+
+<!-- @case: wrapping inline code -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content"><code>secret_value</code></span></label></p>
+
+<!-- @case: multiple inline children -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">has <code>code</code> and <strong>bold</strong> and <em>italic</em></span></label></p>
+
+<!-- @case: empty spoiler -->
+<p>||||</p>
+
+<!-- @case: unclosed opening -->
+<p>foo ||bar</p>
+
+<!-- @case: leading space not a spoiler -->
+<p>|| leading space||</p>

@@ -32,6 +32,18 @@ superpowers/
 .env.local
 .env.production 
 
+# Visual-regression baselines are canonical on Linux (CI's platform). Ignore
+# baselines/diffs generated on other OSes so a dev running the VRT locally on
+# Windows/macOS doesn't commit platform-specific screenshots. Only *-linux.png
+# is tracked.
+tests/**/__screenshots__/**/*-win32.png
+tests/**/__screenshots__/**/*-darwin.png
+tests/**/__screenshots__/**/*.actual.png
+tests/**/__screenshots__/**/*.diff.png
+
+# Vitest browser-mode attachments (screenshot diffs from failed VRT runs)
+.vitest-attachments/
+
 # Outputs
 **/dist/
 .vite/

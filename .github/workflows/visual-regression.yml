@@ -1,0 +1,53 @@
+name: Visual Regression
+
+# The spoiler plugin is the one extension whose behavior lives almost entirely
+# in CSS (blurred image + SPOILER pill, per-line text bars, hover/focus/reveal)
+# — states the HTML-parity fixtures can't see. This job screenshots those states
+# in a real browser and diffs them against committed baselines.
+#
+# It runs only when the spoiler plugins (HTML output *or* CSS — the two are
+# coupled, a markup change can break the selectors the CSS targets) or the visual
+# test harness change, so it doesn't gate every push. Also manually dispatchable.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/mdit-spoiler/**"
+      - "packages/remd-spoiler/**"
+      - "tests/spoiler/visual.browser.test.ts"
+      - "vite.config.ts"
+      - ".github/workflows/visual-regression.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/mdit-spoiler/**"
+      - "packages/remd-spoiler/**"
+      - "tests/spoiler/visual.browser.test.ts"
+      - "vite.config.ts"
+      - ".github/workflows/visual-regression.yml"
+  workflow_dispatch:
+
+jobs:
+  visual-regression:
+    name: Spoiler visual regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      # Playwright's Chromium + the system libraries it needs (libnss3, etc.).
+      - run: vp exec playwright install --with-deps chromium
+
+      - run: vp test run --project 'visual regression tests'
+
+      # On failure, surface the diff/actual images so the change can be reviewed.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spoiler-visual-diff
+          path: tests/spoiler/__screenshots__/**
+          retention-days: 7

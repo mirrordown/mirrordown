@@ -30,6 +30,7 @@ const EXTENSIONS = [
   ["markdown-ins", "ins"],
   ["markdown-kbd", "kbd"],
   ["markdown-mark", "mark"],
+  ["markdown-spoiler", "spoiler"],
   ["markdown-steps", "steps"],
   ["markdown-sub", "sub"],
   ["markdown-sup", "sup"],

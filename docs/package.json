@@ -28,6 +28,7 @@
     "@mirrordown/remd-mark": "workspace:*",
     "@mirrordown/remd-ruby": "workspace:*",
     "@mirrordown/remd-slug": "workspace:*",
+    "@mirrordown/remd-spoiler": "workspace:*",
     "@mirrordown/remd-steps": "workspace:*",
     "@mirrordown/remd-sub": "workspace:*",
     "@mirrordown/remd-sup": "workspace:*",

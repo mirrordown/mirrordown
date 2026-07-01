@@ -39,6 +39,7 @@ const slugs = [
   "mark",
   "ruby",
   "slug",
+  "spoiler",
   "steps",
   "sub",
   "sup",
