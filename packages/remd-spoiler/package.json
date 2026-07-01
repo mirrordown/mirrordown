@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-spoiler",
   "description": "A remark plugin for Discord-style spoiler syntax (||text||), rendering click-to-reveal spoilers.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {
