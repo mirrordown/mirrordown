@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-slug",
   "description": "A rehype plugin that adds GitHub-style id slugs to headings.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

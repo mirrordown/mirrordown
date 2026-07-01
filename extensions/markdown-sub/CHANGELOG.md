@@ -2,6 +2,13 @@
 
 
 
+
+## 0.1.3
+<sub>2026-07-01</sub>
+
+- *(patch)*
+  Restore the `<sub>` tag in the extension's Marketplace display name (`Markdown Subscript <sub>`), matching the naming of the other element extensions.
+
 ## 0.1.2
 <sub>2026-06-27</sub>
 

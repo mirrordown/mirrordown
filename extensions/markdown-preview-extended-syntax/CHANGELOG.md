@@ -2,6 +2,13 @@
 
 
 
+
+## 0.1.3
+<sub>2026-07-01</sub>
+
+- *(patch)*
+  Add Markdown Heading Anchors to the bundled extensions, so installing the pack now also adds hover-to-reveal anchor links on headings.
+
 ## 0.1.2
 <sub>2026-06-29</sub>
 
