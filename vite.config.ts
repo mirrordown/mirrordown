@@ -5,6 +5,42 @@ import { playwright } from "vite-plus/test/browser/providers/playwright";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 
+// The node "unit" project runs everywhere. The browser-mode "visual regression
+// tests" project is OPT-IN via VITEST_VRT: it needs Playwright's Chromium and
+// its committed baselines are Linux-only, so running it by default would break a
+// plain `vp test` for contributors on macOS/Windows (missing Chromium, or a
+// baseline-platform mismatch). Enable it with `VITEST_VRT=1 vp test` locally;
+// the dedicated visual-regression CI workflow sets VITEST_VRT and installs
+// Chromium.
+const runVrt = !!process.env.VITEST_VRT;
+
+const unitProject = {
+  test: {
+    name: "unit",
+    include: ["tests/**/*.test.ts"],
+    exclude: [
+      ...configDefaults.exclude,
+      "**/*.browser.test.{js,ts}",
+      "docs/**"
+    ],
+    environment: "node"
+  }
+};
+
+const vrtProject = {
+  test: {
+    name: "visual regression tests",
+    include: ["tests/**/*.browser.test.ts"],
+    exclude: [...configDefaults.exclude, "docs/**"],
+    browser: {
+      enabled: true,
+      provider: playwright(),
+      headless: true,
+      instances: [{ browser: "chromium" }]
+    }
+  }
+};
+
 export default defineConfig({
   root: "docs",
   run: {
@@ -47,32 +83,6 @@ export default defineConfig({
   }),
   test: {
     root,
-    projects: [
-      {
-        test: {
-          name: "unit",
-          include: ["tests/**/*.test.ts"],
-          exclude: [
-            ...configDefaults.exclude,
-            "**/*.browser.test.{js,ts}",
-            "docs/**"
-          ],
-          environment: "node"
-        }
-      },
-      {
-        test: {
-          name: "visual regression tests",
-          include: ["tests/**/*.browser.test.ts"],
-          exclude: [...configDefaults.exclude, "docs/**"],
-          browser: {
-            enabled: true,
-            provider: playwright(),
-            headless: true,
-            instances: [{ browser: "chromium" }]
-          }
-        }
-      }
-    ]
+    projects: runVrt ? [unitProject, vrtProject] : [unitProject]
   }
 });

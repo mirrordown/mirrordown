@@ -42,7 +42,11 @@ jobs:
       # Playwright's Chromium + the system libraries it needs (libnss3, etc.).
       - run: vp exec playwright install --with-deps chromium
 
+      # VITEST_VRT enables the browser-mode "visual regression tests" project
+      # (opt-in — see vite.config.ts); select it explicitly.
       - run: vp test run --project 'visual regression tests'
+        env:
+          VITEST_VRT: "1"
 
       # On failure, surface the diff/actual images so the change can be reviewed.
       - if: failure()

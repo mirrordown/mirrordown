@@ -19,4 +19,6 @@ jobs:
           cache: true
 
       - run: vp check
+      # Runs the node "unit" project only — the browser-mode VRT project is
+      # opt-in via VITEST_VRT (see vite.config.ts) and runs in its own workflow.
       - run: vp test
