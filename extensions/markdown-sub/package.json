@@ -1,7 +1,7 @@
 {
   "name": "markdown-subscript",
   "displayName": "Markdown Subscript",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Adds HTML Subscript <sub> support to VSCode's markdown preview",
   "categories": [
     "Other"
