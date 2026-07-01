@@ -1,4 +1,4 @@
-# Markdown Subscript &lt;sub&gt;
+# Markdown Subscript
 
 Adds HTML Subscript &lt;sub&gt; support to VSCode's markdown preview.
 

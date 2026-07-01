@@ -213,9 +213,16 @@ The generators rewrite **every** README, and their raw output (e.g. 4-backtick
 fences, trailing commas) isn't formatter-clean — the committed form is
 post-`vp fmt`. So the workflow is **generate → `vp fmt` → commit**; after
 formatting, unrelated READMEs revert to no-diff and only yours change. If one
-_doesn't_ revert, the drift is pre-existing (the generator changed, or a source
-`package.json` `displayName`/`description` went stale) — fix the source, don't
-hand-edit the README, and flag it.
+_doesn't_ revert, the drift is pre-existing: the source `package.json`
+`displayName`/`description` changed but its README was never regenerated. The
+README is **generated from** the manifest — regenerate it to match the manifest;
+do **not** edit the manifest to match the stale README. Before "correcting" any
+published metadata that merely looks inconsistent with its siblings, run
+`git log -- <file>` to learn _why_ it is that way. Real example this bit: an
+extension's `displayName` was intentionally set _without_ its `<tag>` (unlike its
+siblings) to dodge a **VS Code Marketplace duplicate-name rejection**; "fixing"
+it for consistency re-broke publishing. Read before you write — the reason is
+usually one commit away.
 
 ## Phase 6 — VSCode extension
 
