@@ -77,7 +77,15 @@ export default defineConfig({
       // reachable via a cast around vite-plus's mis-typed `expect` export). The
       // file is fully type-checked in the editor and validated at runtime by the
       // "visual regression tests" vitest project, so the type-aware lint skips it.
-      "tests/**/*.browser.test.ts"
+      "tests/**/*.browser.test.ts",
+      // These docs files reference Astro-generated types (astro:content,
+      // import.meta.env) that only exist after `astro sync`/build. Their
+      // load-bearing `@ts-expect-error` directives are needed in that generated
+      // context but read as "unused" under the type-aware lint (which runs
+      // without those types), so the lint skips them. They are type-checked by
+      // Astro's own build.
+      "docs/src/content.config.ts",
+      "docs/src/utils/getLastEditTime.ts"
     ],
     options: { typeAware: true, typeCheck: true }
   }),

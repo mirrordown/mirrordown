@@ -1,0 +1,35 @@
+{
+  "name": "markdown-squeeze-paragraphs",
+  "displayName": "Markdown Squeeze Paragraphs",
+  "version": "0.0.0",
+  "description": "Removes empty (whitespace-only) paragraphs in VSCode's markdown preview",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "devDependencies": {
+    "@mirrordown/mdit-squeeze-paragraphs": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}

@@ -24,6 +24,8 @@ import { rehypeAutolinkHeadings } from "@mirrordown/remd-autolink-headings";
 import { rehypeInlineSvg } from "@mirrordown/remd-inline-svg";
 import { rehypeLightbox } from "@mirrordown/remd-lightbox";
 import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
+import { rehypeSectionize } from "@mirrordown/remd-sectionize";
+import { rehypeSqueezeParagraphs } from "@mirrordown/remd-squeeze-paragraphs";
 
 export default defineConfig({
   fonts: [
@@ -102,11 +104,13 @@ export default defineConfig({
       remarkTabs
     ],
     rehypePlugins: [
+      rehypeSectionize,
       rehypeSlug,
       rehypeAutolinkHeadings,
       rehypeLightbox,
       rehypeInlineSvg,
-      rehypeUnwrapImages
+      rehypeUnwrapImages,
+      rehypeSqueezeParagraphs
     ],
     remarkRehype: {
       handlers: {

@@ -10,25 +10,28 @@ Each feature is implemented as a matched set: a markdown-it plugin for server-si
 
 ### Inline elements
 
-| Syntax           | HTML                                                                                  | markdown-it                     | remark                          | VSCode                                                          |
-| ---------------- | ------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------- | --------------------------------------------------------------- |
-| `--delete--`     | [`<del>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/del)   | [mdit-del](packages/mdit-del)   | [remd-del](packages/remd-del)   | [markdown-del](extensions/markdown-del)                         |
-| `++insert++`     | [`<ins>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ins)   | [mdit-ins](packages/mdit-ins)   | [remd-ins](packages/remd-ins)   | [markdown-ins](extensions/markdown-ins)                         |
-| `==mark==`       | [`<mark>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/mark) | [mdit-mark](packages/mdit-mark) | [remd-mark](packages/remd-mark) | [markdown-mark](extensions/markdown-mark)                       |
-| `[[kbd]]`        | [`<kbd>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/kbd)   | [mdit-kbd](packages/mdit-kbd)   | [remd-kbd](packages/remd-kbd)   | [markdown-kbd](extensions/markdown-kbd)                         |
-| `H~2~O`          | [`<sub>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sub)   | [mdit-sub](packages/mdit-sub)   | [remd-sub](packages/remd-sub)   | [markdown-sub](extensions/markdown-sub)                         |
-| `31^st^`         | [`<sup>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sup)   | [mdit-sup](packages/mdit-sup)   | [remd-sup](packages/remd-sup)   | [markdown-sup](extensions/markdown-sup)                         |
-| `*[term]: Title` | [`<abbr>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr) | [mdit-abbr](packages/mdit-abbr) | [remd-abbr](packages/remd-abbr) | [markdown-abbr](extensions/markdown-abbr)                       |
-| `{本\|ほん}`     | [`<ruby>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ruby) | [mdit-ruby](packages/mdit-ruby) | [remd-ruby](packages/remd-ruby) | [markdown-denden-furigana](extensions/markdown-denden-furigana) |
+| Syntax            | HTML                                                                                  | markdown-it                           | remark                                | VSCode                                                          |
+| ----------------- | ------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| `--delete--`      | [`<del>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/del)   | [mdit-del](packages/mdit-del)         | [remd-del](packages/remd-del)         | [markdown-del](extensions/markdown-del)                         |
+| `++insert++`      | [`<ins>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ins)   | [mdit-ins](packages/mdit-ins)         | [remd-ins](packages/remd-ins)         | [markdown-ins](extensions/markdown-ins)                         |
+| `==mark==`        | [`<mark>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/mark) | [mdit-mark](packages/mdit-mark)       | [remd-mark](packages/remd-mark)       | [markdown-mark](extensions/markdown-mark)                       |
+| `[[kbd]]`         | [`<kbd>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/kbd)   | [mdit-kbd](packages/mdit-kbd)         | [remd-kbd](packages/remd-kbd)         | [markdown-kbd](extensions/markdown-kbd)                         |
+| `H~2~O`           | [`<sub>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sub)   | [mdit-sub](packages/mdit-sub)         | [remd-sub](packages/remd-sub)         | [markdown-sub](extensions/markdown-sub)                         |
+| `31^st^`          | [`<sup>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sup)   | [mdit-sup](packages/mdit-sup)         | [remd-sup](packages/remd-sup)         | [markdown-sup](extensions/markdown-sup)                         |
+| `*[term]: Title`  | [`<abbr>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr) | [mdit-abbr](packages/mdit-abbr)       | [remd-abbr](packages/remd-abbr)       | [markdown-abbr](extensions/markdown-abbr)                       |
+| `{本\|ほん}`      | [`<ruby>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ruby) | [mdit-ruby](packages/mdit-ruby)       | [remd-ruby](packages/remd-ruby)       | [markdown-denden-furigana](extensions/markdown-denden-furigana) |
+| `\|\|spoiler\|\|` | click-to-reveal (no JS)                                                               | [mdit-spoiler](packages/mdit-spoiler) | [remd-spoiler](packages/remd-spoiler) | [markdown-spoiler](extensions/markdown-spoiler)                 |
 
 ### Block & structural
 
-| Syntax                   | HTML                                                                              | markdown-it                                           | remark                                                | VSCode                                                          |
-| ------------------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
-| `Term`<br>`: Definition` | [`<dl>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl) | [mdit-definition-list](packages/mdit-definition-list) | [remd-definition-list](packages/remd-definition-list) | [markdown-definition-list](extensions/markdown-definition-list) |
-| `> [!NOTE]`              | Alert callout                                                                     | [mdit-github-alerts](packages/mdit-github-alerts)     | [remd-github-alerts](packages/remd-github-alerts)     | [markdown-github-alerts](extensions/markdown-github-alerts)     |
-| `@1. Step`               | [`<ol>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ol) | [mdit-steps](packages/mdit-steps)                     | [remd-steps](packages/remd-steps)                     | [markdown-steps](extensions/markdown-steps)                     |
-| `% Tab`                  | CSS-only tabs                                                                     | [mdit-tabs](packages/mdit-tabs)                       | [remd-tabs](packages/remd-tabs)                       | [markdown-tabs](extensions/markdown-tabs)                       |
+| Syntax                   | HTML                                                                                        | markdown-it                                                 | remark                                                      | VSCode                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------- |
+| `Term`<br>`: Definition` | [`<dl>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl)           | [mdit-definition-list](packages/mdit-definition-list)       | [remd-definition-list](packages/remd-definition-list)       | [markdown-definition-list](extensions/markdown-definition-list)       |
+| `> [!NOTE]`              | Alert callout                                                                               | [mdit-github-alerts](packages/mdit-github-alerts)           | [remd-github-alerts](packages/remd-github-alerts)           | [markdown-github-alerts](extensions/markdown-github-alerts)           |
+| `@1. Step`               | [`<ol>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ol)           | [mdit-steps](packages/mdit-steps)                           | [remd-steps](packages/remd-steps)                           | [markdown-steps](extensions/markdown-steps)                           |
+| `% Tab`                  | CSS-only tabs                                                                               | [mdit-tabs](packages/mdit-tabs)                             | [remd-tabs](packages/remd-tabs)                             | [markdown-tabs](extensions/markdown-tabs)                             |
+| `## Heading` → wrap      | [`<section>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section) | [mdit-sectionize](packages/mdit-sectionize)                 | [remd-sectionize](packages/remd-sectionize)                 | [markdown-sectionize](extensions/markdown-sectionize)                 |
+| (empty `<p>`) → removed  | dropped empty paragraphs                                                                    | [mdit-squeeze-paragraphs](packages/mdit-squeeze-paragraphs) | [remd-squeeze-paragraphs](packages/remd-squeeze-paragraphs) | [markdown-squeeze-paragraphs](extensions/markdown-squeeze-paragraphs) |
 
 ### Attributes
 
@@ -103,6 +106,8 @@ The plugins in this collection are forked and modernized from the following upst
 - [remd-ruby](https://github.com/lostandfound/remd-ruby) — `<ruby>` plugin for remark
 - [rehype-slug](https://github.com/rehypejs/rehype-slug) — heading `id` slugs for rehype
 - [rehype-autolink-headings](https://github.com/rehypejs/rehype-autolink-headings) — heading anchor links for rehype
+- [remark-sectionize](https://github.com/jake-low/remark-sectionize) — `<section>` heading wrappers for remark
+- [remark-squeeze-paragraphs](https://github.com/remarkjs/remark-squeeze-paragraphs) — empty-paragraph removal for remark
 
 ---
 

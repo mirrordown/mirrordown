@@ -1,0 +1,44 @@
+{
+  "name": "@mirrordown/remd-squeeze-paragraphs",
+  "description": "A remark plugin for removing empty (whitespace-only) paragraphs.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "dependencies": {
+    "hast-util-whitespace": "^3.0.0",
+    "unist-util-visit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:",
+    "unified": "catalog:"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}

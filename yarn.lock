@@ -1128,8 +1128,10 @@ __metadata:
     "@mirrordown/remd-lightbox": "workspace:*"
     "@mirrordown/remd-mark": "workspace:*"
     "@mirrordown/remd-ruby": "workspace:*"
+    "@mirrordown/remd-sectionize": "workspace:*"
     "@mirrordown/remd-slug": "workspace:*"
     "@mirrordown/remd-spoiler": "workspace:*"
+    "@mirrordown/remd-squeeze-paragraphs": "workspace:*"
     "@mirrordown/remd-steps": "workspace:*"
     "@mirrordown/remd-sub": "workspace:*"
     "@mirrordown/remd-sup": "workspace:*"
@@ -1297,6 +1299,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-sectionize@workspace:*, @mirrordown/mdit-sectionize@workspace:packages/mdit-sectionize":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-sectionize@workspace:packages/mdit-sectionize"
+  dependencies:
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-slug@workspace:*, @mirrordown/mdit-slug@workspace:packages/mdit-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-slug@workspace:packages/mdit-slug"
@@ -1312,6 +1325,17 @@ __metadata:
 "@mirrordown/mdit-spoiler@workspace:*, @mirrordown/mdit-spoiler@workspace:packages/mdit-spoiler":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-spoiler@workspace:packages/mdit-spoiler"
+  dependencies:
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-squeeze-paragraphs@workspace:*, @mirrordown/mdit-squeeze-paragraphs@workspace:packages/mdit-squeeze-paragraphs":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-squeeze-paragraphs@workspace:packages/mdit-squeeze-paragraphs"
   dependencies:
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
@@ -1553,6 +1577,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/remd-sectionize@workspace:*, @mirrordown/remd-sectionize@workspace:packages/remd-sectionize":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-sectionize@workspace:packages/remd-sectionize"
+  dependencies:
+    "@types/hast": "catalog:"
+    unified: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-slug@workspace:*, @mirrordown/remd-slug@workspace:packages/remd-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-slug@workspace:packages/remd-slug"
@@ -1578,6 +1613,19 @@ __metadata:
     unist-util-find-all-after: "catalog:"
     unist-util-find-all-before: "catalog:"
     unist-util-find-between-all: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-squeeze-paragraphs@workspace:*, @mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs"
+  dependencies:
+    "@types/hast": "catalog:"
+    hast-util-whitespace: "npm:^3.0.0"
+    unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
@@ -5322,11 +5370,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-sectionize@workspace:extensions/markdown-sectionize":
+  version: 0.0.0-use.local
+  resolution: "markdown-sectionize@workspace:extensions/markdown-sectionize"
+  dependencies:
+    "@mirrordown/mdit-sectionize": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-spoiler@workspace:extensions/markdown-spoiler":
   version: 0.0.0-use.local
   resolution: "markdown-spoiler@workspace:extensions/markdown-spoiler"
   dependencies:
     "@mirrordown/mdit-spoiler": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-squeeze-paragraphs@workspace:extensions/markdown-squeeze-paragraphs":
+  version: 0.0.0-use.local
+  resolution: "markdown-squeeze-paragraphs@workspace:extensions/markdown-squeeze-paragraphs"
+  dependencies:
+    "@mirrordown/mdit-squeeze-paragraphs": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

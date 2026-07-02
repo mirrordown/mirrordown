@@ -1,0 +1,23 @@
+<!-- @case: single heading -->
+<section data-depth="1"><h1>Title</h1><p>Body text.</p></section>
+
+<!-- @case: nested headings -->
+<section data-depth="1"><h1>A</h1><p>intro</p><section data-depth="2"><h2>B</h2><p>more</p><section data-depth="3"><h3>C</h3><p>deep</p></section></section></section>
+
+<!-- @case: sibling sections -->
+<section data-depth="2"><h2>One</h2><p>first</p></section><section data-depth="2"><h2>Two</h2><p>second</p></section>
+
+<!-- @case: preamble before first heading -->
+<p>Some intro text.</p><section data-depth="2"><h2>First</h2><p>body</p></section>
+
+<!-- @case: depth resets on sibling -->
+<section data-depth="2"><h2>Left</h2><p>a</p><section data-depth="3"><h3>Left child</h3><p>b</p></section></section><section data-depth="2"><h2>Right</h2><p>c</p></section>
+
+<!-- @case: heading only no body -->
+<section data-depth="2"><h2>Empty</h2></section>
+
+<!-- @case: skipped level -->
+<section data-depth="1"><h1>Top</h1><section data-depth="3"><h3>Deep</h3><p>content</p></section></section>
+
+<!-- @case: no headings -->
+<p>Just a paragraph with no headings at all.</p>
