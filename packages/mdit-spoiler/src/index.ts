@@ -27,6 +27,12 @@ const textWithPipeTerminator = (
   silent: boolean
 ): boolean => {
   const pos = state.pos;
+  // Nothing left to consume. Must return false (not true) — a `true` return
+  // that doesn't advance state.pos violates markdown-it's rule contract and can
+  // hang the inline parser when another rule probes at the boundary (e.g.
+  // mdit-sub's scan calling skipToken at posMax). The core text rule returns
+  // false here too.
+  if (pos >= state.posMax) return false;
   const slice = state.src.slice(pos, state.posMax);
   const idx = slice.search(TERMINATOR_RE);
 

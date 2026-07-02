@@ -15,7 +15,10 @@ export function sub(md: MDit): void {
     state.pos = start + 1;
     let found = false;
 
-    while (state.pos <= max) {
+    // `< max`, not `<= max`: posMax is an exclusive bound, so a closing `~` can
+    // never sit at posMax. Probing skipToken at posMax is pointless and can wedge
+    // the inline parser against a boundary-probing rule (see mdit-spoiler).
+    while (state.pos < max) {
       if (state.src.charCodeAt(state.pos) === 0x7e /* ~ */) {
         found = true;
         break;
