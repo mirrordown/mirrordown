@@ -1,7 +1,7 @@
 {
   "name": "markdown-sectionize",
   "displayName": "Markdown Sectionize",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Wraps headings and their content in <section> elements in VSCode's markdown preview",
   "categories": [
     "Other"

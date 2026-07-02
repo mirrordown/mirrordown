@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-sectionize",
   "description": "A remark plugin for wrapping headings and their content in <section> elements.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {
