@@ -10,7 +10,7 @@ export default defineConfig({
   pack: {
     entry: ["src/index.ts"],
     copy: [{ from: "src/autolink-headings.css" }],
-    deps: { neverBundle: ["unified"], onlyBundle: false },
+    deps: { neverBundle: ["unified", "hast", "unist"], onlyBundle: false },
     dts: true
   }
 });
