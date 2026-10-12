@@ -50,3 +50,4 @@ tests/**/__screenshots__/**/*.diff.png
 **/*.vsix
 # Library pack artifact (created transiently during publish)
 **/package.tgz
+.vitest/

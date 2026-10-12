@@ -51,6 +51,8 @@ Write a term on one line, then follow it with one or more definitions prefixed b
 > : Protocols for transferring data on the web.
 > ````
 
+Each definition is tight or loose on its own. A definition is loose, and wraps its content in `<p>`, when a blank line comes directly before its marker or separates blocks inside it. Otherwise its paragraphs render unwrapped. A marker with nothing after it produces an empty `<dd>`.
+
 ## Usage
 
 % Remark

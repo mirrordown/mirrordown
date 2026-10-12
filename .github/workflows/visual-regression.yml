@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.1
         with:
           node-version: "24"
           cache: true
@@ -53,5 +53,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: spoiler-visual-diff
-          path: tests/spoiler/__screenshots__/**
+          # Vitest 5 writes actual/diff images under .vitest/attachments/.
+          path: |
+            tests/spoiler/__screenshots__/**
+            .vitest/attachments/**
+          include-hidden-files: true
           retention-days: 7

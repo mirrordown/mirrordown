@@ -128,10 +128,6 @@ export const imgToSVG = (
 
   if (spriteSymbols.length > 0) {
     const injectionParent = getInjectionParent(tree);
-    injectionParent.children.unshift(
-      buildSpriteContainer(
-        spriteSymbols
-      ) as unknown as Parent["children"][number]
-    );
+    injectionParent.children.unshift(buildSpriteContainer(spriteSymbols));
   }
 };

@@ -16,7 +16,7 @@ const read = (path: string) => readFileSync(join(dir, path), "utf8");
 
 const cmCases = parseFixture(
   read("fixtures/definition-list-commonmark.md"),
-  read("expected/definition-list-remd.html")
+  read("expected/definition-list-commonmark.html")
 );
 
 const cmProcessor = unified()

@@ -1,5 +1,9 @@
 import { fileURLToPath } from "node:url";
-import { configDefaults, defineConfig } from "vite-plus";
+import {
+  configDefaults,
+  defineConfig,
+  type TestProjectInlineConfiguration
+} from "vite-plus";
 import { lint, fmt, mergeLint } from "@saeris/configs";
 import { playwright } from "vite-plus/test/browser/providers/playwright";
 
@@ -14,7 +18,7 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 // Chromium.
 const runVrt = !!process.env.VITEST_VRT;
 
-const unitProject = {
+const unitProject: TestProjectInlineConfiguration = {
   test: {
     name: "unit",
     include: ["tests/**/*.test.ts"],
@@ -27,7 +31,7 @@ const unitProject = {
   }
 };
 
-const vrtProject = {
+const vrtProject: TestProjectInlineConfiguration = {
   test: {
     name: "visual regression tests",
     include: ["tests/**/*.browser.test.ts"],

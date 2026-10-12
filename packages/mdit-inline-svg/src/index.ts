@@ -33,8 +33,7 @@ const getAlt = (
   md: MarkdownIt,
   options: MarkdownIt["options"],
   env: unknown
-): string =>
-  md.renderer.renderInlineAsText(token.children ?? [], options, env as object);
+): string => md.renderer.renderInlineAsText(token.children ?? [], options, env);
 
 const extractSvgParts = (
   content: string

@@ -15,8 +15,7 @@ import type {
   Extension,
   State,
   Token,
-  TokenizeContext,
-  Tokenizer
+  TokenizeContext
 } from "micromark-util-types";
 import { tokenTypes, clonePoint } from "./types.js";
 import { analyzeDefTermFlow, subtokenizeDefTerm } from "./def-term-flow.js";
@@ -31,7 +30,8 @@ const ignorablePrefixTypes = new Set([
   "linePrefix",
   "blockQuotePrefix",
   "blockQuoteMarker",
-  "blockQuotePrefixWhitespace"
+  "blockQuotePrefixWhitespace",
+  "listItemIndent"
 ]);
 
 // Token types that are transparent when scanning for a valid def-term predecessor.
@@ -52,21 +52,21 @@ const validTermTypes = new Set([
 
 const defListConstruct: Construct = {
   name: "defList",
-  tokenize: tokenizeDefListStart as Tokenizer,
+  tokenize: tokenizeDefListStart,
   continuation: {
-    tokenize: tokenizeDefListContinuation as Tokenizer
+    tokenize: tokenizeDefListContinuation
   },
   resolveAll: resolveAllDefinitionTerm,
   exit: tokenizeDefListEnd as Exiter
 };
 
 const defListDescriptionPrefixWhitespaceConstruct: Construct = {
-  tokenize: tokenizeDefListDescriptionPrefixWhitespace as Tokenizer,
+  tokenize: tokenizeDefListDescriptionPrefixWhitespace,
   partial: true
 };
 
 const indentConstruct: Construct = {
-  tokenize: tokenizeIndent as Tokenizer,
+  tokenize: tokenizeIndent,
   partial: true
 };
 
@@ -135,7 +135,6 @@ function resolveDefList(
   let indexOffset = 0;
   let defListDescriptionToken: Token | undefined;
   let expectFirstDescription = true;
-  const allDescriptionTokens: Token[] = [];
   let index = defListStart + 1;
   index += resolveDefinitionTermTo(defListStart, events);
 
@@ -152,14 +151,6 @@ function resolveDefList(
       index += addDescriptionExit(index, events);
       defListDescriptionToken = undefined;
       indexOffset = index - defListStart;
-
-      // propagate loose: if any description is loose, mark all as loose
-      if (allDescriptionTokens.some((t) => (t as FlowToken)._loose)) {
-        for (const t of allDescriptionTokens) {
-          (t as FlowToken)._loose = true;
-        }
-      }
-
       break;
     } else if (
       event[0] === "exit" &&
@@ -211,7 +202,6 @@ function resolveDefList(
       end: clonePoint(events[index + 1][1].end),
       _loose: loose
     };
-    allDescriptionTokens.push(defListDescriptionToken);
     splice(events, index + 1, 0, [["enter", defListDescriptionToken, context]]);
     return 1;
   }
@@ -234,7 +224,7 @@ function createDefTermEvent(
   flagBlockQuote: boolean
 ): number {
   const context = events[chunkFlowIndex][2];
-  const flow = analyzeDefTermFlow(events[chunkFlowIndex][1] as FlowToken);
+  const flow = analyzeDefTermFlow(events[chunkFlowIndex][1]);
   const paragraphInfo = flow.paragraph;
 
   if (paragraphInfo == null) {
@@ -335,6 +325,41 @@ function resolveDefinitionTermTo(
   return newDefListStartIndex - defListStartIndex;
 }
 
+// Tokens a container leaves on a line it continues, keyed by container type.
+const continuationTypes: Record<string, Set<string>> = {
+  blockQuote: new Set(["blockQuotePrefix"]),
+  listOrdered: new Set(["listItemIndent", "listItemPrefix"]),
+  listUnordered: new Set(["listItemIndent", "listItemPrefix"])
+};
+
+// The term paragraph lives in the innermost open container. When that container
+// is not continued on the marker's line, the line is a lazy continuation of the
+// paragraph instead (CommonMark), so it cannot start a definition. Containers
+// continue outermost-first, so the innermost one was continued exactly when
+// every open container of its type left its continuation token on this line.
+function innermostContainerContinued(
+  events: EventTuple[],
+  lastFlowIndex: number
+): boolean {
+  const open: string[] = [];
+  for (let i = 0; i < lastFlowIndex; i++) {
+    const [kind, token] = events[i];
+    if (!(token as FlowToken)._container) continue;
+    if (kind === "enter") open.push(token.type);
+    else open.pop();
+  }
+
+  const types = continuationTypes[open[open.length - 1]];
+  if (types == null) return true;
+
+  const needed = open.filter((type) => continuationTypes[type] === types);
+  let continued = 0;
+  for (let i = lastFlowIndex + 1; i < events.length; i++) {
+    if (events[i][0] === "enter" && types.has(events[i][1].type)) continued++;
+  }
+  return continued >= needed.length;
+}
+
 function checkPossibleDefTerm(events: EventTuple[]): boolean {
   if (events.length <= 1) return false;
 
@@ -343,6 +368,7 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
   let flagBlockQuote = false;
   let termFlowStart: EventTuple | undefined;
   let flowEvents: EventTuple[] | undefined;
+  let lastFlowIndex: number | undefined;
 
   for (let i = events.length - 1; i >= 0; i--) {
     const event = events[i];
@@ -356,10 +382,9 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
       continue;
     }
     if (event[1].type === "chunkFlow") {
+      lastFlowIndex ??= i;
       if (event[0] === "enter") {
-        flowEvents ??= (event[1] as FlowToken)._tokenizer?.events as
-          | EventTuple[]
-          | undefined;
+        flowEvents ??= (event[1] as FlowToken)._tokenizer?.events;
         termFlowStart = event;
       }
     } else {
@@ -367,7 +392,11 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
     }
   }
 
-  if (flowEvents != null && termFlowStart != null) {
+  if (
+    flowEvents != null &&
+    termFlowStart != null &&
+    innermostContainerContinued(events, lastFlowIndex!)
+  ) {
     let blanklines = 0;
     for (let i = flowEvents.length - 1; i >= 0; i--) {
       const flowEvent = flowEvents[i];
@@ -377,9 +406,9 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
         if (blanklines >= 1) break;
         blanklines++;
       }
-      if (!skippableFlowTypes.has(tmpToken.type as string)) {
+      if (!skippableFlowTypes.has(tmpToken.type)) {
         if (flagBlockQuote && !lazyLines[tmpToken.end.line]) return false;
-        return validTermTypes.has(tmpToken.type as string);
+        return validTermTypes.has(tmpToken.type);
       }
     }
   }
@@ -424,13 +453,20 @@ function tokenizeDefListStart(
     effects.exit(tokenTypes.defListDescriptionMarker);
     return effects.check(
       blankLine,
-      nok,
+      onBlank,
       effects.attempt(
         defListDescriptionPrefixWhitespaceConstruct,
         prefixEnd,
         otherPrefix
       )
     );
+  };
+
+  // A bare marker opens an empty description; like an empty list item, its
+  // content (if any) starts on the next line, one column past the marker.
+  const onBlank = (code: number | null): State | undefined => {
+    initialSize++;
+    return prefixEnd(code);
   };
 
   const otherPrefix = (code: number | null): State | undefined => {

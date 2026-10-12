@@ -10,7 +10,13 @@ export default defineConfig({
   pack: {
     entry: ["src/index.ts"],
     copy: [{ from: "src/steps.css" }],
-    deps: { neverBundle: ["markdown-it"] },
+    deps: {
+      // tsdown <0.23 compatibility: resolve external dependency subpaths.
+      // Remove to preserve subpath imports as written (the new default).
+      // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+      resolveDepSubpath: true,
+      neverBundle: ["markdown-it"]
+    },
     dts: true
   }
 });

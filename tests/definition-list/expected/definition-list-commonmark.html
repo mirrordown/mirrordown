@@ -73,9 +73,7 @@ with lazy continuation.</p>
 <p>bar</p>
 </blockquote>
 </dd>
-<dd>
-<p>baz</p>
-</dd>
+<dd>baz</dd>
 <dt>Complex Term</dt>
 <dd>
 <p>Definition with list:</p>
@@ -146,28 +144,20 @@ in the definition</p>
 <p>bar
 Term 2</p>
 </dd>
-<dd>
-<p>foo</p>
-</dd>
+<dd>foo</dd>
 <dt>Simple Term</dt>
-<dd>
-<p>Definition 1</p>
-</dd>
+<dd>Definition 1</dd>
 <dt>Another Term</dt>
 <dd>
 <p>Another definition</p>
 </dd>
 <dt>Mixed Term</dt>
-<dd>
-<p>Definition 1a</p>
-</dd>
+<dd>Definition 1a</dd>
 <dd>
 <p>Definition 1b</p>
 </dd>
 <dt>Final Term</dt>
-<dd>
-<p>Definition 2</p>
-</dd>
+<dd>Definition 2</dd>
 </dl>
 
 <!-- @case: Single character and long terms -->
@@ -231,18 +221,24 @@ Term 2</p>
 
 <!-- @case: Empty or invalid definitions -->
 
-<p>Non-term 1
-:</p>
-<p>Non-term 2
-:</p>
+<dl>
+<dt>Non-term 1</dt>
+<dd></dd>
+<dt>Non-term 2</dt>
+<dd></dd>
+</dl>
 <p>Term
 :Definition</p>
-<p>Term
-:</p>
+<dl>
+<dt>Term</dt>
+<dd></dd>
+</dl>
 <p>Term
 ; Definition</p>
-<p>Term
-:</p>
+<dl>
+<dt>Term</dt>
+<dd></dd>
+</dl>
 <p>Another paragraph after empty definition</p>
 
 <!-- @case: Headers should not be treated as terms -->
@@ -305,10 +301,106 @@ Not a DD</p>
 
 <!-- @case: Marker followed by only spaces -->
 
-<p>Term 1
-:<br>
-Next line</p>
+<dl>
+<dt>Term 1</dt>
+<dd></dd>
+</dl>
+<p>Next line</p>
 
 <!-- @case: Term followed by empty line at end of file -->
 
 <p>Term</p>
+
+<!-- @case: A blank line before a later definition loosens only that definition -->
+
+<dl>
+<dt>Apple</dt>
+<dd>Red.</dd>
+<dd>Green.</dd>
+<dd>
+<p>Blue.</p>
+</dd>
+</dl>
+
+<!-- @case: A blank line between term and first definition loosens only the first -->
+
+<dl>
+<dt>Apple</dt>
+<dd>
+<p>Red.</p>
+</dd>
+<dd>Green.</dd>
+</dl>
+
+<!-- @case: A blank line inside a definition loosens only that definition -->
+
+<dl>
+<dt>Apple</dt>
+<dd>
+<p>Red.</p>
+<p>More red.</p>
+</dd>
+<dd>Green.</dd>
+</dl>
+
+<!-- @case: A tight definition unwraps every paragraph, even beside other blocks -->
+
+<dl>
+<dt>Apple</dt>
+<dd>item:
+<ul>
+<li>a</li>
+<li>b</li>
+</ul>
+</dd>
+</dl>
+
+<!-- @case: A bare marker at the end of input opens an empty definition -->
+
+<dl>
+<dt>Apple</dt>
+<dd></dd>
+</dl>
+
+<!-- @case: A marker line that does not continue the term's blockquote is a lazy continuation -->
+
+<blockquote>
+<p>Term
+: Def</p>
+</blockquote>
+
+<!-- @case: A marker line that does not continue the term's list item is a lazy continuation -->
+
+<ul>
+<li>Term
+: Def</li>
+</ul>
+
+<!-- @case: A marker line must continue every blockquote around the term -->
+
+<blockquote>
+<blockquote>
+<p>Term
+: Def</p>
+</blockquote>
+</blockquote>
+
+<!-- @case: A marker line that continues the term's blockquote starts a definition -->
+
+<blockquote>
+<dl>
+<dt>Term</dt>
+<dd>Def</dd>
+</dl>
+</blockquote>
+
+<!-- @case: A marker line that continues the term's list item starts a definition -->
+
+<ul>
+<li>
+<dl>
+<dt>Term</dt>
+<dd>Def</dd>
+</dl>
+</li>
+</ul>
