@@ -24,6 +24,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^26.0.0",
     "@varlock/bumpy": "^1.15.0",
+    "@vitest/browser-playwright": "catalog:",
     "@vscode/vsce": "^3.9.2",
     "markdown-it": "^14.2.0",
     "playwright": "^1.61.1",
@@ -36,11 +37,12 @@
     "remark-rehype": "^11.1.2",
     "typescript": "^6.0.3",
     "unified": "^11.0.5",
-    "vite-plus": "latest"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "resolutions": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    "vite": "npm:@voidzero-dev/vite-plus-core@1.1.0",
+    "vitest": "5.0.3"
   },
   "packageManager": "yarn@4.17.0"
 }

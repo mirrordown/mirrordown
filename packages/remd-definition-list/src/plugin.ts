@@ -26,7 +26,7 @@ export const remarkDefinitionList: Plugin<[], Root> = function () {
   (data.fromMarkdownExtensions ??= []).push(defListFromMarkdown);
 };
 
-const newline = (): ElementContent => u("text", "\n") as ElementContent;
+const newline = (): ElementContent => u("text", "\n");
 
 const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   if (!extra) return base;

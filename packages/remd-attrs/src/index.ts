@@ -60,7 +60,7 @@ const makeSiblingAttrVisitor =
     if (!range) return;
     const prev = parent.children[index - 1];
     if (!prev || prev.type !== siblingType) return;
-    applyAttrs(prev as AttrNode, content, range, allowed);
+    applyAttrs(prev, content, range, allowed);
     parent.children.splice(index, 1);
     return [SKIP, index];
   };
@@ -149,7 +149,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           const prevType = prev.type;
           if (prevType === "text" || prevType === "break") continue;
 
-          applyAttrs(prev as AttrNode, content, range, allowed);
+          applyAttrs(prev, content, range, allowed);
           children.splice(i, 1);
         }
       });
@@ -193,7 +193,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const content = last.value.trimEnd();
         const range = check(content, "end");
         if (!range) return;
-        applyAttrs(node as AttrNode, content, range, allowed);
+        applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);
         last.value = content.slice(0, attrStart).trimEnd();
       });

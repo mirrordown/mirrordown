@@ -9,7 +9,14 @@ export default defineConfig({
   },
   pack: {
     entry: "src/index.ts",
-    deps: { neverBundle: ["markdown-it", "svgo"], onlyBundle: false },
+    deps: {
+      // tsdown <0.23 compatibility: resolve external dependency subpaths.
+      // Remove to preserve subpath imports as written (the new default).
+      // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+      resolveDepSubpath: true,
+      neverBundle: ["markdown-it", "svgo"],
+      onlyBundle: false
+    },
     dts: true
   }
 });

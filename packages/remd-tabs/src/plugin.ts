@@ -221,9 +221,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
       // For non-paragraph children (e.g. defList from remarkDefinitionList),
       // check if the deepest last-child paragraph has a trailing tab header.
       // Remark may have absorbed a "% NextTab" line into that nested paragraph.
-      const extracted = extractTrailingTabHeader(
-        child as BlockContent | DefinitionContent
-      );
+      const extracted = extractTrailingTabHeader(child);
       if (extracted) {
         // Clone the child with the trailing header line removed from its nested paragraph
         const cloned = JSON.parse(JSON.stringify(child)) as
@@ -251,7 +249,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
         segments.push(currentSegment);
         currentSegment = { header: extracted.header, body: [], explicit };
       } else {
-        currentSegment.body.push(child as BlockContent);
+        currentSegment.body.push(child);
       }
       continue;
     }
@@ -377,7 +375,7 @@ const buildTree = (
         startLine
       );
       nested.containerClass = containerClass;
-      bodyChildren.push(nested as unknown as BlockContent);
+      bodyChildren.push(nested);
     }
 
     items.push({
@@ -494,13 +492,9 @@ const processTabsInChildren = (
                   if (b.type !== "blockquote") {
                     // Non-BQ outer sibling â€” belongs to the first escaped seg's body
                     if (escapedSegs.length > 0) {
-                      escapedSegs[escapedSegs.length - 1].body.push(
-                        b as BlockContent | DefinitionContent
-                      );
+                      escapedSegs[escapedSegs.length - 1].body.push(b);
                     } else {
-                      seg.header.body.push(
-                        b as BlockContent | DefinitionContent
-                      );
+                      seg.header.body.push(b);
                     }
                     continue;
                   }
@@ -580,7 +574,7 @@ const processTabsInChildren = (
           startLine
         );
         list.containerClass = containerClass;
-        newChildren.push(list as unknown as RootContent);
+        newChildren.push(list);
         i = j;
         continue;
       }
@@ -673,7 +667,7 @@ const buildTabsHast = (
       children: state.all({
         type: "paragraph",
         children: item.label
-      } as Parameters<typeof state.all>[0])
+      })
     });
 
     // Panel body and nested lists
@@ -691,7 +685,7 @@ const buildTabsHast = (
         ...state.all({
           type: "root",
           children: bodyBlocks
-        } as Parameters<typeof state.all>[0])
+        })
       );
     }
 
@@ -743,7 +737,7 @@ const buildTabsHast = (
     children: [labelsDiv, panelsDiv]
   };
 
-  state.patch(list as unknown as Parameters<typeof state.patch>[0], result);
+  state.patch(list, result);
   return result;
 };
 

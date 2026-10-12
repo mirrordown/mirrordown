@@ -4,8 +4,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type {
   CompileContext,
-  Extension as FromMarkdownExtension,
-  Handle
+  Extension as FromMarkdownExtension
 } from "mdast-util-from-markdown";
 import type { PhrasingContent } from "mdast";
 import type { Token } from "micromark-util-types";
@@ -65,13 +64,13 @@ function exitDefListDescription(this: CompileContext, token: Token): void {
 
 export const defListFromMarkdown: FromMarkdownExtension = {
   enter: {
-    defList: enterDefList as Handle,
-    defListTerm: enterDefListTerm as Handle,
-    defListDescription: enterDefListDescription as Handle
+    defList: enterDefList,
+    defListTerm: enterDefListTerm,
+    defListDescription: enterDefListDescription
   },
   exit: {
-    defList: exitDefList as Handle,
-    defListTerm: exitDefListTerm as Handle,
-    defListDescription: exitDefListDescription as Handle
+    defList: exitDefList,
+    defListTerm: exitDefListTerm,
+    defListDescription: exitDefListDescription
   }
 };

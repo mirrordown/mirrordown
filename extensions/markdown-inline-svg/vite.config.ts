@@ -13,6 +13,10 @@ export default defineConfig({
     {
       entry: "src/index.ts",
       deps: {
+        // tsdown <0.23 compatibility: resolve external dependency subpaths.
+        // Remove to preserve subpath imports as written (the new default).
+        // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+        resolveDepSubpath: true,
         alwaysBundle: [/^@mirrordown\//]
       },
       dts: false,
@@ -21,6 +25,10 @@ export default defineConfig({
     {
       entry: "src/preview.ts",
       deps: {
+        // tsdown <0.23 compatibility: resolve external dependency subpaths.
+        // Remove to preserve subpath imports as written (the new default).
+        // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+        resolveDepSubpath: true,
         alwaysBundle: [/^@mirrordown\//]
       },
       dts: false,

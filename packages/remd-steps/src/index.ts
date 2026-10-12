@@ -170,7 +170,7 @@ const splitBlockquote = (
 
   for (const child of bq.children) {
     if (child.type !== "paragraph") {
-      currentSegment.body.push(child as BlockContent);
+      currentSegment.body.push(child);
       continue;
     }
 
@@ -394,11 +394,11 @@ const buildListHast = (
       liChildren.push({
         type: "element",
         tagName: "p",
-        properties: { class: `${containerClass}-title` } as Properties,
+        properties: { class: `${containerClass}-title` },
         children: state.all({
           type: "paragraph",
           children: item.title
-        } as Parameters<typeof state.all>[0])
+        })
       });
     }
 
@@ -413,11 +413,11 @@ const buildListHast = (
       liChildren.push({
         type: "element",
         tagName: "div",
-        properties: { class: `${containerClass}-body` } as Properties,
+        properties: { class: `${containerClass}-body` },
         children: state.all({
           type: "root",
           children: bodyBlocks
-        } as Parameters<typeof state.all>[0])
+        })
       });
     }
 

@@ -15,8 +15,7 @@ import type {
   Extension,
   State,
   Token,
-  TokenizeContext,
-  Tokenizer
+  TokenizeContext
 } from "micromark-util-types";
 import { tokenTypes, clonePoint } from "./types.js";
 import { analyzeDefTermFlow, subtokenizeDefTerm } from "./def-term-flow.js";
@@ -52,21 +51,21 @@ const validTermTypes = new Set([
 
 const defListConstruct: Construct = {
   name: "defList",
-  tokenize: tokenizeDefListStart as Tokenizer,
+  tokenize: tokenizeDefListStart,
   continuation: {
-    tokenize: tokenizeDefListContinuation as Tokenizer
+    tokenize: tokenizeDefListContinuation
   },
   resolveAll: resolveAllDefinitionTerm,
   exit: tokenizeDefListEnd as Exiter
 };
 
 const defListDescriptionPrefixWhitespaceConstruct: Construct = {
-  tokenize: tokenizeDefListDescriptionPrefixWhitespace as Tokenizer,
+  tokenize: tokenizeDefListDescriptionPrefixWhitespace,
   partial: true
 };
 
 const indentConstruct: Construct = {
-  tokenize: tokenizeIndent as Tokenizer,
+  tokenize: tokenizeIndent,
   partial: true
 };
 
@@ -234,7 +233,7 @@ function createDefTermEvent(
   flagBlockQuote: boolean
 ): number {
   const context = events[chunkFlowIndex][2];
-  const flow = analyzeDefTermFlow(events[chunkFlowIndex][1] as FlowToken);
+  const flow = analyzeDefTermFlow(events[chunkFlowIndex][1]);
   const paragraphInfo = flow.paragraph;
 
   if (paragraphInfo == null) {
@@ -357,9 +356,7 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
     }
     if (event[1].type === "chunkFlow") {
       if (event[0] === "enter") {
-        flowEvents ??= (event[1] as FlowToken)._tokenizer?.events as
-          | EventTuple[]
-          | undefined;
+        flowEvents ??= (event[1] as FlowToken)._tokenizer?.events;
         termFlowStart = event;
       }
     } else {
@@ -377,9 +374,9 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
         if (blanklines >= 1) break;
         blanklines++;
       }
-      if (!skippableFlowTypes.has(tmpToken.type as string)) {
+      if (!skippableFlowTypes.has(tmpToken.type)) {
         if (flagBlockQuote && !lazyLines[tmpToken.end.line]) return false;
-        return validTermTypes.has(tmpToken.type as string);
+        return validTermTypes.has(tmpToken.type);
       }
     }
   }
