@@ -53,5 +53,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: spoiler-visual-diff
-          path: tests/spoiler/__screenshots__/**
+          # Vitest 5 writes actual/diff images under .vitest/attachments/.
+          path: |
+            tests/spoiler/__screenshots__/**
+            .vitest/attachments/**
+          include-hidden-files: true
           retention-days: 7
