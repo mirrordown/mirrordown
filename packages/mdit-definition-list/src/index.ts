@@ -29,8 +29,8 @@ const checkAndSkipMarker = (state: StateBlock, line: number): number => {
     pos++;
   }
 
-  // require at least one space/tab after marker, and non-empty content
-  if (start === pos || pos >= max) return -1;
+  // require a space/tab after the marker unless it ends the line (`:tada:` is text)
+  if (pos < max && start === pos) return -1;
 
   return start;
 };
@@ -70,10 +70,11 @@ const withStateIsolation = (
   state.ddIndent = savedDDIndent;
 };
 
+// Hide the paragraphs directly inside the dd opened at `index`, like a tight list item.
 const markTightParagraphs = (state: StateBlock, index: number): void => {
-  const level = state.level + 2;
+  const level = state.tokens[index].level + 1;
 
-  for (let i = index + 2, length = state.tokens.length - 2; i < length; i++) {
+  for (let i = index + 1, length = state.tokens.length - 2; i < length; i++) {
     if (
       state.tokens[i].level === level &&
       state.tokens[i].type === "paragraph_open"
@@ -115,8 +116,6 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   if (contentStart < 0) return false;
 
   // Start list
-  const listTokenIndex = state.tokens.length;
-
   const dlOpenToken = state.push("dl_open", "dl", 1);
   const listLines: [start: number, end: number] = [startLine, 0];
 
@@ -129,7 +128,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
   let dtLine = startLine;
   let ddLine = nextLine;
-  let tight = !hasSkippedEmptyLines;
+  // A definition is loose when a blank line precedes its own marker
+  let blankBeforeMarker = hasSkippedEmptyLines;
 
   // One definition list can contain multiple DTs,
   // and one DT can be followed by multiple DDs.
@@ -139,8 +139,6 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   //
   // oxlint-disable-next-line no-labels
   OUTER: for (;;) {
-    let prevEmptyEnd = false;
-
     const dtOpenToken = state.push("dt_open", "dt", 1);
 
     dtOpenToken.map = [dtLine, dtLine];
@@ -157,6 +155,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
     state.push("dt_close", "dt", -1);
 
     for (;;) {
+      const ddTokenIndex = state.tokens.length;
       const ddOpenToken = state.push("dd_open", "dd", 1);
       const itemLines: [start: number, end: number] = [nextLine, 0];
 
@@ -181,12 +180,17 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
       contentStart = pos;
 
+      let loose = blankBeforeMarker;
+
       withStateIsolation(state, ddLine, contentStart, offset, endLine, () => {
-        // If any list item is loose, mark the whole list as loose
-        if (!state.tight || prevEmptyEnd) tight = false;
-        // Item is loose if it ends with a blank line (excluding the terminal blank)
-        prevEmptyEnd = state.line - ddLine > 1 && state.isEmpty(state.line - 1);
+        // ...or when a blank line separates blocks inside it
+        if (!state.tight) loose = true;
+        // A trailing blank line loosens the next definition of this term, if any
+        blankBeforeMarker =
+          state.line - ddLine > 1 && state.isEmpty(state.line - 1);
       });
+
+      if (!loose) markTightParagraphs(state, ddTokenIndex);
 
       state.push("dd_close", "dd", -1);
 
@@ -213,7 +217,9 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
     if (ddLine >= endLine) break;
 
-    if (state.isEmpty(ddLine)) ddLine++;
+    blankBeforeMarker = state.isEmpty(ddLine);
+
+    if (blankBeforeMarker) ddLine++;
 
     if (ddLine >= endLine || state.sCount[ddLine] < state.blkIndent) break;
 
@@ -232,9 +238,6 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   listLines[1] = nextLine;
 
   state.line = nextLine;
-
-  // mark paragraphs tight if needed
-  if (tight) markTightParagraphs(state, listTokenIndex);
 
   return true;
 };

@@ -254,3 +254,63 @@ Next line
 
 Term
 
+
+<!-- @case: A blank line before a later definition loosens only that definition -->
+
+Apple
+:   Red.
+:   Green.
+
+:   Blue.
+
+<!-- @case: A blank line between term and first definition loosens only the first -->
+
+Apple
+
+:   Red.
+:   Green.
+
+<!-- @case: A blank line inside a definition loosens only that definition -->
+
+Apple
+:   Red.
+
+    More red.
+:   Green.
+
+<!-- @case: A tight definition unwraps every paragraph, even beside other blocks -->
+
+Apple
+:   item:
+    - a
+    - b
+
+<!-- @case: A bare marker at the end of input opens an empty definition -->
+
+Apple
+:
+
+<!-- @case: A marker line that does not continue the term's blockquote is a lazy continuation -->
+
+> Term
+: Def
+
+<!-- @case: A marker line that does not continue the term's list item is a lazy continuation -->
+
+- Term
+: Def
+
+<!-- @case: A marker line must continue every blockquote around the term -->
+
+> > Term
+> : Def
+
+<!-- @case: A marker line that continues the term's blockquote starts a definition -->
+
+> Term
+> : Def
+
+<!-- @case: A marker line that continues the term's list item starts a definition -->
+
+- Term
+  : Def
