@@ -58,15 +58,15 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 
 ### Custom titles
 
-Override the default title by adding text after the type marker:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
 
 % Demo
-> > [!NOTE] Custom Title
+> > [!NOTE] Custom *Title*
 > > This alert uses a custom title instead of the default.
 >
 % Code
 > ````markdown
-> > [!NOTE] Custom Title
+> > [!NOTE] Custom *Title*
 > > This alert uses a custom title instead of the default.
 > ````
 

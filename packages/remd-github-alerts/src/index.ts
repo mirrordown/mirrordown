@@ -6,7 +6,7 @@
 /* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
-import type { Root, Blockquote } from "mdast";
+import type { Root, Blockquote, PhrasingContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
 import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
@@ -16,8 +16,23 @@ import type { AlertOptions, AlertType } from "./types.js";
 export type { AlertOptions, AlertType };
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 
-// Groups: 1=type keyword, 2=foldable marker (+/-), 3=custom title
-const ALERT_RE = /^\[!([^\]]+)\]([+-])?\s*(.*)?$/s;
+// Groups: 1=type keyword, 2=foldable marker (+/-)
+const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
+
+// Plain text of inline content, for the title's aria-label: text, inline code
+// and image alt count; raw HTML does not.
+const plainText = (nodes: PhrasingContent[]): string =>
+  nodes
+    .map((n) =>
+      n.type === "text" || n.type === "inlineCode"
+        ? n.value
+        : n.type === "image"
+          ? (n.alt ?? "")
+          : "children" in n
+            ? plainText(n.children)
+            : ""
+    )
+    .join("");
 
 const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
@@ -27,6 +42,7 @@ interface AlertData {
   hProperties: Properties;
   alertType: string;
   alertTitle: string;
+  alertTitleNodes?: PhrasingContent[];
   alertFoldable: boolean;
   alertIcon: string;
   attrsRole: string;
@@ -70,24 +86,66 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
       const firstText = firstChild.children[0];
       if (firstText?.type !== "text") return;
 
-      const firstLine = firstText.value.split("\n")[0];
-      const match = ALERT_RE.exec(firstLine.trim());
+      const match = MARKER_RE.exec(firstText.value.trimStart());
       if (!match) return;
 
-      const [, keyword, foldMarker, customTitle] = match;
+      const [marker, keyword, foldMarker] = match;
       const type = resolve(keyword);
       if (!type) return;
 
       const isFoldable = foldMarker === "+" || foldMarker === "-";
-      const title = customTitle?.trim() || titleFor(type);
 
-      // Strip the marker line; keep any body text on subsequent lines
-      const rest = firstText.value.slice(firstLine.length).replace(/^\n/, "");
-      if (rest) {
-        firstText.value = rest;
+      // The first line is the marker plus an optional title (inline content,
+      // formatting included); everything after the first line break, soft (a
+      // newline inside a text node) or hard (a `break` node), is the body.
+      const line: PhrasingContent[] = [];
+      const body: PhrasingContent[] = [];
+      const children: PhrasingContent[] = [
+        {
+          ...firstText,
+          value: firstText.value.trimStart().slice(marker.length)
+        },
+        ...firstChild.children.slice(1)
+      ];
+      for (const child of children) {
+        if (body.length > 0 || line.at(-1)?.type === "break") {
+          body.push(child);
+        } else if (child.type === "text" && child.value.includes("\n")) {
+          const at = child.value.indexOf("\n");
+          line.push({ ...child, value: child.value.slice(0, at) });
+          body.push({ ...child, value: child.value.slice(at + 1) });
+        } else {
+          line.push(child);
+        }
+      }
+      if (line.at(-1)?.type === "break") line.pop();
+      const titleNodes = line
+        .map((n, i) =>
+          n.type !== "text"
+            ? n
+            : {
+                ...n,
+                value:
+                  i === 0
+                    ? n.value.trimStart()
+                    : i === line.length - 1
+                      ? n.value.trimEnd()
+                      : n.value
+              }
+        )
+        .filter((n) => n.type !== "text" || n.value !== "");
+      const last = titleNodes.at(-1);
+      if (last?.type === "text") last.value = last.value.trimEnd();
+      const titleText = plainText(titleNodes).trim();
+
+      const bodyNodes = body.filter((n) => n.type !== "text" || n.value !== "");
+      if (bodyNodes.length > 0) {
+        firstChild.children = bodyNodes;
       } else {
         node.children.splice(0, 1);
       }
+
+      const title = titleText || titleFor(type);
 
       (node as AlertNode).data = {
         hName: isFoldable ? "details" : "div",
@@ -98,6 +156,7 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
         },
         alertType: type,
         alertTitle: title,
+        ...(titleText ? { alertTitleNodes: titleNodes } : {}),
         alertFoldable: isFoldable,
         alertIcon: iconFor(type),
         attrsRole: "container"
@@ -106,33 +165,32 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   };
 };
 
-const svgToHast = (svgString: string): Element | null => {
-  if (!svgString) return null;
-  // SVG strings from icons.ts are known-safe; embed as raw so rehype-stringify
-  // emits them verbatim without requiring allowDangerousHtml on the renderer.
-  return {
-    type: "element",
-    tagName: "span",
-    properties: { "aria-hidden": true },
-    children: [{ type: "raw", value: svgString } as unknown as ElementContent]
-  };
-};
+// SVG strings from icons.ts are known-safe and already carry
+// aria-hidden="true"; embed them as raw so rehype-stringify emits them verbatim
+// without requiring allowDangerousHtml on the renderer.
+const svgToHast = (svgString: string): ElementContent | null =>
+  svgString
+    ? ({ type: "raw", value: svgString } as unknown as ElementContent)
+    : null;
 
 const buildTitleElement = (
+  state: State,
   tag: "p" | "summary",
-  alertTitle: string,
-  alertIcon: string,
+  data: AlertData,
   containerClass: string
 ): Element => {
-  const icon = svgToHast(alertIcon);
+  const icon = svgToHast(data.alertIcon);
+  const title: ElementContent[] = data.alertTitleNodes
+    ? state.all({ type: "paragraph", children: data.alertTitleNodes })
+    : [{ type: "text", value: data.alertTitle }];
   return {
     type: "element",
     tagName: tag,
-    properties: { class: `${containerClass}-title`, "aria-label": alertTitle },
-    children: [
-      ...(icon ? [icon] : []),
-      { type: "text", value: alertTitle }
-    ] as ElementContent[]
+    properties: {
+      class: `${containerClass}-title`,
+      "aria-label": data.alertTitle
+    },
+    children: [...(icon ? [icon] : []), ...title]
   };
 };
 
@@ -160,12 +218,7 @@ export const githubAlertsHastHandlers: Record<string, Handler> = {
         ? data.hProperties.class
         : "markdown-alert";
     const titleTag = data.alertFoldable ? "summary" : "p";
-    const titleEl = buildTitleElement(
-      titleTag,
-      data.alertTitle,
-      data.alertIcon,
-      containerClass
-    );
+    const titleEl = buildTitleElement(state, titleTag, data, containerClass);
     const bodyChildren = state.all(node);
 
     const result: Element = {
