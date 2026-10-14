@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-10-14</sub>
+
+- *(patch)*
+  Backslash-escaped delimiters are now literal in `remd-mark`, `remd-ins`, `remd-del`, `remd-kbd`, `remd-spoiler`, `remd-sub` and `remd-sup`, as they already were in the `mdit-*` plugins: `\==not marked==` renders as `==not marked==` instead of a `<mark>`, while an escaped backslash (`\==marked==`) still allows the markup. These plugins now depend on the new `@mirrordown/core` package, which holds logic shared across Mirrordown's engines.
+
 ## 0.1.0
 <sub>2026-07-01</sub>
 
