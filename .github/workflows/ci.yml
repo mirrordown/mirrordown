@@ -18,10 +18,8 @@ jobs:
           node-version: "24"
           cache: true
 
-      # The type-aware linter resolves workspace packages through their built
-      # `types` export, not tsconfig's `development` condition, so packages that
-      # other packages import must be built before checking.
-      - run: vp run --filter @mirrordown/core build
+      # The type-aware linter resolves workspace packages through their built `types` export, not tsconfig's `development` condition. An unbuilt package doesn't fail the check: its types silently become `any`, and every type assertion that goes through it passes vacuously. So build every package before checking.
+      - run: vp run --filter "./packages/**" build
 
       - run: vp check
       # Runs the node "unit" project only — the browser-mode VRT project is
