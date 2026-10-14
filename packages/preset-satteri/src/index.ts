@@ -13,6 +13,7 @@ import {
   type SlugOptions,
   type SlugPlugin
 } from "@mirrordown/sat-slug";
+import { satteriSpoiler, type SpoilerPlugin } from "@mirrordown/sat-spoiler";
 
 /** Every feature is on by default: `false` turns one off, an options object configures it. */
 export interface MirrordownOptions {
@@ -24,6 +25,7 @@ export interface MirrordownOptions {
   kbd?: boolean;
   mark?: boolean;
   slug?: boolean | SlugOptions;
+  spoiler?: boolean;
   /** Sätteri's built-in `subscript` feature. */
   sub?: boolean;
   /** Sätteri's built-in `superscript` feature. */
@@ -46,6 +48,7 @@ export interface MirrordownPreset {
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
+    | Factory<SpoilerPlugin>
   >;
   hastPlugins: Array<Factory<SlugPlugin>>;
 }
@@ -75,7 +78,8 @@ export const mirrordown = (
         : [satteriGithubAlerts(settings(options.githubAlerts))]),
       ...(options.ins === false ? [] : [satteriIns()]),
       ...(options.kbd === false ? [] : [satteriKbd()]),
-      ...(options.mark === false ? [] : [satteriMark()])
+      ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.spoiler === false ? [] : [satteriSpoiler()])
     ],
     hastPlugins:
       options.slug === false ? [] : [satteriSlug(settings(options.slug))]

@@ -176,3 +176,33 @@ Text spoilers work everywhere (checkbox + sibling selector). Image spoilers use 
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-spoiler
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSpoiler } from "@mirrordown/sat-spoiler";
+> import "@mirrordown/sat-spoiler/spoiler.css";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriSpoiler()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSpoiler } from "@mirrordown/sat-spoiler";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriSpoiler()] }),
+>   },
+> });
+>
+> // In your layout:
+> import "@mirrordown/sat-spoiler/spoiler.css";
+> ```

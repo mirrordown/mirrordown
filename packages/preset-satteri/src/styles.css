@@ -1,2 +1,3 @@
 /* Every Mirrordown Sätteri plugin's stylesheet, so one import styles the whole suite. */
 @import "@mirrordown/sat-github-alerts/github-alerts.css";
+@import "@mirrordown/sat-spoiler/spoiler.css";

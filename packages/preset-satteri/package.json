@@ -26,7 +26,8 @@
     "@mirrordown/sat-ins": "workspace:^",
     "@mirrordown/sat-kbd": "workspace:^",
     "@mirrordown/sat-mark": "workspace:^",
-    "@mirrordown/sat-slug": "workspace:^"
+    "@mirrordown/sat-slug": "workspace:^",
+    "@mirrordown/sat-spoiler": "workspace:^"
   },
   "devDependencies": {
     "satteri": "catalog:"

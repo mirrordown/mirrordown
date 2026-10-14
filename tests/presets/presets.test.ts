@@ -195,6 +195,7 @@ describe("presets", () => {
       "kbd",
       "mark",
       "slug",
+      "spoiler",
       "sub",
       "sup"
     ];
@@ -206,7 +207,6 @@ describe("presets", () => {
       lightbox: false,
       ruby: false,
       sectionize: false,
-      spoiler: false,
       squeezeParagraphs: false,
       steps: false,
       tabs: false,
@@ -233,6 +233,7 @@ describe("presets", () => {
             "kbd",
             "mark",
             "slug",
+            "spoiler",
             "sub",
             "sup"
           ].includes(sample.key)

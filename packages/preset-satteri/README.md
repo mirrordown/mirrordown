@@ -71,6 +71,7 @@ mirrordown({
 | `kbd`          | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`             |
 | `mark`         | `==highlight==`                             | `@mirrordown/sat-mark`            |
 | `slug`         | heading ids                                 | `@mirrordown/sat-slug`            |
+| `spoiler`      | `\|\|spoiler\|\|`                           | `@mirrordown/sat-spoiler`         |
 | `sub`          | `~subscript~`                               | Sätteri's `subscript` feature     |
 | `sup`          | `^superscript^`                             | Sätteri's `superscript` feature   |
 | `features`     | any other Sätteri feature                   | merged over the preset's features |
