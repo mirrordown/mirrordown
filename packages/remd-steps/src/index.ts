@@ -102,29 +102,44 @@ const paraToLines = (para: Paragraph): PhrasingContent[][] => {
 
 // Extract step headers from a paragraph where every line is an @N. header.
 // Mutates `counters` in place so call sites share counter state across siblings.
-// Stops (does not return null) at a depth-skip or non-header line — returns
-// whatever valid steps accumulated before that point.
+// A depth-skipping or non-header line ends the group: the steps before it are
+// returned with that line and the ones after it as `rest`, to be rendered as an
+// ordinary paragraph after the list.
 // requireDepthOne: first header must be depth 1.
+interface HeaderPara {
+  steps: RawStep[];
+  rest: PhrasingContent[][];
+  restLine: number;
+}
+
 const extractHeaderPara = (
   para: Paragraph,
   counters: Map<number, number>,
   requireDepthOne = true,
   prevDepth = 0
-): RawStep[] | null => {
+): HeaderPara | null => {
   const lines = paraToLines(para);
   const steps: RawStep[] = [];
   let currentDepth = prevDepth;
+  const stop = (index: number): HeaderPara | null =>
+    steps.length > 0
+      ? {
+          steps,
+          rest: lines.slice(index),
+          restLine: (para.position?.start.line ?? 1) + index
+        }
+      : null;
 
-  for (const lineSegs of lines) {
+  for (const [index, lineSegs] of lines.entries()) {
     const first = lineSegs[0];
-    if (first?.type !== "text") break;
+    if (first?.type !== "text") return stop(index);
 
     const header = parseHeaderPrefix(first.value);
-    if (!header) break;
+    if (!header) return stop(index);
 
     const { depth } = header;
     if (steps.length === 0 && requireDepthOne && depth !== 1) return null;
-    if (depth > currentDepth + 1) break; // depth skip — stop, keep prior steps
+    if (depth > currentDepth + 1) return stop(index);
 
     for (const k of counters.keys()) if (k > depth) counters.delete(k);
     const number = (counters.get(depth) ?? 0) + 1;
@@ -138,7 +153,39 @@ const extractHeaderPara = (
     steps.push({ depth, number, titleNodes, body: [] });
   }
 
-  return steps.length > 0 ? steps : null;
+  return stop(lines.length);
+};
+
+// Lines left over after a group ends become ordinary paragraphs, split before
+// every line that opens a new group (a depth-1 header), so the main loop can
+// start that group. Positions follow the source lines (paragraph lines map 1:1
+// to source lines) because group ids hash the start line.
+const splitAtGroupStarts = (
+  lines: PhrasingContent[][],
+  firstLine: number
+): Paragraph[] => {
+  const paragraphs: Paragraph[] = [];
+  let start = 0;
+  const flush = (end: number): void => {
+    const para = buildParagraph(lines.slice(start, end));
+    if (!para) return;
+    para.position = {
+      start: { line: firstLine + start, column: 1 },
+      end: { line: firstLine + end - 1, column: 1 }
+    };
+    paragraphs.push(para);
+  };
+  lines.forEach((line, index) => {
+    const first = line[0];
+    const opens =
+      first?.type === "text" && parseHeaderPrefix(first.value)?.depth === 1;
+    if (opens && index > start) {
+      flush(index);
+      start = index;
+    }
+  });
+  flush(lines.length);
+  return paragraphs;
 };
 
 // ── Blockquote splitting ──────────────────────────────────────────────────────
@@ -290,15 +337,18 @@ const processStepsInChildren = (
 
     if (node.type === "paragraph") {
       const counters = new Map<number, number>();
-      const headerSteps = extractHeaderPara(node, counters);
+      const headerPara = extractHeaderPara(node, counters);
 
-      if (headerSteps && headerSteps.length > 0) {
-        const rawSteps: RawStep[] = [...headerSteps];
+      if (headerPara) {
+        const rawSteps: RawStep[] = [...headerPara.steps];
+        // Lines left over after a depth-skipping or non-header line end the group.
+        let rest = headerPara.rest;
+        let restLine = headerPara.restLine;
         let j = i + 1;
         let currentStepIdx = rawSteps.length - 1;
         let currentDepth = rawSteps[rawSteps.length - 1].depth;
 
-        while (j < children.length) {
+        while (rest.length === 0 && j < children.length) {
           const sibling = children[j];
 
           if (sibling.type === "blockquote") {
@@ -327,8 +377,10 @@ const processStepsInChildren = (
               false,
               prevDepth
             );
-            if (contHeaders && contHeaders.length > 0) {
-              rawSteps.push(...contHeaders);
+            if (contHeaders) {
+              rawSteps.push(...contHeaders.steps);
+              rest = contHeaders.rest;
+              restLine = contHeaders.restLine;
               currentStepIdx = rawSteps.length - 1;
               currentDepth = rawSteps[rawSteps.length - 1].depth;
               j++;
@@ -343,6 +395,7 @@ const processStepsInChildren = (
         const list = buildTree(rawSteps, 1, 0, rawSteps.length);
         list.containerClass = containerClass;
         newChildren.push(list as unknown as Root["children"][number]);
+        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
         i = j;
         continue;
       }

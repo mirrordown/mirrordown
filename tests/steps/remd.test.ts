@@ -6,12 +6,15 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
-import { parseCases, normalizeHtml } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
 
-const cases = parseCases(read("fixtures/steps.md"));
+const cases = parseFixture(
+  read("fixtures/steps.md"),
+  read("expected/steps.html")
+);
 
 const process = (src: string) =>
   normalizeHtml(
@@ -26,7 +29,7 @@ const process = (src: string) =>
   );
 
 describe("steps/remd", () => {
-  it.each(cases)("steps (remark): $name", ({ input }) => {
-    expect(process(input)).toMatchSnapshot();
+  it.each(cases)("steps (remark): $name", ({ input, expected }) => {
+    expect(process(input)).toBe(expected);
   });
 });

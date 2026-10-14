@@ -215,3 +215,15 @@ const x = 1;
 
 @1.
 > Content here.
+
+<!-- @case: plain line after a step header ends the group -->
+
+@1. Step one
+Just a plain line.
+> Content here.
+
+<!-- @case: a step header after a plain line starts a new group -->
+
+@1. Step one
+Plain line.
+@1. New group
