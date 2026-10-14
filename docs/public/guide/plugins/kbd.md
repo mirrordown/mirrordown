@@ -30,6 +30,9 @@ Wrap a key name in double square brackets:
 > You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
 > ````
 
+> [!NOTE]
+> Formatting that crosses a key's brackets, such as `[[*a]]*`, renders differently by engine: markdown-it reads the key first, while remark and Sätteri have already read the emphasis when the plugin runs. Keep formatting inside or outside the brackets.
+
 ## Usage
 
 % Remark
@@ -82,6 +85,34 @@ Wrap a key name in double square brackets:
 > export default defineConfig({
 >   markdown: {
 >     config: (md) => md.use(kbd),
+>   },
+> });
+> ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-kbd
+> ```
+>
+> Leave Sätteri's `wikilinks` feature off: it reads `[[…]]` as a link first.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriKbd } from "@mirrordown/sat-kbd";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriKbd()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriKbd } from "@mirrordown/sat-kbd";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriKbd()] }),
 >   },
 > });
 > ```

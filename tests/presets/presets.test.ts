@@ -192,6 +192,7 @@ describe("presets", () => {
       "del",
       "github-alerts",
       "ins",
+      "kbd",
       "mark",
       "slug",
       "sub",
@@ -202,7 +203,6 @@ describe("presets", () => {
       attrs: false,
       autolinkHeadings: false,
       definitionList: false,
-      kbd: false,
       lightbox: false,
       ruby: false,
       sectionize: false,
@@ -226,9 +226,16 @@ describe("presets", () => {
         ): sample is (typeof features)[number] & {
           key: keyof SatteriOptions;
         } =>
-          ["del", "githubAlerts", "ins", "mark", "slug", "sub", "sup"].includes(
-            sample.key
-          )
+          [
+            "del",
+            "githubAlerts",
+            "ins",
+            "kbd",
+            "mark",
+            "slug",
+            "sub",
+            "sup"
+          ].includes(sample.key)
       )
     )(
       "$key is on by default and `false` turns it off",

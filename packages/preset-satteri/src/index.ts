@@ -6,6 +6,7 @@ import {
 } from "@mirrordown/sat-github-alerts";
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
+import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
   satteriSlug,
@@ -20,6 +21,7 @@ export interface MirrordownOptions {
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
+  kbd?: boolean;
   mark?: boolean;
   slug?: boolean | SlugOptions;
   /** Sätteri's built-in `subscript` feature. */
@@ -42,6 +44,7 @@ export interface MirrordownPreset {
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
     | Factory<InsPlugin>
+    | Factory<KbdPlugin>
     | Factory<MarkPlugin>
   >;
   hastPlugins: Array<Factory<SlugPlugin>>;
@@ -71,6 +74,7 @@ export const mirrordown = (
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),
       ...(options.ins === false ? [] : [satteriIns()]),
+      ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.mark === false ? [] : [satteriMark()])
     ],
     hastPlugins:
