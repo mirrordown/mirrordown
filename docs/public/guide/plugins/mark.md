@@ -62,18 +62,6 @@ Wrap text in double equals signs to highlight it:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkMark } from "@mirrordown/remd-mark";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkMark],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-mark

@@ -106,22 +106,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
-import "@mirrordown/remd-steps/steps.css";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkSteps],
-    remarkRehype: { handlers: stepsHastHandlers },
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

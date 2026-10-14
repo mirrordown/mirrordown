@@ -110,18 +110,6 @@ Attributes are written in curly braces using CSS-like shorthand:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkAttrs } from "@mirrordown/remd-attrs";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkAttrs],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-attrs

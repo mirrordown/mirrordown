@@ -79,18 +79,6 @@ There is no syntax and no visible change for normal Markdown — paragraphs with
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { rehypeSqueezeParagraphs } from "@mirrordown/remd-squeeze-paragraphs";
->
-> export default defineConfig({
->   markdown: {
->     rehypePlugins: [rehypeSqueezeParagraphs],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-squeeze-paragraphs

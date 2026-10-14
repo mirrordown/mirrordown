@@ -25,3 +25,4 @@ export {
   type DelimitedTransform,
   type DelimiterPatterns
 } from "./delimited.js";
+export { scriptSyntax, type ScriptSyntax } from "./scripts.js";

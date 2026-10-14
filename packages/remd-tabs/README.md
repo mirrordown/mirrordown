@@ -109,22 +109,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkTabs, tabsHastHandlers } from "@mirrordown/remd-tabs";
-import "@mirrordown/remd-tabs/tabs.css";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkTabs],
-    remarkRehype: { handlers: tabsHastHandlers },
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

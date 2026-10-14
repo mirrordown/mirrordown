@@ -5,6 +5,7 @@
     ".": "./src/jsr.ts"
   },
   "imports": {
-    "mdast": "npm:@types/mdast@^4"
+    "mdast": "npm:@types/mdast@^4",
+    "mdast-util-from-markdown": "npm:mdast-util-from-markdown@^2"
   }
 }

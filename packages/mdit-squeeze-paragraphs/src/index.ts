@@ -1,13 +1,11 @@
 import type Token from "markdown-it/lib/token.mjs";
 import type { PluginSimple } from "markdown-it";
 
-// A paragraph is "empty" when its inline token carries no visible content:
-// whitespace-only `content` and no rendered children. Mirrors upstream
-// mdast-squeeze-paragraphs' whitespace-only text check.
+// A paragraph is "empty" when every rendered child is whitespace-only text (a soft break renders as a newline), as in rehype-squeeze-paragraphs. The inline token's raw `content` is not consulted: it still holds source another plugin has consumed, such as an attribute block.
 const isEmpty = (inline: Token): boolean =>
-  inline.content.trim() === "" &&
   (inline.children ?? []).every(
-    (c) => c.type === "softbreak" || c.type === "hardbreak" || c.content === ""
+    (c) =>
+      c.type === "softbreak" || (c.type === "text" && c.content.trim() === "")
   );
 
 /** markdown-it plugin that removes empty (whitespace-only) paragraphs. */

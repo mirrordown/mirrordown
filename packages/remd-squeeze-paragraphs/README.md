@@ -75,20 +75,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { rehypeSqueezeParagraphs } from "@mirrordown/remd-squeeze-paragraphs";
-
-export default defineConfig({
-  markdown: {
-    rehypePlugins: [rehypeSqueezeParagraphs],
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

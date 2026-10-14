@@ -146,20 +146,6 @@ Use `%%` for a second level of nesting inside a tab:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkTabs, tabsHastHandlers } from "@mirrordown/remd-tabs";
-> import "@mirrordown/remd-tabs/tabs.css";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkTabs],
->     remarkRehype: { handlers: tabsHastHandlers },
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-tabs

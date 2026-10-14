@@ -20,6 +20,14 @@ E = mc^2^
 The Pythagorean theorem: a^2^ + b^2^ = c^2^
 ````
 
+### Formatting inside
+
+The content is inline markup, like emphasis: it can hold spaces, other formatting and subscript, but can't start or end with a space.
+
+````markdown
+e^x~0~^ and the ^*n*th power^
+````
+
 ## About
 
 Part of **[Markdown Preview Extended Syntax](https://marketplace.visualstudio.com/items?itemName=saeris.markdown-preview-extended-syntax)** — a pack of Markdown preview syntax extensions you can install all at once.

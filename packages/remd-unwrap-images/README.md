@@ -69,20 +69,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
-
-export default defineConfig({
-  markdown: {
-    rehypePlugins: [rehypeUnwrapImages],
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

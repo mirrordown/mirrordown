@@ -132,22 +132,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkSpoiler, spoilerHastHandlers } from "@mirrordown/remd-spoiler";
-import "@mirrordown/remd-spoiler/spoiler.css";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkSpoiler],
-    remarkRehype: { handlers: spoilerHastHandlers },
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

@@ -64,3 +64,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<sup>text</sup></p>
+
+<!-- @case: space inside the content is allowed -->
+<p><sup>foo bar</sup></p>
+
+<!-- @case: content is inline markup -->
+<p><sup><em>a b</em> and <a href="e">c d</a></sup></p>
+
+<!-- @case: a run of carets is not a delimiter -->
+<p>^^a^</p>
+
+<!-- @case: closes like emphasis: not after punctuation inside a word -->
+<p>a^(b)^c</p>

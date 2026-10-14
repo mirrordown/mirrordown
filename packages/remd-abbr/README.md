@@ -59,20 +59,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkAbbr } from "@mirrordown/remd-abbr";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkAbbr],
-  },
-});
-```
-
 ## Documentation
 
 Full documentation, more examples, and configuration options: [github.com/mirrordown/mirrordown](https://github.com/mirrordown/mirrordown) (dedicated docs site coming soon).

@@ -32,4 +32,12 @@ describe("squeeze-paragraphs + attrs", () => {
     expect(normalizeHtml(md.render(input))).toBe(expected);
     expect(remd(input)).toBe(expected);
   });
+
+  // markdown-it's inline token keeps the attribute block in its raw `content` after attrs consumes it, so emptiness must be judged on what renders, as rehype does.
+  it("a paragraph that was only an attribute block renders nothing and is removed", () => {
+    const input = "Before.\n\n{.note}\n\nAfter.";
+    const expected = "<p>Before.</p><p>After.</p>";
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+    expect(remd(input)).toBe(expected);
+  });
 });

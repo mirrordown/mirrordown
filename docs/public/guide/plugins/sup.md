@@ -30,6 +30,17 @@ Wrap text in single carets to render it as superscript:
 > The Pythagorean theorem: a^2^ + b^2^ = c^2^
 > ````
 
+### Formatting inside
+
+The content is inline markup, like emphasis: it can hold spaces, other formatting and subscript, but can't start or end with a space.
+
+% Demo
+> e^x~0~^ and the ^*n*th power^
+% Code
+> ````markdown
+> e^x~0~^ and the ^*n*th power^
+> ````
+
 ## Usage
 
 % Remark
@@ -54,18 +65,6 @@ Wrap text in single carets to render it as superscript:
 > ```ts
 > // astro.config.ts
 > import { defineConfig } from "astro/config";
-> import { remarkSup } from "@mirrordown/remd-sup";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkSup],
->   },
-> });
-> ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
 > import { remarkSup } from "@mirrordown/remd-sup";
 >
 > export default defineConfig({

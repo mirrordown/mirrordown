@@ -12,6 +12,7 @@
     "dist"
   ],
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "development": "./src/index.ts",
@@ -29,5 +30,8 @@
       "node ../../scripts/jsr-resolve-deps.mjs",
       "node ../../scripts/jsr-publish.mjs"
     ]
+  },
+  "devDependencies": {
+    "micromark-util-types": "catalog:"
   }
 }

@@ -73,20 +73,6 @@ export default defineConfig({
 });
 ```
 
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { rehypeSlug } from "@mirrordown/remd-slug";
-
-export default defineConfig({
-  markdown: {
-    rehypePlugins: [rehypeSlug],
-  },
-});
-```
-
 ## Options
 
 | Option   | Type     | Default | Description                              |

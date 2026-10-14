@@ -8,6 +8,15 @@ A collection of [markdown-it](https://github.com/markdown-it/markdown-it) plugin
 
 Each feature is implemented as a matched set: a markdown-it plugin for server-side rendering pipelines, a remark/rehype plugin for unified pipelines, and (usually) a VSCode extension for live preview support. The `mdit-*` and `remd-*` plugins are guaranteed to emit byte-identical HTML for the same input.
 
+### Presets
+
+To use the whole suite, install one preset instead of each plugin: every feature on by default, any of them switched off with `false`.
+
+| Ecosystem       | Package                                           | Usage                                       |
+| --------------- | ------------------------------------------------- | ------------------------------------------- |
+| markdown-it     | [preset-markdown-it](packages/preset-markdown-it) | `md.use(mirrordown)`                        |
+| remark / rehype | [preset-remark](packages/preset-remark)           | `unified(mirrordown())` (Astro), or unified |
+
 ### Inline elements
 
 | Syntax            | HTML                                                                                  | markdown-it                           | remark                                | VSCode                                                          |

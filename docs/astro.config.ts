@@ -1,4 +1,5 @@
 import { defineConfig, fontProviders } from "astro/config";
+import remarkGfm from "remark-gfm";
 import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs } from "@mirrordown/remd-attrs";
 import {
@@ -87,7 +88,10 @@ export default defineConfig({
   integrations: [],
   markdown: {
     smartypants: false,
+    // Astro's own GFM uses single-tilde strikethrough, which would take `~sub~` first.
+    gfm: false,
     remarkPlugins: [
+      [remarkGfm, { singleTilde: false }],
       remarkAbbr,
       remarkAttrs,
       remarkDefinitionList,

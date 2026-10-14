@@ -77,13 +77,35 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   };
 };
 
-// SVG strings from icons.ts are known-safe and already carry
-// aria-hidden="true"; embed them as raw so rehype-stringify emits them verbatim
-// without requiring allowDangerousHtml on the renderer.
-const svgToHast = (svgString: string): ElementContent | null =>
-  svgString
-    ? ({ type: "raw", value: svgString } as unknown as ElementContent)
-    : null;
+// The icons in icons.ts are fixed Lucide SVGs: elements with quoted attributes and explicit closing tags, no text. They become hast elements rather than a `raw` node, which rehype-stringify escapes unless `allowDangerousHtml` is on.
+const SVG_TAG = /<(\/?)([a-zA-Z]+)((?:\s+[^\s=/>]+="[^"]*")*)\s*>/g;
+const SVG_ATTRIBUTE = /([^\s=]+)="([^"]*)"/g;
+const svgToHast = (svgString: string): Element | undefined => {
+  const roots: Element[] = [];
+  const open: Element[] = [];
+  for (const [, closing, tagName = ``, attributes = ``] of svgString.matchAll(
+    SVG_TAG
+  )) {
+    if (closing) {
+      open.pop();
+      continue;
+    }
+    const element: Element = {
+      type: `element`,
+      tagName,
+      properties: Object.fromEntries(
+        Array.from(attributes.matchAll(SVG_ATTRIBUTE), ([, name, value]) => [
+          name,
+          value
+        ])
+      ),
+      children: []
+    };
+    (open.at(-1)?.children ?? roots).push(element);
+    open.push(element);
+  }
+  return roots[0];
+};
 
 const buildTitleElement = (
   state: State,

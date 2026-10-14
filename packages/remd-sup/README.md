@@ -22,6 +22,14 @@ E = mc^2^
 The Pythagorean theorem: a^2^ + b^2^ = c^2^
 ````
 
+### Formatting inside
+
+The content is inline markup, like emphasis: it can hold spaces, other formatting and subscript, but can't start or end with a space.
+
+````markdown
+e^x~0~^ and the ^*n*th power^
+````
+
 ## Install
 
 ```sh
@@ -49,20 +57,6 @@ const processor = unified()
 ```ts
 // astro.config.ts
 import { defineConfig } from "astro/config";
-import { remarkSup } from "@mirrordown/remd-sup";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkSup],
-  },
-});
-```
-
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
 import { remarkSup } from "@mirrordown/remd-sup";
 
 export default defineConfig({
