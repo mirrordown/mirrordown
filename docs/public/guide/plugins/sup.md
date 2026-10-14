@@ -97,3 +97,25 @@ Wrap text in single carets to render it as superscript:
 >   },
 > });
 > ```
+% Sätteri
+> Sätteri parses `^sup^` itself: turn on its `superscript` feature. No Mirrordown package is needed.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+>
+> const { html } = markdownToHtml(source, {
+>   features: { superscript: true },
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ features: { superscript: true } }),
+>   },
+> });
+> ```

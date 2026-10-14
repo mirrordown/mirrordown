@@ -1,6 +1,6 @@
 # @mirrordown/remd-ins
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `ins` syntax extension.
 
@@ -16,11 +16,11 @@ The `ins` plugin renders `++text++` as an HTML `<ins>` element, representing ins
 
 Wrap text in double plus signs to mark it as inserted:
 
-```markdown
+````markdown
 ++This text has been inserted.++
 
 You can use it inline: the price is now ++$35++ (was $50).
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkIns } from "@mirrordown/remd-ins";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkIns]
-  }
+    remarkPlugins: [remarkIns],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkIns } from "@mirrordown/remd-ins";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkIns]
-  }
+    remarkPlugins: [remarkIns],
+  },
 });
 ```
 

@@ -1,6 +1,6 @@
 # @mirrordown/mdit-ruby
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `ruby` syntax extension.
 
@@ -16,11 +16,11 @@ The `ruby` plugin renders `{base|reading}` as HTML `<ruby>` annotations, used fo
 
 Use `{base text|reading}` inline to annotate characters with their pronunciation or reading:
 
-```markdown
+````markdown
 {漢字|かんじ} are Chinese-derived characters used in Japanese writing.
 
 {東京|とうきょう} is the capital of Japan.
-```
+````
 
 Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 
@@ -48,8 +48,8 @@ import { ruby } from "@mirrordown/mdit-ruby";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(ruby)
-  }
+    config: (md) => md.use(ruby),
+  },
 });
 ```
 

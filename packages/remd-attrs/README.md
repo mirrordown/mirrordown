@@ -1,6 +1,6 @@
 # @mirrordown/remd-attrs
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `attrs` syntax extension.
 
@@ -22,9 +22,9 @@ Attributes are written in curly braces using CSS-like shorthand:
 
 ### Headings
 
-```markdown
+````markdown
 ## My Section {#my-section .highlight}
-```
+````
 
 ### Code fences
 
@@ -36,24 +36,24 @@ const x = 1;
 
 ### Paragraphs
 
-```markdown
+````markdown
 A paragraph with a custom class.
 {.note}
-```
+````
 
 ### Inline elements
 
-```markdown
+````markdown
 This is **important**{.warning} text.
-```
+````
 
 ### After lists and tables
 
-```markdown
+````markdown
 - Item one
 - Item two
-  {.checklist}
-```
+{.checklist}
+````
 
 ## Install
 
@@ -86,8 +86,8 @@ import { remarkAttrs } from "@mirrordown/remd-attrs";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAttrs]
-  }
+    remarkPlugins: [remarkAttrs],
+  },
 });
 ```
 
@@ -100,8 +100,8 @@ import { remarkAttrs } from "@mirrordown/remd-attrs";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAttrs]
-  }
+    remarkPlugins: [remarkAttrs],
+  },
 });
 ```
 

@@ -14,11 +14,11 @@ The `sub` plugin renders `~text~` as an HTML `<sub>` element, representing subsc
 
 Wrap text in single tildes to render it as subscript:
 
-```markdown
+````markdown
 The chemical formula for water is H~2~O.
 
 Carbon dioxide is CO~2~.
-```
+````
 
 ## About
 

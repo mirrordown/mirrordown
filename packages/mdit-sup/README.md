@@ -1,6 +1,6 @@
 # @mirrordown/mdit-sup
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `sup` syntax extension.
 
@@ -16,11 +16,11 @@ The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing super
 
 Wrap text in single carets to render it as superscript:
 
-```markdown
+````markdown
 E = mc^2^
 
 The Pythagorean theorem: a^2^ + b^2^ = c^2^
-```
+````
 
 ## Install
 
@@ -46,8 +46,8 @@ import { sup } from "@mirrordown/mdit-sup";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(sup)
-  }
+    config: (md) => md.use(sup),
+  },
 });
 ```
 

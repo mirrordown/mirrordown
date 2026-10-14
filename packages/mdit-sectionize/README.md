@@ -1,6 +1,6 @@
 # @mirrordown/mdit-sectionize
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `sectionize` syntax extension.
 
@@ -11,7 +11,6 @@ The `sectionize` plugin wraps every heading — together with all the content th
 Content that appears before the first heading stays unwrapped.
 
 **Before:**
-
 ```html
 <h2>Install</h2>
 <p>Run the installer.</p>
@@ -20,7 +19,6 @@ Content that appears before the first heading stays unwrapped.
 ```
 
 **After:**
-
 ```html
 <section data-depth="2">
   <h2>Install</h2>
@@ -36,7 +34,7 @@ Content that appears before the first heading stays unwrapped.
 
 There is no special syntax — write ordinary headings and the plugin builds the section structure from the heading outline:
 
-```markdown
+````markdown
 # Getting Started
 
 Some introduction text.
@@ -48,7 +46,7 @@ Steps to install.
 ## Configuration
 
 How to configure it.
-```
+````
 
 Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>` nests as `data-depth="3"` inside the `<h1>`'s section, with no intervening `<h2>` section invented.
 
@@ -82,8 +80,8 @@ import { sectionize } from "@mirrordown/mdit-sectionize";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(sectionize)
-  }
+    config: (md) => md.use(sectionize),
+  },
 });
 ```
 

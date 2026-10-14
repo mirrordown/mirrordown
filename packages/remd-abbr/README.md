@@ -1,6 +1,6 @@
 # @mirrordown/remd-abbr
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `abbr` syntax extension.
 
@@ -16,12 +16,12 @@ The `abbr` plugin lets you define abbreviations once and automatically wraps eve
 
 Define abbreviations anywhere in the document using the `*[ABBR]: Full text` syntax. Definitions are removed from the output and all matching words are wrapped automatically.
 
-```markdown
-_[HTML]: HyperText Markup Language
-_[CSS]: Cascading Style Sheets
+````markdown
+*[HTML]: HyperText Markup Language
+*[CSS]: Cascading Style Sheets
 
 Write HTML and CSS as normal — they are automatically expanded with tooltips.
-```
+````
 
 ## Install
 
@@ -54,8 +54,8 @@ import { remarkAbbr } from "@mirrordown/remd-abbr";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAbbr]
-  }
+    remarkPlugins: [remarkAbbr],
+  },
 });
 ```
 
@@ -68,8 +68,8 @@ import { remarkAbbr } from "@mirrordown/remd-abbr";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAbbr]
-  }
+    remarkPlugins: [remarkAbbr],
+  },
 });
 ```
 

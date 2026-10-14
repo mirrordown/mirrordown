@@ -1,6 +1,6 @@
 # @mirrordown/remd-github-alerts
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `github-alerts` syntax extension.
 
@@ -19,7 +19,7 @@ The `github-alerts` plugin converts GitHub-style alert blockquotes (`> [!NOTE]`,
 
 Write a blockquote with a `[!TYPE]` marker on the first line:
 
-```markdown
+````markdown
 > [!NOTE]
 > Useful information that users should know, even if skimming.
 
@@ -34,28 +34,28 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 
 > [!CAUTION]
 > Advises about risks or negative outcomes of certain actions.
-```
+````
 
 ### Custom titles
 
-Override the default title by adding text after the type marker:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
 
-```markdown
-> [!NOTE] Custom Title
+````markdown
+> [!NOTE] Custom *Title*
 > This alert uses a custom title instead of the default.
-```
+````
 
 ### Foldable alerts
 
 Use `+` to make an alert open by default, or `-` to make it collapsed by default:
 
-```markdown
+````markdown
 > [!TIP]+
 > This tip is open by default.
 
 > [!WARNING]-
 > This warning is collapsed by default.
-```
+````
 
 ## Configuration
 
@@ -65,34 +65,41 @@ All options are passed when registering the plugin.
 
 Set `icons: false` to suppress the SVG icon from every alert title:
 
-```markdown
+````markdown
 > [!NOTE]
 > This note has no icon.
 
 > [!WARNING]
 > This warning has no icon.
-```
+````
 
 ```ts
-remarkGithubAlerts({ icons: false });
+remarkGithubAlerts({ icons: false })
 ```
 
-```markdown
+### Override default titles
+
+Supply a `titles` map to replace the default heading text for any built-in type:
+
+````markdown
 > [!TIP]
 > This is a pro tip.
-```
+````
 
 ```ts
-remarkGithubAlerts({ titles: { tip: "Pro tip" } });
+remarkGithubAlerts({ titles: { tip: "Pro tip" } })
 ```
+
+### Add custom alert types
+
+Register new keywords with `types`. The value is the canonical type name that appears in the `data-alert` attribute and determines which CSS variable set applies. Style the new type with your own CSS:
 
 ```ts
 remarkGithubAlerts({
   types: { release: "release", changelog: "release" },
-  titles: { release: "Release notes" }
-});
+  titles: { release: "Release notes" },
+})
 ```
-
 ```css
 [data-alert="release"] {
   --markdown-alert-color: oklch(0.55 0.18 300);
@@ -114,10 +121,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import {
-  remarkGithubAlerts,
-  githubAlertsHastHandlers
-} from "@mirrordown/remd-github-alerts";
+import { remarkGithubAlerts, githubAlertsHastHandlers } from "@mirrordown/remd-github-alerts";
 import "@mirrordown/remd-github-alerts/github-alerts.css";
 
 const processor = unified()
@@ -132,17 +136,14 @@ const processor = unified()
 ```ts
 // astro.config.ts
 import { defineConfig } from "astro/config";
-import {
-  remarkGithubAlerts,
-  githubAlertsHastHandlers
-} from "@mirrordown/remd-github-alerts";
+import { remarkGithubAlerts, githubAlertsHastHandlers } from "@mirrordown/remd-github-alerts";
 import "@mirrordown/remd-github-alerts/github-alerts.css";
 
 export default defineConfig({
   markdown: {
     remarkPlugins: [remarkGithubAlerts],
-    remarkRehype: { handlers: githubAlertsHastHandlers }
-  }
+    remarkRehype: { handlers: githubAlertsHastHandlers },
+  },
 });
 ```
 
@@ -151,17 +152,14 @@ export default defineConfig({
 ```ts
 // .vitepress/config.ts
 import { defineConfig } from "vitepress";
-import {
-  remarkGithubAlerts,
-  githubAlertsHastHandlers
-} from "@mirrordown/remd-github-alerts";
+import { remarkGithubAlerts, githubAlertsHastHandlers } from "@mirrordown/remd-github-alerts";
 import "@mirrordown/remd-github-alerts/github-alerts.css";
 
 export default defineConfig({
   markdown: {
     remarkPlugins: [remarkGithubAlerts],
-    remarkRehype: { handlers: githubAlertsHastHandlers }
-  }
+    remarkRehype: { handlers: githubAlertsHastHandlers },
+  },
 });
 ```
 

@@ -1,6 +1,6 @@
 # @mirrordown/remd-sub
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `sub` syntax extension.
 
@@ -16,11 +16,11 @@ The `sub` plugin renders `~text~` as an HTML `<sub>` element, representing subsc
 
 Wrap text in single tildes to render it as subscript:
 
-```markdown
+````markdown
 The chemical formula for water is H~2~O.
 
 Carbon dioxide is CO~2~.
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkSub } from "@mirrordown/remd-sub";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkSub]
-  }
+    remarkPlugins: [remarkSub],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkSub } from "@mirrordown/remd-sub";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkSub]
-  }
+    remarkPlugins: [remarkSub],
+  },
 });
 ```
 

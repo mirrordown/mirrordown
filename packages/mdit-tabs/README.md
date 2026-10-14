@@ -1,6 +1,6 @@
 # @mirrordown/mdit-tabs
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `tabs` syntax extension.
 
@@ -21,20 +21,15 @@ Write a `% Label` line followed by a `>` blockquote for each tab's content:
 
 ````markdown
 % JavaScript
-
 > ```js
 > console.log("Hello, world!");
 > ```
->
-> % TypeScript
->
+% TypeScript
 > ```ts
 > const greeting: string = "Hello, world!";
 > console.log(greeting);
 > ```
->
-> % Python
->
+% Python
 > ```py
 > print("Hello, world!")
 > ```
@@ -44,15 +39,14 @@ Write a `% Label` line followed by a `>` blockquote for each tab's content:
 
 Mark a tab with `%+` to make it open by default (the first tab is open by default otherwise):
 
-```markdown
+````markdown
 % Option A
-
 > This tab is not selected by default.
-> %+ Option B
+%+ Option B
 > This tab opens by default.
-> % Option C
+% Option C
 > This tab is not selected by default.
-```
+````
 
 ### Nested tabs
 
@@ -61,20 +55,16 @@ Use `%%` for a second level of nesting inside a tab:
 ````markdown
 % Frontend
 %% React
-
 > ```tsx
 > export function App() {
 >   return <h1>Hello</h1>;
 > }
 > ```
->
-> %% Vue
->
+%% Vue
 > ```vue
 > <template><h1>Hello</h1></template>
 > ```
->
-> % Backend
+% Backend
 > Node.js or any server runtime.
 ````
 
@@ -104,8 +94,8 @@ import "@mirrordown/mdit-tabs/tabs.css";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(tabs)
-  }
+    config: (md) => md.use(tabs),
+  },
 });
 ```
 

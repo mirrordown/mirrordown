@@ -1,6 +1,6 @@
 # @mirrordown/remd-sup
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `sup` syntax extension.
 
@@ -16,11 +16,11 @@ The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing super
 
 Wrap text in single carets to render it as superscript:
 
-```markdown
+````markdown
 E = mc^2^
 
 The Pythagorean theorem: a^2^ + b^2^ = c^2^
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkSup } from "@mirrordown/remd-sup";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkSup]
-  }
+    remarkPlugins: [remarkSup],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkSup } from "@mirrordown/remd-sup";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkSup]
-  }
+    remarkPlugins: [remarkSup],
+  },
 });
 ```
 

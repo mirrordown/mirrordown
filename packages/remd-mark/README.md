@@ -1,6 +1,6 @@
 # @mirrordown/remd-mark
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `mark` syntax extension.
 
@@ -16,11 +16,11 @@ The `mark` plugin renders `==text==` as an HTML `<mark>` element, representing h
 
 Wrap text in double equals signs to highlight it:
 
-```markdown
+````markdown
 ==This text is highlighted.==
 
 You can use it inline: remember to ==save your work== before closing.
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkMark } from "@mirrordown/remd-mark";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkMark]
-  }
+    remarkPlugins: [remarkMark],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkMark } from "@mirrordown/remd-mark";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkMark]
-  }
+    remarkPlugins: [remarkMark],
+  },
 });
 ```
 

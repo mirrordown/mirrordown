@@ -1,6 +1,6 @@
 # @mirrordown/mdit-del
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `del` syntax extension.
 
@@ -16,11 +16,11 @@ The `del` plugin renders `--text--` as an HTML `<del>` element, representing del
 
 Wrap text in double dashes to mark it as deleted:
 
-```markdown
+````markdown
 --This text has been deleted.--
 
 You can use it inline: the price was --$50-- $35.
-```
+````
 
 ## Install
 
@@ -46,8 +46,8 @@ import { del } from "@mirrordown/mdit-del";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(del)
-  }
+    config: (md) => md.use(del),
+  },
 });
 ```
 

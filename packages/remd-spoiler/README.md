@@ -1,6 +1,6 @@
 # @mirrordown/remd-spoiler
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `spoiler` syntax extension.
 
@@ -23,9 +23,9 @@ The checkbox is the only interactive control, so it stays keyboard-operable and 
 
 Wrap any inline content in `||…||`. Click a bar below to reveal it; click again to hide it.
 
-```markdown
+````markdown
 The killer was ||the butler|| all along, hidden in ||the conservatory||.
-```
+````
 
 In renderers without the plugin, `||…||` renders as plain text.
 
@@ -33,34 +33,34 @@ In renderers without the plugin, `||…||` renders as plain text.
 
 A spoiler can wrap any inline markup — emphasis, code, links — and it stays obscured until revealed. A long spoiler wraps across lines with each line getting its own bar, just like Discord.
 
-```markdown
+````markdown
 The recipe needs ||**two** cups of `flour` and a
 [secret ingredient](https://example.com) that nobody expects||.
-```
+````
 
 ### Image spoilers
 
 Wrap an image to hide it behind a blur and a **SPOILER** label — Discord's treatment for spoilered image embeds. Clicking reveals the sharp image.
 
-```markdown
+````markdown
 Careful, dinner photo incoming: ||![A young sapling](./assets/sapling.jpg "Sapling")||
-```
+````
 
 ### Spoilered, zoomable images
 
 Combine with the [`lightbox`](/guide/plugins/lightbox) plugin (`||!![…]()||`) for a spoilered image that is also click-to-zoom once revealed.
 
-```markdown
+````markdown
 The reveal: ||!![Mount Fuji at dawn](./assets/fuji.jpg "Mount Fuji")||
-```
+````
 
 ### Inside links
 
 A spoiler works inside a link — the whole revealed content remains the link target.
 
-```markdown
+````markdown
 Read [the ||shocking twist||](https://example.com) at your own risk.
-```
+````
 
 ## Accessibility
 
@@ -70,14 +70,14 @@ The spoiler is a real checkbox with `aria-label="spoiler"`, so assistive technol
 
 The stylesheet keeps its rules in `@layer markdown-spoiler`, so any unlayered CSS you write overrides them without `!important`. The common knobs are exposed as custom properties — set them on `:root` or any ancestor:
 
-| Property                        | Default                                  | Description                         |
-| ------------------------------- | ---------------------------------------- | ----------------------------------- |
-| `--markdown-spoiler-bar`        | `#202225`                                | Obscured bar color (text spoilers). |
-| `--markdown-spoiler-radius`     | `0.25rem`                                | Bar corner radius.                  |
-| `--markdown-spoiler-duration`   | `0.15s`                                  | Reveal transition duration.         |
-| `--markdown-spoiler-revealed`   | `color-mix(in srgb, currentColor 8%, …)` | Background behind revealed text.    |
-| `--markdown-spoiler-media-blur` | `2.5rem`                                 | Blur radius for image spoilers.     |
-| `--markdown-spoiler-label`      | `"SPOILER"`                              | Text of the image-spoiler pill.     |
+| Property                            | Default                                     | Description                             |
+| ----------------------------------- | ------------------------------------------- | --------------------------------------- |
+| `--markdown-spoiler-bar`            | `#202225`                                   | Obscured bar color (text spoilers).     |
+| `--markdown-spoiler-radius`         | `0.25rem`                                   | Bar corner radius.                      |
+| `--markdown-spoiler-duration`       | `0.15s`                                     | Reveal transition duration.             |
+| `--markdown-spoiler-revealed`       | `color-mix(in srgb, currentColor 8%, …)`    | Background behind revealed text.        |
+| `--markdown-spoiler-media-blur`     | `2.5rem`                                     | Blur radius for image spoilers.         |
+| `--markdown-spoiler-label`          | `"SPOILER"`                                 | Text of the image-spoiler pill.         |
 
 ```css
 :root {
@@ -127,8 +127,8 @@ import "@mirrordown/remd-spoiler/spoiler.css";
 export default defineConfig({
   markdown: {
     remarkPlugins: [remarkSpoiler],
-    remarkRehype: { handlers: spoilerHastHandlers }
-  }
+    remarkRehype: { handlers: spoilerHastHandlers },
+  },
 });
 ```
 
@@ -143,8 +143,8 @@ import "@mirrordown/remd-spoiler/spoiler.css";
 export default defineConfig({
   markdown: {
     remarkPlugins: [remarkSpoiler],
-    remarkRehype: { handlers: spoilerHastHandlers }
-  }
+    remarkRehype: { handlers: spoilerHastHandlers },
+  },
 });
 ```
 

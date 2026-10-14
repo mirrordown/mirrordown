@@ -1,6 +1,6 @@
 # @mirrordown/mdit-autolink-headings
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `autolink-headings` syntax extension.
 
@@ -9,18 +9,13 @@ A markdown-it plugin for the `autolink-headings` syntax extension.
 The `autolink-headings` plugin adds a self-referential link to every heading that has an `id`, turning each heading into a shareable anchor. Pair it with [`slug`](/guide/plugins/slug) (or [`attrs`](/guide/plugins/attrs)) so the headings have ids to link to.
 
 **Before:**
-
 ```html
 <h2 id="getting-started">Getting Started</h2>
 ```
 
 **After:**
-
 ```html
-<h2 id="getting-started">
-  <a class="anchor" aria-hidden="true" tabindex="-1" href="#getting-started"></a
-  >Getting Started
-</h2>
+<h2 id="getting-started"><a class="anchor" aria-hidden="true" tabindex="-1" href="#getting-started"></a>Getting Started</h2>
 ```
 
 By default the link is **empty** and carries `class="anchor"`. The shipped stylesheet draws a `#` marker via a CSS `::before` pseudo-element that fades in on hover — so no extra element is emitted, and there is no JavaScript involved.
@@ -29,11 +24,11 @@ By default the link is **empty** and carries `class="anchor"`. The shipped style
 
 There is no special syntax — just write headings. Hover one to reveal its link:
 
-```markdown
+````markdown
 ### Hover Over This Heading
 
 ### And This One Too
-```
+````
 
 [!NOTE]
 This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype`, and **after** [`slug`](/guide/plugins/slug), so the headings already have ids. Import the stylesheet to get the default `#` marker.
@@ -65,16 +60,16 @@ import { autolinkHeadings } from "@mirrordown/mdit-autolink-headings";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(slug).use(autolinkHeadings)
-  }
+    config: (md) => md.use(slug).use(autolinkHeadings),
+  },
 });
 ```
 
 ## Options
 
-| Option     | Type                                                     | Default     | Description                                       |
-| ---------- | -------------------------------------------------------- | ----------- | ------------------------------------------------- |
-| `behavior` | `"prepend" \| "append" \| "wrap" \| "before" \| "after"` | `"prepend"` | Where the link is placed relative to the heading. |
+| Option      | Type                                            | Default     | Description                                              |
+| ----------- | ----------------------------------------------- | ----------- | ------------------------------------------------------- |
+| `behavior`  | `"prepend" \| "append" \| "wrap" \| "before" \| "after"` | `"prepend"` | Where the link is placed relative to the heading.       |
 
 `behavior` controls the structure:
 

@@ -1,6 +1,6 @@
 # @mirrordown/remd-kbd
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `kbd` syntax extension.
 
@@ -16,11 +16,11 @@ The `kbd` plugin renders `[[key]]` as an HTML `<kbd>` element, representing keyb
 
 Wrap a key name in double square brackets:
 
-```markdown
+````markdown
 Press [[Enter]] to confirm.
 
 You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkKbd } from "@mirrordown/remd-kbd";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkKbd]
-  }
+    remarkPlugins: [remarkKbd],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkKbd } from "@mirrordown/remd-kbd";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkKbd]
-  }
+    remarkPlugins: [remarkKbd],
+  },
 });
 ```
 

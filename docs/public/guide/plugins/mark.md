@@ -97,3 +97,29 @@ Wrap text in double equals signs to highlight it:
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-mark
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriMark } from "@mirrordown/sat-mark";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriMark()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriMark } from "@mirrordown/sat-mark";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriMark()] }),
+>   },
+> });
+> ```

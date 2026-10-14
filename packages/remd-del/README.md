@@ -1,6 +1,6 @@
 # @mirrordown/remd-del
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `del` syntax extension.
 
@@ -16,11 +16,11 @@ The `del` plugin renders `--text--` as an HTML `<del>` element, representing del
 
 Wrap text in double dashes to mark it as deleted:
 
-```markdown
+````markdown
 --This text has been deleted.--
 
 You can use it inline: the price was --$50-- $35.
-```
+````
 
 ## Install
 
@@ -53,8 +53,8 @@ import { remarkDel } from "@mirrordown/remd-del";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkDel]
-  }
+    remarkPlugins: [remarkDel],
+  },
 });
 ```
 
@@ -67,8 +67,8 @@ import { remarkDel } from "@mirrordown/remd-del";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkDel]
-  }
+    remarkPlugins: [remarkDel],
+  },
 });
 ```
 

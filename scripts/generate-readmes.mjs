@@ -2,7 +2,7 @@
 // Generator script — flow control uses `continue` for clarity over the
 // repeated branches; the no-continue / curly rules don't apply here.
 /* oxlint-disable no-continue, curly */
-// Generates README.md for each remd-* and mdit-* package by transforming
+// Generates README.md for each remd-*, mdit-* and sat-* package by transforming
 // the corresponding docs/public/guide/plugins/<slug>.md guide.
 //
 // The guide uses the @mirrordown/remd-tabs syntax:
@@ -72,6 +72,10 @@ const parseBlocks = (md) => {
     } else if (line.startsWith("% ")) {
       flush();
       current = { kind: "tab", label: line.slice(2).trim(), bodyLines: [] };
+    } else if (current.kind !== "prelude" && !line.startsWith(">")) {
+      // A tab's body is its blockquote: the first line outside it ends the tab group, and what follows is shared by every family's README.
+      flush();
+      current = { kind: "prelude", bodyLines: [line] };
     } else {
       // Strip blockquote wrapper. `>` alone is a blank quoted line; `> foo`
       // is the wrapped content.
@@ -166,7 +170,9 @@ const renderForFamily = (blocks, wantedFamily) => {
           ? "remark"
           : labelLower.startsWith("markdown-it")
             ? "markdown-it"
-            : null;
+            : labelLower.startsWith("sätteri")
+              ? "satteri"
+              : null;
       activeFamilyMatches = family === wantedFamily;
       if (activeFamilyMatches) {
         // After "## Usage" this is the install section; before it the family
@@ -198,21 +204,23 @@ const renderForFamily = (blocks, wantedFamily) => {
     .trim()}\n`;
 };
 
+// Package prefix → the guide's family tab and the README's description.
+const families = {
+  remd: { wantedFamily: "remark", familyLabel: "remark/rehype (unified)" },
+  mdit: { wantedFamily: "markdown-it", familyLabel: "markdown-it" },
+  sat: { wantedFamily: "satteri", familyLabel: "Sätteri" }
+};
+
 const buildReadme = (slug, family, guideMd) => {
   const stripped = stripStyleBlock(stripFrontmatter(guideMd));
   const blocks = parseBlocks(stripped);
-  const wantedFamily = family === "remd" ? "remark" : "markdown-it";
+  const { wantedFamily, familyLabel } = families[family];
   const body = renderForFamily(blocks, wantedFamily);
-
-  const isRemd = family === "remd";
-  const pkgName = isRemd
-    ? `@mirrordown/remd-${slug}`
-    : `@mirrordown/mdit-${slug}`;
-  const familyLabel = isRemd ? "remark/rehype (unified)" : "markdown-it";
+  const pkgName = `@mirrordown/${family}-${slug}`;
 
   return `# ${pkgName}
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A ${familyLabel} plugin for the \`${slug}\` syntax extension.
 
@@ -245,7 +253,7 @@ for (const slug of slugs) {
   }
   const guideMd = readFileSync(guidePath, "utf8");
 
-  for (const family of ["remd", "mdit"]) {
+  for (const family of Object.keys(families)) {
     const pkgDir = join(repoRoot, "packages", `${family}-${slug}`);
     if (!existsSync(pkgDir)) {
       console.warn(`SKIP (no package): ${family}-${slug}`);
