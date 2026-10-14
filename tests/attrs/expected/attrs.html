@@ -168,3 +168,14 @@
 </tr>
 </tbody>
 </table>
+
+<!-- @case: braces in image alt text are not paragraph attributes -->
+<p><img src="x.png" alt="{.cls}"></p>
+
+<!-- @case: braces in image alt text are not heading attributes -->
+<h2><img src="x.png" alt="{.cls}"></h2>
+
+<!-- @case: braces in image alt text are not list item attributes -->
+<ul>
+<li><img src="x.png" alt="{.cls}"></li>
+</ul>

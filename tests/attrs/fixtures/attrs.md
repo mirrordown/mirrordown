@@ -110,3 +110,15 @@ para\
 | H {.hc} |
 |---|
 | c |
+
+<!-- @case: braces in image alt text are not paragraph attributes -->
+
+![{.cls}](x.png)
+
+<!-- @case: braces in image alt text are not heading attributes -->
+
+## ![{.cls}](x.png)
+
+<!-- @case: braces in image alt text are not list item attributes -->
+
+- ![{.cls}](x.png)
