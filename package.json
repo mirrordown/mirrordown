@@ -17,7 +17,8 @@
     "repo": "mirrordown/mirrordown",
     "provider": "github",
     "workflow": "release.yml",
-    "permissions": "publish",
+    "publish": true,
+    "ignore": ["markdown-*"],
     "jsr": {
       "runtimeCompat": {
         "node": true,
