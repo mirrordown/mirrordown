@@ -50,7 +50,10 @@ function makeRule(rp: [string, string] | undefined) {
       for (const t of tokens) state.tokens.push(t);
     };
 
-    state.push("ruby_open", "ruby", 1).markup = "{";
+    const open = state.push("ruby_open", "ruby", 1);
+    open.markup = "{";
+    // The source of the whole run, for positions that render plain text.
+    open.meta = { raw: state.src.slice(start, closePos + 1) };
 
     pushInline(baseText);
     if (hasRp) state.push("rp_open", "rp", 0).content = rp[0]!;
@@ -66,6 +69,32 @@ function makeRule(rp: [string, string] | undefined) {
   };
 }
 
+const verbatimRuby = (
+  children: Token[],
+  state: {
+    Token: new (type: string, tag: string, nesting: Token["nesting"]) => Token;
+  }
+): Token[] => {
+  const out: Token[] = [];
+  for (let i = 0; i < children.length; i++) {
+    const token = children[i];
+    if (token.type !== "ruby_open") {
+      out.push(token);
+      continue;
+    }
+    let depth = 1;
+    while (depth > 0 && ++i < children.length) {
+      if (children[i].type === "ruby_open") depth++;
+      else if (children[i].type === "ruby_close") depth--;
+    }
+    const text = new state.Token("text", "", 0);
+    const raw: unknown = token.meta?.raw;
+    text.content = typeof raw === "string" ? raw : "";
+    out.push(text);
+  }
+  return out;
+};
+
 /** markdown-it plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const ruby = (md: MarkdownIt, options: RubyOptions = {}): void => {
   const { rp } = options;
@@ -79,4 +108,17 @@ export const ruby = (md: MarkdownIt, options: RubyOptions = {}): void => {
   }
 
   md.inline.ruler.before("text", "ruby", makeRule(rp));
+
+  // Alt text is an attribute, which renders no markup: a ruby inside an image
+  // label stays verbatim (`alt="{base|reading}"`), so the characters reach the
+  // attribute exactly as written.
+  md.core.ruler.after("inline", "ruby_alt_text", (state) => {
+    for (const block of state.tokens) {
+      for (const token of block.children ?? []) {
+        if (token.type === "image" && token.children) {
+          token.children = verbatimRuby(token.children, state);
+        }
+      }
+    }
+  });
 };

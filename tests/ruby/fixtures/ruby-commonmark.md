@@ -54,7 +54,7 @@ Before {word|read} after.
 
 {no pipe here}
 
-<!-- @case: ruby in image alt text contributes its text -->
+<!-- @case: ruby in image alt text stays verbatim -->
 
 ![{word|reading}](./image.png)
 

@@ -177,27 +177,15 @@ const rubyFromMarkdownExtension: FromMarkdownExtension = {
     },
     ruby(token) {
       // An image's alt is the plain text of its label, computed when the label
-      // closes, before the transformer fills in ruby children. Give the node
-      // provisional children (base then reading, parsed plainly) so a ruby in
-      // alt text contributes its text, as in mdit; the transformer replaces them.
-      const node = this.stack[this.stack.length - 1] as unknown as Ruby &
-        RubyInProgress;
-      node.children = [
-        ...plainInline(node.data.rawBase.replace(/\\$/, "")),
-        ...plainInline(node.data.rawReading)
-      ];
+      // closes, before the transformer fills in ruby children. Alt text is an
+      // attribute and renders no markup, so give the node its source as a
+      // provisional text child: a ruby in alt text stays verbatim
+      // (`alt="{base|reading}"`), as in mdit. The transformer replaces it.
+      const node = this.stack[this.stack.length - 1] as unknown as Ruby;
+      node.children = [{ type: "text", value: this.sliceSerialize(token) }];
       this.exit(token);
     }
   }
-};
-
-const plainInline = (text: string): PhrasingContent[] => {
-  const first = text ? fromMarkdown(text).children[0] : undefined;
-  return first?.type === "paragraph"
-    ? first.children
-    : text
-      ? [{ type: "text", value: text }]
-      : [];
 };
 
 // ---- Plugin ----
