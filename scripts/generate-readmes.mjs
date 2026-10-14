@@ -72,6 +72,10 @@ const parseBlocks = (md) => {
     } else if (line.startsWith("% ")) {
       flush();
       current = { kind: "tab", label: line.slice(2).trim(), bodyLines: [] };
+    } else if (current.kind !== "prelude" && !line.startsWith(">")) {
+      // A tab's body is its blockquote: the first line outside it ends the tab group, and what follows is shared by every family's README.
+      flush();
+      current = { kind: "prelude", bodyLines: [line] };
     } else {
       // Strip blockquote wrapper. `>` alone is a blank quoted line; `> foo`
       // is the wrapped content.

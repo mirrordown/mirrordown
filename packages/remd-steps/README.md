@@ -23,15 +23,12 @@ Write `@1. Title` lines followed by `>` blockquote bodies for each step:
 
 ````markdown
 @1. Install dependencies
-
 > ```sh
 > npm install
 > ```
->
-> @2. Configure your environment
+@2. Configure your environment
 > Copy `.env.example` to `.env` and fill in your values.
-> @3. Start the development server
->
+@3. Start the development server
 > ```sh
 > npm run dev
 > ```
@@ -41,13 +38,12 @@ Write `@1. Title` lines followed by `>` blockquote bodies for each step:
 
 Steps can have no title — just a body:
 
-```markdown
+````markdown
 @1.
-
 > First thing to do.
-> @2.
+@2.
 > Second thing to do.
-```
+````
 
 ### Nested steps
 
@@ -56,19 +52,14 @@ Use `@@` to nest steps inside a parent step:
 ````markdown
 @1. Set up the project
 @@1. Create a new directory
-
 > ```sh
 > mkdir my-project && cd my-project
 > ```
->
-> @@2. Initialize git
->
+@@2. Initialize git
 > ```sh
 > git init
 > ```
->
-> @2. Install dependencies
->
+@2. Install dependencies
 > ```sh
 > npm install
 > ```
@@ -110,24 +101,8 @@ import "@mirrordown/remd-steps/steps.css";
 export default defineConfig({
   markdown: {
     remarkPlugins: [remarkSteps],
-    remarkRehype: { handlers: stepsHastHandlers }
-  }
-});
-```
-
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
-import "@mirrordown/remd-steps/steps.css";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkSteps],
-    remarkRehype: { handlers: stepsHastHandlers }
-  }
+    remarkRehype: { handlers: stepsHastHandlers },
+  },
 });
 ```
 

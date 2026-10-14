@@ -17,7 +17,7 @@ The `definition-list` plugin renders Pandoc-style definition lists as HTML `<dl>
 
 Write a term on one line, then follow it with one or more definitions prefixed by `: ` or `~ `:
 
-```markdown
+````markdown
 Apple
 : A round fruit with red or green skin.
 : Also a technology company.
@@ -30,7 +30,9 @@ Multiple terms can share definitions:
 HTTP
 HTTPS
 : Protocols for transferring data on the web.
-```
+````
+
+Each definition is tight or loose on its own. A definition is loose, and wraps its content in `<p>`, when a blank line comes directly before its marker or separates blocks inside it. Otherwise its paragraphs render unwrapped. A marker with nothing after it produces an empty `<dd>`.
 
 ## About
 

@@ -212,20 +212,6 @@ Register new keywords with `types`. The value is the canonical type name that ap
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkGithubAlerts, githubAlertsHastHandlers } from "@mirrordown/remd-github-alerts";
-> import "@mirrordown/remd-github-alerts/github-alerts.css";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkGithubAlerts],
->     remarkRehype: { handlers: githubAlertsHastHandlers },
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-github-alerts

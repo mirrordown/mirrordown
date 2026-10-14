@@ -62,18 +62,6 @@ Wrap a key name in double square brackets:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkKbd } from "@mirrordown/remd-kbd";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkKbd],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-kbd

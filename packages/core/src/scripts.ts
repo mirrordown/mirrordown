@@ -24,7 +24,7 @@ type Marker = keyof typeof SCRIPTS;
 const tokenType = (type: string): TokenType => type as TokenType;
 const temporary = (type: string): TokenType =>
   tokenType(`${type}SequenceTemporary`);
-const scriptOf = (tokenType: string) =>
+const scriptOf = (tokenType: string): (typeof SCRIPTS)[Marker] | undefined =>
   Object.values(SCRIPTS).find(({ type }) => temporary(type) === tokenType);
 
 // micromark-util-classify-character, inlined: 1 = whitespace, 2 = punctuation.

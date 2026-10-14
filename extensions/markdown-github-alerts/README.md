@@ -17,7 +17,7 @@ The `github-alerts` plugin converts GitHub-style alert blockquotes (`> [!NOTE]`,
 
 Write a blockquote with a `[!TYPE]` marker on the first line:
 
-```markdown
+````markdown
 > [!NOTE]
 > Useful information that users should know, even if skimming.
 
@@ -32,28 +32,28 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 
 > [!CAUTION]
 > Advises about risks or negative outcomes of certain actions.
-```
+````
 
 ### Custom titles
 
-Override the default title by adding text after the type marker:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
 
-```markdown
-> [!NOTE] Custom Title
+````markdown
+> [!NOTE] Custom *Title*
 > This alert uses a custom title instead of the default.
-```
+````
 
 ### Foldable alerts
 
 Use `+` to make an alert open by default, or `-` to make it collapsed by default:
 
-```markdown
+````markdown
 > [!TIP]+
 > This tip is open by default.
 
 > [!WARNING]-
 > This warning is collapsed by default.
-```
+````
 
 ## Styling
 

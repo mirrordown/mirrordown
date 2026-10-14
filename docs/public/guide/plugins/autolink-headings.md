@@ -77,19 +77,6 @@ There is no special syntax — just write headings. Hover one to reveal its link
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { rehypeSlug } from "@mirrordown/remd-slug";
-> import { rehypeAutolinkHeadings } from "@mirrordown/remd-autolink-headings";
->
-> export default defineConfig({
->   markdown: {
->     rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-autolink-headings

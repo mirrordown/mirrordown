@@ -16,12 +16,12 @@ The `abbr` plugin lets you define abbreviations once and automatically wraps eve
 
 Define abbreviations anywhere in the document using the `*[ABBR]: Full text` syntax. Definitions are removed from the output and all matching words are wrapped automatically.
 
-```markdown
-_[HTML]: HyperText Markup Language
-_[CSS]: Cascading Style Sheets
+````markdown
+*[HTML]: HyperText Markup Language
+*[CSS]: Cascading Style Sheets
 
 Write HTML and CSS as normal — they are automatically expanded with tooltips.
-```
+````
 
 ## Install
 
@@ -47,8 +47,8 @@ import { abbr } from "@mirrordown/mdit-abbr";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(abbr)
-  }
+    config: (md) => md.use(abbr),
+  },
 });
 ```
 

@@ -16,11 +16,11 @@ The `kbd` plugin renders `[[key]]` as an HTML `<kbd>` element, representing keyb
 
 Wrap a key name in double square brackets:
 
-```markdown
+````markdown
 Press [[Enter]] to confirm.
 
 You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
-```
+````
 
 ## Install
 
@@ -53,22 +53,8 @@ import { remarkKbd } from "@mirrordown/remd-kbd";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkKbd]
-  }
-});
-```
-
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkKbd } from "@mirrordown/remd-kbd";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkKbd]
-  }
+    remarkPlugins: [remarkKbd],
+  },
 });
 ```
 

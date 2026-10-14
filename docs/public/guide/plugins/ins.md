@@ -62,18 +62,6 @@ Wrap text in double plus signs to mark it as inserted:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkIns } from "@mirrordown/remd-ins";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkIns],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-ins

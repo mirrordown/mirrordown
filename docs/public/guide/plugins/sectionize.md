@@ -104,18 +104,6 @@ Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { rehypeSectionize } from "@mirrordown/remd-sectionize";
->
-> export default defineConfig({
->   markdown: {
->     rehypePlugins: [rehypeSectionize],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-sectionize

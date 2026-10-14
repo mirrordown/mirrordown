@@ -64,18 +64,6 @@ Define abbreviations anywhere in the document using the `*[ABBR]: Full text` syn
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkAbbr } from "@mirrordown/remd-abbr";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkAbbr],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-abbr
