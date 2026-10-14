@@ -1,6 +1,7 @@
 ---
 "@mirrordown/mdit-inline-svg": minor
 "@mirrordown/remd-inline-svg": minor
+"markdown-inline-svg": minor
 "markdown-preview-extended-syntax": patch
 ---
 
