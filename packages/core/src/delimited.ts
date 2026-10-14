@@ -1,44 +1,14 @@
-import { escapedIndices, maskEscaped, unmaskEscaped } from "./escapes.js";
 import type { PhrasingLike } from "./github-alerts/index.js";
+import {
+  createSpanTransform,
+  type SpanNodes,
+  type SpanTransform
+} from "./spans.js";
 
 // The scan behind `==mark==`, `++ins++` and `--del--`, shared by the remark and Sätteri plugins. It ports markdown-it's delimiter algorithm (the one markdown-it-mark and markdown-it-ins use), so all three engines pair delimiters the same way: runs of the marker split into two-character delimiters that open or close by emphasis-style flanking, each closer pairs with the nearest open opener, pairs nest, and the odd marker of an odd-length run stays outside the tag. It works on one parent's children: text is scanned, other nodes are opaque. It is pure; remark runs it on mutable nodes, Sätteri on read-only ones (it builds new nodes and reuses the rest).
 
 /** A marker whose doubled form delimits a span: `==`, `++` or `--`. */
 export type DelimiterMarker = `=` | `+` | `-`;
-
-/** How a delimited span becomes nodes. */
-export interface DelimitedNodes<N extends PhrasingLike> {
-  /** A text node with the given value. */
-  text: (value: string) => N;
-  /** The node a span's content is wrapped in (e.g. an mdast `mark`). */
-  wrap: (children: N[]) => N;
-}
-
-/** Transform a parent's children, and report which nodes it created. */
-export interface DelimitedTransform<N extends PhrasingLike> {
-  /** Pair the delimiters among `children`, the children of a node of type `parentType`. Returns `children` itself when nothing pairs. */
-  (children: readonly N[], parentType?: string): readonly N[];
-  /** Whether `node` was built by this transform (a wrapper or a text node). */
-  built: (node: object) => boolean;
-  /**
-   * The transform for engines whose text values have escapes resolved and whose nodes are read-only, such as Sätteri: escaped markers are masked by aligning each positioned text node with `source`, using copies, and restored in the result. Returns the new children, or `undefined` when nothing pairs.
-   */
-  withSource: (
-    children: ReadonlyArray<N & Positioned>,
-    parentType: string,
-    source: string
-  ) => N[] | undefined;
-}
-
-/** A node's source range, as unist positions carry it. */
-export interface Positioned {
-  position?:
-    | {
-        start: { offset?: number | undefined };
-        end: { offset?: number | undefined };
-      }
-    | undefined;
-}
 
 // What markdown-it sees beside a run at the edge of a text node: inside an inline parent, that parent's own delimiter (`*`, `[`, `~`…), which is punctuation; at the edge of a block's inline content, the space markdown-it assumes there.
 const INLINE_PARENTS = new Set([
@@ -56,7 +26,8 @@ const INLINE_PARENTS = new Set([
 type CharClass = `space` | `punct` | `other`;
 
 // markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S).
-const WHITESPACE = /^[\t\n\v\f\r    -   　]$/u;
+const WHITESPACE =
+  /^[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]$/u;
 const PUNCTUATION = /^[\p{P}\p{S}]$/u;
 const classify = (char: string): CharClass =>
   WHITESPACE.test(char) ? `space` : PUNCTUATION.test(char) ? `punct` : `other`;
@@ -117,13 +88,9 @@ const balancePairs = (delimiters: Delimiter[]): void => {
 /** Build the delimiter scan for one marker: `=` (mark), `+` (ins) or `-` (del). */
 export const createDelimitedTransform = <N extends PhrasingLike>(
   marker: DelimiterMarker,
-  nodes: DelimitedNodes<N>
-): DelimitedTransform<N> => {
-  const built = new WeakSet<object>();
-  // Each wrapper's content, kept typed for restoring masked escapes.
-  const contents = new WeakMap<object, N[]>();
-
-  const transform = (children: readonly N[], parentType = ``): readonly N[] => {
+  nodes: SpanNodes<N>
+): SpanTransform<N> =>
+  createSpanTransform(nodes, (children, parentType, { text, wrap }) => {
     const edge: CharClass = INLINE_PARENTS.has(parentType) ? `punct` : `space`;
     // The character class beside a text node, from its sibling: a break is a line ending; any other node ends in its own delimiter or markup.
     const beside = (
@@ -228,9 +195,7 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
     };
     const flushText = (): void => {
       if (!buffer) return;
-      const node = nodes.text(buffer);
-      built.add(node);
-      append(node);
+      append(text(buffer));
       buffer = ``;
     };
     for (const item of items) {
@@ -246,57 +211,9 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
         stack.push([]);
       } else {
         flushText();
-        const content = stack.pop() ?? [];
-        const wrapper = nodes.wrap(content);
-        built.add(wrapper);
-        contents.set(wrapper, content);
-        append(wrapper);
+        append(wrap(stack.pop() ?? []));
       }
     }
     flushText();
     return root;
-  };
-
-  const restore = (nodes: readonly N[]): void => {
-    for (const node of nodes) {
-      if (!built.has(node)) continue;
-      if (node.type === `text` && node.value !== undefined) {
-        node.value = unmaskEscaped(node.value);
-      } else {
-        restore(contents.get(node) ?? []);
-      }
-    }
-  };
-
-  const withSource = (
-    children: ReadonlyArray<N & Positioned>,
-    parentType: string,
-    source: string
-  ): N[] | undefined => {
-    const masked = children.map((node): N => {
-      const start = node.position?.start.offset;
-      const end = node.position?.end.offset;
-      if (
-        node.type !== `text` ||
-        node.value === undefined ||
-        start === undefined ||
-        end === undefined
-      )
-        return node;
-      const escaped = escapedIndices(node.value, source, start, end);
-      if (escaped.size === 0) return node;
-      const copy = nodes.text(maskEscaped(node.value, escaped));
-      built.add(copy);
-      return copy;
-    });
-    const next = transform(masked, parentType);
-    if (next === masked) return undefined;
-    restore(next);
-    return [...next];
-  };
-
-  return Object.assign(transform, {
-    built: (node: object) => built.has(node),
-    withSource
   });
-};

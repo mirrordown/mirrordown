@@ -18,11 +18,11 @@ export {
   type AlertType,
   type PhrasingLike
 } from "./github-alerts/index.js";
+export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
+export { createKbdTransform } from "./kbd.js";
 export {
-  createDelimitedTransform,
-  type DelimitedNodes,
-  type DelimitedTransform,
-  type DelimiterMarker,
-  type Positioned
-} from "./delimited.js";
+  type Positioned,
+  type SpanNodes,
+  type SpanTransform
+} from "./spans.js";
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
