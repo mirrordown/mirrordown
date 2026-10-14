@@ -10,27 +10,42 @@ import {
   rehypeInlineSvg,
   type Options
 } from "../../packages/remd-inline-svg/src";
-import { parseCases } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
-const cases = parseCases(read("fixtures/inline-svg.md"));
+const cases = parseFixture(
+  read("fixtures/inline-svg.md"),
+  read("expected/inline-svg.html")
+);
+const dedupCases = parseFixture(
+  read("fixtures/inline-svg-deduplication.md"),
+  read("expected/inline-svg-deduplication.html")
+);
 
 const process = async (markdown: string, options?: Partial<Options>) => {
   const file = await unified()
     .use(remarkParse)
     .use(remarkRehype)
     .use(rehypeInlineSvg, options)
-    .use(rehypeStringify)
+    .use(rehypeStringify, { allowDangerousHtml: true })
     .process({ value: markdown, path: fileURLToPath(import.meta.url) });
   return String(file);
 };
 
-// Tier 1: named cases — default options, snapshot output
+// Tier 1: named cases, shared with mdit
 describe("inline-svg (rehype)", () => {
-  it.each(cases)("inline-svg (rehype): $name", async ({ input }) => {
-    await expect(process(input)).resolves.toMatchSnapshot();
+  it.each(cases)("inline-svg (rehype): $name", async ({ input, expected }) => {
+    expect(normalizeHtml(await process(input))).toBe(expected);
   });
+
+  it.each(dedupCases)(
+    "inline-svg (rehype, deduplication): $name",
+    async ({ input, expected }) => {
+      const html = await process(input, { deduplication: true });
+      expect(normalizeHtml(html)).toBe(expected);
+    }
+  );
 });
 
 // Tier 2: options behavior

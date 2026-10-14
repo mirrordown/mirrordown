@@ -1,143 +1,100 @@
-// hast/svg cross-type bridging in buildSpriteContainer cannot be expressed through Element's strict types.
-/* oxlint-disable typescript/no-unsafe-type-assertion */
-import { unified, type Processor } from "unified";
-import rehypeParse from "rehype-parse";
-import type { Root, Element } from "hast";
-import type { Parent } from "unist";
-import { VFile } from "vfile";
 import type { SvgCache } from "./cache.js";
-import {
-  type GroupedImageNodes,
-  type SvgNode,
-  isSvgNode
-} from "./image-node.js";
+import type { GroupedImageNodes, ImageNode } from "./image-node.js";
 import { hash } from "./hash.js";
 import type { Options } from "./options.js";
 
-const parseSVG = (
-  filePath: string,
-  svgCache: SvgCache,
-  processor: Processor<Root>
-): SvgNode => {
-  const file = new VFile({ value: svgCache.get(filePath), path: filePath });
-  const rootNode = processor.parse(file) as Parent;
+// The SVG is emitted verbatim as a `raw` node rather than parsed into hast, so
+// its markup reaches the HTML byte-for-byte (as in mdit-inline-svg) instead of
+// being re-serialized. Later rehype plugins therefore see an opaque string, not
+// an element tree, and rehype-stringify needs `allowDangerousHtml: true`.
 
-  for (const child of rootNode.children) {
-    if (isSvgNode(child)) {
-      return child;
-    }
-  }
+const extractSvgParts = (
+  content: string
+): { viewBox: string; width: string; height: string; inner: string } => {
+  const openTag = /<svg([^>]*?)>/i.exec(content)?.[1] ?? ``;
+  return {
+    viewBox: /viewBox="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
+    width: /\bwidth="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
+    height: /\bheight="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
+    inner: /<svg[^>]*>([\s\S]*?)<\/svg\s*>/i.exec(content)?.[1]?.trim() ?? ``
+  };
+};
 
-  throw new Error(
-    `Error parsing SVG image: ${filePath}\nUnable to find the root <svg> element.`
+const escAttr = (s: string): string =>
+  s.replace(/&/g, `&amp;`).replace(/"/g, `&quot;`);
+
+// The image's alt text is the SVG's accessible name.
+const buildFullInline = (content: string, alt: string): string => {
+  if (!alt) return content;
+  return content.replace(
+    /<svg([^>]*)>/i,
+    `<svg$1 aria-label="${escAttr(alt)}">`
   );
 };
 
-const isElement = (node: unknown, tagName: string): node is Element => {
-  if (typeof node !== "object" || node === null) return false;
-  const n = node as { type?: unknown; tagName?: unknown };
-  return n.type === "element" && n.tagName === tagName;
-};
+const buildSpriteHtml = (id: string, viewBox: string, inner: string): string =>
+  `<svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">` +
+  `<defs><symbol id="${id}" viewBox="${escAttr(viewBox)}">${inner}</symbol></defs>` +
+  `</svg>`;
 
-const getInjectionParent = (tree: Root): Parent => {
-  for (const child of tree.children) {
-    if (isElement(child, "html")) {
-      for (const htmlChild of child.children) {
-        if (isElement(htmlChild, "body")) {
-          return htmlChild;
-        }
-      }
-    }
-  }
-  return tree;
-};
-
-const buildSpriteContainer = (
-  symbols: Array<{ id: string; svgNode: SvgNode }>
-): Element => ({
-  type: `element`,
-  tagName: `svg`,
-  properties: { ariaHidden: `true`, style: `display:none` },
-  children: [
-    {
-      type: `element`,
-      tagName: `defs`,
-      properties: {},
-      children: symbols.map(({ id, svgNode }) => ({
-        type: `element`,
-        tagName: `symbol`,
-        properties: { id, viewBox: svgNode.properties?.viewBox as string },
-        children: (svgNode.children ?? []) as Element["children"]
-      }))
-    }
+const buildUseHtml = (
+  id: string,
+  viewBox: string,
+  width: string,
+  height: string,
+  alt: string
+): string => {
+  const attrs = [
+    viewBox && `viewBox="${escAttr(viewBox)}"`,
+    width && `width="${escAttr(width)}"`,
+    height && `height="${escAttr(height)}"`,
+    alt && `aria-label="${escAttr(alt)}"`
   ]
-});
+    .filter(Boolean)
+    .join(` `);
+  return `<svg ${attrs}><use href="#${id}"></use></svg>`;
+};
 
-// The <img>'s attributes carried onto the <svg>. `alt` is not an SVG
-// attribute: its text becomes the accessible name (aria-label), as in
-// mdit-inline-svg, and an empty alt adds nothing.
-const imgAttributes = (
-  img: Record<string, unknown>
-): Record<string, unknown> => {
-  const { src: _src, alt, ...rest } = img;
-  return typeof alt === "string" && alt ? { ...rest, ariaLabel: alt } : rest;
+const altOf = (img: ImageNode): string =>
+  typeof img.properties.alt === `string` ? img.properties.alt : ``;
+
+// Turn the <img> element into a raw node in place, keeping its position.
+const toRaw = (img: ImageNode, value: string): void => {
+  const node: {
+    type: string;
+    tagName?: string;
+    properties?: unknown;
+    children?: unknown;
+    value?: string;
+  } = img;
+  delete node.tagName;
+  delete node.properties;
+  delete node.children;
+  node.type = `raw`;
+  node.value = value;
 };
 
 export const imgToSVG = (
   groupedNodes: GroupedImageNodes,
   svgCache: SvgCache,
-  tree: Root,
   options: Options
 ): void => {
-  const processor = unified().use(rehypeParse, {
-    fragment: true,
-    space: `svg`
-  });
-  const spriteSymbols: Array<{ id: string; svgNode: SvgNode }> = [];
-
   for (const [filePath, imgNodes] of groupedNodes) {
-    const svgNode = parseSVG(filePath, svgCache, processor);
-    const useDedup = options.deduplication && imgNodes.length > 1;
+    const content = svgCache.get(filePath)!;
 
-    if (useDedup) {
-      const spriteId = `svg-sprite-${hash(filePath)}`;
-      spriteSymbols.push({ id: spriteId, svgNode });
-
-      for (const imgNode of imgNodes) {
-        const svgProps = { ...svgNode.properties };
-        delete svgProps.id;
-        const wrapperProps = {
-          ...svgProps,
-          ...imgAttributes(imgNode.properties)
-        };
-
-        Object.assign(imgNode, {
-          type: `element`,
-          tagName: `svg`,
-          properties: wrapperProps,
-          children: [
-            {
-              type: `element`,
-              tagName: `use`,
-              properties: { href: `#${spriteId}` },
-              children: []
-            }
-          ]
-        });
-      }
+    if (options.deduplication && imgNodes.length > 1) {
+      // The first occurrence carries the hidden sprite; every occurrence
+      // references it with <use>.
+      const { viewBox, width, height, inner } = extractSvgParts(content);
+      const id = `svg-sprite-${hash(filePath)}`;
+      const sprite = buildSpriteHtml(id, viewBox, inner);
+      imgNodes.forEach((img, i) => {
+        const use = buildUseHtml(id, viewBox, width, height, altOf(img));
+        toRaw(img, i === 0 ? sprite + use : use);
+      });
     } else {
-      for (const imgNode of imgNodes) {
-        const properties = {
-          ...svgNode.properties,
-          ...imgAttributes(imgNode.properties)
-        };
-        Object.assign(imgNode, svgNode, { properties });
-      }
+      for (const img of imgNodes)
+        toRaw(img, buildFullInline(content, altOf(img)));
     }
-  }
-
-  if (spriteSymbols.length > 0) {
-    const injectionParent = getInjectionParent(tree);
-    injectionParent.children.unshift(buildSpriteContainer(spriteSymbols));
   }
 };

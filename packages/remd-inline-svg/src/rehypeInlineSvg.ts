@@ -98,7 +98,7 @@ export const rehypeInlineSvg = (
     let groupedNodes = groupSvgNodes(imgNodes, file);
     await svgCache.read(groupedNodes, options.optimize);
     groupedNodes = filterSvgNodes(groupedNodes, svgCache, options);
-    imgToSVG(groupedNodes, svgCache, tree, options);
+    imgToSVG(groupedNodes, svgCache, options);
 
     if (svgCache.hits !== hits || svgCache.misses !== misses) {
       hits = svgCache.hits;

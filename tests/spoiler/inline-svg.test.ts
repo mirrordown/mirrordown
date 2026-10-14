@@ -26,7 +26,7 @@ const remd = async (src: string) =>
         .use(remarkSpoiler)
         .use(remarkRehype, { handlers: spoilerHastHandlers })
         .use(rehypeInlineSvg)
-        .use(rehypeStringify)
+        .use(rehypeStringify, { allowDangerousHtml: true })
         .process({ value: src, path: fileURLToPath(import.meta.url) })
     )
   );

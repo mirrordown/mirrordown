@@ -21,7 +21,7 @@ const remd = async (src: string) => {
     .use(remarkAttrs)
     .use(remarkRehype)
     .use(rehypeInlineSvg)
-    .use(rehypeStringify)
+    .use(rehypeStringify, { allowDangerousHtml: true })
     .process({ value: src, path: fileURLToPath(import.meta.url) });
   return normalizeHtml(String(file));
 };
