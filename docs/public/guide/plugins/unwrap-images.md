@@ -75,18 +75,6 @@ Any image that stands alone on a paragraph — with no other text or inline cont
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
->
-> export default defineConfig({
->   markdown: {
->     rehypePlugins: [rehypeUnwrapImages],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-unwrap-images

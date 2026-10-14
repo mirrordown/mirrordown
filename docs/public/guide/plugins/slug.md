@@ -79,18 +79,6 @@ The three headings above become `id="a-simple-heading"`, `id="café--crème"`, a
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { rehypeSlug } from "@mirrordown/remd-slug";
->
-> export default defineConfig({
->   markdown: {
->     rehypePlugins: [rehypeSlug],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-slug

@@ -141,20 +141,6 @@ Use `@@` to nest steps inside a parent step:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
-> import "@mirrordown/remd-steps/steps.css";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkSteps],
->     remarkRehype: { handlers: stepsHastHandlers },
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-steps

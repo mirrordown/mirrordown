@@ -151,20 +151,6 @@ Text spoilers work everywhere (checkbox + sibling selector). Image spoilers use 
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkSpoiler, spoilerHastHandlers } from "@mirrordown/remd-spoiler";
-> import "@mirrordown/remd-spoiler/spoiler.css";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkSpoiler],
->     remarkRehype: { handlers: spoilerHastHandlers },
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-spoiler

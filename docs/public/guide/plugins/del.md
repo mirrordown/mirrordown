@@ -63,18 +63,6 @@ Wrap text in double dashes to mark it as deleted:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkDel } from "@mirrordown/remd-del";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkDel],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-del

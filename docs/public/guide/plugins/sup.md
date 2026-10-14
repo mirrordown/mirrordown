@@ -73,18 +73,6 @@ The content is inline markup, like emphasis: it can hold spaces, other formattin
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkSup } from "@mirrordown/remd-sup";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkSup],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-sup

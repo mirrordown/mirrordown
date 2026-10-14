@@ -71,18 +71,6 @@ Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkRuby } from "@mirrordown/remd-ruby";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkRuby],
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-ruby

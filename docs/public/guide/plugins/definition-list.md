@@ -88,19 +88,6 @@ Each definition is tight or loose on its own. A definition is loose, and wraps i
 >   },
 > });
 > ```
-%% VitePress
-> ```ts
-> // .vitepress/config.ts
-> import { defineConfig } from "vitepress";
-> import { remarkDefinitionList, defListHastHandlers } from "@mirrordown/remd-definition-list";
->
-> export default defineConfig({
->   markdown: {
->     remarkPlugins: [remarkDefinitionList],
->     remarkRehype: { handlers: defListHastHandlers },
->   },
-> });
-> ```
 % Markdown-It
 > ```sh
 > npm install @mirrordown/mdit-definition-list
