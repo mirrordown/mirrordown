@@ -1357,6 +1357,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-github-alerts@workspace:packages/mdit-github-alerts"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
   peerDependencies:
@@ -1609,6 +1610,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-github-alerts@workspace:packages/remd-github-alerts"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"

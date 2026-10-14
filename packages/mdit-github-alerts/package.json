@@ -8,7 +8,6 @@
     "type": "git",
     "url": "git+https://github.com/mirrordown/mirrordown.git"
   },
-  "style": "./dist/github-alerts.css",
   "files": [
     "dist"
   ],
@@ -23,6 +22,9 @@
       "development": "./src/github-alerts.css",
       "default": "./dist/github-alerts.css"
     }
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
   },
   "devDependencies": {
     "@types/markdown-it": "catalog:",
@@ -41,5 +43,6 @@
       "node ../../scripts/jsr-resolve-deps.mjs",
       "node ../../scripts/jsr-publish.mjs"
     ]
-  }
+  },
+  "style": "./dist/github-alerts.css"
 }

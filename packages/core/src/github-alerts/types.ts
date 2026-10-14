@@ -70,7 +70,7 @@ export const DEFAULT_TITLE: Record<AlertType, string> = {
   quote: "Quote"
 };
 
-/** Options for the {@link remarkGithubAlerts} plugin. */
+/** Options shared by the GitHub alerts plugins for every engine. */
 export interface AlertOptions {
   /**
    * Extra alert types beyond the built-in set. Keys are lowercase keywords

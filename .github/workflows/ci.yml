@@ -18,6 +18,11 @@ jobs:
           node-version: "24"
           cache: true
 
+      # The type-aware linter resolves workspace packages through their built
+      # `types` export, not tsconfig's `development` condition, so packages that
+      # other packages import must be built before checking.
+      - run: vp run --filter @mirrordown/core build
+
       - run: vp check
       # Runs the node "unit" project only — the browser-mode VRT project is
       # opt-in via VITEST_VRT (see vite.config.ts) and runs in its own workflow.
