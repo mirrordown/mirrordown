@@ -41,6 +41,21 @@ yarn add @mirrordown/remd-ruby @mirrordown/remd-sub @mirrordown/remd-sup
 yarn add @mirrordown/remd-unwrap-images
 ```
 
+To use the whole suite, install a preset instead: [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark) or [`@mirrordown/preset-markdown-it`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-markdown-it) turns every feature on, and any of them off with `false`:
+
+```ts
+// astro.config.ts
+import { defineConfig } from "astro/config";
+import { unified } from "@astrojs/markdown-remark";
+import { mirrordown } from "@mirrordown/preset-remark";
+
+export default defineConfig({
+  markdown: {
+    processor: unified(mirrordown({ lightbox: false })),
+  },
+});
+```
+
 ## Basic Setup (Astro)
 
 Add the plugins to your `astro.config.ts`:

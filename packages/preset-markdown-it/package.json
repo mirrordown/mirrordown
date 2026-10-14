@@ -1,0 +1,66 @@
+{
+  "name": "@mirrordown/preset-markdown-it",
+  "description": "The full Mirrordown suite for markdown-it in one plugin.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./styles": {
+      "development": "./src/styles.css",
+      "default": "./dist/styles.css"
+    }
+  },
+  "dependencies": {
+    "@mirrordown/mdit-abbr": "workspace:^",
+    "@mirrordown/mdit-attrs": "workspace:^",
+    "@mirrordown/mdit-autolink-headings": "workspace:^",
+    "@mirrordown/mdit-definition-list": "workspace:^",
+    "@mirrordown/mdit-del": "workspace:^",
+    "@mirrordown/mdit-github-alerts": "workspace:^",
+    "@mirrordown/mdit-ins": "workspace:^",
+    "@mirrordown/mdit-kbd": "workspace:^",
+    "@mirrordown/mdit-lightbox": "workspace:^",
+    "@mirrordown/mdit-mark": "workspace:^",
+    "@mirrordown/mdit-ruby": "workspace:^",
+    "@mirrordown/mdit-sectionize": "workspace:^",
+    "@mirrordown/mdit-slug": "workspace:^",
+    "@mirrordown/mdit-spoiler": "workspace:^",
+    "@mirrordown/mdit-squeeze-paragraphs": "workspace:^",
+    "@mirrordown/mdit-steps": "workspace:^",
+    "@mirrordown/mdit-sub": "workspace:^",
+    "@mirrordown/mdit-sup": "workspace:^",
+    "@mirrordown/mdit-tabs": "workspace:^",
+    "@mirrordown/mdit-unwrap-images": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "catalog:",
+    "markdown-it": "catalog:"
+  },
+  "peerDependencies": {
+    "markdown-it": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}
