@@ -53,3 +53,11 @@ Before {word|read} after.
 <!-- @case: no pipe - not matched -->
 
 {no pipe here}
+
+<!-- @case: ruby in image alt text stays verbatim -->
+
+![{word|reading}](./image.png)
+
+<!-- @case: ruby inside longer image alt text -->
+
+![before {a|b} after](./image.png)
