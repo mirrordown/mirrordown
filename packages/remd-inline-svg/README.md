@@ -35,8 +35,17 @@ const processor = unified()
   .use(remarkParse)
   .use(remarkRehype)
   .use(rehypeInlineSvg, { optimize: true })
-  .use(rehypeStringify);
+  .use(rehypeStringify, { allowDangerousHtml: true });
 ```
+
+`allowDangerousHtml: true` is required: the SVG is inserted as raw HTML (see [Output](#output)), which `rehype-stringify` drops otherwise.
+
+### Output
+
+The SVG file's markup is inserted verbatim as a `raw` node, with the image's alt text added as the `<svg>`'s `aria-label`. It is not parsed into hast elements, so:
+
+- Later rehype plugins see an opaque string, not an element tree. Plugins that transform elements (adding classes, rewriting attributes, minifying) will not reach inside the inlined SVG; optimize the markup with the `optimize` option instead.
+- The output is byte-for-byte the same as [`@mirrordown/mdit-inline-svg`](https://www.npmjs.com/package/@mirrordown/mdit-inline-svg), so the same document renders identically with either engine.
 
 ### Options
 

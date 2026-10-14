@@ -3,11 +3,19 @@ import { join } from "node:path";
 import { expect, it, describe } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { inlineSvg, type Options } from "../../packages/mdit-inline-svg/src";
-import { parseCases } from "../utils/index.js";
+import { hash } from "../../packages/mdit-inline-svg/src/hash";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
-const cases = parseCases(read("fixtures/inline-svg.md"));
+const cases = parseFixture(
+  read("fixtures/inline-svg.md"),
+  read("expected/inline-svg.html")
+);
+const dedupCases = parseFixture(
+  read("fixtures/inline-svg-deduplication.md"),
+  read("expected/inline-svg-deduplication.html")
+);
 
 const defaultMd = new MarkdownIt().use(inlineSvg);
 
@@ -16,11 +24,19 @@ const withOptions = (options: Partial<Options>) =>
 
 const env = { currentDocument: import.meta.url };
 
-// Tier 1: named cases — default options, snapshot output
+// Tier 1: named cases, shared with remd
 describe("inline-svg (markdown-it)", () => {
-  it.each(cases)("inline-svg (markdown-it): $name", ({ input }) => {
-    expect(defaultMd.render(input, env)).toMatchSnapshot();
+  it.each(cases)("inline-svg (markdown-it): $name", ({ input, expected }) => {
+    expect(normalizeHtml(defaultMd.render(input, env))).toBe(expected);
   });
+
+  it.each(dedupCases)(
+    "inline-svg (markdown-it, deduplication): $name",
+    ({ input, expected }) => {
+      const md = withOptions({ deduplication: true });
+      expect(normalizeHtml(md.render(input, env))).toBe(expected);
+    }
+  );
 });
 
 // Tier 2: options behavior
@@ -123,6 +139,18 @@ describe("inline-svg (markdown-it) cacheEfficiency", () => {
 });
 
 describe("inline-svg (markdown-it) deduplication", () => {
+  // Ids end up in published HTML, so they must not depend on where the
+  // project lives: they hash the SVG's path relative to the document.
+  it("sprite id derives from the document-relative path", () => {
+    const result = withOptions({ deduplication: true }).render(
+      `![](./fixtures/flower.svg)
+
+![](./fixtures/flower.svg)`,
+      env
+    );
+    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+  });
+
   it("uses sprite + use for repeated SVG", () => {
     const input = `![icon](./fixtures/flower.svg)\n\n![icon](./fixtures/flower.svg)`;
     const result = withOptions({ deduplication: true }).render(input, env);

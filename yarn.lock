@@ -1547,7 +1547,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-inline-svg@workspace:packages/remd-inline-svg"
   dependencies:
-    rehype-parse: "npm:^9.0.1"
     svgo: "catalog:"
     unified: "catalog:"
     vfile: "npm:^6.0.3"
@@ -7428,7 +7427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rehype-parse@npm:^9.0.0, rehype-parse@npm:^9.0.1":
+"rehype-parse@npm:^9.0.0":
   version: 9.0.1
   resolution: "rehype-parse@npm:9.0.1"
   dependencies:

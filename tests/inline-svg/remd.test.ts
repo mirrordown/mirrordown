@@ -10,27 +10,43 @@ import {
   rehypeInlineSvg,
   type Options
 } from "../../packages/remd-inline-svg/src";
-import { parseCases } from "../utils/index.js";
+import { hash } from "../../packages/remd-inline-svg/src/hash";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
-const cases = parseCases(read("fixtures/inline-svg.md"));
+const cases = parseFixture(
+  read("fixtures/inline-svg.md"),
+  read("expected/inline-svg.html")
+);
+const dedupCases = parseFixture(
+  read("fixtures/inline-svg-deduplication.md"),
+  read("expected/inline-svg-deduplication.html")
+);
 
 const process = async (markdown: string, options?: Partial<Options>) => {
   const file = await unified()
     .use(remarkParse)
     .use(remarkRehype)
     .use(rehypeInlineSvg, options)
-    .use(rehypeStringify)
+    .use(rehypeStringify, { allowDangerousHtml: true })
     .process({ value: markdown, path: fileURLToPath(import.meta.url) });
   return String(file);
 };
 
-// Tier 1: named cases — default options, snapshot output
+// Tier 1: named cases, shared with mdit
 describe("inline-svg (rehype)", () => {
-  it.each(cases)("inline-svg (rehype): $name", async ({ input }) => {
-    await expect(process(input)).resolves.toMatchSnapshot();
+  it.each(cases)("inline-svg (rehype): $name", async ({ input, expected }) => {
+    expect(normalizeHtml(await process(input))).toBe(expected);
   });
+
+  it.each(dedupCases)(
+    "inline-svg (rehype, deduplication): $name",
+    async ({ input, expected }) => {
+      const html = await process(input, { deduplication: true });
+      expect(normalizeHtml(html)).toBe(expected);
+    }
+  );
 });
 
 // Tier 2: options behavior
@@ -127,6 +143,18 @@ describe("inline-svg (rehype) cacheEfficiency", () => {
 });
 
 describe("inline-svg (rehype) deduplication", () => {
+  // Ids end up in published HTML, so they must not depend on where the
+  // project lives: they hash the SVG's path relative to the document.
+  it("sprite id derives from the document-relative path", async () => {
+    const result = await process(
+      `![](./fixtures/flower.svg)
+
+![](./fixtures/flower.svg)`,
+      { deduplication: true }
+    );
+    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+  });
+
   it("uses sprite + use for repeated SVG", async () => {
     const input = `![icon](./fixtures/flower.svg)\n\n![icon](./fixtures/flower.svg)`;
     const result = await process(input, { deduplication: true });

@@ -664,8 +664,6 @@ jobs:
   rename if a conflicting extension already exists. Safe to proceed with this name during
   development — only matters at first publish time.
 - **`markdown-superscript` name conflict:** Same check required.
-- **`inline-svg` behavior skew:** Known skew between `remd-inline-svg` and
-  `mdit-inline-svg`. Document as tracked issues; resolve after initial migration.
 
 ---
 
