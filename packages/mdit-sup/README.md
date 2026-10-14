@@ -16,19 +16,19 @@ The `sup` plugin renders `^text^` as an HTML `<sup>` element, representing super
 
 Wrap text in single carets to render it as superscript:
 
-```markdown
+````markdown
 E = mc^2^
 
 The Pythagorean theorem: a^2^ + b^2^ = c^2^
-```
+````
 
 ### Formatting inside
 
 The content is inline markup, like emphasis: it can hold spaces, other formatting and subscript, but can't start or end with a space.
 
-```markdown
+````markdown
 e^x~0~^ and the ^*n*th power^
-```
+````
 
 ## Install
 
@@ -54,8 +54,8 @@ import { sup } from "@mirrordown/mdit-sup";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(sup)
-  }
+    config: (md) => md.use(sup),
+  },
 });
 ```
 

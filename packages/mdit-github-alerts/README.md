@@ -19,7 +19,7 @@ The `github-alerts` plugin converts GitHub-style alert blockquotes (`> [!NOTE]`,
 
 Write a blockquote with a `[!TYPE]` marker on the first line:
 
-```markdown
+````markdown
 > [!NOTE]
 > Useful information that users should know, even if skimming.
 
@@ -34,28 +34,28 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 
 > [!CAUTION]
 > Advises about risks or negative outcomes of certain actions.
-```
+````
 
 ### Custom titles
 
-Override the default title by adding text after the type marker:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
 
-```markdown
-> [!NOTE] Custom Title
+````markdown
+> [!NOTE] Custom *Title*
 > This alert uses a custom title instead of the default.
-```
+````
 
 ### Foldable alerts
 
 Use `+` to make an alert open by default, or `-` to make it collapsed by default:
 
-```markdown
+````markdown
 > [!TIP]+
 > This tip is open by default.
 
 > [!WARNING]-
 > This warning is collapsed by default.
-```
+````
 
 ## Configuration
 
@@ -65,29 +65,29 @@ All options are passed when registering the plugin.
 
 Set `icons: false` to suppress the SVG icon from every alert title:
 
-```markdown
+````markdown
 > [!NOTE]
 > This note has no icon.
 
 > [!WARNING]
 > This warning has no icon.
-```
+````
 
 ```ts
-md.use(githubAlerts, { icons: false });
+md.use(githubAlerts, { icons: false })
 ```
 
 ### Override default titles
 
 Supply a `titles` map to replace the default heading text for any built-in type:
 
-```markdown
+````markdown
 > [!TIP]
 > This is a pro tip.
-```
+````
 
 ```ts
-md.use(githubAlerts, { titles: { tip: "Pro tip" } });
+md.use(githubAlerts, { titles: { tip: "Pro tip" } })
 ```
 
 ### Add custom alert types
@@ -97,10 +97,9 @@ Register new keywords with `types`. The value is the canonical type name that ap
 ```ts
 md.use(githubAlerts, {
   types: { release: "release", changelog: "release" },
-  titles: { release: "Release notes" }
-});
+  titles: { release: "Release notes" },
+})
 ```
-
 ```css
 [data-alert="release"] {
   --markdown-alert-color: oklch(0.55 0.18 300);
@@ -133,8 +132,8 @@ import "@mirrordown/mdit-github-alerts/github-alerts.css";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(githubAlerts)
-  }
+    config: (md) => md.use(githubAlerts),
+  },
 });
 ```
 

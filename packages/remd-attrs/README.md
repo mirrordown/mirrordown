@@ -22,9 +22,9 @@ Attributes are written in curly braces using CSS-like shorthand:
 
 ### Headings
 
-```markdown
+````markdown
 ## My Section {#my-section .highlight}
-```
+````
 
 ### Code fences
 
@@ -36,24 +36,24 @@ const x = 1;
 
 ### Paragraphs
 
-```markdown
+````markdown
 A paragraph with a custom class.
 {.note}
-```
+````
 
 ### Inline elements
 
-```markdown
+````markdown
 This is **important**{.warning} text.
-```
+````
 
 ### After lists and tables
 
-```markdown
+````markdown
 - Item one
 - Item two
-  {.checklist}
-```
+{.checklist}
+````
 
 ## Install
 
@@ -86,22 +86,8 @@ import { remarkAttrs } from "@mirrordown/remd-attrs";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkAttrs]
-  }
-});
-```
-
-### VitePress
-
-```ts
-// .vitepress/config.ts
-import { defineConfig } from "vitepress";
-import { remarkAttrs } from "@mirrordown/remd-attrs";
-
-export default defineConfig({
-  markdown: {
-    remarkPlugins: [remarkAttrs]
-  }
+    remarkPlugins: [remarkAttrs],
+  },
 });
 ```
 

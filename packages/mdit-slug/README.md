@@ -9,13 +9,11 @@ A markdown-it plugin for the `slug` syntax extension.
 The `slug` plugin adds an `id` to every heading (`<h1>`–`<h6>`), derived from the heading's text content using [`github-slugger`](https://github.com/Flet/github-slugger) — the same algorithm GitHub uses. This gives every heading a stable, predictable anchor target.
 
 **Before:**
-
 ```html
 <h2>Getting Started</h2>
 ```
 
 **After:**
-
 ```html
 <h2 id="getting-started">Getting Started</h2>
 ```
@@ -26,13 +24,13 @@ Headings that already have an `id` (for example from [`attrs`](/guide/plugins/at
 
 There is no special syntax — just write headings. Each one receives an `id` based on its text:
 
-```markdown
+````markdown
 ### A Simple Heading
 
 ### Café & Crème
 
 ### A Simple Heading
-```
+````
 
 The three headings above become `id="a-simple-heading"`, `id="café--crème"`, and `id="a-simple-heading-1"` respectively.
 
@@ -63,8 +61,8 @@ import { slug } from "@mirrordown/mdit-slug";
 
 export default defineConfig({
   markdown: {
-    config: (md) => md.use(slug)
-  }
+    config: (md) => md.use(slug),
+  },
 });
 ```
 

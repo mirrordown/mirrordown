@@ -7,18 +7,13 @@ Adds shareable anchor links to headings in VSCode's markdown preview.
 The `autolink-headings` plugin adds a self-referential link to every heading that has an `id`, turning each heading into a shareable anchor. Pair it with [`slug`](/guide/plugins/slug) (or [`attrs`](/guide/plugins/attrs)) so the headings have ids to link to.
 
 **Before:**
-
 ```html
 <h2 id="getting-started">Getting Started</h2>
 ```
 
 **After:**
-
 ```html
-<h2 id="getting-started">
-  <a class="anchor" aria-hidden="true" tabindex="-1" href="#getting-started"></a
-  >Getting Started
-</h2>
+<h2 id="getting-started"><a class="anchor" aria-hidden="true" tabindex="-1" href="#getting-started"></a>Getting Started</h2>
 ```
 
 By default the link is **empty** and carries `class="anchor"`. The shipped stylesheet draws a `#` marker via a CSS `::before` pseudo-element that fades in on hover — so no extra element is emitted, and there is no JavaScript involved.
@@ -27,11 +22,11 @@ By default the link is **empty** and carries `class="anchor"`. The shipped style
 
 There is no special syntax — just write headings. Hover one to reveal its link:
 
-```markdown
+````markdown
 ### Hover Over This Heading
 
 ### And This One Too
-```
+````
 
 ## Styling
 
