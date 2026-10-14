@@ -6,7 +6,14 @@
 import { visit, SKIP } from "unist-util-visit";
 import type { Visitor } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
-import type { Root, Heading, Paragraph, ListItem, Code } from "mdast";
+import type {
+  Root,
+  Heading,
+  Paragraph,
+  ListItem,
+  Code,
+  TableCell
+} from "mdast";
 import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
 import { applyAttrs } from "./applyAttrs.js";
@@ -75,13 +82,28 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // â”€â”€ fence: code block with attrs in lang string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("fence")) {
       visit(tree, "code", (node: Code) => {
-        const lang = node.lang?.trim() ?? "";
-        if (!lang) return;
-        const range = check(lang, "end") ?? check(lang, "only");
+        // remark puts text after the language in `meta` (```js {.x}); with no
+        // language, the attrs are the whole `lang` (``` {.x}).
+        const field = node.meta?.trim() ? "meta" : "lang";
+        const value = node[field]?.trim() ?? "";
+        if (!value) return;
+        const range = check(value, "end") ?? check(value, "only");
         if (!range) return;
-        applyAttrs(node, lang, range, allowed);
-        node.lang =
-          lang.slice(0, lang.lastIndexOf(left, range[0] - 1)).trimEnd() || null;
+        applyAttrs(node, value, range, allowed);
+        node[field] =
+          value.slice(0, value.lastIndexOf(left, range[0] - 1)).trimEnd() ||
+          null;
+        // mdast-util-to-hast puts the language class in `className` before
+        // applying hProperties; merge the attr classes into it (attr classes
+        // first, as markdown-it renders them) instead of adding a second key.
+        const props = (node as AttrNode).data?.hProperties;
+        if (node.lang && typeof props?.class === "string") {
+          props.className = [
+            ...props.class.split(" "),
+            `language-${node.lang}`
+          ];
+          delete props.class;
+        }
       });
     }
 
@@ -100,9 +122,51 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
-    // â”€â”€ block: paragraph with trailing attrs on last text child â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    if (rules.has("block")) {
-      visit(tree, "paragraph", (node: Paragraph) => {
+    // list: attrs closing a list item's first paragraph. Runs before `block`,
+    // which would otherwise give them to a paragraph that a tight list hides.
+    if (rules.has("list")) {
+      visit(
+        tree,
+        "listItem",
+        (
+          node: ListItem,
+          _index: number | undefined,
+          parent: Parent | undefined
+        ) => {
+          const para = node.children[0];
+          if (para?.type !== "paragraph") return;
+          const last = para.children[para.children.length - 1];
+          if (last?.type !== "text") return;
+
+          // An attr line lazily continuing the paragraph applies to the list
+          // holding the item, as markdown-it-attrs' "list softbreak" does.
+          const lineStart = last.value.lastIndexOf("\n");
+          if (lineStart !== -1 && parent?.type === "list") {
+            const line = last.value.slice(lineStart + 1).trim();
+            const lineRange = check(line, "only");
+            if (lineRange) {
+              applyAttrs(parent, line, lineRange, allowed);
+              last.value = last.value.slice(0, lineStart).trimEnd();
+              if (last.value === "") para.children.pop();
+              return;
+            }
+          }
+
+          const content = last.value.trimEnd();
+          const range = check(content, "end");
+          if (!range) return;
+          applyAttrs(node, content, range, allowed);
+          const attrStart = content.lastIndexOf(left, range[0] - 1);
+          last.value = content.slice(0, attrStart).trimEnd();
+          if (last.value === "" && para.children.length > 1)
+            para.children.pop();
+        }
+      );
+    }
+
+    // table: attrs at the end of a cell apply to that cell (`td` or `th`).
+    if (rules.has("table")) {
+      visit(tree, "tableCell", (node: TableCell) => {
         const last = node.children[node.children.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();
@@ -128,7 +192,8 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const range = check(content, "only");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
-        children.splice(children.length - 2, 2);
+        // Keep the hard break, as markdown-it-attrs does; drop only the attrs.
+        children.pop();
       });
     }
 
@@ -157,21 +222,6 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
     // â”€â”€ list: attrs at end of list item / standalone paragraph after list â”€
     if (rules.has("list")) {
-      visit(tree, "listItem", (node: ListItem) => {
-        const firstChild = node.children[0];
-        if (firstChild?.type !== "paragraph") return;
-        const para = firstChild;
-        const last = para.children[para.children.length - 1];
-        if (last?.type !== "text") return;
-        const content = last.value.trimEnd();
-        const range = check(content, "end");
-        if (!range) return;
-        applyAttrs(node, content, range, allowed);
-        const attrStart = content.lastIndexOf(left, range[0] - 1);
-        last.value = content.slice(0, attrStart).trimEnd();
-        if (last.value === "" && para.children.length > 1) para.children.pop();
-      });
-
       visit(tree, makeSiblingAttrVisitor("list", check, allowed));
 
       // â”€â”€ custom containerItem nodes (data.attrsRole === "containerItem") â”€â”€
@@ -231,6 +281,24 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // â”€â”€ hr: standalone paragraph after thematic break containing only attrs
     if (rules.has("hr")) {
       visit(tree, makeSiblingAttrVisitor("thematicBreak", check, allowed));
+    }
+
+    // â”€â”€ block: paragraph with trailing attrs on last text child â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Runs last, as markdown-it-attrs' "end of block" does: an attr block that
+    // belongs to an inline element, a list, a table or a rule is claimed by
+    // those rules first.
+    if (rules.has("block")) {
+      visit(tree, "paragraph", (node: Paragraph) => {
+        const last = node.children[node.children.length - 1];
+        if (last?.type !== "text") return;
+        const content = last.value.trimEnd();
+        const range = check(content, "end");
+        if (!range) return;
+        applyAttrs(node, content, range, allowed);
+        const attrStart = content.lastIndexOf(left, range[0] - 1);
+        last.value = content.slice(0, attrStart).trimEnd();
+        if (last.value === "" && node.children.length > 1) node.children.pop();
+      });
     }
   };
 

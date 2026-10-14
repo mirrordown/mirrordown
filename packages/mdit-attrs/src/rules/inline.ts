@@ -5,7 +5,9 @@ import type { AttrRule } from "./types.js";
 export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
   const check = getDelimiterChecker(options.left, options.right);
 
-  // Handles self-closing inline elements: `code`, images (nesting === 0)
+  // Handles self-closing inline elements that render attributes: `code` and
+  // images. Other nesting-0 tokens (hard breaks, raw HTML) drop attributes when
+  // rendered, so they are left for the end-of-block rule, as in markdown-it-attrs.
   const selfClose: AttrRule = {
     name: "inline nesting self-close",
     tests: [{ shift: 0, type: "inline" }],
@@ -21,10 +23,9 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         const range = check(child.content, "only");
         if (!range) continue;
 
-        // The preceding sibling must be nesting === 0 but not a softbreak
         const prev = children[i - 1];
         // oxlint-disable-next-line typescript/no-unnecessary-condition
-        if (prev?.nesting !== 0 || prev.type === "softbreak") continue;
+        if (prev?.type !== "image" && prev?.type !== "code_inline") continue;
 
         addAttrs(prev, child.content, range, options.allowed);
         children.splice(i, 1);

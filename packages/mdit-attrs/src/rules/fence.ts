@@ -23,6 +23,15 @@ export const createFenceRule = (options: DelimiterConfig): AttrRule => {
       token.info = info
         .slice(0, info.lastIndexOf(options.left, range[0] - 1))
         .trimEnd();
+      // markdown-it's fence renderer appends the language class to an existing
+      // `class` attribute but otherwise adds `class` last. Reserve the slot
+      // first, so `class` leads as it does in remd (mdast-util-to-hast creates
+      // the language class before applying attributes, and a remark plugin
+      // cannot reorder it). The renderer wrapper trims the leading space.
+      if (token.info && token.attrIndex("class") < 0) {
+        token.attrs = [["class", ""], ...(token.attrs ?? [])];
+        token.meta = { ...token.meta, attrsReservedClass: true };
+      }
     }
   };
 };

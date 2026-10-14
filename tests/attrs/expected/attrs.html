@@ -1,0 +1,170 @@
+<!-- @case: fence: language with class -->
+
+<pre><code class="highlight language-js">const x = 1;
+</code></pre>
+
+<!-- @case: fence: language with id -->
+
+<pre><code class="language-python" id="code-block">print(&quot;hello&quot;)
+</code></pre>
+
+<!-- @case: fence: multiple attrs -->
+
+<pre><code class="foo language-ts" id="bar" data-lang="typescript">type T = string;
+</code></pre>
+
+<!-- @case: fence: no language with attr -->
+
+<pre><code class="plain">plain text
+</code></pre>
+
+<!-- @case: heading: h1 with class -->
+
+<h1 class="title">Hello World</h1>
+
+<!-- @case: heading: h2 with id -->
+
+<h2 id="section-2">Section Two</h2>
+
+<!-- @case: heading: multiple attrs -->
+
+<h3 class="active" id="deep" data-level="3">Deep Section</h3>
+
+<!-- @case: hr: thematic break with class -->
+
+<hr class="divider">
+
+<!-- @case: block: paragraph with trailing class -->
+
+<p class="intro">Hello world.</p>
+
+<!-- @case: block: paragraph with id -->
+
+<p id="para-id">Some text.</p>
+
+<!-- @case: softbreak: block via softbreak attr line -->
+
+<p class="softbreak-class">A paragraph with attrs</p>
+
+<!-- @case: inline: em with class -->
+
+<p><em class="em-class">emphasized</em></p>
+
+<!-- @case: inline: strong with class -->
+
+<p><strong class="bold-class">bold</strong></p>
+
+<!-- @case: inline: code span with class -->
+
+<p><code class="code-class">code</code></p>
+
+<!-- @case: inline: image with class -->
+
+<p><img src="img.png" alt="alt" class="img-class"></p>
+
+<!-- @case: list: item end attr -->
+
+<ul>
+<li class="red">item one</li>
+<li>item two</li>
+</ul>
+
+<!-- @case: list: list-level attr via softbreak -->
+
+<ul class="my-list">
+<li>alpha</li>
+<li>beta</li>
+</ul>
+
+<!-- @case: list: nested list attr -->
+
+<ul>
+<li>parent
+<ul class="inner-list">
+<li>child a</li>
+<li>child b</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: table: table-level attr -->
+
+<table class="my-table">
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: table: cell attr -->
+
+<table>
+<thead>
+<tr>
+<th>Header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-class">cell</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: fence: language with id only -->
+
+<pre><code class="language-js" id="c">x
+</code></pre>
+
+<!-- @case: list: loose item end attr -->
+
+<ul>
+<li class="red">
+<p>item one</p>
+</li>
+<li>
+<p>item two</p>
+</li>
+</ul>
+
+<!-- @case: list: ordered item end attr -->
+
+<ol>
+<li class="x">one</li>
+<li>two</li>
+</ol>
+
+<!-- @case: list: lazy attr line applies to the list -->
+
+<ul class="my-list">
+<li>a</li>
+<li>b</li>
+</ul>
+
+<!-- @case: softbreak: attr line after a hard break keeps the break -->
+
+<p class="cls">para<br>
+</p>
+
+<!-- @case: table: header cell attr -->
+
+<table>
+<thead>
+<tr>
+<th class="hc">H</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>c</td>
+</tr>
+</tbody>
+</table>
