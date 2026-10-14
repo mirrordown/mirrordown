@@ -39,5 +39,16 @@
       "node ../../scripts/jsr-resolve-deps.mjs",
       "node ../../scripts/jsr-publish.mjs"
     ]
+  },
+  "fledgling": {
+    "jsr": {
+      "runtimeCompat": {
+        "node": true,
+        "deno": true,
+        "bun": true,
+        "browser": false,
+        "workerd": false
+      }
+    }
   }
 }

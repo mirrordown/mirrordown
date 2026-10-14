@@ -17,7 +17,16 @@
     "repo": "mirrordown/mirrordown",
     "provider": "github",
     "workflow": "release.yml",
-    "permissions": "publish"
+    "permissions": "publish",
+    "jsr": {
+      "runtimeCompat": {
+        "node": true,
+        "deno": true,
+        "bun": true,
+        "browser": true,
+        "workerd": true
+      }
+    }
   },
   "devDependencies": {
     "@saeris/configs": "^1.6.1",
