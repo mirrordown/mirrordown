@@ -22,6 +22,11 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
     alt: ["paragraph", "reference"]
   });
 
+  // markdown-it renders every attribute as `name="value"`; emit the boolean
+  // `hidden` and `checked` bare, as hast does, so both engines match.
+  md.renderer.rules["tab_input"] = (tokens, idx, opts, _env, self): string =>
+    self.renderToken(tokens, idx, opts).replace(/ (hidden|checked)=""/g, " $1");
+
   function tabsRule(
     state: StateBlock,
     startLine: number,

@@ -3,17 +3,20 @@ import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { tabs } from "../../packages/mdit-tabs/src";
-import { parseCases, normalizeHtml } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
 
-const cases = parseCases(read("fixtures/tabs.md"));
+const cases = parseFixture(
+  read("fixtures/tabs.md"),
+  read("expected/tabs.html")
+);
 
 const md = new MarkdownIt().use(tabs);
 
 describe("tabs/mdit", () => {
-  it.each(cases)("tabs (markdown-it): $name", ({ input }) => {
-    expect(normalizeHtml(md.render(input))).toMatchSnapshot();
+  it.each(cases)("tabs (markdown-it): $name", ({ input, expected }) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
   });
 });
