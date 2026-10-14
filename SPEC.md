@@ -650,11 +650,10 @@ jobs:
   does not trigger other workflows due to GitHub's recursion guard).
 - `VSCE_PAT` — VS Code Marketplace personal access token.
 
-**One-time registry setup (per package, before first publish):**
+**One-time registry setup (per package, before first publish):** run [fledgling](https://github.com/dmno-dev/fledgling) locally from the repo root. Both commands are idempotent and only act on what's missing; the `fledgling` block in the root `package.json` is the source of truth for the trusted-publishing settings.
 
-- **npm:** Go to the package's settings on npmjs.com → Trusted Publishers → add this
-  repository and the `release.yml` workflow filename.
-- **JSR:** Go to the package's settings on jsr.io → Link GitHub repository.
+- **npm:** `npx fledgling add <package> --yes` (after `npm login`) claims the name with a placeholder and configures trusted publishing for this repository's `release.yml`.
+- **JSR:** `npx fledgling jsr <package> --yes`, with a full-access JSR token in `JSR_TOKEN`, claims the package, links this repository for OIDC publishing, and syncs its description and runtime compatibility. Runtime compatibility defaults to every runtime (`fledgling.jsr.runtimeCompat` in the root `package.json`); a package that imports `node:` builtins overrides it in its own `package.json` with `browser` and `workerd` set to `false`.
 
 ---
 
