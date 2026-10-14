@@ -14,7 +14,9 @@ export interface AutolinkHeadingsOptions {
 const headingId = (tokens: Token[], idx: number): string | null => {
   for (let i = idx - 1; i >= 0; i -= 1) {
     if (tokens[i]?.type === "heading_open") {
-      return tokens[i]?.attrGet("id") ?? null;
+      // An empty id (a heading with no text) has nothing to link to.
+      const id = tokens[i]?.attrGet("id");
+      return id === undefined || id === "" ? null : id;
     }
   }
   return null;
@@ -53,7 +55,7 @@ export const autolinkHeadings: PluginWithOptions<AutolinkHeadingsOptions> = (
   md.renderer.rules.heading_open = (tokens, idx, opts, env, self): string => {
     const open = defaultOpen(tokens, idx, opts, env, self);
     const id = tokens[idx]?.attrGet("id");
-    if (id === null || id === undefined) return open;
+    if (!id) return open;
     if (behavior === "prepend") return open + emptyLink(id);
     if (behavior === "wrap") return `${open}<a ${linkAttrs(id)}>`;
     if (behavior === "before") return emptyLink(id) + open;
