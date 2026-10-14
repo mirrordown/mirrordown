@@ -1601,6 +1601,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/preset-satteri@workspace:packages/preset-satteri":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/preset-satteri@workspace:packages/preset-satteri"
+  dependencies:
+    "@mirrordown/sat-github-alerts": "workspace:^"
+    "@mirrordown/sat-mark": "workspace:^"
+    "@mirrordown/sat-slug": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-abbr@workspace:^, @mirrordown/remd-abbr@workspace:packages/remd-abbr":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-abbr@workspace:packages/remd-abbr"
@@ -1899,7 +1912,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
+"@mirrordown/sat-github-alerts@workspace:^, @mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts"
   dependencies:
@@ -1910,7 +1923,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/sat-mark@workspace:packages/sat-mark":
+"@mirrordown/sat-mark@workspace:^, @mirrordown/sat-mark@workspace:packages/sat-mark":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-mark@workspace:packages/sat-mark"
   dependencies:
@@ -1921,7 +1934,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/sat-slug@workspace:packages/sat-slug":
+"@mirrordown/sat-slug@workspace:^, @mirrordown/sat-slug@workspace:packages/sat-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-slug@workspace:packages/sat-slug"
   dependencies:

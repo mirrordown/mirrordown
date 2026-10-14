@@ -12,10 +12,11 @@ Each feature is implemented as a matched set: a markdown-it plugin for server-si
 
 To use the whole suite, install one preset instead of each plugin: every feature on by default, any of them switched off with `false`.
 
-| Ecosystem       | Package                                           | Usage                                       |
-| --------------- | ------------------------------------------------- | ------------------------------------------- |
-| markdown-it     | [preset-markdown-it](packages/preset-markdown-it) | `md.use(mirrordown)`                        |
-| remark / rehype | [preset-remark](packages/preset-remark)           | `unified(mirrordown())` (Astro), or unified |
+| Ecosystem       | Package                                           | Usage                                                |
+| --------------- | ------------------------------------------------- | ---------------------------------------------------- |
+| markdown-it     | [preset-markdown-it](packages/preset-markdown-it) | `md.use(mirrordown)`                                 |
+| remark / rehype | [preset-remark](packages/preset-remark)           | `unified(mirrordown())` (Astro), or unified          |
+| Sätteri         | [preset-satteri](packages/preset-satteri)         | `satteri(mirrordown())` (Astro), or `markdownToHtml` |
 
 ### Inline elements
 

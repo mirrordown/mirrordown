@@ -7,10 +7,15 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import {
   mirrordown as markdownItPreset,
   type MirrordownOptions as MarkdownItOptions
 } from "../../packages/preset-markdown-it/src";
+import {
+  mirrordown as satteriPreset,
+  type MirrordownOptions as SatteriOptions
+} from "../../packages/preset-satteri/src";
 import {
   mirrordown as remarkPreset,
   type MirrordownOptions as RemarkOptions
@@ -32,6 +37,12 @@ const remark = (options: RemarkOptions = {}) => {
     .use(rehypeStringify);
   return (input: string): string =>
     normalizeHtml(String(processor.processSync(input)));
+};
+
+const satteri = (options: SatteriOptions = {}) => {
+  const preset = satteriPreset(options);
+  return (input: string): string =>
+    normalizeHtml(markdownToHtml(input, preset).html);
 };
 
 const engines = [
@@ -64,7 +75,11 @@ const fixtureCases = readdirSync(testsDir)
             join(testsDir, feature, "expected", file.replace(/\.md$/, ".html")),
             "utf8"
           )
-        ).map(({ name, input }) => ({ name: `${file} › ${name}`, input }))
+        ).map(({ name, input }) => ({
+          feature,
+          name: `${file} › ${name}`,
+          input
+        }))
       )
   );
 
@@ -168,6 +183,73 @@ describe("presets", () => {
         smartypants: true
       };
       expect(options.smartypants).toBe(true);
+    });
+  });
+
+  describe("preset-satteri", () => {
+    // Sätteri has these features so far; the rest arrive as their ports land.
+    const satteriFeatures = ["github-alerts", "mark", "slug", "sub", "sup"];
+    const remarkWithSatteriFeatures = remark({
+      abbr: false,
+      attrs: false,
+      autolinkHeadings: false,
+      definitionList: false,
+      del: false,
+      ins: false,
+      kbd: false,
+      lightbox: false,
+      ruby: false,
+      sectionize: false,
+      spoiler: false,
+      squeezeParagraphs: false,
+      steps: false,
+      tabs: false,
+      unwrapImages: false
+    });
+    const sat = satteri();
+    it.each(
+      fixtureCases.filter(({ feature }) => satteriFeatures.includes(feature))
+    )("renders what preset-remark does: $name", ({ input }) => {
+      expect(sat(input)).toBe(remarkWithSatteriFeatures(input));
+    });
+
+    it.each(
+      features.filter(
+        (
+          sample
+        ): sample is (typeof features)[number] & {
+          key: keyof SatteriOptions;
+        } => ["githubAlerts", "mark", "slug", "sub", "sup"].includes(sample.key)
+      )
+    )(
+      "$key is on by default and `false` turns it off",
+      ({ key, input, marker }) => {
+        expect(satteri()(input)).toContain(marker);
+        expect(satteri({ [key]: false })(input)).not.toContain(marker);
+      }
+    );
+
+    it("passes an options object to its plugin", () => {
+      expect(
+        satteri({ githubAlerts: { icons: false } })("> [!NOTE]\n> Body")
+      ).not.toContain("<svg");
+      expect(satteri({ slug: { prefix: "doc-" } })("## Sub Title")).toContain(
+        'id="doc-sub-title"'
+      );
+    });
+
+    // Hosts such as Astro turn smart punctuation on unless the features say otherwise; it would rewrite delimiters the plugins read.
+    it("keeps smart punctuation off unless asked", () => {
+      expect(satteri()('"quoted"')).toBe('<p>"quoted"</p>');
+      expect(
+        satteri({ features: { smartPunctuation: true } })('"quoted"')
+      ).toBe("<p>“quoted”</p>");
+    });
+
+    // `.html` on the result is checked by `vp check`: the preset's plugin types keep `markdownToHtml` synchronous.
+    it("keeps markdownToHtml synchronous", () => {
+      const { html } = markdownToHtml("==hi==", satteriPreset());
+      expect(html).toContain("<mark>hi</mark>");
     });
   });
 });

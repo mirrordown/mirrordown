@@ -9,6 +9,7 @@ export default defineConfig({
   },
   pack: {
     entry: "src/index.ts",
+    copy: [{ from: "src/github-alerts.css" }],
     deps: { neverBundle: ["satteri"], onlyBundle: false },
     dts: true
   }
