@@ -3,6 +3,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 /* oxlint-disable typescript/no-unnecessary-condition */
 import type { PluginWithOptions } from "markdown-it";
+import type Token from "markdown-it/lib/token.mjs";
 import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
 import { ICONS } from "./icons.js";
 import type { AlertOptions, AlertType } from "./types.js";
@@ -10,8 +11,25 @@ import type { AlertOptions, AlertType } from "./types.js";
 export type { AlertOptions, AlertType };
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 
-// Groups: 1=type keyword, 2=foldable marker (+/-), 3=custom title
-const ALERT_RE = /^\[!([^\]]+)\]([+-])?\s*(.*)?$/s;
+// Groups: 1=type keyword, 2=foldable marker (+/-)
+const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
+
+const isLineBreak = (type: string): boolean =>
+  type === "softbreak" || type === "hardbreak";
+
+// Plain text of inline tokens, for the title's aria-label: text, inline code
+// and image alt count; raw HTML does not. (markdown-it's renderInlineAsText
+// skips inline code.)
+const plainText = (tokens: Token[]): string =>
+  tokens
+    .map((t) =>
+      t.type === "text" || t.type === "code_inline"
+        ? t.content
+        : t.type === "image" && t.children
+          ? plainText(t.children)
+          : ""
+    )
+    .join("");
 
 const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
@@ -45,6 +63,24 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
   const iconFor = (type: string): string =>
     showIcons ? ICONS[type as AlertType] : "";
 
+  // markdown-it renders every attribute as `name="value"`; emit the boolean
+  // `open` bare, as hast does, so both engines produce the same HTML.
+  const renderDetailsOpen = md.renderer.rules["details_open"];
+  md.renderer.rules["details_open"] = (
+    tokens,
+    idx,
+    opts,
+    env,
+    self
+  ): string => {
+    const html = renderDetailsOpen
+      ? renderDetailsOpen(tokens, idx, opts, env, self)
+      : self.renderToken(tokens, idx, opts);
+    return tokens[idx].meta?.githubAlert
+      ? html.replace(' open=""', " open")
+      : html;
+  };
+
   md.core.ruler.after("inline", "github_alerts", (state) => {
     const { tokens } = state;
 
@@ -68,36 +104,40 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const firstChild = firstInline.children[0];
       if (firstChild?.type !== "text") continue;
 
-      const firstLine = firstChild.content.split("\n")[0];
-      const match = ALERT_RE.exec(firstLine.trim());
+      const match = MARKER_RE.exec(firstChild.content.trimStart());
       if (!match) continue;
 
-      const [, keyword, foldMarker, customTitle] = match;
+      const [marker, keyword, foldMarker] = match;
       const type = resolve(keyword);
       if (!type) continue;
 
       const isFoldable = foldMarker === "+" || foldMarker === "-";
-      const title = customTitle?.trim() || titleFor(type);
 
-      // Strip the marker line from the first inline token's children.
-      // The first text child holds only the marker ("[!NOTE]") because mdit
-      // splits inline children at softbreak boundaries; body lines are
-      // subsequent softbreak + text sibling tokens.
-      const rest = firstChild.content
-        .slice(firstLine.length)
-        .replace(/^\n/, "");
-      if (rest) {
-        // Rare: marker and body share one text node (no softbreak between them)
-        firstChild.content = rest;
+      // The first line is the marker plus an optional title (inline content,
+      // formatting included); everything after the first line break, soft or
+      // hard, is the body.
+      const children = firstInline.children;
+      let lineEnd = children.findIndex((t) => isLineBreak(t.type));
+      if (lineEnd === -1) lineEnd = children.length;
+      const afterMarker = firstChild.content.trimStart().slice(marker.length);
+      firstChild.content = afterMarker.trimStart();
+      const titleTokens = children
+        .slice(0, lineEnd)
+        .filter((t) => t.type !== "text" || t.content !== "");
+      const lastTitle = titleTokens.at(-1);
+      if (lastTitle?.type === "text")
+        lastTitle.content = lastTitle.content.trimEnd();
+      const titleText = plainText(titleTokens).trim();
+
+      const body = children.slice(lineEnd + 1);
+      if (body.length > 0) {
+        firstInline.children = body;
       } else {
-        // Drop the marker node and any leading softbreak
-        const hasSoftbreak = firstInline.children[1]?.type === "softbreak";
-        firstInline.children.splice(0, hasSoftbreak ? 2 : 1);
-        if (firstInline.children.length === 0) {
-          tokens.splice(i + 1, 3);
-          closeIdx -= 3;
-        }
+        tokens.splice(i + 1, 3);
+        closeIdx -= 3;
       }
+
+      const title = titleText || titleFor(type);
 
       // Build title element (p normally, summary when foldable)
       const titleTag = isFoldable ? "summary" : "p";
@@ -109,10 +149,13 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const iconSvg = iconFor(type);
       const iconToken = new state.Token("html_inline", "", 0);
       iconToken.content = iconSvg;
-      const textToken = new state.Token("text", "", 0);
-      textToken.content = title;
+      const defaultTitle = new state.Token("text", "", 0);
+      defaultTitle.content = title;
       const titleInline = new state.Token("inline", "", 0);
-      titleInline.children = [...(iconSvg ? [iconToken] : []), textToken];
+      titleInline.children = [
+        ...(iconSvg ? [iconToken] : []),
+        ...(titleText ? titleTokens : [defaultTitle])
+      ];
 
       const titleClose = new state.Token(`${titleTag}_close`, titleTag, -1);
 
@@ -128,7 +171,7 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       if (foldMarker === "+") containerOpen.attrSet("open", "");
       containerOpen.map = tokens[i].map;
       containerOpen.block = true;
-      containerOpen.meta = { attrsRole: "container" };
+      containerOpen.meta = { attrsRole: "container", githubAlert: true };
 
       const containerClose = new state.Token(
         `${containerTag}_close`,

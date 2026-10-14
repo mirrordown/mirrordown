@@ -9,37 +9,40 @@ import {
   remarkGithubAlerts,
   githubAlertsHastHandlers
 } from "../../packages/remd-github-alerts/src";
-import { parseCases, normalizeHtml } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
 
-const cases = parseCases(read("fixtures/github-alerts-commonmark.md"));
-const mainCases = cases.filter(({ name }) => name !== "no icons");
-const noIconsCase = cases.find(({ name }) => name === "no icons")!;
+const cmCases = parseFixture(
+  read("fixtures/github-alerts-commonmark.md"),
+  read("expected/github-alerts-commonmark.html")
+);
 
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkGithubAlerts)
-  .use(remarkRehype, { handlers: githubAlertsHastHandlers })
-  .use(rehypeStringify, { allowDangerousHtml: true });
+const noIconsCases = parseFixture(
+  read("fixtures/github-alerts-no-icons.md"),
+  read("expected/github-alerts-no-icons.html")
+);
 
-const processorNoIcons = unified()
-  .use(remarkParse)
-  .use(remarkGithubAlerts, { icons: false })
-  .use(remarkRehype, { handlers: githubAlertsHastHandlers })
-  .use(rehypeStringify, { allowDangerousHtml: true });
+const processor = (icons: boolean) =>
+  unified()
+    .use(remarkParse)
+    .use(remarkGithubAlerts, { icons })
+    .use(remarkRehype, { handlers: githubAlertsHastHandlers })
+    .use(rehypeStringify, { allowDangerousHtml: true });
+
+const withIcons = processor(true);
+const noIcons = processor(false);
 
 describe("github-alerts/remd", () => {
-  it.each(mainCases)("github-alerts (remark): $name", ({ input }) => {
-    expect(
-      normalizeHtml(String(processor.processSync(input)))
-    ).toMatchSnapshot();
+  it.each(cmCases)("github-alerts (remark): $name", ({ input, expected }) => {
+    expect(normalizeHtml(String(withIcons.processSync(input)))).toBe(expected);
   });
 
-  it("github-alerts (remark): no icons", () => {
-    expect(
-      normalizeHtml(String(processorNoIcons.processSync(noIconsCase.input)))
-    ).toMatchSnapshot();
-  });
+  it.each(noIconsCases)(
+    "github-alerts (remark, icons: false): $name",
+    ({ input, expected }) => {
+      expect(normalizeHtml(String(noIcons.processSync(input)))).toBe(expected);
+    }
+  );
 });

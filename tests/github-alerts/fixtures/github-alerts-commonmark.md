@@ -244,6 +244,25 @@ Paragraph
 - > [!NOTE]
   > Body inside list.
 
-<!-- @case: no icons -->
+<!-- @case: body starting with formatting is kept -->
 > [!NOTE]
-> Icon suppressed.
+> **Bold** start of the body.
+
+<!-- @case: formatted custom title -->
+> [!NOTE] *Emphasized* title
+> Body text.
+
+<!-- @case: code in custom title -->
+> [!TIP] Use `npm ci`
+> Body text.
+
+<!-- @case: formatted custom title with nothing after it -->
+> [!WARNING]- Custom *title*
+
+<!-- @case: formatted custom title followed by body on the next line -->
+> [!WARNING]- Custom *title*
+> Body
+
+<!-- @case: marker line ending in a hard break -->
+> [!NOTE]\
+> After a hard break.
