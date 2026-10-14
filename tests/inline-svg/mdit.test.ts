@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { expect, it, describe } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { inlineSvg, type Options } from "../../packages/mdit-inline-svg/src";
+import { hash } from "../../packages/mdit-inline-svg/src/hash";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
@@ -138,6 +139,18 @@ describe("inline-svg (markdown-it) cacheEfficiency", () => {
 });
 
 describe("inline-svg (markdown-it) deduplication", () => {
+  // Ids end up in published HTML, so they must not depend on where the
+  // project lives: they hash the SVG's path relative to the document.
+  it("sprite id derives from the document-relative path", () => {
+    const result = withOptions({ deduplication: true }).render(
+      `![](./fixtures/flower.svg)
+
+![](./fixtures/flower.svg)`,
+      env
+    );
+    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+  });
+
   it("uses sprite + use for repeated SVG", () => {
     const input = `![icon](./fixtures/flower.svg)\n\n![icon](./fixtures/flower.svg)`;
     const result = withOptions({ deduplication: true }).render(input, env);

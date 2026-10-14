@@ -1,3 +1,4 @@
+import { relative, sep } from "node:path";
 import type { SvgCache } from "./cache.js";
 import type { GroupedImageNodes, ImageNode } from "./image-node.js";
 import { hash } from "./hash.js";
@@ -55,6 +56,12 @@ const buildUseHtml = (
   return `<svg ${attrs}><use href="#${id}"></use></svg>`;
 };
 
+// Sprite ids hash the SVG's path relative to the document, with `/`
+// separators, so the same document renders the same ids on any machine or OS
+// (an absolute path would leak the build machine into the HTML).
+const spriteId = (docDir: string, filePath: string): string =>
+  `svg-sprite-${hash(relative(docDir, filePath).split(sep).join(`/`))}`;
+
 const altOf = (img: ImageNode): string =>
   typeof img.properties.alt === `string` ? img.properties.alt : ``;
 
@@ -77,7 +84,8 @@ const toRaw = (img: ImageNode, value: string): void => {
 export const imgToSVG = (
   groupedNodes: GroupedImageNodes,
   svgCache: SvgCache,
-  options: Options
+  options: Options,
+  docDir: string
 ): void => {
   for (const [filePath, imgNodes] of groupedNodes) {
     const content = svgCache.get(filePath)!;
@@ -86,7 +94,7 @@ export const imgToSVG = (
       // The first occurrence carries the hidden sprite; every occurrence
       // references it with <use>.
       const { viewBox, width, height, inner } = extractSvgParts(content);
-      const id = `svg-sprite-${hash(filePath)}`;
+      const id = spriteId(docDir, filePath);
       const sprite = buildSpriteHtml(id, viewBox, inner);
       imgNodes.forEach((img, i) => {
         const use = buildUseHtml(id, viewBox, width, height, altOf(img));

@@ -1,7 +1,7 @@
 // Renderer rule callbacks receive `env: unknown`; casts to object are intentional for planMap keying.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type MarkdownIt from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
@@ -27,6 +27,12 @@ const resolveSvgPath = (
     return null;
   }
 };
+
+// Sprite ids hash the SVG's path relative to the document, with `/`
+// separators, so the same document renders the same ids on any machine or OS
+// (an absolute path would leak the build machine into the HTML).
+const spriteId = (docDir: string, filePath: string): string =>
+  `svg-sprite-${hash(relative(docDir, filePath).split(sep).join(`/`))}`;
 
 const getAlt = (
   token: Token,
@@ -161,7 +167,10 @@ export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
       const { viewBox, width, height, inner } = extractSvgParts(content);
 
       if (options.deduplication && tokens.length > 1) {
-        const id = `svg-sprite-${hash(filePath)}`;
+        const docDir = dirname(
+          fileURLToPath(String(state.env.currentDocument))
+        );
+        const id = spriteId(docDir, filePath);
         const sprite = buildSpriteHtml(id, viewBox, inner);
         for (let i = 0; i < tokens.length; i++) {
           const alt = getAlt(tokens[i], md, md.options, state.env);

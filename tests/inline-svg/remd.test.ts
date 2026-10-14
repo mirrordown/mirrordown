@@ -10,6 +10,7 @@ import {
   rehypeInlineSvg,
   type Options
 } from "../../packages/remd-inline-svg/src";
+import { hash } from "../../packages/remd-inline-svg/src/hash";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
@@ -142,6 +143,18 @@ describe("inline-svg (rehype) cacheEfficiency", () => {
 });
 
 describe("inline-svg (rehype) deduplication", () => {
+  // Ids end up in published HTML, so they must not depend on where the
+  // project lives: they hash the SVG's path relative to the document.
+  it("sprite id derives from the document-relative path", async () => {
+    const result = await process(
+      `![](./fixtures/flower.svg)
+
+![](./fixtures/flower.svg)`,
+      { deduplication: true }
+    );
+    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+  });
+
   it("uses sprite + use for repeated SVG", async () => {
     const input = `![icon](./fixtures/flower.svg)\n\n![icon](./fixtures/flower.svg)`;
     const result = await process(input, { deduplication: true });
