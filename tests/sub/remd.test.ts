@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkSub } from "../../packages/remd-sub/src";
+import { remarkSup } from "../../packages/remd-sup/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
@@ -26,6 +27,33 @@ const crossNodeCases = parseFixture(
   read("fixtures/sub-cross-node.md"),
   read("expected/sub-cross-node.html")
 );
+
+const subSupCases = parseFixture(
+  read("fixtures/sub-sup.md"),
+  read("expected/sub-sup.html")
+);
+
+// Both registration orders: which plugin is added first must not change how crossing runs pair.
+const subSupOrders = [
+  [
+    "sub, sup",
+    unified()
+      .use(remarkParse)
+      .use(remarkSub)
+      .use(remarkSup)
+      .use(remarkRehype)
+      .use(rehypeStringify)
+  ],
+  [
+    "sup, sub",
+    unified()
+      .use(remarkParse)
+      .use(remarkSup)
+      .use(remarkSub)
+      .use(remarkRehype)
+      .use(rehypeStringify)
+  ]
+] as const;
 
 const cmProcessor = unified()
   .use(remarkParse)
@@ -50,6 +78,17 @@ describe("sub/remd", () => {
   it.each(gfmCases)("sub (remark) gfm: $name", ({ input, expected }) => {
     expect(normalizeHtml(String(gfmProcessor.processSync(input)))).toBe(
       expected
+    );
+  });
+
+  describe.each(subSupOrders)("with sup (%s)", (_, processor) => {
+    it.each(subSupCases)(
+      "sub (remark) with sup: $name",
+      ({ input, expected }) => {
+        expect(normalizeHtml(String(processor.processSync(input)))).toBe(
+          expected
+        );
+      }
     );
   });
 

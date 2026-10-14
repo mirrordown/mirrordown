@@ -3,5 +3,8 @@
   "version": "0.0.0",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "imports": {
+    "micromark-util-types": "npm:micromark-util-types@^2"
   }
 }

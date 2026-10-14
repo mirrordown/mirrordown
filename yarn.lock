@@ -1164,6 +1164,8 @@ __metadata:
 "@mirrordown/core@workspace:^, @mirrordown/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mirrordown/core@workspace:packages/core"
+  dependencies:
+    micromark-util-types: "catalog:"
   languageName: unknown
   linkType: soft
 
@@ -1200,6 +1202,7 @@ __metadata:
     "@mirrordown/remd-tabs": "workspace:*"
     "@mirrordown/remd-unwrap-images": "workspace:*"
     astro: "npm:^7.0.3"
+    remark-gfm: "npm:^4.0.1"
     typescript: "catalog:"
   languageName: unknown
   linkType: soft
@@ -1719,13 +1722,8 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    mdast-util-from-markdown: "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
-    unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
   languageName: unknown
@@ -1737,13 +1735,8 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    mdast-util-from-markdown: "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
-    unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
   languageName: unknown

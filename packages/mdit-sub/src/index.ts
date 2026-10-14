@@ -1,58 +1,67 @@
 import type MDit from "markdown-it";
+import type {
+  default as StateInline,
+  Delimiter
+} from "markdown-it/lib/rules_inline/state_inline.mjs";
 
-const UNESCAPED_SPACE_RE = /(^|[^\\])(\\\\)*\s/u;
+// balance_pairs pairs delimiters by `marker` alone, and strikethrough pushes `~` delimiters too: a value of our own keeps a `~sub~` delimiter from pairing with a `~~strike~~` one.
+const MARKER = 0x7e + 0x10000;
 
-/** markdown-it plugin for `~subscript~` syntax, rendering `<sub>` elements. */
+/**
+ * markdown-it plugin for `~subscript~` syntax, rendering `<sub>` elements. A single `~` is a delimiter run like emphasis: it opens when left-flanking, closes when right-flanking, pairs with the nearest opener, and its content is parsed as inline markup, so subscript nests with superscript and emphasis.
+ */
 export function sub(md: MDit): void {
-  md.inline.ruler.after(`emphasis`, `sub`, (state, silent) => {
-    const start = state.pos;
-    const max = state.posMax;
-
-    if (state.src.charCodeAt(start) !== 0x7e /* ~ */) return false;
+  // After strikethrough, which takes `~~` runs when it is enabled.
+  md.inline.ruler.after(`strikethrough`, `sub`, (state, silent) => {
     if (silent) return false;
-    if (start + 2 > max) return false;
+    if (state.src.charCodeAt(state.pos) !== 0x7e /* ~ */) return false;
 
-    state.pos = start + 1;
-    let found = false;
-
-    // `< max`, not `<= max`: posMax is an exclusive bound, so a closing `~` can
-    // never sit at posMax. Probing skipToken at posMax is pointless and can wedge
-    // the inline parser against a boundary-probing rule (see mdit-spoiler).
-    while (state.pos < max) {
-      if (state.src.charCodeAt(state.pos) === 0x7e /* ~ */) {
-        found = true;
-        break;
-      }
-      state.md.inline.skipToken(state);
+    const scanned = state.scanDelims(state.pos, true);
+    const token = state.push(`text`, ``, 0);
+    token.content = state.src.slice(state.pos, state.pos + scanned.length);
+    // A longer run is never a subscript delimiter; consuming it whole keeps its tail from being read as one.
+    if (scanned.length === 1 && (scanned.can_open || scanned.can_close)) {
+      state.delimiters.push({
+        marker: MARKER,
+        length: 0, // disable "rule of 3" length checks meant for emphasis
+        token: state.tokens.length - 1,
+        end: -1,
+        open: scanned.can_open,
+        close: scanned.can_close
+      });
     }
-
-    if (!found || start + 1 === state.pos) {
-      state.pos = start;
-      return false;
-    }
-
-    const content = state.src.slice(start + 1, state.pos);
-
-    if (UNESCAPED_SPACE_RE.test(content)) {
-      state.pos = start;
-      return false;
-    }
-
-    state.posMax = state.pos;
-    state.pos = start + 1;
-
-    const openToken = state.push(`sub_open`, `sub`, 1);
-    openToken.markup = `~`;
-
-    const textToken = state.push(`text`, ``, 0);
-    textToken.content = content;
-
-    const closeToken = state.push(`sub_close`, `sub`, -1);
-    closeToken.markup = `~`;
-
-    state.pos = state.posMax + 1;
-    state.posMax = max;
-
+    state.pos += scanned.length;
     return true;
+  });
+
+  const postProcess = (state: StateInline, delimiters: Delimiter[]): void => {
+    for (const start of delimiters) {
+      if (start.marker !== MARKER || start.end === -1) continue;
+      const end = delimiters[start.end];
+      const open = state.tokens[start.token];
+      const close = state.tokens[end.token];
+      Object.assign(open, {
+        type: `sub_open`,
+        tag: `sub`,
+        nesting: 1,
+        markup: `~`,
+        content: ``
+      });
+      Object.assign(close, {
+        type: `sub_close`,
+        tag: `sub`,
+        nesting: -1,
+        markup: `~`,
+        content: ``
+      });
+    }
+  };
+
+  md.inline.ruler2.after(`strikethrough`, `sub`, (state) => {
+    postProcess(state, state.delimiters);
+    for (const meta of state.tokens_meta) {
+      if (meta?.delimiters) postProcess(state, meta.delimiters);
+    }
+    return false;
   });
 }

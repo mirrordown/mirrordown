@@ -18,6 +18,11 @@ const gfmCases = parseFixture(
   read("expected/sup-gfm.html")
 );
 
+const crossNodeCases = parseFixture(
+  read("fixtures/sup-cross-node.md"),
+  read("expected/sup-cross-node.html")
+);
+
 const md = new MarkdownIt().use(sup);
 const mdGfm = new MarkdownIt({
   html: false,
@@ -35,4 +40,11 @@ describe("sup/mdit", () => {
   it.each(gfmCases)("sup (markdown-it) gfm: $name", ({ input, expected }) => {
     expect(normalizeHtml(mdGfm.render(input))).toBe(expected);
   });
+
+  it.each(crossNodeCases)(
+    "sup (markdown-it) cross-node: $name",
+    ({ input, expected }) => {
+      expect(normalizeHtml(md.render(input))).toBe(expected);
+    }
+  );
 });

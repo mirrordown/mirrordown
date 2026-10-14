@@ -1,0 +1,14 @@
+<!-- @case: superscript inside subscript -->
+<p><sub>a<sup>b</sup>c</sub></p>
+
+<!-- @case: subscript inside superscript -->
+<p><sup>a<sub>b</sub>c</sup></p>
+
+<!-- @case: crossing runs: the superscript closes first -->
+<p><sup>foo~bar</sup>baz<sup>bar~foo</sup></p>
+
+<!-- @case: crossing runs: the subscript closes first -->
+<p><sub>foo^bar</sub>baz<sub>bar^foo</sub></p>
+
+<!-- @case: an opener inside a closed span cannot pair outside it -->
+<p><sub>a^b</sub>c^</p>

@@ -20,6 +20,14 @@ The chemical formula for water is H~2~O.
 Carbon dioxide is CO~2~.
 ```
 
+### Formatting inside
+
+The content is inline markup, like emphasis: it can hold spaces, other formatting and superscript, but can't start or end with a space.
+
+```markdown
+x~n^2^~ and the ~_base_ index~
+```
+
 ## About
 
 Part of **[Markdown Preview Extended Syntax](https://marketplace.visualstudio.com/items?itemName=saeris.markdown-preview-extended-syntax)** — a pack of Markdown preview syntax extensions you can install all at once.
