@@ -19,10 +19,10 @@ export {
   type PhrasingLike
 } from "./github-alerts/index.js";
 export {
-  MARK_DELIMITERS,
   createDelimitedTransform,
   type DelimitedNodes,
   type DelimitedTransform,
-  type DelimiterPatterns
+  type DelimiterMarker,
+  type Positioned
 } from "./delimited.js";
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";

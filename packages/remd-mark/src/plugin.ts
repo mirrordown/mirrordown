@@ -1,11 +1,7 @@
 import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
-import {
-  MARK_DELIMITERS,
-  createDelimitedTransform,
-  maskTreeEscapes
-} from "@mirrordown/core";
+import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
 
 /** Optional data carried by a {@link Mark} node. */
 export interface MarkData extends Data {}
@@ -23,7 +19,7 @@ export interface Mark extends Parent {
  */
 export const remarkMark: Plugin<[], Root> = () => {
   // The scan is shared with the Sätteri plugin through @mirrordown/core.
-  const transform = createDelimitedTransform<PhrasingContent>(MARK_DELIMITERS, {
+  const transform = createDelimitedTransform<PhrasingContent>(`=`, {
     text: (value) => ({ type: `text`, value }),
     wrap: (children): Mark => ({
       type: `mark`,
@@ -43,7 +39,9 @@ export const remarkMark: Plugin<[], Root> = () => {
       seen.add(parent);
       // A text node's parent holds phrasing content.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      parent.children = transform(parent.children as PhrasingContent[]);
+      const children = parent.children as PhrasingContent[];
+      const next = transform(children, parent.type);
+      if (next !== children) parent.children = [...next];
       // Walk the restructured children from the start; this parent is done.
       return 0;
     });

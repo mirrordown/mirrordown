@@ -1605,7 +1605,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/preset-satteri@workspace:packages/preset-satteri"
   dependencies:
+    "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
+    "@mirrordown/sat-ins": "workspace:^"
     "@mirrordown/sat-mark": "workspace:^"
     "@mirrordown/sat-slug": "workspace:^"
     satteri: "catalog:"
@@ -1677,11 +1679,6 @@ __metadata:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
@@ -1722,11 +1719,6 @@ __metadata:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
@@ -1912,9 +1904,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/sat-del@workspace:^, @mirrordown/sat-del@workspace:packages/sat-del":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-del@workspace:packages/sat-del"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/sat-github-alerts@workspace:^, @mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-ins@workspace:^, @mirrordown/sat-ins@workspace:packages/sat-ins":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-ins@workspace:packages/sat-ins"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"

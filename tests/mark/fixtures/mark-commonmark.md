@@ -78,3 +78,19 @@ foo ==bar
 <!-- @case: escaped backslash keeps the delimiter -->
 
 \\==text==
+
+<!-- @case: an odd-length run leaves its extra marker outside the span -->
+
+===a===
+
+<!-- @case: a closer pairs with the nearest opener -->
+
+==a ==b==
+
+<!-- @case: spans nest -->
+
+==a ==b== c==
+
+<!-- @case: a run between spaces neither opens nor closes -->
+
+==a === b==
