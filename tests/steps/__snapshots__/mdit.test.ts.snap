@@ -14,7 +14,7 @@ exports[`steps/mdit > steps (markdown-it): blockquote terminated by code fence, 
 exports[`steps/mdit > steps (markdown-it): body with blockquote 1`] = `"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with a blockquote</p><div class="markdown-steps-body"><blockquote><p>This is a blockquote inside a step.</p><p>It has multiple lines.</p></blockquote></div></li></ol>"`;
 
 exports[`steps/mdit > steps (markdown-it): body with code fence 1`] = `
-"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with code</p><div class="markdown-steps-body"><pre><code class="language-ts">const foo = &quot;bar&quot;;
+"<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step with code</p><div class="markdown-steps-body"><pre><code class="language-ts">const foo = "bar";
 </code></pre></div></li></ol>"
 `;
 
