@@ -10,6 +10,18 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
 ) => {
   const rules = createRules({ left, right, allowed, rule });
 
+  // A fence whose class slot the fence rule reserved renders as
+  // `class=" language-x"`; drop the leading space.
+  const renderFence = md.renderer.rules.fence;
+  if (renderFence) {
+    md.renderer.rules.fence = (tokens, idx, opts, env, self): string => {
+      const html = renderFence(tokens, idx, opts, env, self);
+      return tokens[idx].meta?.attrsReservedClass
+        ? html.replace(' class=" ', ' class="')
+        : html;
+    };
+  }
+
   md.core.ruler.before("linkify", "attrs", (state) => {
     const { tokens } = state;
 

@@ -45,7 +45,7 @@ export const getDelimiterChecker = (
     // pos === "end"
     const start = str.lastIndexOf(left, str.length - rl - 1);
     if (start === -1) return null;
-    if (str.startsWith(left, start - ll)) return null;
+    if (start >= ll && str.startsWith(left, start - ll)) return null;
     return [start + ll, str.length - rl];
   };
 };

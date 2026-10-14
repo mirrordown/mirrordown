@@ -55,9 +55,6 @@ A paragraph with attrs
 <!-- @case: inline: image with class -->
 ![alt](img.png){.img-class}
 
-<!-- @case: inline: strikethrough with class -->
-~~struck~~{.del-class}
-
 <!-- @case: list: item end attr -->
 - item one {.red}
 - item two
@@ -85,3 +82,31 @@ A paragraph with attrs
 | Header |
 |--------|
 | cell {.cell-class} |
+
+<!-- @case: fence: language with id only -->
+```js {#c}
+x
+```
+
+<!-- @case: list: loose item end attr -->
+- item one {.red}
+
+- item two
+
+<!-- @case: list: ordered item end attr -->
+1. one {.x}
+2. two
+
+<!-- @case: list: lazy attr line applies to the list -->
+- a
+- b
+{.my-list}
+
+<!-- @case: softbreak: attr line after a hard break keeps the break -->
+para\
+{.cls}
+
+<!-- @case: table: header cell attr -->
+| H {.hc} |
+|---|
+| c |

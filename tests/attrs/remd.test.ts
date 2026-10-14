@@ -7,21 +7,21 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
-import { parseCases, normalizeHtml } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
 const read = (path: string) => readFileSync(join(dir, path), "utf8");
 
-const cases = parseCases(read("fixtures/attrs.md"));
+const cases = parseFixture(
+  read("fixtures/attrs.md"),
+  read("expected/attrs.html")
+);
 
-// Cases not supported by remd-attrs (mdit-specific token mechanics)
-const UNSUPPORTED = new Set([
-  // hr: thematic break with class Ã¢â‚¬â€ remark parses --- as thematicBreak but
-  // the {.divider} paragraph follows; remd-attrs handles this via the hr rule.
-  // list: nested list attr Ã¢â‚¬â€ the {.inner-list} is a softbreak inside a list item;
-  // remark parses it differently and applies to the paragraph, not the list.
-  "list: nested list attr"
-]);
+// markdown-it renders GFM strikethrough as <s>, remark as <del>
+const remdCases = parseFixture(
+  read("fixtures/attrs-remd.md"),
+  read("expected/attrs-remd.html")
+);
 
 const remd = (src: string) =>
   normalizeHtml(
@@ -36,10 +36,11 @@ const remd = (src: string) =>
     )
   );
 
-const supportedCases = cases.filter(({ name }) => !UNSUPPORTED.has(name));
-
 describe("attrs/remd", () => {
-  it.each(supportedCases)("attrs (remark): $name", ({ input }) => {
-    expect(remd(input)).toMatchSnapshot();
-  });
+  it.each([...cases, ...remdCases])(
+    "attrs (remark): $name",
+    ({ input, expected }) => {
+      expect(remd(input)).toBe(expected);
+    }
+  );
 });

@@ -52,8 +52,10 @@ describe("abbr + attrs: abbr with heading attrs", () => {
 describe("abbr + attrs: abbr definition does not consume attrs block", () => {
   const input =
     "*[CSS]: Cascading Style Sheets\n\nUse CSS for styling.\n\n{.note}";
+  // The standalone attrs block reaches the attrs plugin, which applies it to
+  // its own paragraph, as markdown-it-attrs does.
   const expected =
-    '<p>Use <abbr title="Cascading Style Sheets">CSS</abbr> for styling.</p><p>{.note}</p>';
+    '<p>Use <abbr title="Cascading Style Sheets">CSS</abbr> for styling.</p><p class="note"></p>';
 
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
