@@ -18,7 +18,9 @@
     "provider": "github",
     "workflow": "release.yml",
     "publish": true,
-    "ignore": ["markdown-*"],
+    "ignore": [
+      "markdown-*"
+    ],
     "jsr": {
       "runtimeCompat": {
         "node": true,

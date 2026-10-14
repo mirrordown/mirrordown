@@ -3,6 +3,13 @@
 
 
 
+
+## 0.1.4
+<sub>2026-10-14</sub>
+
+- *(patch)*
+  Make `remd-steps` render the same HTML as `mdit-steps`. A step header that skips a depth level (`@1. Step one` followed by `@@@1. Too Deep`) or a plain line inside a run of step headers no longer silently disappears with the following content pulled into the previous step: the group ends at that line, which renders as an ordinary paragraph, and a depth-1 header after it starts a new group.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 
