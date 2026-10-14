@@ -1,0 +1,66 @@
+{
+  "name": "@mirrordown/preset-remark",
+  "description": "The full Mirrordown suite for remark/rehype (unified) in one call.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./*.css": "./dist/*.css"
+  },
+  "dependencies": {
+    "@mirrordown/remd-abbr": "workspace:^",
+    "@mirrordown/remd-attrs": "workspace:^",
+    "@mirrordown/remd-autolink-headings": "workspace:^",
+    "@mirrordown/remd-definition-list": "workspace:^",
+    "@mirrordown/remd-del": "workspace:^",
+    "@mirrordown/remd-github-alerts": "workspace:^",
+    "@mirrordown/remd-ins": "workspace:^",
+    "@mirrordown/remd-kbd": "workspace:^",
+    "@mirrordown/remd-lightbox": "workspace:^",
+    "@mirrordown/remd-mark": "workspace:^",
+    "@mirrordown/remd-ruby": "workspace:^",
+    "@mirrordown/remd-sectionize": "workspace:^",
+    "@mirrordown/remd-slug": "workspace:^",
+    "@mirrordown/remd-spoiler": "workspace:^",
+    "@mirrordown/remd-squeeze-paragraphs": "workspace:^",
+    "@mirrordown/remd-steps": "workspace:^",
+    "@mirrordown/remd-sub": "workspace:^",
+    "@mirrordown/remd-sup": "workspace:^",
+    "@mirrordown/remd-tabs": "workspace:^",
+    "@mirrordown/remd-unwrap-images": "workspace:^",
+    "mdast-util-to-hast": "^13.0.0",
+    "remark-gfm": "catalog:"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:",
+    "@types/mdast": "catalog:",
+    "unified": "catalog:"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}

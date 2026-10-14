@@ -1211,6 +1211,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/markdown@workspace:."
   dependencies:
+    "@astrojs/markdown-remark": "npm:^7.2.0"
     "@saeris/configs": "npm:^1.6.1"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/node": "npm:^26.0.0"
@@ -1223,7 +1224,7 @@ __metadata:
     postcss-cli: "npm:^11.0.1"
     postcss-import: "npm:^16.1.1"
     rehype-stringify: "npm:^10.0.1"
-    remark-gfm: "npm:^4.0.1"
+    remark-gfm: "catalog:"
     remark-parse: "npm:^11.0.0"
     remark-rehype: "npm:^11.1.2"
     typescript: "npm:^6.0.3"
@@ -1233,7 +1234,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-abbr@workspace:*, @mirrordown/mdit-abbr@workspace:packages/mdit-abbr":
+"@mirrordown/mdit-abbr@workspace:*, @mirrordown/mdit-abbr@workspace:^, @mirrordown/mdit-abbr@workspace:packages/mdit-abbr":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-abbr@workspace:packages/mdit-abbr"
   dependencies:
@@ -1244,7 +1245,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-attrs@workspace:*, @mirrordown/mdit-attrs@workspace:packages/mdit-attrs":
+"@mirrordown/mdit-attrs@workspace:*, @mirrordown/mdit-attrs@workspace:^, @mirrordown/mdit-attrs@workspace:packages/mdit-attrs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-attrs@workspace:packages/mdit-attrs"
   dependencies:
@@ -1255,7 +1256,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-autolink-headings@workspace:*, @mirrordown/mdit-autolink-headings@workspace:packages/mdit-autolink-headings":
+"@mirrordown/mdit-autolink-headings@workspace:*, @mirrordown/mdit-autolink-headings@workspace:^, @mirrordown/mdit-autolink-headings@workspace:packages/mdit-autolink-headings":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-autolink-headings@workspace:packages/mdit-autolink-headings"
   dependencies:
@@ -1266,7 +1267,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-definition-list@workspace:*, @mirrordown/mdit-definition-list@workspace:packages/mdit-definition-list":
+"@mirrordown/mdit-definition-list@workspace:*, @mirrordown/mdit-definition-list@workspace:^, @mirrordown/mdit-definition-list@workspace:packages/mdit-definition-list":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-definition-list@workspace:packages/mdit-definition-list"
   dependencies:
@@ -1277,7 +1278,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-del@workspace:*, @mirrordown/mdit-del@workspace:packages/mdit-del":
+"@mirrordown/mdit-del@workspace:*, @mirrordown/mdit-del@workspace:^, @mirrordown/mdit-del@workspace:packages/mdit-del":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-del@workspace:packages/mdit-del"
   dependencies:
@@ -1288,7 +1289,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-github-alerts@workspace:*, @mirrordown/mdit-github-alerts@workspace:packages/mdit-github-alerts":
+"@mirrordown/mdit-github-alerts@workspace:*, @mirrordown/mdit-github-alerts@workspace:^, @mirrordown/mdit-github-alerts@workspace:packages/mdit-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-github-alerts@workspace:packages/mdit-github-alerts"
   dependencies:
@@ -1311,7 +1312,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-ins@workspace:*, @mirrordown/mdit-ins@workspace:packages/mdit-ins":
+"@mirrordown/mdit-ins@workspace:*, @mirrordown/mdit-ins@workspace:^, @mirrordown/mdit-ins@workspace:packages/mdit-ins":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-ins@workspace:packages/mdit-ins"
   dependencies:
@@ -1322,7 +1323,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-kbd@workspace:*, @mirrordown/mdit-kbd@workspace:packages/mdit-kbd":
+"@mirrordown/mdit-kbd@workspace:*, @mirrordown/mdit-kbd@workspace:^, @mirrordown/mdit-kbd@workspace:packages/mdit-kbd":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-kbd@workspace:packages/mdit-kbd"
   dependencies:
@@ -1333,7 +1334,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-lightbox@workspace:*, @mirrordown/mdit-lightbox@workspace:packages/mdit-lightbox":
+"@mirrordown/mdit-lightbox@workspace:*, @mirrordown/mdit-lightbox@workspace:^, @mirrordown/mdit-lightbox@workspace:packages/mdit-lightbox":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-lightbox@workspace:packages/mdit-lightbox"
   dependencies:
@@ -1344,7 +1345,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-mark@workspace:*, @mirrordown/mdit-mark@workspace:packages/mdit-mark":
+"@mirrordown/mdit-mark@workspace:*, @mirrordown/mdit-mark@workspace:^, @mirrordown/mdit-mark@workspace:packages/mdit-mark":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-mark@workspace:packages/mdit-mark"
   dependencies:
@@ -1355,7 +1356,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-ruby@workspace:*, @mirrordown/mdit-ruby@workspace:packages/mdit-ruby":
+"@mirrordown/mdit-ruby@workspace:*, @mirrordown/mdit-ruby@workspace:^, @mirrordown/mdit-ruby@workspace:packages/mdit-ruby":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-ruby@workspace:packages/mdit-ruby"
   dependencies:
@@ -1366,7 +1367,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-sectionize@workspace:*, @mirrordown/mdit-sectionize@workspace:packages/mdit-sectionize":
+"@mirrordown/mdit-sectionize@workspace:*, @mirrordown/mdit-sectionize@workspace:^, @mirrordown/mdit-sectionize@workspace:packages/mdit-sectionize":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-sectionize@workspace:packages/mdit-sectionize"
   dependencies:
@@ -1377,7 +1378,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-slug@workspace:*, @mirrordown/mdit-slug@workspace:packages/mdit-slug":
+"@mirrordown/mdit-slug@workspace:*, @mirrordown/mdit-slug@workspace:^, @mirrordown/mdit-slug@workspace:packages/mdit-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-slug@workspace:packages/mdit-slug"
   dependencies:
@@ -1389,7 +1390,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-spoiler@workspace:*, @mirrordown/mdit-spoiler@workspace:packages/mdit-spoiler":
+"@mirrordown/mdit-spoiler@workspace:*, @mirrordown/mdit-spoiler@workspace:^, @mirrordown/mdit-spoiler@workspace:packages/mdit-spoiler":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-spoiler@workspace:packages/mdit-spoiler"
   dependencies:
@@ -1400,7 +1401,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-squeeze-paragraphs@workspace:*, @mirrordown/mdit-squeeze-paragraphs@workspace:packages/mdit-squeeze-paragraphs":
+"@mirrordown/mdit-squeeze-paragraphs@workspace:*, @mirrordown/mdit-squeeze-paragraphs@workspace:^, @mirrordown/mdit-squeeze-paragraphs@workspace:packages/mdit-squeeze-paragraphs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-squeeze-paragraphs@workspace:packages/mdit-squeeze-paragraphs"
   dependencies:
@@ -1411,7 +1412,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-steps@workspace:*, @mirrordown/mdit-steps@workspace:packages/mdit-steps":
+"@mirrordown/mdit-steps@workspace:*, @mirrordown/mdit-steps@workspace:^, @mirrordown/mdit-steps@workspace:packages/mdit-steps":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-steps@workspace:packages/mdit-steps"
   dependencies:
@@ -1422,7 +1423,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-sub@workspace:*, @mirrordown/mdit-sub@workspace:packages/mdit-sub":
+"@mirrordown/mdit-sub@workspace:*, @mirrordown/mdit-sub@workspace:^, @mirrordown/mdit-sub@workspace:packages/mdit-sub":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-sub@workspace:packages/mdit-sub"
   dependencies:
@@ -1433,7 +1434,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-sup@workspace:*, @mirrordown/mdit-sup@workspace:packages/mdit-sup":
+"@mirrordown/mdit-sup@workspace:*, @mirrordown/mdit-sup@workspace:^, @mirrordown/mdit-sup@workspace:packages/mdit-sup":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-sup@workspace:packages/mdit-sup"
   dependencies:
@@ -1444,7 +1445,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-tabs@workspace:*, @mirrordown/mdit-tabs@workspace:packages/mdit-tabs":
+"@mirrordown/mdit-tabs@workspace:*, @mirrordown/mdit-tabs@workspace:^, @mirrordown/mdit-tabs@workspace:packages/mdit-tabs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-tabs@workspace:packages/mdit-tabs"
   dependencies:
@@ -1455,7 +1456,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-unwrap-images@workspace:*, @mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
+"@mirrordown/mdit-unwrap-images@workspace:*, @mirrordown/mdit-unwrap-images@workspace:^, @mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images"
   dependencies:
@@ -1466,7 +1467,72 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-abbr@workspace:packages/remd-abbr":
+"@mirrordown/preset-markdown-it@workspace:packages/preset-markdown-it":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/preset-markdown-it@workspace:packages/preset-markdown-it"
+  dependencies:
+    "@mirrordown/mdit-abbr": "workspace:^"
+    "@mirrordown/mdit-attrs": "workspace:^"
+    "@mirrordown/mdit-autolink-headings": "workspace:^"
+    "@mirrordown/mdit-definition-list": "workspace:^"
+    "@mirrordown/mdit-del": "workspace:^"
+    "@mirrordown/mdit-github-alerts": "workspace:^"
+    "@mirrordown/mdit-ins": "workspace:^"
+    "@mirrordown/mdit-kbd": "workspace:^"
+    "@mirrordown/mdit-lightbox": "workspace:^"
+    "@mirrordown/mdit-mark": "workspace:^"
+    "@mirrordown/mdit-ruby": "workspace:^"
+    "@mirrordown/mdit-sectionize": "workspace:^"
+    "@mirrordown/mdit-slug": "workspace:^"
+    "@mirrordown/mdit-spoiler": "workspace:^"
+    "@mirrordown/mdit-squeeze-paragraphs": "workspace:^"
+    "@mirrordown/mdit-steps": "workspace:^"
+    "@mirrordown/mdit-sub": "workspace:^"
+    "@mirrordown/mdit-sup": "workspace:^"
+    "@mirrordown/mdit-tabs": "workspace:^"
+    "@mirrordown/mdit-unwrap-images": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/preset-remark@workspace:packages/preset-remark":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/preset-remark@workspace:packages/preset-remark"
+  dependencies:
+    "@mirrordown/remd-abbr": "workspace:^"
+    "@mirrordown/remd-attrs": "workspace:^"
+    "@mirrordown/remd-autolink-headings": "workspace:^"
+    "@mirrordown/remd-definition-list": "workspace:^"
+    "@mirrordown/remd-del": "workspace:^"
+    "@mirrordown/remd-github-alerts": "workspace:^"
+    "@mirrordown/remd-ins": "workspace:^"
+    "@mirrordown/remd-kbd": "workspace:^"
+    "@mirrordown/remd-lightbox": "workspace:^"
+    "@mirrordown/remd-mark": "workspace:^"
+    "@mirrordown/remd-ruby": "workspace:^"
+    "@mirrordown/remd-sectionize": "workspace:^"
+    "@mirrordown/remd-slug": "workspace:^"
+    "@mirrordown/remd-spoiler": "workspace:^"
+    "@mirrordown/remd-squeeze-paragraphs": "workspace:^"
+    "@mirrordown/remd-steps": "workspace:^"
+    "@mirrordown/remd-sub": "workspace:^"
+    "@mirrordown/remd-sup": "workspace:^"
+    "@mirrordown/remd-tabs": "workspace:^"
+    "@mirrordown/remd-unwrap-images": "workspace:^"
+    "@types/hast": "catalog:"
+    "@types/mdast": "catalog:"
+    mdast-util-to-hast: "npm:^13.0.0"
+    remark-gfm: "catalog:"
+    unified: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-abbr@workspace:^, @mirrordown/remd-abbr@workspace:packages/remd-abbr":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-abbr@workspace:packages/remd-abbr"
   dependencies:
@@ -1478,7 +1544,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-attrs@workspace:*, @mirrordown/remd-attrs@workspace:packages/remd-attrs":
+"@mirrordown/remd-attrs@workspace:*, @mirrordown/remd-attrs@workspace:^, @mirrordown/remd-attrs@workspace:packages/remd-attrs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-attrs@workspace:packages/remd-attrs"
   dependencies:
@@ -1491,7 +1557,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-autolink-headings@workspace:*, @mirrordown/remd-autolink-headings@workspace:packages/remd-autolink-headings":
+"@mirrordown/remd-autolink-headings@workspace:*, @mirrordown/remd-autolink-headings@workspace:^, @mirrordown/remd-autolink-headings@workspace:packages/remd-autolink-headings":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-autolink-headings@workspace:packages/remd-autolink-headings"
   dependencies:
@@ -1503,7 +1569,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-definition-list@workspace:*, @mirrordown/remd-definition-list@workspace:packages/remd-definition-list":
+"@mirrordown/remd-definition-list@workspace:*, @mirrordown/remd-definition-list@workspace:^, @mirrordown/remd-definition-list@workspace:packages/remd-definition-list":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-definition-list@workspace:packages/remd-definition-list"
   dependencies:
@@ -1522,7 +1588,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-del@workspace:*, @mirrordown/remd-del@workspace:packages/remd-del":
+"@mirrordown/remd-del@workspace:*, @mirrordown/remd-del@workspace:^, @mirrordown/remd-del@workspace:packages/remd-del":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-del@workspace:packages/remd-del"
   dependencies:
@@ -1540,7 +1606,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-github-alerts@workspace:*, @mirrordown/remd-github-alerts@workspace:packages/remd-github-alerts":
+"@mirrordown/remd-github-alerts@workspace:*, @mirrordown/remd-github-alerts@workspace:^, @mirrordown/remd-github-alerts@workspace:packages/remd-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-github-alerts@workspace:packages/remd-github-alerts"
   dependencies:
@@ -1566,7 +1632,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-ins@workspace:*, @mirrordown/remd-ins@workspace:packages/remd-ins":
+"@mirrordown/remd-ins@workspace:*, @mirrordown/remd-ins@workspace:^, @mirrordown/remd-ins@workspace:packages/remd-ins":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-ins@workspace:packages/remd-ins"
   dependencies:
@@ -1584,7 +1650,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-kbd@workspace:*, @mirrordown/remd-kbd@workspace:packages/remd-kbd":
+"@mirrordown/remd-kbd@workspace:*, @mirrordown/remd-kbd@workspace:^, @mirrordown/remd-kbd@workspace:packages/remd-kbd":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-kbd@workspace:packages/remd-kbd"
   dependencies:
@@ -1602,7 +1668,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-lightbox@workspace:*, @mirrordown/remd-lightbox@workspace:packages/remd-lightbox":
+"@mirrordown/remd-lightbox@workspace:*, @mirrordown/remd-lightbox@workspace:^, @mirrordown/remd-lightbox@workspace:packages/remd-lightbox":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-lightbox@workspace:packages/remd-lightbox"
   dependencies:
@@ -1614,7 +1680,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-mark@workspace:*, @mirrordown/remd-mark@workspace:packages/remd-mark":
+"@mirrordown/remd-mark@workspace:*, @mirrordown/remd-mark@workspace:^, @mirrordown/remd-mark@workspace:packages/remd-mark":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-mark@workspace:packages/remd-mark"
   dependencies:
@@ -1632,7 +1698,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-ruby@workspace:*, @mirrordown/remd-ruby@workspace:packages/remd-ruby":
+"@mirrordown/remd-ruby@workspace:*, @mirrordown/remd-ruby@workspace:^, @mirrordown/remd-ruby@workspace:packages/remd-ruby":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-ruby@workspace:packages/remd-ruby"
   dependencies:
@@ -1647,7 +1713,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-sectionize@workspace:*, @mirrordown/remd-sectionize@workspace:packages/remd-sectionize":
+"@mirrordown/remd-sectionize@workspace:*, @mirrordown/remd-sectionize@workspace:^, @mirrordown/remd-sectionize@workspace:packages/remd-sectionize":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sectionize@workspace:packages/remd-sectionize"
   dependencies:
@@ -1658,7 +1724,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-slug@workspace:*, @mirrordown/remd-slug@workspace:packages/remd-slug":
+"@mirrordown/remd-slug@workspace:*, @mirrordown/remd-slug@workspace:^, @mirrordown/remd-slug@workspace:packages/remd-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-slug@workspace:packages/remd-slug"
   dependencies:
@@ -1671,7 +1737,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-spoiler@workspace:*, @mirrordown/remd-spoiler@workspace:packages/remd-spoiler":
+"@mirrordown/remd-spoiler@workspace:*, @mirrordown/remd-spoiler@workspace:^, @mirrordown/remd-spoiler@workspace:packages/remd-spoiler":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-spoiler@workspace:packages/remd-spoiler"
   dependencies:
@@ -1690,7 +1756,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-squeeze-paragraphs@workspace:*, @mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs":
+"@mirrordown/remd-squeeze-paragraphs@workspace:*, @mirrordown/remd-squeeze-paragraphs@workspace:^, @mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs"
   dependencies:
@@ -1703,7 +1769,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-steps@workspace:*, @mirrordown/remd-steps@workspace:packages/remd-steps":
+"@mirrordown/remd-steps@workspace:*, @mirrordown/remd-steps@workspace:^, @mirrordown/remd-steps@workspace:packages/remd-steps":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-steps@workspace:packages/remd-steps"
   dependencies:
@@ -1716,7 +1782,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-sub@workspace:*, @mirrordown/remd-sub@workspace:packages/remd-sub":
+"@mirrordown/remd-sub@workspace:*, @mirrordown/remd-sub@workspace:^, @mirrordown/remd-sub@workspace:packages/remd-sub":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sub@workspace:packages/remd-sub"
   dependencies:
@@ -1729,7 +1795,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-sup@workspace:*, @mirrordown/remd-sup@workspace:packages/remd-sup":
+"@mirrordown/remd-sup@workspace:*, @mirrordown/remd-sup@workspace:^, @mirrordown/remd-sup@workspace:packages/remd-sup":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sup@workspace:packages/remd-sup"
   dependencies:
@@ -1742,7 +1808,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-tabs@workspace:*, @mirrordown/remd-tabs@workspace:packages/remd-tabs":
+"@mirrordown/remd-tabs@workspace:*, @mirrordown/remd-tabs@workspace:^, @mirrordown/remd-tabs@workspace:packages/remd-tabs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-tabs@workspace:packages/remd-tabs"
   dependencies:
@@ -1755,7 +1821,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-unwrap-images@workspace:*, @mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images":
+"@mirrordown/remd-unwrap-images@workspace:*, @mirrordown/remd-unwrap-images@workspace:^, @mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images"
   dependencies:

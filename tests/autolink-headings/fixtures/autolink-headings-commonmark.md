@@ -33,3 +33,7 @@
 <!-- @case: paragraph-untouched -->
 
 A paragraph with no heading.
+
+<!-- @case: a heading with no text gets no link to an empty id -->
+
+## ![Logo](logo.png)
