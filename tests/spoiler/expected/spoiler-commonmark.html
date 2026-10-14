@@ -87,3 +87,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">text</span></label></p>
+
+<!-- @case: an odd-length run leaves its extra marker outside the spoiler -->
+<p>|<label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">a</span></label>|</p>
+
+<!-- @case: a closer pairs with the nearest opener -->
+<p>||a <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">b</span></label></p>
+
+<!-- @case: spoilers nest -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">a <label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">b</span></label> c</span></label></p>
+
+<!-- @case: a run between spaces neither opens nor closes -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">a ||| b</span></label></p>

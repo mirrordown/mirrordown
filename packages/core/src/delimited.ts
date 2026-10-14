@@ -5,10 +5,10 @@ import {
   type SpanTransform
 } from "./spans.js";
 
-// The scan behind `==mark==`, `++ins++` and `--del--`, shared by the remark and Sätteri plugins. It ports markdown-it's delimiter algorithm (the one markdown-it-mark and markdown-it-ins use), so all three engines pair delimiters the same way: runs of the marker split into two-character delimiters that open or close by emphasis-style flanking, each closer pairs with the nearest open opener, pairs nest, and the odd marker of an odd-length run stays outside the tag. It works on one parent's children: text is scanned, other nodes are opaque. It is pure; remark runs it on mutable nodes, Sätteri on read-only ones (it builds new nodes and reuses the rest).
+// The scan behind `==mark==`, `++ins++`, `--del--` and `||spoiler||`, shared by the remark and Sätteri plugins. It ports markdown-it's delimiter algorithm (the one markdown-it-mark and markdown-it-ins use), so all three engines pair delimiters the same way: runs of the marker split into two-character delimiters that open or close by emphasis-style flanking, each closer pairs with the nearest open opener, pairs nest, and the odd marker of an odd-length run stays outside the tag. It works on one parent's children: text is scanned, other nodes are opaque. It is pure; remark runs it on mutable nodes, Sätteri on read-only ones (it builds new nodes and reuses the rest).
 
-/** A marker whose doubled form delimits a span: `==`, `++` or `--`. */
-export type DelimiterMarker = `=` | `+` | `-`;
+/** A marker whose doubled form delimits a span: `==`, `++`, `--` or `||`. */
+export type DelimiterMarker = `=` | `+` | `-` | `|`;
 
 // What markdown-it sees beside a run at the edge of a text node: inside an inline parent, that parent's own delimiter (`*`, `[`, `~`…), which is punctuation; at the edge of a block's inline content, the space markdown-it assumes there.
 const INLINE_PARENTS = new Set([
@@ -18,6 +18,8 @@ const INLINE_PARENTS = new Set([
   `link`,
   `linkReference`,
   `mark`,
+  `spoiler`,
+  `spoilerContent`,
   `strong`,
   `subscript`,
   `superscript`
@@ -85,7 +87,7 @@ const balancePairs = (delimiters: Delimiter[]): void => {
   });
 };
 
-/** Build the delimiter scan for one marker: `=` (mark), `+` (ins) or `-` (del). */
+/** Build the delimiter scan for one marker: `=` (mark), `+` (ins), `-` (del) or `|` (spoiler). */
 export const createDelimitedTransform = <N extends PhrasingLike>(
   marker: DelimiterMarker,
   nodes: SpanNodes<N>

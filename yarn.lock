@@ -1611,6 +1611,7 @@ __metadata:
     "@mirrordown/sat-kbd": "workspace:^"
     "@mirrordown/sat-mark": "workspace:^"
     "@mirrordown/sat-slug": "workspace:^"
+    "@mirrordown/sat-spoiler": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5
@@ -1811,11 +1812,6 @@ __metadata:
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
@@ -1960,6 +1956,17 @@ __metadata:
   resolution: "@mirrordown/sat-slug@workspace:packages/sat-slug"
   dependencies:
     github-slugger: "catalog:"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-spoiler@workspace:^, @mirrordown/sat-spoiler@workspace:packages/sat-spoiler":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-spoiler@workspace:packages/sat-spoiler"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5
@@ -8788,37 +8795,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-find-all-after@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "unist-util-find-all-after@npm:5.0.0"
-  dependencies:
-    "@types/unist": "npm:^3.0.0"
-    unist-util-is: "npm:^6.0.0"
-  checksum: 10/e4e6de227c406f1ce7bf7006153ffbae506194d65528bde6e74e032ff992c8c5f57dded5ba6309defcb636493661f26c19a0fa5d53e357705d74266bbc44ac8b
-  languageName: node
-  linkType: hard
-
-"unist-util-find-all-before@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "unist-util-find-all-before@npm:5.0.0"
-  dependencies:
-    "@types/unist": "npm:^3.0.0"
-    unist-util-is: "npm:^6.0.0"
-  checksum: 10/2f1b6a5748999a5bec356f76c0671f4bc6386aab7b89c1c8aeb2f2501df03d07475730b9c5302e9e4dab63a01410faa7f9bafd6d92d82228ddf64f8a0fabcee1
-  languageName: node
-  linkType: hard
-
-"unist-util-find-between-all@npm:^1.1.6":
-  version: 1.1.6
-  resolution: "unist-util-find-between-all@npm:1.1.6"
-  dependencies:
-    "@types/unist": "npm:^3.0.3"
-    unist-util-is: "npm:^6.0.1"
-  checksum: 10/f61aec08e3d63d22c8abdd8e8ffd4b22c39ad9ec6a91c4cc73bb876d549dcd43bdaa203f0366faf1b574d8ae3a631885c26a15fe1bc875de5f75135405c334ed
-  languageName: node
-  linkType: hard
-
-"unist-util-is@npm:^6.0.0, unist-util-is@npm:^6.0.1":
+"unist-util-is@npm:^6.0.0":
   version: 6.0.1
   resolution: "unist-util-is@npm:6.0.1"
   dependencies:
