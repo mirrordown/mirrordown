@@ -1845,6 +1845,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/sat-slug@workspace:packages/sat-slug":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-slug@workspace:packages/sat-slug"
