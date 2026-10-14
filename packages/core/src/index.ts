@@ -18,3 +18,10 @@ export {
   type AlertType,
   type PhrasingLike
 } from "./github-alerts/index.js";
+export {
+  MARK_DELIMITERS,
+  createDelimitedTransform,
+  type DelimitedNodes,
+  type DelimitedTransform,
+  type DelimiterPatterns
+} from "./delimited.js";

@@ -1688,11 +1688,6 @@ __metadata:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-builder: "catalog:"
-    unist-util-find-after: "catalog:"
-    unist-util-find-all-after: "catalog:"
-    unist-util-find-all-before: "catalog:"
-    unist-util-find-between-all: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
@@ -1848,6 +1843,17 @@ __metadata:
 "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-mark@workspace:packages/sat-mark":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-mark@workspace:packages/sat-mark"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
