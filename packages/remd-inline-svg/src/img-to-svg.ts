@@ -73,6 +73,16 @@ const buildSpriteContainer = (
   ]
 });
 
+// The <img>'s attributes carried onto the <svg>. `alt` is not an SVG
+// attribute: its text becomes the accessible name (aria-label), as in
+// mdit-inline-svg, and an empty alt adds nothing.
+const imgAttributes = (
+  img: Record<string, unknown>
+): Record<string, unknown> => {
+  const { src: _src, alt, ...rest } = img;
+  return typeof alt === "string" && alt ? { ...rest, ariaLabel: alt } : rest;
+};
+
 export const imgToSVG = (
   groupedNodes: GroupedImageNodes,
   svgCache: SvgCache,
@@ -96,9 +106,10 @@ export const imgToSVG = (
       for (const imgNode of imgNodes) {
         const svgProps = { ...svgNode.properties };
         delete svgProps.id;
-        const imgProps = { ...imgNode.properties } as Record<string, unknown>;
-        delete imgProps.src;
-        const wrapperProps = { ...svgProps, ...imgProps };
+        const wrapperProps = {
+          ...svgProps,
+          ...imgAttributes(imgNode.properties)
+        };
 
         Object.assign(imgNode, {
           type: `element`,
@@ -118,9 +129,8 @@ export const imgToSVG = (
       for (const imgNode of imgNodes) {
         const properties = {
           ...svgNode.properties,
-          ...(imgNode.properties as Record<string, unknown>)
+          ...imgAttributes(imgNode.properties)
         };
-        delete properties.src;
         Object.assign(imgNode, svgNode, { properties });
       }
     }
