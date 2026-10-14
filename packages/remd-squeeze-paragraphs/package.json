@@ -20,7 +20,7 @@
     }
   },
   "dependencies": {
-    "hast-util-whitespace": "^3.0.0",
+    "@mirrordown/core": "workspace:^",
     "unist-util-visit": "catalog:"
   },
   "devDependencies": {

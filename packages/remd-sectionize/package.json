@@ -36,5 +36,8 @@
       "node ../../scripts/jsr-resolve-deps.mjs",
       "node ../../scripts/jsr-publish.mjs"
     ]
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
   }
 }

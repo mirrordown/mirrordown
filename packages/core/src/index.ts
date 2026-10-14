@@ -26,3 +26,15 @@ export {
   type SpanTransform
 } from "./spans.js";
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
+export {
+  LIGHTBOX_MARKER,
+  headingRank,
+  isEmptyParagraph,
+  isImageParagraph,
+  lightboxDialog,
+  lightboxId,
+  lightboxTrigger,
+  sectionize,
+  type HastElementLike,
+  type HastLike
+} from "./hast.js";

@@ -1744,6 +1744,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-lightbox@workspace:packages/remd-lightbox"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
@@ -1784,6 +1785,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sectionize@workspace:packages/remd-sectionize"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     unified: "catalog:"
   peerDependencies:
@@ -1822,8 +1824,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-squeeze-paragraphs@workspace:packages/remd-squeeze-paragraphs"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
-    hast-util-whitespace: "npm:^3.0.0"
     unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
@@ -1887,8 +1889,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
-    hast-util-whitespace: "npm:^3.0.0"
     unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
