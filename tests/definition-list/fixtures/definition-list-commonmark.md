@@ -314,3 +314,22 @@ Apple
 
 - Term
   : Def
+
+<!-- @case: A continuation must reach the definition's content column -->
+
+Apple
+:   Red.
+
+  Not part of the definition.
+
+<!-- @case: A continuation at the content column stays in the definition -->
+
+Apple
+: Red.
+
+  More red.
+
+<!-- @case: More than four spaces after the marker start an indented code block -->
+
+Apple
+:      code
