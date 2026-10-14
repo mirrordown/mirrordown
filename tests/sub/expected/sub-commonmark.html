@@ -64,3 +64,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<sub>text</sub></p>
+
+<!-- @case: space inside the content is allowed -->
+<p><sub>foo bar</sub></p>
+
+<!-- @case: content is inline markup -->
+<p><sub><em>a b</em> and <a href="e">c d</a></sub></p>
+
+<!-- @case: a longer tilde run does not close a subscript -->
+<p><sub>a~~b</sub></p>
+
+<!-- @case: closes like emphasis: not after punctuation inside a word -->
+<p>a~(b)~c</p>

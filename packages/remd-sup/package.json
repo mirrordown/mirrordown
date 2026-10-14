@@ -21,12 +21,7 @@
   },
   "dependencies": {
     "@mirrordown/core": "workspace:^",
-    "unist-builder": "catalog:",
-    "unist-util-find-after": "catalog:",
-    "unist-util-find-all-after": "catalog:",
-    "unist-util-find-all-before": "catalog:",
-    "unist-util-find-between-all": "catalog:",
-    "unist-util-visit": "catalog:"
+    "mdast-util-from-markdown": "catalog:"
   },
   "devDependencies": {
     "@types/mdast": "catalog:",

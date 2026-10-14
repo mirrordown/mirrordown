@@ -74,3 +74,19 @@ foo ^bar
 <!-- @case: escaped backslash keeps the delimiter -->
 
 \\^text^
+
+<!-- @case: space inside the content is allowed -->
+
+^foo bar^
+
+<!-- @case: content is inline markup -->
+
+^*a b* and [c d](e)^
+
+<!-- @case: a run of carets is not a delimiter -->
+
+^^a^
+
+<!-- @case: closes like emphasis: not after punctuation inside a word -->
+
+a^(b)^c

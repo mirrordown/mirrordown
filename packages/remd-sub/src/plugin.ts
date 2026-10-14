@@ -1,13 +1,11 @@
-import { visit } from "unist-util-visit";
-import type { Visitor, VisitorResult } from "unist-util-visit";
-import type { Plugin, Transformer } from "unified";
-import type { Data, Parent, PhrasingContent, Root, Text } from "mdast";
-import { findAllBetween } from "unist-util-find-between-all";
-import { findAllBefore } from "unist-util-find-all-before";
-import { findAllAfter } from "unist-util-find-all-after";
-import { findAfter } from "unist-util-find-after";
-import { u } from "unist-builder";
-import { maskTreeEscapes } from "@mirrordown/core";
+import type { Plugin } from "unified";
+import type { Data, Nodes, Parent, PhrasingContent, Root } from "mdast";
+import type {
+  CompileContext,
+  Extension as FromMarkdownExtension,
+  Token
+} from "mdast-util-from-markdown";
+import { scriptSyntax } from "@mirrordown/core";
 
 /** Optional data carried by a {@link Subscript} node. */
 export interface SubscriptData extends Data {}
@@ -19,155 +17,38 @@ export interface Subscript extends Parent {
   data?: SubscriptData | undefined;
 }
 
-const REGEX = /~(?!\s)([\s\S]*?)(?<!\s)~/;
-const REGEX_GLOBAL = /~(?!\s)([\s\S]*?)(?<!\s)~/g;
-
-const REGEX_STARTING = /~(?!\s)/;
-const REGEX_STARTING_GLOBAL = /~(?!\s)/g;
-
-const REGEX_ENDING = /(?<!\s)~/;
-const REGEX_ENDING_GLOBAL = /(?<!\s)~/g;
+/** mdast-util-from-markdown extension turning `subscript` tokens into {@link Subscript} nodes. */
+export const subscriptFromMarkdown: FromMarkdownExtension = {
+  canContainEols: [`subscript`],
+  enter: {
+    subscript(this: CompileContext, token: Token) {
+      const node: Subscript = {
+        type: `subscript`,
+        children: [],
+        data: { hName: `sub` }
+      };
+      // The JSR build has no mdast augmentation, so `Subscript` is not in `Nodes` there.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unnecessary-type-assertion
+      this.enter(node as unknown as Nodes, token);
+    }
+  },
+  exit: {
+    subscript(this: CompileContext, token: Token) {
+      this.exit(token);
+    }
+  }
+};
 
 /**
- * remark plugin for subscript syntax (`~text~`), wrapping each match in a
- * {@link Subscript} node that renders as a `<sub>` element.
+ * remark plugin for subscript syntax (`~text~`), parsed as a {@link Subscript} node that renders as a `<sub>` element. A single `~` is a delimiter run like emphasis, and its content is inline markup; it shares its syntax with `remd-sup` through `@mirrordown/core`, so the two nest and resolve crossing runs leftmost-first. Use `remark-gfm` with `singleTilde: false`, or GFM claims `~text~` as strikethrough first.
  */
-export const remarkSub: Plugin<[], Root> = () => {
-  const constructSubscriptNode = (children: PhrasingContent[]): Subscript => ({
-    type: `subscript`,
-    children,
-    data: { hName: `sub` }
-  });
-
-  const visitorFirst: Visitor<Text, Parent> = (
-    node,
-    index,
-    parent
-  ): VisitorResult => {
-    /* v8 ignore next */
-    if (!parent || typeof index === `undefined`) return;
-
-    if (!REGEX.test(node.value)) return;
-
-    const children: PhrasingContent[] = [];
-    const value = node.value;
-    let tempValue = ``;
-    let prevMatchIndex = 0;
-    let prevMatchLength = 0;
-
-    const matches = Array.from(value.matchAll(REGEX_GLOBAL));
-
-    for (const match of matches) {
-      const [matched, subscriptText] = match;
-      const mIndex = match.index;
-      const mLength = matched.length;
-
-      const textPartIndex = prevMatchIndex + prevMatchLength;
-
-      prevMatchIndex = mIndex;
-      prevMatchLength = mLength;
-
-      if (mIndex > textPartIndex) {
-        children.push(u(`text`, value.substring(textPartIndex, mIndex)));
-      }
-
-      children.push(
-        constructSubscriptNode([{ type: `text`, value: subscriptText.trim() }])
-      );
-
-      tempValue = value.slice(mIndex + mLength);
-    }
-
-    if (tempValue) {
-      children.push(u(`text`, tempValue));
-    }
-
-    if (children.length) parent.children.splice(index, 1, ...children);
+export const remarkSub: Plugin<[], Root> = function () {
+  // this.data() in remark plugin context returns a generic shape; the cast narrows the known extension arrays.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const data = this.data() as {
+    micromarkExtensions?: unknown[];
+    fromMarkdownExtensions?: unknown[];
   };
-
-  const visitorSecond: Visitor<Text, Parent> = (
-    node,
-    index,
-    parent
-  ): VisitorResult => {
-    /* v8 ignore next */
-    if (!parent || typeof index === `undefined`) return;
-
-    if (!REGEX_STARTING.test(node.value)) return;
-
-    const openingNode = node;
-
-    const closingNode = findAfter(parent, openingNode, (n): n is Text => {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      return n.type === `text` && REGEX_ENDING.test((n as Text).value);
-    });
-
-    if (!closingNode) return;
-
-    // unist-util-find-all-* are generic over Parent; we know paragraph
-    // siblings are PhrasingContent. The cast narrows the lib's `Node[]`
-    // return to the concrete child type we know we're working with.
-    /* oxlint-disable typescript/no-unsafe-type-assertion */
-    const beforeChildren = findAllBefore(
-      parent,
-      openingNode
-    ) as PhrasingContent[];
-    const mainChildren = findAllBetween(
-      parent,
-      openingNode,
-      closingNode
-    ) as PhrasingContent[];
-    const afterChildren = findAllAfter(
-      parent,
-      closingNode
-    ) as PhrasingContent[];
-    /* oxlint-enable typescript/no-unsafe-type-assertion */
-
-    const value = openingNode.value;
-    const match = Array.from(value.matchAll(REGEX_STARTING_GLOBAL))[0];
-    const [matched] = match;
-    const mIndex = match.index;
-    const mLength = matched.length;
-
-    if (mIndex > 0) {
-      beforeChildren.push(u(`text`, value.substring(0, mIndex)));
-    }
-
-    if (value.length > mIndex + mLength) {
-      mainChildren.unshift(u(`text`, value.slice(mIndex + mLength)));
-    }
-
-    const value_ = closingNode.value;
-    const match_ = Array.from(value_.matchAll(REGEX_ENDING_GLOBAL))[0];
-    const [matched_] = match_;
-    const mIndex_ = match_.index;
-    const mLength_ = matched_.length;
-
-    if (mIndex_ > 0) {
-      mainChildren.push(u(`text`, value_.substring(0, mIndex_)));
-    }
-
-    if (value_.length > mIndex_ + mLength_) {
-      afterChildren.unshift(u(`text`, value_.slice(mIndex_ + mLength_)));
-    }
-
-    parent.children = [
-      ...beforeChildren,
-      constructSubscriptNode(mainChildren),
-      ...afterChildren
-    ];
-
-    return index;
-  };
-
-  const transformer: Transformer<Root> = (tree, file) => {
-    // Escapes are resolved before this runs; mask escaped characters so a
-    // backslash-escaped delimiter is not matched, as in markdown-it.
-    const restoreEscapes = maskTreeEscapes(tree, String(file));
-    visit(tree, `text`, visitorFirst);
-    visit(tree, `text`, visitorSecond);
-    restoreEscapes();
-  };
-
-  return transformer;
+  (data.micromarkExtensions ??= []).push(scriptSyntax(`~`));
+  (data.fromMarkdownExtensions ??= []).push(subscriptFromMarkdown);
 };
