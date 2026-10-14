@@ -46,8 +46,7 @@ export const createAlertResolver = (
   return {
     resolve: (keyword) =>
       aliasMap[matchCaseInsensitive ? keyword.toLowerCase() : keyword],
-    // A user-defined type may have no default title; capitalize the keyword
-    // as a last resort.
+    // A user-defined type may have no default title; capitalize the keyword as a last resort.
     titleFor: (type) =>
       customTitles[type] ??
       (isAlertType(type) ? DEFAULT_TITLE[type] : undefined) ??
@@ -99,12 +98,7 @@ const withValue = <N extends PhrasingLike>(node: N, value: string): N => ({
 });
 
 /**
- * Split an alert's first paragraph (an mdast `paragraph`'s children) into its
- * marker, title and body, or return `null` when it does not open with a
- * `[!KEYWORD]` marker in plain text. The first line is the marker plus an
- * optional title; everything after the first line break — a newline inside a
- * text node (soft) or a `break` node (hard) — is the body. Nothing is dropped.
- * Text nodes are copied; other nodes are reused as they are.
+ * Split an alert's first paragraph (an mdast `paragraph`'s children) into its marker, title and body, or return `null` when it does not open with a `[!KEYWORD]` marker in plain text. The first line is the marker plus an optional title; everything after the first line break — a newline inside a text node (soft) or a `break` node (hard) — is the body. Nothing is dropped. Text nodes are copied; other nodes are reused as they are.
  */
 export const splitAlertParagraph = <N extends PhrasingLike>(
   children: readonly N[]

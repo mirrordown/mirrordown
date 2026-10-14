@@ -19,10 +19,7 @@ type ElementVisitor = Extract<
 >;
 
 /**
- * The plugin's definition. It lists only the keys the plugin defines, with a
- * synchronous visitor: Sätteri infers whether `markdownToHtml` returns a
- * Promise from every key of a plugin's type, so `HastPluginDefinition`'s
- * optional, possibly-async visitor keys would make the result a union.
+ * The plugin's definition. It lists only the keys the plugin defines, with a synchronous visitor: Sätteri infers whether `markdownToHtml` returns a Promise from every key of a plugin's type, so `HastPluginDefinition`'s optional, possibly-async visitor keys would make the result a union.
  */
 export interface SlugPlugin {
   name: string;
@@ -33,13 +30,9 @@ export interface SlugPlugin {
 }
 
 /**
- * Sätteri hast plugin that adds GitHub-style `id` slugs to headings (`h1`–`h6`),
- * derived from their text content via
- * {@link https://github.com/Flet/github-slugger | github-slugger}.
+ * Sätteri hast plugin that adds GitHub-style `id` slugs to headings (`h1`–`h6`), derived from their text content via {@link https://github.com/Flet/github-slugger | github-slugger}.
  *
- * Headings that already carry an `id` are left untouched, so an explicit id
- * always wins. Repeated heading text dedupes with a numeric suffix (`heading`,
- * `heading-1`, …), counted per document.
+ * Headings that already carry an `id` are left untouched, so an explicit id always wins. Repeated heading text dedupes with a numeric suffix (`heading`, `heading-1`, …), counted per document.
  */
 export const satteriSlug =
   (options: SlugOptions = {}): ((ctx: PluginFactoryContext) => SlugPlugin) =>

@@ -1,9 +1,6 @@
 import type { PhrasingLike } from "./github-alerts/index.js";
 
-// The scan behind `==mark==`, `++ins++` and `--del--`, shared by the remark and
-// Sätteri plugins. It is a pure function over a parent's children: remark runs
-// it on mutable nodes, Sätteri on read-only ones (it builds new nodes and
-// reuses the rest).
+// The scan behind `==mark==`, `++ins++` and `--del--`, shared by the remark and Sätteri plugins. It is a pure function over a parent's children: remark runs it on mutable nodes, Sätteri on read-only ones (it builds new nodes and reuses the rest).
 
 /** The patterns that find a delimited run. */
 export interface DelimiterPatterns {
@@ -38,10 +35,7 @@ export interface DelimitedTransform<N extends PhrasingLike> {
 }
 
 /**
- * Build the scan for one delimited syntax. Pass 1 wraps runs that sit inside a
- * single text node; pass 2 wraps a run opened in one text node and closed in a
- * later sibling text node, taking everything between. Runs nested in a wrapper
- * this scan creates are found too.
+ * Build the scan for one delimited syntax. Pass 1 wraps runs that sit inside a single text node; pass 2 wraps a run opened in one text node and closed in a later sibling text node, taking everything between. Runs nested in a wrapper this scan creates are found too.
  */
 export const createDelimitedTransform = <N extends PhrasingLike>(
   patterns: DelimiterPatterns,

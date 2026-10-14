@@ -19,8 +19,7 @@ export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 type BlockquoteVisitor = NonNullable<MdastPluginInstance["blockquote"]>;
 
 /**
- * The plugin's definition: only the keys it defines, with a synchronous
- * visitor, so `markdownToHtml` returns its result directly.
+ * The plugin's definition: only the keys it defines, with a synchronous visitor, so `markdownToHtml` returns its result directly.
  */
 export interface GithubAlertsPlugin {
   name: string;
@@ -28,11 +27,7 @@ export interface GithubAlertsPlugin {
 }
 
 /**
- * Sätteri plugin for GitHub-style alerts/admonitions (`> [!NOTE]`,
- * `> [!WARNING]`, …). Sätteri has no mdast→hast handler hook, so an alert
- * blockquote becomes custom nodes that render through `hName`/`hProperties`;
- * the marker-line rule and option handling are shared with the markdown-it and
- * remark plugins through `@mirrordown/core`.
+ * Sätteri plugin for GitHub-style alerts/admonitions (`> [!NOTE]`, `> [!WARNING]`, …). Sätteri has no mdast→hast handler hook, so an alert blockquote becomes custom nodes that render through `hName`/`hProperties`; the marker-line rule and option handling are shared with the markdown-it and remark plugins through `@mirrordown/core`.
  */
 export const satteriGithubAlerts =
   (
