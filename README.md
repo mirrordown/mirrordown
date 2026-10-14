@@ -80,8 +80,11 @@ vp install
 **Run all checks (format, lint, type-check):**
 
 ```sh
+vp run --filter "./packages/**" build
 vp check
 ```
+
+The type check reads each workspace package's built types, so build first (after a fresh checkout, or when you change a package another one imports). An unbuilt package doesn't fail the check; its types quietly become `any`.
 
 **Run tests:**
 
