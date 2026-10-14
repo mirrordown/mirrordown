@@ -24,6 +24,12 @@ const crossNodeCases = parseFixture(
   read("expected/sub-cross-node.html")
 );
 
+// The canonical sub/sup interplay (nesting, crossing runs) comes from Sätteri; markdown-it and remark are held to it.
+const subSupCases = parseFixture(
+  read("fixtures/sub-sup.md"),
+  read("expected/sub-sup.html")
+);
+
 const render = (input: string, gfm: boolean): string =>
   normalizeHtml(
     markdownToHtml(input, {
@@ -44,6 +50,25 @@ describe("sub/sat", () => {
   it.each(gfmCases)("sub (sätteri) gfm: $name", ({ input, expected }) => {
     expect(render(input, true)).toBe(expected);
   });
+
+  it.each(subSupCases)(
+    "sub (sätteri) with sup: $name",
+    ({ input, expected }) => {
+      expect(
+        normalizeHtml(
+          markdownToHtml(input, {
+            features: {
+              gfm: false,
+              subscript: true,
+              superscript: true,
+              frontmatter: false,
+              smartPunctuation: false
+            }
+          }).html
+        )
+      ).toBe(expected);
+    }
+  );
 
   it.each(crossNodeCases)(
     "sub (sätteri) cross-node: $name",
