@@ -7,6 +7,7 @@ import { findAllBefore } from "unist-util-find-all-before";
 import { findAllAfter } from "unist-util-find-all-after";
 import { findAfter } from "unist-util-find-after";
 import { u } from "unist-builder";
+import { maskTreeEscapes } from "@mirrordown/core";
 
 /** Optional data carried by a {@link Subscript} node. */
 export interface SubscriptData extends Data {}
@@ -159,9 +160,13 @@ export const remarkSub: Plugin<[], Root> = () => {
     return index;
   };
 
-  const transformer: Transformer<Root> = (tree) => {
+  const transformer: Transformer<Root> = (tree, file) => {
+    // Escapes are resolved before this runs; mask escaped characters so a
+    // backslash-escaped delimiter is not matched, as in markdown-it.
+    const restoreEscapes = maskTreeEscapes(tree, String(file));
     visit(tree, `text`, visitorFirst);
     visit(tree, `text`, visitorSecond);
+    restoreEscapes();
   };
 
   return transformer;

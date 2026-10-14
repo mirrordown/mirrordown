@@ -66,3 +66,13 @@
 
 <!-- @case: unclosed opening -->
 <p>press [[ key</p>
+
+<!-- @case: escaped opening delimiter is literal -->
+<p>[[text]]</p>
+
+<!-- @case: escaped closing delimiter is literal -->
+<p>[[text]]</p>
+
+
+<!-- @case: escaped backslash keeps the delimiter -->
+<p>\<kbd>text</kbd></p>

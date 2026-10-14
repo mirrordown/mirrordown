@@ -1161,6 +1161,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mirrordown/core@workspace:^, @mirrordown/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/core@workspace:packages/core"
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/markdown-docs@workspace:docs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/markdown-docs@workspace:docs"
@@ -1517,6 +1523,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-del@workspace:packages/remd-del"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"
@@ -1560,6 +1567,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-ins@workspace:packages/remd-ins"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"
@@ -1577,6 +1585,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-kbd@workspace:packages/remd-kbd"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"
@@ -1606,6 +1615,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-mark@workspace:packages/remd-mark"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"
@@ -1662,6 +1672,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-spoiler@workspace:packages/remd-spoiler"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"
@@ -1706,6 +1717,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sub@workspace:packages/remd-sub"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"
@@ -1723,6 +1735,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-sup@workspace:packages/remd-sup"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-builder: "catalog:"

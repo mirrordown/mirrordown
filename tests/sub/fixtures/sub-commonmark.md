@@ -62,3 +62,15 @@ _~sub~_
 <!-- @case: unclosed opening -->
 
 foo ~bar
+
+<!-- @case: escaped opening delimiter is literal -->
+
+\~text~
+
+<!-- @case: escaped closing delimiter is literal -->
+
+~text\~
+
+<!-- @case: escaped backslash keeps the delimiter -->
+
+\\~text~

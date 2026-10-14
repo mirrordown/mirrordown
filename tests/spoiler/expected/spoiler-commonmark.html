@@ -77,3 +77,13 @@
 
 <!-- @case: leading space not a spoiler -->
 <p>|| leading space||</p>
+
+<!-- @case: escaped opening delimiter is literal -->
+<p>||text||</p>
+
+<!-- @case: escaped closing delimiter is literal -->
+<p>||text||</p>
+
+
+<!-- @case: escaped backslash keeps the delimiter -->
+<p>\<label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">text</span></label></p>

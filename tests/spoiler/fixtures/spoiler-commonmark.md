@@ -98,3 +98,15 @@ foo ||bar
 <!-- @case: leading space not a spoiler -->
 
 || leading space||
+
+<!-- @case: escaped opening delimiter is literal -->
+
+\||text||
+
+<!-- @case: escaped closing delimiter is literal -->
+
+||text\||
+
+<!-- @case: escaped backslash keeps the delimiter -->
+
+\\||text||

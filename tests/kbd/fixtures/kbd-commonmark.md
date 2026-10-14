@@ -70,3 +70,15 @@ _press [[Ctrl]]_
 <!-- @case: unclosed opening -->
 
 press [[ key
+
+<!-- @case: escaped opening delimiter is literal -->
+
+\[[text]]
+
+<!-- @case: escaped closing delimiter is literal -->
+
+[[text\]]
+
+<!-- @case: escaped backslash keeps the delimiter -->
+
+\\[[text]]

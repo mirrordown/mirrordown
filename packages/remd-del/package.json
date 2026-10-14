@@ -20,6 +20,7 @@
     }
   },
   "dependencies": {
+    "@mirrordown/core": "workspace:^",
     "unist-builder": "catalog:",
     "unist-util-find-after": "catalog:",
     "unist-util-find-all-after": "catalog:",
