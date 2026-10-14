@@ -41,6 +41,7 @@ const withStateIsolation = (
   ddLine: number,
   contentStart: number,
   offset: number,
+  indent: number,
   endLine: number,
   body: () => void
 ): void => {
@@ -51,7 +52,7 @@ const withStateIsolation = (
   const savedSCount = state.sCount[ddLine];
   const savedParentType = state.parentType;
 
-  state.blkIndent = state.ddIndent = state.sCount[ddLine] + 2;
+  state.blkIndent = state.ddIndent = indent;
   state.tShift[ddLine] = contentStart - state.bMarks[ddLine];
   state.sCount[ddLine] = offset;
   state.tight = true;
@@ -178,17 +179,34 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
         pos++;
       }
 
+      // Continuation lines belong to the definition when indented to its
+      // content column, as with a list item: one column past the marker plus
+      // the spaces after it, or just one space when the marker ends the line
+      // or more than four follow (the rest is then an indented code block).
+      const afterMarker = state.sCount[ddLine] + 1;
+      const spacesAfterMarker = pos >= max ? 1 : offset - afterMarker;
+      const indent =
+        afterMarker + (spacesAfterMarker > 4 ? 1 : spacesAfterMarker);
+
       contentStart = pos;
 
       let loose = blankBeforeMarker;
 
-      withStateIsolation(state, ddLine, contentStart, offset, endLine, () => {
-        // ...or when a blank line separates blocks inside it
-        if (!state.tight) loose = true;
-        // A trailing blank line loosens the next definition of this term, if any
-        blankBeforeMarker =
-          state.line - ddLine > 1 && state.isEmpty(state.line - 1);
-      });
+      withStateIsolation(
+        state,
+        ddLine,
+        contentStart,
+        offset,
+        indent,
+        endLine,
+        () => {
+          // ...or when a blank line separates blocks inside it
+          if (!state.tight) loose = true;
+          // A trailing blank line loosens the next definition of this term, if any
+          blankBeforeMarker =
+            state.line - ddLine > 1 && state.isEmpty(state.line - 1);
+        }
+      );
 
       if (!loose) markTightParagraphs(state, ddTokenIndex);
 

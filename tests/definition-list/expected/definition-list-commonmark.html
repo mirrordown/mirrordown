@@ -404,3 +404,31 @@ Not a DD</p>
 </dl>
 </li>
 </ul>
+
+<!-- @case: A continuation must reach the definition's content column -->
+
+<dl>
+<dt>Apple</dt>
+<dd>Red.</dd>
+</dl>
+<p>Not part of the definition.</p>
+
+<!-- @case: A continuation at the content column stays in the definition -->
+
+<dl>
+<dt>Apple</dt>
+<dd>
+<p>Red.</p>
+<p>More red.</p>
+</dd>
+</dl>
+
+<!-- @case: More than four spaces after the marker start an indented code block -->
+
+<dl>
+<dt>Apple</dt>
+<dd>
+<pre><code> code
+</code></pre>
+</dd>
+</dl>
