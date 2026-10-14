@@ -63,7 +63,8 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
         children: [
           {
             index: -1,
-            type: (t: string) => t !== "code_inline",
+            // Only literal text can end in an attribute block: an image's `content` is its alt text, a code span's is its code.
+            type: "text",
             content: (content: string) => check(content.trim(), "end") !== null
           }
         ]
@@ -106,7 +107,8 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
         children: [
           {
             index: -1,
-            type: (t: string) => t !== "code_inline",
+            // Only literal text can end in an attribute block: an image's `content` is its alt text, a code span's is its code.
+            type: "text",
             content: (content: string) => check(content.trim(), "end") !== null
           }
         ]
@@ -148,7 +150,8 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
         children: [
           {
             index: -1,
-            type: (t: string) => t !== "code_inline",
+            // Only literal text can end in an attribute block: an image's `content` is its alt text, a code span's is its code.
+            type: "text",
             content: (content: string) => check(content.trim(), "end") !== null
           }
         ]

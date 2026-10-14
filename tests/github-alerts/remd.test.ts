@@ -24,12 +24,13 @@ const noIconsCases = parseFixture(
   read("expected/github-alerts-no-icons.html")
 );
 
+// No `allowDangerousHtml`: icons must render in a default pipeline, as markdown-it's do with `html: false`.
 const processor = (icons: boolean) =>
   unified()
     .use(remarkParse)
     .use(remarkGithubAlerts, { icons })
     .use(remarkRehype, { handlers: githubAlertsHastHandlers })
-    .use(rehypeStringify, { allowDangerousHtml: true });
+    .use(rehypeStringify);
 
 const withIcons = processor(true);
 const noIcons = processor(false);
