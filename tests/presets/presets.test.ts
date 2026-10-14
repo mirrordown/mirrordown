@@ -188,14 +188,20 @@ describe("presets", () => {
 
   describe("preset-satteri", () => {
     // Sätteri has these features so far; the rest arrive as their ports land.
-    const satteriFeatures = ["github-alerts", "mark", "slug", "sub", "sup"];
+    const satteriFeatures = [
+      "del",
+      "github-alerts",
+      "ins",
+      "mark",
+      "slug",
+      "sub",
+      "sup"
+    ];
     const remarkWithSatteriFeatures = remark({
       abbr: false,
       attrs: false,
       autolinkHeadings: false,
       definitionList: false,
-      del: false,
-      ins: false,
       kbd: false,
       lightbox: false,
       ruby: false,
@@ -219,7 +225,10 @@ describe("presets", () => {
           sample
         ): sample is (typeof features)[number] & {
           key: keyof SatteriOptions;
-        } => ["githubAlerts", "mark", "slug", "sub", "sup"].includes(sample.key)
+        } =>
+          ["del", "githubAlerts", "ins", "mark", "slug", "sub", "sup"].includes(
+            sample.key
+          )
       )
     )(
       "$key is on by default and `false` turns it off",

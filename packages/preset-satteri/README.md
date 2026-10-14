@@ -65,7 +65,9 @@ mirrordown({
 | Option         | Syntax                                      | Provided by                       |
 | -------------- | ------------------------------------------- | --------------------------------- |
 | `gfm`          | tables, `~~strike~~`, task lists, autolinks | Sätteri's `gfm` feature           |
+| `del`          | `--deleted--`                               | `@mirrordown/sat-del`             |
 | `githubAlerts` | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`   |
+| `ins`          | `++inserted++`                              | `@mirrordown/sat-ins`             |
 | `mark`         | `==highlight==`                             | `@mirrordown/sat-mark`            |
 | `slug`         | heading ids                                 | `@mirrordown/sat-slug`            |
 | `sub`          | `~subscript~`                               | Sätteri's `subscript` feature     |

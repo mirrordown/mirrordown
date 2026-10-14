@@ -4,6 +4,8 @@ import {
   type AlertOptions,
   type GithubAlertsPlugin
 } from "@mirrordown/sat-github-alerts";
+import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
+import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
   satteriSlug,
@@ -15,7 +17,9 @@ import {
 export interface MirrordownOptions {
   /** GitHub Flavored Markdown: tables, strikethrough, task lists, autolink literals and footnotes. */
   gfm?: boolean;
+  del?: boolean;
   githubAlerts?: boolean | AlertOptions;
+  ins?: boolean;
   mark?: boolean;
   slug?: boolean | SlugOptions;
   /** Sätteri's built-in `subscript` feature. */
@@ -34,7 +38,12 @@ type Factory<P> = (ctx: PluginFactoryContext) => P;
  */
 export interface MirrordownPreset {
   features: Features;
-  mdastPlugins: Array<Factory<GithubAlertsPlugin> | Factory<MarkPlugin>>;
+  mdastPlugins: Array<
+    | Factory<DelPlugin>
+    | Factory<GithubAlertsPlugin>
+    | Factory<InsPlugin>
+    | Factory<MarkPlugin>
+  >;
   hastPlugins: Array<Factory<SlugPlugin>>;
 }
 
@@ -57,9 +66,11 @@ export const mirrordown = (
       ...options.features
     },
     mdastPlugins: [
+      ...(options.del === false ? [] : [satteriDel()]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),
+      ...(options.ins === false ? [] : [satteriIns()]),
       ...(options.mark === false ? [] : [satteriMark()])
     ],
     hastPlugins:
