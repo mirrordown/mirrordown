@@ -87,7 +87,7 @@ const extractHeaderPara = (
   para: Paragraph,
   requireDepthOne = true,
   prevDepth = 0
-): { tabs: RawTab[]; rest: PhrasingContent[][] } | null => {
+): { tabs: RawTab[]; rest: PhrasingContent[][]; restLine: number } | null => {
   const lines = paraToLines(para);
   const tabs: RawTab[] = [];
   let currentDepth = prevDepth;
@@ -102,7 +102,13 @@ const extractHeaderPara = (
     const { depth, open } = header;
     if (tabs.length === 0 && requireDepthOne && depth !== 1) return null;
     if (depth > currentDepth + 1) {
-      return tabs.length > 0 ? { tabs, rest: lines.slice(index) } : null;
+      return tabs.length > 0
+        ? {
+            tabs,
+            rest: lines.slice(index),
+            restLine: (para.position?.start.line ?? 1) + index
+          }
+        : null;
     }
     currentDepth = depth;
 
@@ -120,7 +126,39 @@ const extractHeaderPara = (
     });
   }
 
-  return tabs.length > 0 ? { tabs, rest: [] } : null;
+  return tabs.length > 0 ? { tabs, rest: [], restLine: 0 } : null;
+};
+
+// Lines left over after a group ends become ordinary paragraphs, split before
+// every line that opens a new group (a depth-1 header), so the main loop can
+// start that group. Positions follow the source lines (paragraph lines map 1:1
+// to source lines) because group ids hash the start line.
+const splitAtGroupStarts = (
+  lines: PhrasingContent[][],
+  firstLine: number
+): Paragraph[] => {
+  const paragraphs: Paragraph[] = [];
+  let start = 0;
+  const flush = (end: number): void => {
+    const para = buildParagraph(lines.slice(start, end));
+    if (!para) return;
+    para.position = {
+      start: { line: firstLine + start, column: 1 },
+      end: { line: firstLine + end - 1, column: 1 }
+    };
+    paragraphs.push(para);
+  };
+  lines.forEach((line, index) => {
+    const first = line[0];
+    const opens =
+      first?.type === "text" && parseTabHeader(first.value)?.depth === 1;
+    if (opens && index > start) {
+      flush(index);
+      start = index;
+    }
+  });
+  flush(lines.length);
+  return paragraphs;
 };
 
 // Split a blockquote node into segments separated by % tab header lines.
@@ -444,6 +482,7 @@ const processTabsInChildren = (
         const rawTabs: RawTab[] = [...headerPara.tabs];
         // Lines left over after a depth-skipping header end the group.
         let rest = headerPara.rest;
+        let restLine = headerPara.restLine;
         const startLine = (node.position?.start.line ?? 1) - 1;
         let j = i + 1;
         let currentTabIdx = rawTabs.length - 1;
@@ -570,6 +609,7 @@ const processTabsInChildren = (
             if (contHeaders) {
               rawTabs.push(...contHeaders.tabs);
               rest = contHeaders.rest;
+              restLine = contHeaders.restLine;
               currentTabIdx = rawTabs.length - 1;
               prevEndLine = sibling.position?.end.line ?? prevEndLine;
               j++;
@@ -591,8 +631,7 @@ const processTabsInChildren = (
         );
         list.containerClass = containerClass;
         newChildren.push(list);
-        const restPara = buildParagraph(rest);
-        if (restPara) newChildren.push(restPara);
+        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
         i = j;
         continue;
       }
