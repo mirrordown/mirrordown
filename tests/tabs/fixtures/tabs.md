@@ -290,3 +290,10 @@ const x = 1;
 > ```ts
 > new MarkdownIt();
 > ```
+
+<!-- @case: a tab header after a depth skip starts a new group -->
+
+% Tab One
+%%% Too Deep
+% Tab Two
+> Content for tab two.

@@ -1,0 +1,460 @@
+<!-- @case: single step no body -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+</li>
+</ol>
+
+<!-- @case: single step with body -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>This is the step body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: single step empty title -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<div class="markdown-steps-body">
+<p>Body without a title.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: two steps -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">First step</p>
+<div class="markdown-steps-body">
+<p>First body.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Second step</p>
+<div class="markdown-steps-body">
+<p>Second body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: three steps auto-increment -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step A</p>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step B</p>
+</li>
+<li class="markdown-steps-item" data-step="3">
+<p class="markdown-steps-title">Step C</p>
+</li>
+</ol>
+
+<!-- @case: step with paragraph body -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>First paragraph.</p>
+<p>Second paragraph.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: step surrounded by paragraphs -->
+
+<p>Paragraph before.</p>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Body content.</p>
+</div>
+</li>
+</ol>
+<p>Paragraph after.</p>
+
+<!-- @case: step with inline formatted title -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Install <strong>Node.js</strong> and <code>npm</code></p>
+<div class="markdown-steps-body">
+<p>Follow the official guide.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: nested steps -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Outer step one</p>
+<div class="markdown-steps-body">
+<p>Outer body.</p>
+</div>
+<ol class="markdown-steps-list">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Inner step one</p>
+<div class="markdown-steps-body">
+<p>Inner body.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Inner step two</p>
+<div class="markdown-steps-body">
+<p>More inner body.</p>
+</div>
+</li>
+</ol>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Outer step two</p>
+</li>
+</ol>
+
+<!-- @case: empty step -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Completed step</p>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Another step</p>
+<div class="markdown-steps-body">
+<p>Body here.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: manual numbering -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">First</p>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Third skips to three</p>
+</li>
+<li class="markdown-steps-item" data-step="3">
+<p class="markdown-steps-title">Fourth</p>
+</li>
+</ol>
+
+<!-- @case: body with blockquote -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step with a blockquote</p>
+<div class="markdown-steps-body">
+<blockquote>
+<p>This is a blockquote inside a step.</p>
+<p>It has multiple lines.</p>
+</blockquote>
+</div>
+</li>
+</ol>
+
+<!-- @case: body with unordered list -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step with a list</p>
+<div class="markdown-steps-body">
+<ul>
+<li>Item one</li>
+<li>Item two</li>
+<li>Item three</li>
+</ul>
+</div>
+</li>
+</ol>
+
+<!-- @case: body with ordered list -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step with an ordered list</p>
+<div class="markdown-steps-body">
+<ol>
+<li>First item</li>
+<li>Second item</li>
+<li>Third item</li>
+</ol>
+</div>
+</li>
+</ol>
+
+<!-- @case: body with code fence -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step with code</p>
+<div class="markdown-steps-body">
+<pre><code class="language-ts">const foo = &quot;bar&quot;;
+</code></pre>
+</div>
+</li>
+</ol>
+
+<!-- @case: body with emphasis and strong -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step with rich body</p>
+<div class="markdown-steps-body">
+<p>This has <em>emphasis</em> and <strong>strong</strong> text.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: body with horizontal rule -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Content before the rule.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Content after.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: multiple nested steps with body -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Clone the repo</p>
+<div class="markdown-steps-body">
+<p>Run the following command:</p>
+<pre><code class="language-sh">git clone https://github.com/example/repo.git
+</code></pre>
+</div>
+<ol class="markdown-steps-list">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Navigate to the directory</p>
+<div class="markdown-steps-body">
+<p><code>cd repo</code></p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Install dependencies</p>
+<div class="markdown-steps-body">
+<p><code>npm install</code></p>
+</div>
+</li>
+</ol>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Start the server</p>
+<div class="markdown-steps-body">
+<p><code>npm start</code></p>
+</div>
+</li>
+</ol>
+
+<!-- @case: step block followed immediately by heading -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Only step</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+<h2>Heading after steps</h2>
+
+<!-- @case: blank line between steps continues block -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two from same block</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: two independent step blocks separated by paragraph -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Block one step one</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+<p>This paragraph separates the two blocks.</p>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Block two step one</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Block two step two</p>
+</li>
+</ol>
+
+<!-- @case: bare continuation is blank body line -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Line one.</p>
+<p>Line two after blank.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Content for step two.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: orphan blockquote before steps: no blank line, absorbed -->
+
+<blockquote>
+<p>This blockquote has no blank line before the step header below it.
+@1. Step one
+Content for step one.</p>
+</blockquote>
+
+<!-- @case: orphan blockquote before steps: blank line, steps render -->
+
+<blockquote>
+<p>This blockquote is separated by a blank line.</p>
+</blockquote>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Content for step one.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Content for step two.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: blockquote terminated by code fence, then steps -->
+
+<blockquote>
+<p>This blockquote is terminated by the code fence that immediately follows it.</p>
+</blockquote>
+<pre><code class="language-js">const x = 1;
+</code></pre>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Content for step one.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Content for step two.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: blank line between adjacent step headers continues block -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Content for step one.</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Content for step two.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: depth-2 header with no depth-1 parent -->
+
+<p>@@1. Orphan</p>
+<blockquote>
+<p>Content here.</p>
+</blockquote>
+
+<!-- @case: depth skip from 1 to 3 terminates group -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+</li>
+</ol>
+<p>@@@1. Too Deep</p>
+<blockquote>
+<p>Content here.</p>
+</blockquote>
+
+<!-- @case: no title text -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<div class="markdown-steps-body">
+<p>Content here.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: plain line after a step header ends the group -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+</li>
+</ol>
+<p>Just a plain line.</p>
+<blockquote>
+<p>Content here.</p>
+</blockquote>
+
+<!-- @case: a step header after a plain line starts a new group -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+</li>
+</ol>
+<p>Plain line.</p>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">New group</p>
+</li>
+</ol>

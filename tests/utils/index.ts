@@ -25,8 +25,42 @@ export function parseCases(
   return sections;
 }
 
+// A tag, allowing `>` inside quoted attribute values.
+const TAG = /<(?:[^"'>]|"[^"]*"|'[^']*')*>/g;
+
+// Engines spell character references differently, and plugins can't change
+// that: markdown-it writes `&lt;` `&amp;` `&quot;` `&gt;`, while hast writes
+// `&#x3C;` `&#x26;` and leaves `"` and `>` bare in text. Unify the spellings so
+// fixtures compare plugin output, not serializer style. Text gets `"` and `>`
+// decoded (both are safe unescaped there); inside tags only the spelling is
+// unified, because a quote in an attribute value must stay escaped. A raw `<`
+// or `&` is never produced, so a missing escape still fails.
+const canonicalReferences = (html: string): string => {
+  const spelling = (s: string): string =>
+    s
+      .replace(/&#(?:x3c|60);/gi, "&lt;")
+      .replace(/&#(?:x26|38);/gi, "&amp;")
+      .replace(/&#(?:x22|34);/gi, "&quot;")
+      .replace(/&#(?:x3e|62);/gi, "&gt;");
+  let out = "";
+  let last = 0;
+  for (const match of html.matchAll(TAG)) {
+    out += spelling(html.slice(last, match.index))
+      .replace(/&quot;/g, '"')
+      .replace(/&gt;/g, ">");
+    out += spelling(match[0]);
+    last = match.index + match[0].length;
+  }
+  return (
+    out +
+    spelling(html.slice(last))
+      .replace(/&quot;/g, '"')
+      .replace(/&gt;/g, ">")
+  );
+};
+
 export function normalizeHtml(html: string): string {
-  return html.replace(/>\s+</g, "><").trim();
+  return canonicalReferences(html).replace(/>\s+</g, "><").trim();
 }
 
 export function parseFixture(

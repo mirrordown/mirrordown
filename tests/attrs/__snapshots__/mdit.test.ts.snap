@@ -10,7 +10,7 @@ exports[`attrs/mdit > attrs (markdown-it): fence: language with class 1`] = `
 `;
 
 exports[`attrs/mdit > attrs (markdown-it): fence: language with id 1`] = `
-"<pre><code id="code-block" class="language-python">print(&quot;hello&quot;)
+"<pre><code id="code-block" class="language-python">print("hello")
 </code></pre>"
 `;
 
