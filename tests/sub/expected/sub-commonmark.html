@@ -54,3 +54,13 @@
 
 <!-- @case: unclosed opening -->
 <p>foo ~bar</p>
+
+<!-- @case: escaped opening delimiter is literal -->
+<p>~text~</p>
+
+<!-- @case: escaped closing delimiter is literal -->
+<p>~text~</p>
+
+
+<!-- @case: escaped backslash keeps the delimiter -->
+<p>\<sub>text</sub></p>

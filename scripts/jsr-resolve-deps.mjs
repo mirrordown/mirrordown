@@ -9,7 +9,7 @@
 // JSR publishing doesn't depend on having packed for npm — see npm-publish.mjs,
 // which now packs lazily.) Runs in the package dir; the working src/ that JSR
 // publishes is untouched.
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +30,26 @@ for (const line of readFileSync(join(root, ".yarnrc.yml"), "utf8").split(
   }
 }
 
+// Workspace packages a package depends on (e.g. `@mirrordown/core`) use the
+// `workspace:` protocol, which deno can't read either. `yarn pack` rewrites it
+// for npm; do the same here from each workspace package's current version.
+const workspace = {};
+for (const dir of readdirSync(join(root, "packages"))) {
+  const manifest = join(root, "packages", dir, "package.json");
+  if (existsSync(manifest)) {
+    const { name, version } = JSON.parse(readFileSync(manifest, "utf8"));
+    workspace[name] = version;
+  }
+}
+const resolveWorkspace = (name, spec) => {
+  const version = workspace[name];
+  if (!version) throw new Error(`No workspace package "${name}"`);
+  const range = spec.slice("workspace:".length);
+  if (range === "*") return version;
+  if (range === "^" || range === "~") return `${range}${version}`;
+  return range;
+};
+
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 for (const field of [
   "dependencies",
@@ -41,6 +61,8 @@ for (const field of [
     if (spec === "catalog:") {
       if (!catalog[name]) throw new Error(`No catalog entry for "${name}"`);
       pkg[field][name] = catalog[name];
+    } else if (spec.startsWith("workspace:")) {
+      pkg[field][name] = resolveWorkspace(name, spec);
     }
   }
 }
