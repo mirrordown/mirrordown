@@ -672,10 +672,10 @@ jobs:
   does not trigger other workflows due to GitHub's recursion guard).
 - `VSCE_PAT` — VS Code Marketplace personal access token.
 
-**One-time registry setup (before a package's first publish):** run [fledgling](https://github.com/dmno-dev/fledgling) locally from the repo root. Both commands are idempotent and only act on what's missing; the `fledgling` block in the root `package.json` is the source of truth for the trusted-publishing settings.
+**One-time registry setup (before a package's first publish):** run [fledgling](https://github.com/dmno-dev/fledgling) locally from the repo root. **Always name each package.** Without a name, fledgling selects every workspace package not marked `private`, which includes the VS Code extensions in `extensions/*`; that published 19 of them to npm by mistake once. Both commands are idempotent and only act on what's missing; the `fledgling` block in the root `package.json` is the source of truth for the trusted-publishing settings.
 
-- **npm:** `npx fledgling add --yes` (after `npm login`) claims every unclaimed workspace package (or pass a package name to claim one) with a placeholder and configures trusted publishing for this repository's `release.yml`.
-- **JSR:** `npx fledgling jsr --yes`, with a full-access JSR token in `JSR_TOKEN`, claims every unclaimed workspace package (or the one named), links this repository for OIDC publishing, and syncs its description and runtime compatibility. Runtime compatibility defaults to every runtime (`fledgling.jsr.runtimeCompat` in the root `package.json`); a package that imports `node:` builtins overrides it in its own `package.json` with `browser` and `workerd` set to `false`.
+- **npm:** `npx fledgling add <package> --yes` (after `npm login`) claims the named package with a placeholder and configures trusted publishing for this repository's `release.yml`.
+- **JSR:** `npx fledgling jsr <package> --yes`, with a full-access JSR token in `JSR_TOKEN`, claims the named package, links this repository for OIDC publishing, and syncs its description and runtime compatibility. Runtime compatibility defaults to every runtime (`fledgling.jsr.runtimeCompat` in the root `package.json`); a package that imports `node:` builtins overrides it in its own `package.json` with `browser` and `workerd` set to `false`.
 
 ---
 

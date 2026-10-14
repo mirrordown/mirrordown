@@ -275,7 +275,7 @@ package listed. The `bumpy` "Version packages" CI job consumes these to bump
 versions, write `CHANGELOG.md`, and trigger publish — so the working branch just
 needs the bump files committed, not the version bumps themselves.
 
-New package names must be claimed on npm and JSR before their first publish. Tell the user; they run the batch form, which claims every unclaimed workspace package: `npx fledgling add --yes` and `npx fledgling jsr --yes` (SPEC §9.3).
+New package names must be claimed on npm and JSR before their first publish. Tell the user which, and give one command per package and registry with the name spelled out: `npx fledgling add @mirrordown/<pkg> --yes` and `npx fledgling jsr @mirrordown/<pkg> --yes` (SPEC §9.3). **Never give the no-name form**: it selects every non-private workspace package, including the VS Code extensions, and once published 19 of them to npm.
 
 ## Quality gates (all must pass)
 
