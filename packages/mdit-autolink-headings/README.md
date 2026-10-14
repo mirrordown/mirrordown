@@ -30,8 +30,8 @@ There is no special syntax — just write headings. Hover one to reveal its link
 ### And This One Too
 ````
 
-[!NOTE]
-This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype`, and **after** [`slug`](/guide/plugins/slug), so the headings already have ids. Import the stylesheet to get the default `#` marker.
+> [!NOTE]
+> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype`, and **after** [`slug`](/guide/plugins/slug), so the headings already have ids. Import the stylesheet to get the default `#` marker.
 
 ## Install
 
@@ -83,8 +83,8 @@ rehypeAutolinkHeadings({ behavior: "append" });
 
 The markdown-it plugin accepts `behavior` plus a `class` option (default `"anchor"`) to rename the link's class.
 
-[!NOTE]
-The rehype plugin additionally accepts `content`, `properties`, `headingProperties`, `group`, and `test` options for full control over the emitted link — see [`rehype-autolink-headings`](https://github.com/rehypejs/rehype-autolink-headings) for their semantics. These take **hast** nodes and callbacks, which have no markdown-it equivalent, so they are available only on the rehype (`remd-*`) side.
+> [!NOTE]
+> The rehype plugin additionally accepts `content`, `properties`, `headingProperties`, `group`, and `test` options for full control over the emitted link — see [`rehype-autolink-headings`](https://github.com/rehypejs/rehype-autolink-headings) for their semantics. These take **hast** nodes and callbacks, which have no markdown-it equivalent, so they are available only on the rehype (`remd-*`) side.
 
 ## Documentation
 

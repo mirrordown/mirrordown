@@ -76,6 +76,9 @@ const parseBlocks = (md) => {
       // A tab's body is its blockquote: the first line outside it ends the tab group, and what follows is shared by every family's README.
       flush();
       current = { kind: "prelude", bodyLines: [line] };
+    } else if (current.kind === "prelude") {
+      // Shared prose is copied as written: a `>` here is a real blockquote or alert, not a tab body.
+      current.bodyLines.push(line);
     } else {
       // Strip blockquote wrapper. `>` alone is a blank quoted line; `> foo`
       // is the wrapped content.
