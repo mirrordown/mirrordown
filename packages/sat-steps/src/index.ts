@@ -152,7 +152,7 @@ export const satteriSteps =
             ctx.setProperty(node, `children`, children);
           }
         );
-        processSteps(tree as unknown as Root, containerClass);
+        processSteps(tree as unknown as Root, containerClass, source);
         writeBack(tree);
       }
     });

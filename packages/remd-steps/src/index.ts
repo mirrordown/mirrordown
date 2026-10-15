@@ -20,8 +20,8 @@ export const remarkSteps: Plugin<[StepsOptions?], Root> = function (
   const { containerClass = "markdown-steps" } = options;
 
   // Recognition is shared with the Sätteri plugin through `@mirrordown/core`; it also finds steps nested inside tab bodies and other block containers.
-  return (tree) => {
-    processSteps(tree, containerClass);
+  return (tree, file) => {
+    processSteps(tree, containerClass, String(file));
   };
 };
 

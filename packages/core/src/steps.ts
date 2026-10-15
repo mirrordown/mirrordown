@@ -208,62 +208,171 @@ const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
   return { type: "paragraph", children };
 };
 
+// The `>` markers a source line starts with.
+const markerCount = (line: string): number =>
+  (/^[ \t>]*/.exec(line)?.[0] ?? "").split(">").length - 1;
+
+interface ParentLike {
+  type: string;
+  children?: ParentLike[];
+}
+
+// A paragraph line, with the `>` markers its source line starts with.
+interface MarkedLine {
+  segs: PhrasingContent[];
+  markers: number;
+}
+
+// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `isHeader` accepts; the paragraph is cut before it, in place.
+const takeLazyLines = (
+  node: BlockContent | DefinitionContent,
+  sourceLines: readonly string[],
+  base: number,
+  isHeader: (segs: PhrasingContent[]) => boolean
+): MarkedLine[] | null => {
+  let parent = node as unknown as ParentLike;
+  let last = parent.children?.at(-1);
+  while (last?.type !== "paragraph") {
+    if (!last?.children?.length) return null;
+    parent = last;
+    last = parent.children?.at(-1);
+  }
+  const para = last as unknown as Paragraph;
+  const start = para.position?.start.line;
+  if (start === undefined || !parent.children) return null;
+  const lines = paraToLines(para).map((segs, index): MarkedLine => ({
+    segs,
+    markers: markerCount(sourceLines[start - 1 + index] ?? "")
+  }));
+  const at = lines.findIndex(
+    ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
+  );
+  if (at === -1) return null;
+  const kept = buildParagraph(lines.slice(0, at).map(({ segs }) => segs));
+  parent.children.splice(
+    -1,
+    1,
+    ...(kept ? [kept as unknown as ParentLike] : [])
+  );
+  return lines.slice(at);
+};
+
+// The blocks a step's lazily continued lines stand for, from their markers (relative to the step body's, `level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows.
+const rebuildLazyLines = (
+  lines: MarkedLine[],
+  level: number
+): Array<BlockContent | DefinitionContent> => {
+  const deeper = lines.findIndex(({ markers }) => markers > level);
+  const own = deeper === -1 ? lines : lines.slice(0, deeper);
+  const para = buildParagraph(own.map(({ segs }) => segs));
+  const blocks: Array<BlockContent | DefinitionContent> = para ? [para] : [];
+  if (deeper !== -1) {
+    const quote: Blockquote = {
+      type: "blockquote",
+      children: rebuildLazyLines(lines.slice(deeper), level + 1)
+    };
+    blocks.push(quote);
+  }
+  return blocks;
+};
+
 const splitBlockquote = (
   bq: Blockquote,
   counters: Map<number, number>,
-  currentDepth: number
+  currentDepth: number,
+  sourceLines?: readonly string[]
 ): BQSegment[] => {
   const segments: BQSegment[] = [];
   let currentSegment: BQSegment = { header: null, body: [] };
+  // The `>` markers of the step body's own lines: those before it on its first line, and its own (its first line can open nested blockquotes too).
+  const bqStart = bq.position?.start;
+  const base =
+    sourceLines && bqStart
+      ? markerCount(
+          (sourceLines[bqStart.line - 1] ?? "").slice(0, bqStart.column - 1)
+        ) + 1
+      : undefined;
+
+  // A line's step header, if it has one that fits the group's depth.
+  const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {
+    const first = lineSegs[0];
+    if (first?.type !== "text") return null;
+    const header = parseHeaderPrefix(first.value);
+    return header && header.depth <= currentDepth + 1 ? header : null;
+  };
+
+  const startStep = (
+    header: ParsedHeader,
+    lineSegs: PhrasingContent[]
+  ): void => {
+    segments.push(currentSegment);
+
+    // Update counter tracking
+    for (const k of counters.keys()) if (k > header.depth) counters.delete(k);
+    const number = (counters.get(header.depth) ?? 0) + 1;
+    counters.set(header.depth, number);
+    currentDepth = header.depth;
+
+    const titleNodes: PhrasingContent[] = header.rest
+      ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
+      : lineSegs.slice(1);
+
+    currentSegment = {
+      header: { depth: header.depth, number, titleNodes },
+      body: []
+    };
+  };
 
   for (const child of bq.children) {
     if (child.type !== "paragraph") {
       currentSegment.body.push(child);
+      if (!sourceLines || base === undefined) continue;
+      const lazy = takeLazyLines(
+        child,
+        sourceLines,
+        base,
+        (segs) => stepHeader(segs) !== null
+      );
+      if (!lazy) continue;
+      // The header and the lines after it: the steps they start, and those steps' bodies.
+      let pending: MarkedLine[] = [];
+      const flush = (): void => {
+        const relative = pending.map((line) => ({
+          ...line,
+          markers: line.markers - base
+        }));
+        currentSegment.body.push(...rebuildLazyLines(relative, 0));
+        pending = [];
+      };
+      for (const line of lazy) {
+        const header = line.markers < base ? stepHeader(line.segs) : null;
+        if (header) {
+          flush();
+          startStep(header, line.segs);
+        } else {
+          pending.push(line);
+        }
+      }
+      flush();
       continue;
     }
 
-    const lines = paraToLines(child);
     let bodyLines: PhrasingContent[][] = [];
-
-    for (const lineSegs of lines) {
-      const first = lineSegs[0];
-      if (first?.type === "text") {
-        const header = parseHeaderPrefix(first.value);
-        if (header && header.depth <= currentDepth + 1) {
-          // Flush accumulated body lines
-          if (bodyLines.length > 0) {
-            const bodyPara = buildParagraph(bodyLines);
-            if (bodyPara) currentSegment.body.push(bodyPara);
-            bodyLines = [];
-          }
-
-          segments.push(currentSegment);
-
-          // Update counter tracking
-          for (const k of counters.keys())
-            if (k > header.depth) counters.delete(k);
-          const number = (counters.get(header.depth) ?? 0) + 1;
-          counters.set(header.depth, number);
-          currentDepth = header.depth;
-
-          const titleNodes: PhrasingContent[] = header.rest
-            ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
-            : lineSegs.slice(1);
-
-          currentSegment = {
-            header: { depth: header.depth, number, titleNodes },
-            body: []
-          };
-          continue;
-        }
+    for (const lineSegs of paraToLines(child)) {
+      const header = stepHeader(lineSegs);
+      if (header) {
+        // Flush accumulated body lines
+        const bodyPara = buildParagraph(bodyLines);
+        if (bodyPara) currentSegment.body.push(bodyPara);
+        bodyLines = [];
+        startStep(header, lineSegs);
+        continue;
       }
       bodyLines.push(lineSegs);
     }
 
-    if (bodyLines.length > 0) {
-      const bodyPara = buildParagraph(bodyLines);
-      if (bodyPara) currentSegment.body.push(bodyPara);
-    }
+    const bodyPara = buildParagraph(bodyLines);
+    if (bodyPara) currentSegment.body.push(bodyPara);
   }
 
   segments.push(currentSegment);
@@ -330,7 +439,8 @@ const buildTree = (
 // Used at root level and recursively inside any parent node's children.
 export const processStepsInChildren = (
   children: Array<BlockContent | DefinitionContent | Root["children"][number]>,
-  containerClass: string
+  containerClass: string,
+  sourceLines?: readonly string[]
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -359,7 +469,12 @@ export const processStepsInChildren = (
           if (!sibling) break;
 
           if (sibling.type === "blockquote") {
-            const segments = splitBlockquote(sibling, counters, currentDepth);
+            const segments = splitBlockquote(
+              sibling,
+              counters,
+              currentDepth,
+              sourceLines
+            );
 
             const firstSeg = segments[0];
             if (firstSeg?.header === null) {
@@ -420,17 +535,23 @@ interface Container {
 }
 
 /**
- * Turn every step sequence in `root` into `stepsList` nodes, at the top level and inside any container (blockquotes, list items, tab panels…), walking into the lists it builds so nested sequences are found too.
+ * Turn every step sequence in `root` into `stepsList` nodes, at the top level and inside any container (blockquotes, list items, tab panels…), walking into the lists it builds so nested sequences are found too. With the document's `source`, a step header that CommonMark lazily continued into a nested paragraph is recognized too, as markdown-it reads it.
  */
-export const processSteps = (root: Root, containerClass: string): void => {
+export const processSteps = (
+  root: Root,
+  containerClass: string,
+  source?: string
+): void => {
+  const sourceLines = source?.split(/\r?\n/);
   const walk = (node: Container): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
     processStepsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
-      containerClass
+      containerClass,
+      sourceLines
     );
     for (const child of node.children) walk(child as Container);
   };
-  processStepsInChildren(root.children, containerClass);
+  processStepsInChildren(root.children, containerClass, sourceLines);
   for (const child of root.children) walk(child as Container);
 };
