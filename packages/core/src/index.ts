@@ -47,5 +47,6 @@ export {
   processSteps,
   processStepsInChildren,
   type StepsItemNode,
-  type StepsListNode
+  type StepsListNode,
+  type StepsTitleNode
 } from "./steps.js";

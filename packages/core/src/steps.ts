@@ -26,13 +26,20 @@ export interface StepsListNode {
   data?: { attrsRole?: string; hProperties?: Properties };
 }
 
-/** One step: its number, title and body, rendered as an `<li>`. */
+/** A step's title, rendered as its title `<p>` unless it is empty. */
+export interface StepsTitleNode {
+  type: "stepsTitle";
+  children: PhrasingContent[];
+}
+
+/** One step: its title (always the first child, so transforms that walk children reach it), body and nested steps, rendered as an `<li>`. */
 export interface StepsItemNode {
   type: "stepsItem";
   depth: number;
   number: number;
-  title: PhrasingContent[];
-  children: Array<BlockContent | DefinitionContent | StepsListNode>;
+  children: Array<
+    StepsTitleNode | BlockContent | DefinitionContent | StepsListNode
+  >;
   data?: {
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
@@ -285,7 +292,9 @@ const buildTree = (
     while (childEnd < end && (steps[childEnd]?.depth ?? 0) > targetDepth)
       childEnd++;
 
+    // The title node shares `titleNodes` with `attrsTitle`, so attrs trimming one trims the other.
     const bodyChildren: StepsItemNode["children"] = [
+      { type: "stepsTitle", children: s.titleNodes },
       ...s.body
     ] as StepsItemNode["children"];
     const hasDeeper = steps
@@ -300,7 +309,6 @@ const buildTree = (
       type: "stepsItem",
       depth: targetDepth,
       number: s.number,
-      title: s.titleNodes,
       children: bodyChildren,
       data: { attrsRole: "containerItem", attrsTitle: s.titleNodes }
     });

@@ -4,7 +4,11 @@ import type { Plugin } from "unified";
 import type { Root, BlockContent, DefinitionContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
-import { processSteps, type StepsListNode } from "@mirrordown/core";
+import {
+  processSteps,
+  type StepsListNode,
+  type StepsTitleNode
+} from "@mirrordown/core";
 import type { StepsOptions } from "./types.js";
 
 export type { StepsOptions };
@@ -31,20 +35,23 @@ const buildListHast = (
   const items: ElementContent[] = list.children.map((item) => {
     const liChildren: ElementContent[] = [];
 
-    if (item.title.length > 0) {
+    const title = item.children.find(
+      (c): c is StepsTitleNode => c.type === "stepsTitle"
+    );
+    if (title && title.children.length > 0) {
       liChildren.push({
         type: "element",
         tagName: "p",
         properties: { class: `${containerClass}-title` },
         children: state.all({
           type: "paragraph",
-          children: item.title
+          children: title.children
         })
       });
     }
 
     const bodyBlocks = item.children.filter(
-      (c) => (c as unknown as { type: string }).type !== "stepsList"
+      (c) => c.type !== "stepsTitle" && c.type !== "stepsList"
     ) as Array<BlockContent | DefinitionContent>;
     const nestedLists = item.children.filter(
       (c) => (c as unknown as { type: string }).type === "stepsList"

@@ -65,3 +65,15 @@ content
 <!-- @case: no headings -->
 
 Just a paragraph with no headings at all.
+
+<!-- @case: headings inside containers stay in place -->
+
+# Top
+
+> ## Quoted
+>
+> text
+
+- ## Listed
+
+after

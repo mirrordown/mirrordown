@@ -120,9 +120,10 @@
 
   /* ── Nested steps ───────────────────────────────────────────────────────── */
 
-  .markdown-steps-item > .markdown-steps {
+  /* The nested list follows the body (or the title, when there is no body) in the content column. */
+  .markdown-steps-item > .markdown-steps-list {
     grid-column: 2;
-    grid-row: 2;
+    grid-row: auto;
     --_steps-number-size: 1.4rem;
     --_steps-number-bg: var(
       --markdown-steps-nested-number-bg,
@@ -133,6 +134,7 @@
       light-dark(oklch(0.45 0.19 258), oklch(0.62 0.2 253))
     );
     margin-block: 0;
+    padding-block-start: var(--_steps-body-gap);
   }
 
   /* ── Completed step style ───────────────────────────────────────────────── */
