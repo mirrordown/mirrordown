@@ -87,3 +87,29 @@ Define abbreviations anywhere in the document using the `*[ABBR]: Full text` syn
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-abbr
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriAbbr } from "@mirrordown/sat-abbr";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriAbbr()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriAbbr } from "@mirrordown/sat-abbr";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriAbbr()] }),
+>   },
+> });
+> ```

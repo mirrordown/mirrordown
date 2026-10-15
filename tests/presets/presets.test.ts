@@ -189,6 +189,7 @@ describe("presets", () => {
   describe("preset-satteri", () => {
     // Sätteri has these features so far; the rest arrive as their ports land.
     const satteriFeatures = [
+      "abbr",
       "autolink-headings",
       "del",
       "github-alerts",
@@ -206,7 +207,6 @@ describe("presets", () => {
       "unwrap-images"
     ];
     const remarkWithSatteriFeatures = remark({
-      abbr: false,
       attrs: false,
       definitionList: false,
       steps: false,
@@ -227,6 +227,7 @@ describe("presets", () => {
           key: keyof SatteriOptions;
         } =>
           [
+            "abbr",
             "autolinkHeadings",
             "del",
             "githubAlerts",

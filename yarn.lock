@@ -1605,6 +1605,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/preset-satteri@workspace:packages/preset-satteri"
   dependencies:
+    "@mirrordown/sat-abbr": "workspace:^"
     "@mirrordown/sat-autolink-headings": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
@@ -1628,6 +1629,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-abbr@workspace:packages/remd-abbr"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
@@ -1901,6 +1903,17 @@ __metadata:
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-abbr@workspace:^, @mirrordown/sat-abbr@workspace:packages/sat-abbr":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-abbr@workspace:packages/sat-abbr"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
   languageName: unknown
   linkType: soft
 

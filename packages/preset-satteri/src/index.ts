@@ -1,4 +1,5 @@
 import type { Features, PluginFactoryContext } from "satteri";
+import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
 import {
   satteriAutolinkHeadings,
   type AutolinkHeadingsOptions,
@@ -42,6 +43,7 @@ import {
 export interface MirrordownOptions {
   /** GitHub Flavored Markdown: tables, strikethrough, task lists, autolink literals and footnotes. */
   gfm?: boolean;
+  abbr?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
@@ -73,6 +75,7 @@ type Factory<P> = (ctx: PluginFactoryContext) => P;
 export interface MirrordownPreset {
   features: Features;
   mdastPlugins: Array<
+    | Factory<AbbrPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
     | Factory<InsPlugin>
@@ -116,6 +119,7 @@ export const mirrordown = (
       ...(options.ruby === false
         ? []
         : [satteriRuby({ ...settings(options.ruby), features })]),
+      ...(options.abbr === false ? [] : [satteriAbbr()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.githubAlerts === false
         ? []

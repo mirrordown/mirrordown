@@ -65,6 +65,7 @@ mirrordown({
 | Option              | Syntax                                      | Provided by                          |
 | ------------------- | ------------------------------------------- | ------------------------------------ |
 | `gfm`               | tables, `~~strike~~`, task lists, autolinks | Sätteri's `gfm` feature              |
+| `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/sat-abbr`               |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/sat-autolink-headings`  |
 | `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |

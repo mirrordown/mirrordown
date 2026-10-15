@@ -38,3 +38,8 @@ export {
   type HastElementLike,
   type HastLike
 } from "./hast.js";
+export {
+  createAbbreviationScan,
+  parseAbbreviations,
+  type AbbreviationPart
+} from "./abbr.js";
