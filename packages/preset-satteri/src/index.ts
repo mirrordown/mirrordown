@@ -1,5 +1,10 @@
 import type { Features, PluginFactoryContext } from "satteri";
 import {
+  satteriAutolinkHeadings,
+  type AutolinkHeadingsOptions,
+  type AutolinkHeadingsPlugin
+} from "@mirrordown/sat-autolink-headings";
+import {
   satteriGithubAlerts,
   type AlertOptions,
   type GithubAlertsPlugin
@@ -7,29 +12,47 @@ import {
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
+import { satteriLightbox, type LightboxPlugin } from "@mirrordown/sat-lightbox";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
   satteriSlug,
   type SlugOptions,
   type SlugPlugin
 } from "@mirrordown/sat-slug";
+import {
+  satteriSectionize,
+  type SectionizePlugin
+} from "@mirrordown/sat-sectionize";
 import { satteriSpoiler, type SpoilerPlugin } from "@mirrordown/sat-spoiler";
+import {
+  satteriSqueezeParagraphs,
+  type SqueezeParagraphsPlugin
+} from "@mirrordown/sat-squeeze-paragraphs";
+import {
+  satteriUnwrapImages,
+  type UnwrapImagesPlugin
+} from "@mirrordown/sat-unwrap-images";
 
 /** Every feature is on by default: `false` turns one off, an options object configures it. */
 export interface MirrordownOptions {
   /** GitHub Flavored Markdown: tables, strikethrough, task lists, autolink literals and footnotes. */
   gfm?: boolean;
+  autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
+  lightbox?: boolean;
   mark?: boolean;
+  sectionize?: boolean;
   slug?: boolean | SlugOptions;
   spoiler?: boolean;
+  squeezeParagraphs?: boolean;
   /** Sätteri's built-in `subscript` feature. */
   sub?: boolean;
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
+  unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
   features?: Features;
 }
@@ -50,7 +73,14 @@ export interface MirrordownPreset {
     | Factory<MarkPlugin>
     | Factory<SpoilerPlugin>
   >;
-  hastPlugins: Array<Factory<SlugPlugin>>;
+  hastPlugins: Array<
+    | Factory<AutolinkHeadingsPlugin>
+    | Factory<LightboxPlugin>
+    | Factory<SectionizePlugin>
+    | Factory<SlugPlugin>
+    | Factory<SqueezeParagraphsPlugin>
+    | Factory<UnwrapImagesPlugin>
+  >;
 }
 
 /**
@@ -81,7 +111,18 @@ export const mirrordown = (
       ...(options.mark === false ? [] : [satteriMark()]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()])
     ],
-    hastPlugins:
-      options.slug === false ? [] : [satteriSlug(settings(options.slug))]
+    // In plugin order: sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
+    hastPlugins: [
+      ...(options.sectionize === false ? [] : [satteriSectionize()]),
+      ...(options.slug === false ? [] : [satteriSlug(settings(options.slug))]),
+      ...(options.autolinkHeadings === false
+        ? []
+        : [satteriAutolinkHeadings(settings(options.autolinkHeadings))]),
+      ...(options.lightbox === false ? [] : [satteriLightbox()]),
+      ...(options.unwrapImages === false ? [] : [satteriUnwrapImages()]),
+      ...(options.squeezeParagraphs === false
+        ? []
+        : [satteriSqueezeParagraphs()])
+    ]
   };
 };

@@ -62,19 +62,24 @@ mirrordown({
 });
 ```
 
-| Option         | Syntax                                      | Provided by                       |
-| -------------- | ------------------------------------------- | --------------------------------- |
-| `gfm`          | tables, `~~strike~~`, task lists, autolinks | Sätteri's `gfm` feature           |
-| `del`          | `--deleted--`                               | `@mirrordown/sat-del`             |
-| `githubAlerts` | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`   |
-| `ins`          | `++inserted++`                              | `@mirrordown/sat-ins`             |
-| `kbd`          | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`             |
-| `mark`         | `==highlight==`                             | `@mirrordown/sat-mark`            |
-| `slug`         | heading ids                                 | `@mirrordown/sat-slug`            |
-| `spoiler`      | `\|\|spoiler\|\|`                           | `@mirrordown/sat-spoiler`         |
-| `sub`          | `~subscript~`                               | Sätteri's `subscript` feature     |
-| `sup`          | `^superscript^`                             | Sätteri's `superscript` feature   |
-| `features`     | any other Sätteri feature                   | merged over the preset's features |
+| Option              | Syntax                                      | Provided by                          |
+| ------------------- | ------------------------------------------- | ------------------------------------ |
+| `gfm`               | tables, `~~strike~~`, task lists, autolinks | Sätteri's `gfm` feature              |
+| `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/sat-autolink-headings`  |
+| `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
+| `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |
+| `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
+| `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
+| `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
+| `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
+| `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/sat-sectionize`         |
+| `slug`              | heading ids                                 | `@mirrordown/sat-slug`               |
+| `spoiler`           | `\|\|spoiler\|\|`                           | `@mirrordown/sat-spoiler`            |
+| `squeezeParagraphs` | empty paragraphs removed                    | `@mirrordown/sat-squeeze-paragraphs` |
+| `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
+| `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
+| `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
+| `features`          | any other Sätteri feature                   | merged over the preset's features    |
 
 ## Notes
 

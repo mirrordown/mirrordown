@@ -189,28 +189,28 @@ describe("presets", () => {
   describe("preset-satteri", () => {
     // Sätteri has these features so far; the rest arrive as their ports land.
     const satteriFeatures = [
+      "autolink-headings",
       "del",
       "github-alerts",
       "ins",
       "kbd",
+      "lightbox",
       "mark",
+      "sectionize",
       "slug",
       "spoiler",
+      "squeeze-paragraphs",
       "sub",
-      "sup"
+      "sup",
+      "unwrap-images"
     ];
     const remarkWithSatteriFeatures = remark({
       abbr: false,
       attrs: false,
-      autolinkHeadings: false,
       definitionList: false,
-      lightbox: false,
       ruby: false,
-      sectionize: false,
-      squeezeParagraphs: false,
       steps: false,
-      tabs: false,
-      unwrapImages: false
+      tabs: false
     });
     const sat = satteri();
     it.each(
@@ -227,24 +227,42 @@ describe("presets", () => {
           key: keyof SatteriOptions;
         } =>
           [
+            "autolinkHeadings",
             "del",
             "githubAlerts",
             "ins",
             "kbd",
+            "lightbox",
             "mark",
+            "sectionize",
             "slug",
             "spoiler",
             "sub",
-            "sup"
+            "sup",
+            "unwrapImages"
           ].includes(sample.key)
       )
     )(
       "$key is on by default and `false` turns it off",
-      ({ key, input, marker }) => {
-        expect(satteri()(input)).toContain(marker);
-        expect(satteri({ [key]: false })(input)).not.toContain(marker);
+      ({ key, input, marker, absentWhenOn = false }) => {
+        expect(satteri()(input).includes(marker)).toBe(!absentWhenOn);
+        expect(satteri({ [key]: false })(input).includes(marker)).toBe(
+          absentWhenOn
+        );
       }
     );
+
+    // squeeze-paragraphs removes the empty paragraphs other plugins leave, and no Sätteri plugin leaves one until attrs is ported, so its sample can't show it working; check that `false` drops it from the plugins instead.
+    it("squeezeParagraphs is on by default and `false` drops it", () => {
+      const names = (options: SatteriOptions) =>
+        satteriPreset(options).hastPlugins.map(
+          (plugin) => plugin({} as never).name
+        );
+      expect(names({})).toContain("squeeze-paragraphs");
+      expect(names({ squeezeParagraphs: false })).not.toContain(
+        "squeeze-paragraphs"
+      );
+    });
 
     it("passes an options object to its plugin", () => {
       expect(

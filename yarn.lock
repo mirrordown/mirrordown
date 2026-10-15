@@ -1605,13 +1605,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/preset-satteri@workspace:packages/preset-satteri"
   dependencies:
+    "@mirrordown/sat-autolink-headings": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
     "@mirrordown/sat-ins": "workspace:^"
     "@mirrordown/sat-kbd": "workspace:^"
+    "@mirrordown/sat-lightbox": "workspace:^"
     "@mirrordown/sat-mark": "workspace:^"
+    "@mirrordown/sat-sectionize": "workspace:^"
     "@mirrordown/sat-slug": "workspace:^"
     "@mirrordown/sat-spoiler": "workspace:^"
+    "@mirrordown/sat-squeeze-paragraphs": "workspace:^"
+    "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5
@@ -1898,6 +1903,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/sat-autolink-headings@workspace:^, @mirrordown/sat-autolink-headings@workspace:packages/sat-autolink-headings":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-autolink-headings@workspace:packages/sat-autolink-headings"
+  dependencies:
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/sat-del@workspace:^, @mirrordown/sat-del@workspace:packages/sat-del":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-del@workspace:packages/sat-del"
@@ -1942,9 +1957,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/sat-lightbox@workspace:^, @mirrordown/sat-lightbox@workspace:packages/sat-lightbox":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-lightbox@workspace:packages/sat-lightbox"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/sat-mark@workspace:^, @mirrordown/sat-mark@workspace:packages/sat-mark":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-mark@workspace:packages/sat-mark"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-sectionize@workspace:^, @mirrordown/sat-sectionize@workspace:packages/sat-sectionize":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-sectionize@workspace:packages/sat-sectionize"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
@@ -1967,6 +2004,28 @@ __metadata:
 "@mirrordown/sat-spoiler@workspace:^, @mirrordown/sat-spoiler@workspace:packages/sat-spoiler":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-spoiler@workspace:packages/sat-spoiler"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-squeeze-paragraphs@workspace:^, @mirrordown/sat-squeeze-paragraphs@workspace:packages/sat-squeeze-paragraphs":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-squeeze-paragraphs@workspace:packages/sat-squeeze-paragraphs"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-unwrap-images@workspace:^, @mirrordown/sat-unwrap-images@workspace:packages/sat-unwrap-images":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-unwrap-images@workspace:packages/sat-unwrap-images"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"

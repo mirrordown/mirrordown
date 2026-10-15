@@ -21,13 +21,18 @@
     "./*.css": "./dist/*.css"
   },
   "dependencies": {
+    "@mirrordown/sat-autolink-headings": "workspace:^",
     "@mirrordown/sat-del": "workspace:^",
     "@mirrordown/sat-github-alerts": "workspace:^",
     "@mirrordown/sat-ins": "workspace:^",
     "@mirrordown/sat-kbd": "workspace:^",
+    "@mirrordown/sat-lightbox": "workspace:^",
     "@mirrordown/sat-mark": "workspace:^",
+    "@mirrordown/sat-sectionize": "workspace:^",
     "@mirrordown/sat-slug": "workspace:^",
-    "@mirrordown/sat-spoiler": "workspace:^"
+    "@mirrordown/sat-spoiler": "workspace:^",
+    "@mirrordown/sat-squeeze-paragraphs": "workspace:^",
+    "@mirrordown/sat-unwrap-images": "workspace:^"
   },
   "devDependencies": {
     "satteri": "catalog:"

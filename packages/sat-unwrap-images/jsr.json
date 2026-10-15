@@ -1,0 +1,7 @@
+{
+  "name": "@mirrordown/sat-unwrap-images",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
