@@ -18,6 +18,12 @@ export type { TabsOptions };
 export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-tabs" } = options;
 
+  // Each document's tab groups, counted as they are emitted (in the order they open), for their block ids; reset as each document starts.
+  const groupsEmitted = new WeakMap<object, number>();
+  md.core.ruler.before("block", "tabs_count", (state) => {
+    groupsEmitted.set(state.env as object, 0);
+  });
+
   md.block.ruler.before("blockquote", "tabs", tabsRule, {
     alt: ["paragraph", "reference"]
   });
@@ -90,8 +96,26 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       }
 
       if (currentFrame !== null) {
-        // Blank line â€” tabs are adjacent so blank terminates the block
-        if (state.isEmpty(nextLine)) break;
+        if (state.isEmpty(nextLine)) {
+          // At the top level, a blank line ends the group. Inside a container (a blockquote, list item, step body or tab panel), as in the remark plugin, it doesn't when a header or a body line follows: those blank lines are the container's own `>` lines.
+          if (state.level === 0) break;
+          let after = nextLine;
+          while (after < endLine && state.isEmpty(after)) after++;
+          const following =
+            after < endLine
+              ? state.src.slice(
+                  state.bMarks[after] + state.tShift[after],
+                  state.eMarks[after]
+                )
+              : "";
+          if (parseTabHeader(following)) {
+            nextLine = after;
+            continue;
+          }
+          if (!CONTINUATION_RE.test(following)) break;
+          for (; nextLine < after; nextLine++) currentFrame.bodyLines.push("");
+          continue;
+        }
 
         // Bare > is a blank continuation line within the panel body
         if (line === ">") {
@@ -170,7 +194,9 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         .filter((f) => f.depth === targetDepth)
         .map((f) => plainLabel(f.label));
       const gId = groupId(depthLabels);
-      const bId = blockId(mapStart ?? 0, gId);
+      const index = groupsEmitted.get(state.env as object) ?? 0;
+      groupsEmitted.set(state.env as object, index + 1);
+      const bId = blockId(index, gId);
 
       // Determine which tab is open: first explicit %+, else first tab
       const explicitOpenIdx = group.findIndex(

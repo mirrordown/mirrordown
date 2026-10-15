@@ -8,6 +8,7 @@ import {
   processTabs,
   stripAttrs,
   tabLabelText,
+  tabsBlockId,
   type TabsLabelNode
 } from "@mirrordown/core";
 import type { TabsOptions, TabsListNode } from "./types.js";
@@ -39,11 +40,17 @@ const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   return result;
 };
 
+// Each document's tab groups, counted as they render (in the order they open), for their block ids.
+const groupsRendered = new WeakMap<State, number>();
+
 const buildTabsHast = (
   list: TabsListNode,
   containerClass: string,
   state: State
 ): Element => {
+  const index = groupsRendered.get(state) ?? 0;
+  groupsRendered.set(state, index + 1);
+  const blockId = tabsBlockId(index, list.groupId);
   const labelChildren: ElementContent[] = [];
   const panelChildren: ElementContent[] = [];
 
@@ -53,12 +60,12 @@ const buildTabsHast = (
         ?.children ?? [];
     // From the label as it is now, so plugins that ran after tabs count too.
     const labelPlain = stripAttrs(tabLabelText(label));
-    const inputId = `${list.blockId}-${idx}`;
+    const inputId = `${blockId}-${idx}`;
 
     // <input type="radio">
     const inputProps: Properties = {
       type: "radio",
-      name: list.blockId,
+      name: blockId,
       id: inputId,
       hidden: true,
       ...(item.open ? { checked: true } : {})

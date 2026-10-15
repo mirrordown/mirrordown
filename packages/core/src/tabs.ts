@@ -21,7 +21,6 @@ export interface TabsListNode {
   depth: number;
   containerClass?: string;
   groupId: string;
-  blockId: string;
   children: TabsItemNode[];
   data?: { attrsRole?: string; hProperties?: Properties };
 }
@@ -95,11 +94,11 @@ const groupId = (labels: string[]): string => {
   return djb2(key).toString(16);
 };
 
-// position-based: unique per block even when label sets match
-const blockId = (startLine: number, gId: string): string => {
-  const key = `${startLine}:${gId}`;
-  return "tabs-" + djb2(key).toString(16);
-};
+/**
+ * A group's block id, unique on the page even when label sets match: its group id with the group's index among the document's tab groups, counted in the order they open (each nested group after the group around it), so every engine counts the same groups the same way.
+ */
+export const tabsBlockId = (index: number, groupId: string): string =>
+  "tabs-" + djb2(`${index}:${groupId}`).toString(16);
 
 // ── Raw extraction types ──────────────────────────────────────────────────────
 
@@ -208,7 +207,7 @@ const extractHeaderPara = (
 // Lines left over after a group ends become ordinary paragraphs, split before
 // every line that opens a new group (a depth-1 header), so the main loop can
 // start that group. Positions follow the source lines (paragraph lines map 1:1
-// to source lines) because group ids hash the start line.
+// to source lines) because a group at the root ends at a blank line.
 const splitAtGroupStarts = (
   lines: PhrasingContent[][],
   firstLine: number
@@ -451,8 +450,7 @@ const buildTree = (
   targetDepth: number,
   start: number,
   end: number,
-  containerClass: string,
-  startLine: number
+  containerClass: string
 ): TabsListNode => {
   const depthLabels = rawTabs
     .slice(start, end)
@@ -460,7 +458,6 @@ const buildTree = (
     .map((t) => stripAttrs(t.labelText));
 
   const gId = groupId(depthLabels);
-  const bId = blockId(startLine, gId);
 
   // Absolute index of the first %+ tab at this depth (-1 if none)
   const explicitOpenIdx = rawTabs
@@ -504,8 +501,7 @@ const buildTree = (
         targetDepth + 1,
         i + 1,
         childEnd,
-        containerClass,
-        startLine
+        containerClass
       );
       nested.containerClass = containerClass;
       bodyChildren.push(nested);
@@ -533,7 +529,6 @@ const buildTree = (
     type: "tabsList",
     depth: targetDepth,
     groupId: gId,
-    blockId: bId,
     children: items,
     data: { attrsRole: "container", hProperties: {} }
   };
@@ -567,7 +562,6 @@ export const processTabsInChildren = (
         // Lines left over after a depth-skipping header end the group.
         let rest = headerPara.rest;
         let restLine = headerPara.restLine;
-        const startLine = (node.position?.start.line ?? 1) - 1;
         let j = i + 1;
         let currentTabIdx = rawTabs.length - 1;
         let prevEndLine = node.position?.end.line ?? 0;
@@ -703,14 +697,7 @@ export const processTabsInChildren = (
           }
         }
 
-        const list = buildTree(
-          rawTabs,
-          1,
-          0,
-          rawTabs.length,
-          containerClass,
-          startLine
-        );
+        const list = buildTree(rawTabs, 1, 0, rawTabs.length, containerClass);
         list.containerClass = containerClass;
         newChildren.push(list as unknown as RootContent);
         children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));

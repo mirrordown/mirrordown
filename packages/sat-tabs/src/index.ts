@@ -5,6 +5,7 @@ import {
   processTabs,
   stripAttrs,
   tabLabelText,
+  tabsBlockId,
   type TabsItemNode,
   type TabsLabelNode,
   type TabsListNode
@@ -71,8 +72,12 @@ export const satteriTabs =
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
     type Back = (node: MdastTarget) => MdastTarget;
 
+    // This document's tab groups, counted as they render (in the order they open), for their block ids.
+    let groupsRendered = 0;
+
     const renderList = (list: TabsListNode, back: Back): Custom => {
       const cc = list.containerClass ?? containerClass;
+      const blockId = tabsBlockId(groupsRendered++, list.groupId);
       const labels: MdastTarget[] = [];
       const panels: MdastTarget[] = [];
       for (const [idx, item] of list.children.entries()) {
@@ -80,14 +85,14 @@ export const satteriTabs =
           item.children.find(
             (child): child is TabsLabelNode => child.type === `tabsLabel`
           )?.children ?? [];
-        const inputId = `${list.blockId}-${idx}`;
+        const inputId = `${blockId}-${idx}`;
         labels.push(
           element(
             `tabsInput`,
             `input`,
             {
               type: `radio`,
-              name: list.blockId,
+              name: blockId,
               id: inputId,
               hidden: true,
               ...(item.open ? { checked: true } : {})

@@ -55,6 +55,7 @@ export {
   processTabsInChildren,
   stripAttrs,
   tabLabelText,
+  tabsBlockId,
   type TabsItemNode,
   type TabsLabelNode,
   type TabsListNode

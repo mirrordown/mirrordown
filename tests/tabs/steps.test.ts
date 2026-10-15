@@ -98,6 +98,10 @@ describe("tabs + steps: flat steps inside a single tab body", () => {
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
   });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Multiple tabs each containing steps ───────────────────────────────────────
@@ -152,6 +156,10 @@ describe("tabs + steps: multiple tabs each containing steps", () => {
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
   });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Nested steps (@@) inside a tab body ───────────────────────────────────────
@@ -205,6 +213,10 @@ describe("tabs + steps: nested steps inside a tab body", () => {
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
   });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Nested tabs (Demo/Code pattern) containing steps ─────────────────────────
@@ -247,6 +259,10 @@ describe("tabs + steps: Demo/Code tab pair wrapping steps syntax", () => {
 
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
 
@@ -292,6 +308,10 @@ describe("tabs + steps: nested tabs alongside steps within the same tab body", (
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
   });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Steps and tabs adjacent at the root level ─────────────────────────────────
@@ -324,6 +344,10 @@ describe("tabs + steps: steps and tabs adjacent at the root level", () => {
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
   });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // Tabs end a group at a blank line by reading source positions, so they must survive steps rebuilding the tree before tabs run.
@@ -347,5 +371,9 @@ describe("tabs + steps: tab groups after steps stay separate at a blank line", (
 
   it("renders in Sätteri what remark does", () => {
     expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
