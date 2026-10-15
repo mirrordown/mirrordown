@@ -330,3 +330,47 @@ const x = 1;
 % Code
 > Text.
 > > Quoted.
+
+<!-- @case: a header that skips a level in an explicit body stays in the panel as text -->
+
+% Demo
+> %% A
+> > a
+% Code
+> code
+
+<!-- @case: a skipped header after a nested group stays in the panel after it -->
+
+% Demo
+> % A
+> > a
+> %%% Deep
+> > deep
+% Code
+> code
+
+<!-- @case: a header that skips a level in a tab body ends the group -->
+
+% A
+> a
+%%% Deep
+> b
+
+<!-- @case: a depth skip ends the group, and the tabs after it stay in its blockquote -->
+
+% A
+> a
+%%% Deep
+> b
+% B
+> c
+
+<!-- @case: a nested depth skip ends the whole group -->
+
+% Outer
+%% Inner
+> x
+%%%% Deep
+> y
+% Two
+> z

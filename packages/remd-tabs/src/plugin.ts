@@ -93,29 +93,32 @@ const buildTabsHast = (
     });
 
     // Panel body and nested lists
-    const bodyBlocks = item.children.filter(
-      (c) => c.type !== "tabsLabel" && c.type !== "tabsList"
-    );
-    const nestedLists = item.children.filter(
-      (c) => (c as { type: string }).type === "tabsList"
-    ) as unknown as TabsListNode[];
-
+    // The panel's body and nested groups, in order: content can follow a nested group.
     const sectionChildren: ElementContent[] = [];
-
-    if (bodyBlocks.length > 0) {
-      sectionChildren.push(
-        ...state.all({
-          type: "root",
-          children: bodyBlocks
-        })
-      );
+    let blocks: typeof item.children = [];
+    const flush = (): void => {
+      if (blocks.length > 0) {
+        sectionChildren.push(
+          ...state.all({
+            type: "root",
+            children: blocks
+          })
+        );
+      }
+      blocks = [];
+    };
+    for (const child of item.children) {
+      if (child.type === "tabsLabel") continue;
+      if (child.type === "tabsList") {
+        flush();
+        sectionChildren.push(
+          buildTabsHast(child, child.containerClass ?? containerClass, state)
+        );
+      } else {
+        blocks.push(child);
+      }
     }
-
-    for (const nested of nestedLists) {
-      sectionChildren.push(
-        buildTabsHast(nested, nested.containerClass ?? containerClass, state)
-      );
-    }
+    flush();
 
     // <section>
     const sectionProps = mergeHProperties(

@@ -131,11 +131,10 @@ export const satteriTabs =
       label: TabsLabelNode["children"],
       back: Back
     ): Custom => {
-      const nodes = item.children as unknown as MdastTarget[];
-      const body = nodes.filter(
-        (child) => child.type !== `tabsLabel` && child.type !== `tabsList`
+      // The panel's body and nested groups, in order: content can follow a nested group.
+      const content = (item.children as unknown as MdastTarget[]).filter(
+        (child) => child.type !== `tabsLabel`
       );
-      const nested = nodes.filter((child) => child.type === `tabsList`);
       return element(
         `tabsPanel`,
         `section`,
@@ -144,7 +143,7 @@ export const satteriTabs =
           className: [`${cc}-panel`],
           ariaLabel: stripAttrs(tabLabelText(label))
         },
-        [...body, ...nested].map(back)
+        content.map(back)
       );
     };
 

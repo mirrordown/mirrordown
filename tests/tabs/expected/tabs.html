@@ -781,3 +781,121 @@ Content for tab one.</p>
 </section>
 </div>
 </div>
+
+<!-- @case: a header that skips a level in an explicit body stays in the panel as text -->
+<div class="markdown-tabs" data-tabs-group="6f872f32">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label>
+<input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden>
+<label class="markdown-tabs-label" for="tabs-64131697-1">Code</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Demo">
+<p>%% A</p>
+<blockquote>
+<p>a</p>
+</blockquote>
+</section>
+<section class="markdown-tabs-panel" aria-label="Code">
+<p>code</p>
+</section>
+</div>
+</div>
+
+<!-- @case: a skipped header after a nested group stays in the panel after it -->
+<div class="markdown-tabs" data-tabs-group="6f872f32">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label>
+<input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden>
+<label class="markdown-tabs-label" for="tabs-64131697-1">Code</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Demo">
+<div class="markdown-tabs" data-tabs-group="2b606">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4aafe540" id="tabs-4aafe540-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4aafe540-0">A</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="A">
+<p>a</p>
+</section>
+</div>
+</div>
+<p>%%% Deep</p>
+<blockquote>
+<p>deep</p>
+</blockquote>
+</section>
+<section class="markdown-tabs-panel" aria-label="Code">
+<p>code</p>
+</section>
+</div>
+</div>
+
+<!-- @case: a header that skips a level in a tab body ends the group -->
+<div class="markdown-tabs" data-tabs-group="2b606">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-fdb5a87f" id="tabs-fdb5a87f-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-fdb5a87f-0">A</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="A">
+<p>a</p>
+</section>
+</div>
+</div>
+<p>%%% Deep</p>
+<blockquote>
+<p>b</p>
+</blockquote>
+
+<!-- @case: a depth skip ends the group, and the tabs after it stay in its blockquote -->
+<div class="markdown-tabs" data-tabs-group="2b606">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-fdb5a87f" id="tabs-fdb5a87f-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-fdb5a87f-0">A</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="A">
+<p>a</p>
+</section>
+</div>
+</div>
+<p>%%% Deep</p>
+<blockquote>
+<p>b
+% B
+c</p>
+</blockquote>
+
+<!-- @case: a nested depth skip ends the whole group -->
+<div class="markdown-tabs" data-tabs-group="1019c354">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-79eb37f9" id="tabs-79eb37f9-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-79eb37f9-0">Outer</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Outer">
+<div class="markdown-tabs" data-tabs-group="fa94021">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-56f5cbf7" id="tabs-56f5cbf7-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-56f5cbf7-0">Inner</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Inner">
+<p>x</p>
+</section>
+</div>
+</div>
+</section>
+</div>
+</div>
+<p>%%%% Deep</p>
+<blockquote>
+<p>y
+% Two
+z</p>
+</blockquote>

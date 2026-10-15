@@ -114,6 +114,8 @@ interface RawTab {
   labelNodes: PhrasingContent[]; // inline nodes for the label
   labelText: string; // plain text for aria-label / data-tab
   body: Array<BlockContent | DefinitionContent>; // blockquote contents
+  // Content after the tab's nested groups: headers in its explicit `> %` body that skip a level, kept as written.
+  after?: Array<BlockContent | DefinitionContent>;
 }
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
@@ -267,6 +269,8 @@ interface BQSegment {
   // With the source: the `>` markers of the header's line, and the body lines after it with theirs, for headers lazily continued into a nested paragraph.
   markers?: number;
   lines: MarkedLine[];
+  // The header's line as written, for a header that skips a level and stays text.
+  line?: PhrasingContent[];
 }
 
 // A blockquote is "explicit" (`> % Label` nesting) when at least one of its
@@ -300,6 +304,7 @@ const extractTrailingTabHeader = (
   path: Array<BlockContent | DefinitionContent>;
   start: number | undefined;
   at: number;
+  line: PhrasingContent[];
 } | null => {
   // Walk to the deepest last child that is a paragraph
   const path: Array<BlockContent | DefinitionContent> = [];
@@ -340,7 +345,8 @@ const extractTrailingTabHeader = (
         rest: lines.slice(at + 1),
         path,
         start: last.position?.start.line,
-        at
+        at,
+        line: headerLine
       };
     }
     if (!("children" in last)) break;
@@ -403,6 +409,7 @@ const splitBlockquote = (
             body: [],
             explicit,
             lines: [],
+            line: lineSegs,
             ...(markersOf ? { markers: markersOf(index) } : {})
           };
           continue;
@@ -466,6 +473,7 @@ const splitBlockquote = (
           body: [],
           explicit,
           lines: [],
+          line: extracted.line,
           ...(markersOf ? { markers: markersOf(at) } : {})
         };
         splitLines(
@@ -501,6 +509,48 @@ const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
   }
   if (children.length === 0) return null;
   return { type: "paragraph", children };
+};
+
+// The content that a header which skips a level, and what follows it, stand for
+// once they are not tabs: the header line and the lines and blocks after it, as
+// markdown-it reads them. CommonMark lazily continued them into a paragraph; with
+// the source, their `>` markers (relative to `level`, the markers of the content
+// they belong to) rebuild the blockquotes they were written in. Their other
+// blocks follow: in the last quote when they were inside a blockquote the header
+// line is outside of (`quoted`), else beside the rest.
+const afterSkip = (
+  segments: BQSegment[],
+  level: number | undefined,
+  quoted: boolean
+): Array<BlockContent | DefinitionContent> => {
+  const lines: MarkedLine[] = [];
+  const blocks: Array<BlockContent | DefinitionContent> = [];
+  for (const seg of segments) {
+    if (level === undefined || seg.markers === undefined) {
+      // Without the source: the header line, then the segment's body quoted.
+      if (seg.line) lines.push({ segs: seg.line, markers: 0 });
+      blocks.push(...seg.body);
+      continue;
+    }
+    if (seg.line) lines.push({ segs: seg.line, markers: seg.markers - level });
+    lines.push(
+      ...seg.lines.map((line) => ({ ...line, markers: line.markers - level }))
+    );
+    blocks.push(...seg.body.filter((block) => block.type !== "paragraph"));
+  }
+  const content = rebuildLazyLines(lines, 0);
+  if (blocks.length > 0 && !quoted) {
+    content.push(...blocks);
+  } else if (blocks.length > 0) {
+    const last = content.at(-1);
+    if (last?.type === "blockquote") last.children.push(...blocks);
+    else
+      content.push({
+        type: "blockquote",
+        children: blocks
+      });
+  }
+  return content;
 };
 
 // ── Tree builder ──────────────────────────────────────────────────────────────
@@ -566,6 +616,7 @@ const buildTree = (
       nested.containerClass = containerClass;
       bodyChildren.push(nested);
     }
+    bodyChildren.push(...(raw.after ?? []));
 
     items.push({
       type: "tabsItem",
@@ -657,8 +708,12 @@ export const processTabsInChildren = (
             // Absorbed blockquotes (standard `% Tab\n> body` pattern) keep
             // literal depths — remark collapses them into a single paragraph child.
             const depthOffset = explicit ? lastTab().depth : 0;
+            // The tab whose body this blockquote is.
+            const owner = lastTab();
+            // Content after the group when a header ends it.
+            let ending: Array<BlockContent | DefinitionContent> | null = null;
 
-            for (const seg of segments.slice(1)) {
+            for (const [index, seg] of segments.slice(1).entries()) {
               if (!seg.header) continue;
 
               // A header remark absorbed into this body from outside it (its line has
@@ -688,7 +743,31 @@ export const processTabsInChildren = (
 
               const adjustedDepth = depthOffset + seg.header.depth;
               const prevDepth = lastTab().depth;
-              if (adjustedDepth > prevDepth + 1) continue;
+              if (adjustedDepth > prevDepth + 1) {
+                if (explicit) {
+                  // In an explicit `> %` body, a header that skips a level is not a tab: it
+                  // and its body stay in the owning tab's panel as written, after any group
+                  // nested there, as markdown-it renders them.
+                  owner.after = [
+                    ...(owner.after ?? []),
+                    ...afterSkip([seg], base, false)
+                  ];
+                  continue;
+                }
+                // In a group of plain `>` bodies, a header that skips a level ends the
+                // group: it and everything after it in this blockquote follow the group as
+                // ordinary content.
+                // The header line is outside the blockquote, one `>` short of its own.
+                const quoteMarkers = sourceLines
+                  ? blockquoteMarkers(bq, sourceLines)
+                  : undefined;
+                ending = afterSkip(
+                  segments.slice(index + 1),
+                  quoteMarkers === undefined ? undefined : quoteMarkers - 1,
+                  true
+                );
+                break;
+              }
 
               seg.header.depth = adjustedDepth;
 
@@ -790,6 +869,10 @@ export const processTabsInChildren = (
 
             prevEndLine = sibling.position?.end.line ?? prevEndLine;
             j++;
+            if (ending) {
+              children.splice(j, 0, ...ending);
+              break;
+            }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastTab().depth;
             const contHeaders = extractHeaderPara(sibling, false, prevDepth);
