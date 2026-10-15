@@ -311,3 +311,22 @@ const x = 1;
   > First.
   % Two
   > Second.
+
+<!-- @case: a tab header lazily continued into a nested panel belongs to the outer group -->
+
+% Demo
+> % Option A
+> > Not selected.
+> %+ Option B
+> > Selected.
+% Code
+> The source.
+
+<!-- @case: lines after a lazily continued tab header keep their blockquotes -->
+
+% Demo
+> % A
+> > a
+% Code
+> Text.
+> > Quoted.

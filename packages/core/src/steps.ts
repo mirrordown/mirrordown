@@ -11,6 +11,12 @@ import type {
   DefinitionContent
 } from "mdast";
 import type { Properties } from "hast";
+import {
+  blockquoteMarkers,
+  markerCount,
+  rebuildLazyLines,
+  type MarkedLine
+} from "./lazy.js";
 
 // Groups: 1=@ string (depth), 2=number, 3=rest of line (may be empty or title text)
 const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/s;
@@ -208,19 +214,9 @@ const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
   return { type: "paragraph", children };
 };
 
-// The `>` markers a source line starts with.
-const markerCount = (line: string): number =>
-  (/^[ \t>]*/.exec(line)?.[0] ?? "").split(">").length - 1;
-
 interface ParentLike {
   type: string;
   children?: ParentLike[];
-}
-
-// A paragraph line, with the `>` markers its source line starts with.
-interface MarkedLine {
-  segs: PhrasingContent[];
-  markers: number;
 }
 
 // CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `isHeader` accepts; the paragraph is cut before it, in place.
@@ -257,25 +253,6 @@ const takeLazyLines = (
   return lines.slice(at);
 };
 
-// The blocks a step's lazily continued lines stand for, from their markers (relative to the step body's, `level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows.
-const rebuildLazyLines = (
-  lines: MarkedLine[],
-  level: number
-): Array<BlockContent | DefinitionContent> => {
-  const deeper = lines.findIndex(({ markers }) => markers > level);
-  const own = deeper === -1 ? lines : lines.slice(0, deeper);
-  const para = buildParagraph(own.map(({ segs }) => segs));
-  const blocks: Array<BlockContent | DefinitionContent> = para ? [para] : [];
-  if (deeper !== -1) {
-    const quote: Blockquote = {
-      type: "blockquote",
-      children: rebuildLazyLines(lines.slice(deeper), level + 1)
-    };
-    blocks.push(quote);
-  }
-  return blocks;
-};
-
 const splitBlockquote = (
   bq: Blockquote,
   counters: Map<number, number>,
@@ -284,14 +261,8 @@ const splitBlockquote = (
 ): BQSegment[] => {
   const segments: BQSegment[] = [];
   let currentSegment: BQSegment = { header: null, body: [] };
-  // The `>` markers of the step body's own lines: those before it on its first line, and its own (its first line can open nested blockquotes too).
-  const bqStart = bq.position?.start;
-  const base =
-    sourceLines && bqStart
-      ? markerCount(
-          (sourceLines[bqStart.line - 1] ?? "").slice(0, bqStart.column - 1)
-        ) + 1
-      : undefined;
+  // The `>` markers of the step body's own lines.
+  const base = sourceLines ? blockquoteMarkers(bq, sourceLines) : undefined;
 
   // A line's step header, if it has one that fits the group's depth.
   const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {

@@ -169,7 +169,7 @@ export const satteriTabs =
             ctx.setProperty(node, `children`, children);
           }
         );
-        processTabs(tree as unknown as Root, containerClass);
+        processTabs(tree as unknown as Root, containerClass, source);
         writeBack(tree);
       }
     });

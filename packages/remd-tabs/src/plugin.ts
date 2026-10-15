@@ -22,8 +22,8 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (
   const { containerClass = "markdown-tabs" } = options;
 
   // Recognition is shared with the Sätteri plugin through `@mirrordown/core`; it also finds tabs nested inside step bodies and other block containers.
-  return (tree) => {
-    processTabs(tree, containerClass);
+  return (tree, file) => {
+    processTabs(tree, containerClass, String(file));
   };
 };
 

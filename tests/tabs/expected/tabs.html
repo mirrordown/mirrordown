@@ -717,3 +717,67 @@ Content for tab one.</p>
 </div>
 </li>
 </ul>
+
+<!-- @case: a tab header lazily continued into a nested panel belongs to the outer group -->
+<div class="markdown-tabs" data-tabs-group="6f872f32">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label>
+<input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden>
+<label class="markdown-tabs-label" for="tabs-64131697-1">Code</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Demo">
+<div class="markdown-tabs" data-tabs-group="dee554c1">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-f7cc7550" id="tabs-f7cc7550-0" hidden>
+<label class="markdown-tabs-label" for="tabs-f7cc7550-0">Option A</label>
+<input type="radio" name="tabs-f7cc7550" id="tabs-f7cc7550-1" hidden checked>
+<label class="markdown-tabs-label" for="tabs-f7cc7550-1">Option B</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Option A">
+<p>Not selected.</p>
+</section>
+<section class="markdown-tabs-panel" aria-label="Option B">
+<p>Selected.</p>
+</section>
+</div>
+</div>
+</section>
+<section class="markdown-tabs-panel" aria-label="Code">
+<p>The source.</p>
+</section>
+</div>
+</div>
+
+<!-- @case: lines after a lazily continued tab header keep their blockquotes -->
+<div class="markdown-tabs" data-tabs-group="6f872f32">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-64131697" id="tabs-64131697-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-64131697-0">Demo</label>
+<input type="radio" name="tabs-64131697" id="tabs-64131697-1" hidden>
+<label class="markdown-tabs-label" for="tabs-64131697-1">Code</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Demo">
+<div class="markdown-tabs" data-tabs-group="2b606">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4aafe540" id="tabs-4aafe540-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4aafe540-0">A</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="A">
+<p>a</p>
+</section>
+</div>
+</div>
+</section>
+<section class="markdown-tabs-panel" aria-label="Code">
+<p>Text.</p>
+<blockquote>
+<p>Quoted.</p>
+</blockquote>
+</section>
+</div>
+</div>

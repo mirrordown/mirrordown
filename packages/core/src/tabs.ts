@@ -12,6 +12,12 @@ import type {
   RootContent
 } from "mdast";
 import type { Properties } from "hast";
+import {
+  blockquoteMarkers,
+  markerCount,
+  rebuildLazyLines,
+  type MarkedLine
+} from "./lazy.js";
 
 // ── MDAST node types ──────────────────────────────────────────────────────────
 
@@ -258,6 +264,9 @@ interface BQSegment {
   // remark collapses consecutive `% Tab\n> body` lines into one blockquote.
   // Used to apply a depth offset and to unwrap nested blockquote bodies.
   explicit: boolean;
+  // With the source: the `>` markers of the header's line, and the body lines after it with theirs, for headers lazily continued into a nested paragraph.
+  markers?: number;
+  lines: MarkedLine[];
 }
 
 // A blockquote is "explicit" (`> % Label` nesting) when at least one of its
@@ -289,6 +298,8 @@ const extractTrailingTabHeader = (
   truncatedPara: Paragraph | null;
   rest: PhrasingContent[][];
   path: Array<BlockContent | DefinitionContent>;
+  start: number | undefined;
+  at: number;
 } | null => {
   // Walk to the deepest last child that is a paragraph
   const path: Array<BlockContent | DefinitionContent> = [];
@@ -323,7 +334,14 @@ const extractTrailingTabHeader = (
         body: []
       };
       const truncatedPara = buildParagraph(lines.slice(0, at));
-      return { header: rawTab, truncatedPara, rest: lines.slice(at + 1), path };
+      return {
+        header: rawTab,
+        truncatedPara,
+        rest: lines.slice(at + 1),
+        path,
+        start: last.position?.start.line,
+        at
+      };
     }
     if (!("children" in last)) break;
     path.push(current);
@@ -332,16 +350,29 @@ const extractTrailingTabHeader = (
   return null;
 };
 
-const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
+const splitBlockquote = (
+  bq: Blockquote,
+  explicit: boolean,
+  sourceLines?: readonly string[]
+): BQSegment[] => {
   const segments: BQSegment[] = [];
-  let currentSegment: BQSegment = { header: null, body: [], explicit };
+  let currentSegment: BQSegment = {
+    header: null,
+    body: [],
+    explicit,
+    lines: []
+  };
 
   // Split paragraph lines on tab header lines: body lines accumulate into the
-  // current segment, and each header starts a new one.
-  const splitLines = (lines: PhrasingContent[][]): void => {
+  // current segment, and each header starts a new one. `markersOf` gives a
+  // line's `>` markers when the source is known.
+  const splitLines = (
+    lines: PhrasingContent[][],
+    markersOf?: (index: number) => number
+  ): void => {
     let bodyLines: PhrasingContent[][] = [];
 
-    for (const lineSegs of lines) {
+    for (const [index, lineSegs] of lines.entries()) {
       const first = lineSegs[0];
       if (first?.type === "text") {
         const header = parseTabHeader(first.value);
@@ -370,12 +401,20 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
               body: []
             },
             body: [],
-            explicit
+            explicit,
+            lines: [],
+            ...(markersOf ? { markers: markersOf(index) } : {})
           };
           continue;
         }
       }
       bodyLines.push(lineSegs);
+      if (markersOf) {
+        currentSegment.lines.push({
+          segs: lineSegs,
+          markers: markersOf(index)
+        });
+      }
     }
 
     // Flush remaining body lines
@@ -416,8 +455,23 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
         currentSegment.body.push(cloned);
         // Start a new segment for the extracted tab header
         segments.push(currentSegment);
-        currentSegment = { header: extracted.header, body: [], explicit };
-        splitLines(extracted.rest);
+        const { start, at } = extracted;
+        const markersOf =
+          sourceLines && start !== undefined
+            ? (index: number): number =>
+                markerCount(sourceLines[start - 1 + index] ?? "")
+            : undefined;
+        currentSegment = {
+          header: extracted.header,
+          body: [],
+          explicit,
+          lines: [],
+          ...(markersOf ? { markers: markersOf(at) } : {})
+        };
+        splitLines(
+          extracted.rest,
+          markersOf ? (index): number => markersOf(at + 1 + index) : undefined
+        );
       } else {
         currentSegment.body.push(child);
       }
@@ -425,7 +479,13 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
     }
 
     // Check if this paragraph contains tab headers mixed with body text
-    splitLines(paraToLines(child));
+    const start = child.position?.start.line;
+    splitLines(
+      paraToLines(child),
+      sourceLines && start !== undefined
+        ? (index): number => markerCount(sourceLines[start - 1 + index] ?? "")
+        : undefined
+    );
   }
 
   segments.push(currentSegment);
@@ -543,7 +603,8 @@ const buildTree = (
 export const processTabsInChildren = (
   children: Array<BlockContent | DefinitionContent | RootContent>,
   containerClass: string,
-  checkBlankLines = true
+  checkBlankLines = true,
+  sourceLines?: readonly string[]
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -578,7 +639,12 @@ export const processTabsInChildren = (
           if (sibling.type === "blockquote") {
             const bq = sibling;
             const explicit = isExplicitBQ(bq);
-            const segments = splitBlockquote(bq, explicit);
+            const segments = splitBlockquote(bq, explicit, sourceLines);
+            // The `>` markers of the owning tab's body lines: an inner header written with fewer belongs outside it.
+            const base =
+              explicit && sourceLines
+                ? blockquoteMarkers(bq, sourceLines)
+                : undefined;
 
             const firstSeg = segments[0];
             if (firstSeg?.header === null) {
@@ -594,6 +660,31 @@ export const processTabsInChildren = (
 
             for (const seg of segments.slice(1)) {
               if (!seg.header) continue;
+
+              // A header remark absorbed into this body from outside it (its line has
+              // fewer `>` markers than the body's) is an outer-level tab: it keeps the
+              // depth it was written with, its absorbed lines are its body, rebuilt
+              // from their markers, and the blocks after them are its body as written.
+              const markers = seg.markers;
+              if (
+                explicit &&
+                markers !== undefined &&
+                base !== undefined &&
+                markers < base
+              ) {
+                if (seg.header.depth > lastTab().depth + 1) continue;
+                const relative = seg.lines.map((line) => ({
+                  ...line,
+                  markers: line.markers - (markers + 1)
+                }));
+                seg.header.body.push(
+                  ...rebuildLazyLines(relative, 0),
+                  ...seg.body.slice(seg.lines.length > 0 ? 1 : 0)
+                );
+                rawTabs.push(seg.header);
+                currentTabIdx = rawTabs.length - 1;
+                continue;
+              }
 
               const adjustedDepth = depthOffset + seg.header.depth;
               const prevDepth = lastTab().depth;
@@ -632,18 +723,38 @@ export const processTabsInChildren = (
                   const innerBq = b;
                   if (!isExplicitBQ(innerBq)) {
                     // Re-split absorbed inner blockquote to extract sibling headers
-                    const innerSegs = splitBlockquote(innerBq, false);
+                    const innerSegs = splitBlockquote(
+                      innerBq,
+                      false,
+                      sourceLines
+                    );
                     const innerFirst = innerSegs[0];
                     if (innerFirst?.header === null) {
                       seg.header.body.push(...innerFirst.body);
                     }
                     for (const innerSeg of innerSegs.slice(1)) {
                       if (!innerSeg.header) continue;
-                      // If the re-split segment has no body, its body was hoisted to
-                      // the outer BQ as a direct child — it is an outer-level escaped
-                      // tab (originally root-level, absorbed by remark into this inner BQ).
-                      // Push it at depthOffset (the owning explicit BQ's parent depth).
-                      if (innerSeg.body.length === 0) {
+                      // An outer-level header that remark absorbed into this inner BQ is an
+                      // escaped tab. With the source, its line has fewer `>` markers than the
+                      // owning tab's body: it keeps the depth it was written with, and the
+                      // lines absorbed after it are its body, rebuilt from their markers.
+                      // Without, a re-split segment with no body is taken as escaped (its
+                      // body was hoisted to the outer BQ as a direct child) at depthOffset.
+                      const markers = innerSeg.markers;
+                      if (markers !== undefined && base !== undefined) {
+                        if (markers < base) {
+                          const relative = innerSeg.lines.map((line) => ({
+                            ...line,
+                            markers: line.markers - (markers + 1)
+                          }));
+                          innerSeg.header.body.push(
+                            ...rebuildLazyLines(relative, 0)
+                          );
+                          escapedSegs.push(innerSeg.header);
+                          deferredInnerSegs.push(innerSeg);
+                          continue;
+                        }
+                      } else if (innerSeg.body.length === 0) {
                         innerSeg.header.depth = depthOffset;
                         escapedSegs.push(innerSeg.header);
                         deferredInnerSegs.push(innerSeg);
@@ -718,18 +829,24 @@ interface Container {
 }
 
 /**
- * Recognize every tab group in the tree: at the root, then inside every container (step bodies, list items, other tabs' panels). Blank-line checks only apply at the root: blank lines inside a blockquote leave position gaps that would wrongly end a group once its content has been lifted out of the blockquote.
+ * Recognize every tab group in the tree: at the root, then inside every container (step bodies, list items, other tabs' panels). Blank-line checks only apply at the root: blank lines inside a blockquote leave position gaps that would wrongly end a group once its content has been lifted out of the blockquote. With the document's `source`, a tab header that CommonMark lazily continued into a nested panel is placed by its `>` markers, as markdown-it reads it.
  */
-export const processTabs = (root: Root, containerClass: string): void => {
+export const processTabs = (
+  root: Root,
+  containerClass: string,
+  source?: string
+): void => {
+  const sourceLines = source?.split(/\r?\n/);
   const walk = (node: Container): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
     processTabsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,
-      false
+      false,
+      sourceLines
     );
     for (const child of node.children) walk(child as Container);
   };
-  processTabsInChildren(root.children, containerClass);
+  processTabsInChildren(root.children, containerClass, true, sourceLines);
   for (const child of root.children) walk(child as Container);
 };
