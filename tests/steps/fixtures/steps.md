@@ -227,3 +227,8 @@ Just a plain line.
 @1. Step one
 Plain line.
 @1. New group
+
+<!-- @case: a step header directly after a list marker -->
+
+- @1. Step
+  > Body.

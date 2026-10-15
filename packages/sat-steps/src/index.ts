@@ -1,6 +1,7 @@
 // This plugin hands Sätteri's nodes to core's mdast recognition and back; the type assertions bridging Sätteri's `MdastTarget`, mdast and the step node types are reviewed and intentional, so the rule is disabled file-wide, as in remd-steps.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import {
+  editableTree,
   processSteps,
   type StepsItemNode,
   type StepsListNode,
@@ -32,14 +33,8 @@ export interface StepsPlugin {
   before: (...args: Parameters<BeforeHook>) => void;
 }
 
-// A step header: `@1.` to `@@@@@@1.` at the start of a line.
-const MAYBE_STEPS = /^[ \t>]*@{1,6}\d+\./m;
-
-// A mutable, plain copy of a node and its descendants: recognition rewrites children in place, and Sätteri's own nodes are read-only.
-const copy = (node: MdastTarget): MdastTarget =>
-  `children` in node
-    ? ({ ...node, children: node.children.map(copy) } as MdastTarget)
-    : { ...node };
+// A step header (`@1.` to `@@@@@@1.`) anywhere: headers can follow blockquote markers and list markers.
+const MAYBE_STEPS = /@{1,6}\d+\./;
 
 // An author class (from attrs) joins the element's own; other author properties are added after the element's.
 const withAuthorProperties = (
@@ -64,7 +59,10 @@ export const satteriSteps =
   ({ source }) => {
     const { containerClass = `markdown-steps` } = options;
 
-    const renderItem = (item: StepsItemNode): Custom => {
+    // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
+    type Back = (node: MdastTarget) => MdastTarget;
+
+    const renderItem = (item: StepsItemNode, back: Back): Custom => {
       const title = item.children.find(
         (child): child is StepsTitleNode => child.type === `stepsTitle`
       );
@@ -95,7 +93,7 @@ export const satteriSteps =
                     hProperties: { className: [`${containerClass}-title`] }
                   },
                   children: (title.children as unknown as MdastTarget[]).map(
-                    render
+                    back
                   )
                 }
               ]
@@ -108,16 +106,16 @@ export const satteriSteps =
                     hName: `div`,
                     hProperties: { className: [`${containerClass}-body`] }
                   },
-                  children: body.map(render)
+                  children: body.map(back)
                 }
               ]
             : []),
-          ...nested.map(render)
+          ...nested.map(back)
         ]
       };
     };
 
-    const renderList = (list: StepsListNode): Custom => ({
+    const renderList = (list: StepsListNode, back: Back): Custom => ({
       type: `stepsList`,
       data: {
         hName: `ol`,
@@ -130,22 +128,16 @@ export const satteriSteps =
           list.data?.hProperties
         )
       },
-      children: list.children.map(renderItem)
+      children: list.children.map((item) => renderItem(item, back))
     });
 
-    // Render the recognized lists, wherever they sit, as `hName` nodes.
-    function render(node: MdastTarget): MdastTarget {
-      if (node.type === `stepsList`) {
-        return renderList(node as unknown as StepsListNode);
-      }
-      return `children` in node
-        ? ({ ...node, children: node.children.map(render) } as MdastTarget)
-        : node;
-    }
-
-    const found = (node: MdastTarget): boolean =>
-      node.type === `stepsList` ||
-      (`children` in node && node.children.some(found));
+    // A node recognition created: step lists render as `hName` nodes, anything else (paragraphs left over after a group) as it is.
+    const build = (node: MdastTarget, back: Back): MdastTarget =>
+      node.type === `stepsList`
+        ? renderList(node as unknown as StepsListNode, back)
+        : `children` in node
+          ? ({ ...node, children: node.children.map(back) } as MdastTarget)
+          : node;
 
     return defineMdastPlugin({
       name: `steps`,
@@ -153,11 +145,15 @@ export const satteriSteps =
       options: { position: true },
       before(root, ctx) {
         if (!MAYBE_STEPS.test(source)) return;
-        const tree = copy(root) as unknown as Root;
-        processSteps(tree, containerClass);
-        const children = tree.children as unknown as MdastTarget[];
-        if (!children.some(found)) return;
-        ctx.setProperty(root, `children`, children.map(render));
+        const { tree, writeBack } = editableTree<MdastTarget>(
+          root,
+          build,
+          (node, children) => {
+            ctx.setProperty(node, `children`, children);
+          }
+        );
+        processSteps(tree as unknown as Root, containerClass);
+        writeBack(tree);
       }
     });
   };

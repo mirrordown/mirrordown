@@ -59,3 +59,4 @@ export {
   type TabsLabelNode,
   type TabsListNode
 } from "./tabs.js";
+export { editableTree, type EditableTree, type TreeNode } from "./editable.js";
