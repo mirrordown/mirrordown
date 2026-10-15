@@ -15,6 +15,11 @@ import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import { satteriLightbox, type LightboxPlugin } from "@mirrordown/sat-lightbox";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
+  satteriRuby,
+  type RubyOptions,
+  type RubyPlugin
+} from "@mirrordown/sat-ruby";
+import {
   satteriSlug,
   type SlugOptions,
   type SlugPlugin
@@ -44,6 +49,8 @@ export interface MirrordownOptions {
   kbd?: boolean;
   lightbox?: boolean;
   mark?: boolean;
+  /** Ruby's own options; its `features` are always the preset's. */
+  ruby?: boolean | Omit<RubyOptions, `features`>;
   sectionize?: boolean;
   slug?: boolean | SlugOptions;
   spoiler?: boolean;
@@ -71,6 +78,7 @@ export interface MirrordownPreset {
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
+    | Factory<RubyPlugin>
     | Factory<SpoilerPlugin>
   >;
   hastPlugins: Array<
@@ -93,15 +101,21 @@ export const mirrordown = (
   const settings = <O>(setting: boolean | O | undefined): O | undefined =>
     typeof setting === `boolean` ? undefined : setting;
 
+  const features: Features = {
+    gfm: options.gfm !== false,
+    smartPunctuation: false,
+    subscript: options.sub !== false,
+    superscript: options.sup !== false,
+    ...options.features
+  };
+
   return {
-    features: {
-      gfm: options.gfm !== false,
-      smartPunctuation: false,
-      subscript: options.sub !== false,
-      superscript: options.sup !== false,
-      ...options.features
-    },
+    features,
+    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have.
     mdastPlugins: [
+      ...(options.ruby === false
+        ? []
+        : [satteriRuby({ ...settings(options.ruby), features })]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.githubAlerts === false
         ? []

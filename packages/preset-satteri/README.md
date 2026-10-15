@@ -72,6 +72,7 @@ mirrordown({
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
 | `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
+| `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/sat-ruby`               |
 | `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/sat-sectionize`         |
 | `slug`              | heading ids                                 | `@mirrordown/sat-slug`               |
 | `spoiler`           | `\|\|spoiler\|\|`                           | `@mirrordown/sat-spoiler`            |

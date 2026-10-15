@@ -1612,6 +1612,7 @@ __metadata:
     "@mirrordown/sat-kbd": "workspace:^"
     "@mirrordown/sat-lightbox": "workspace:^"
     "@mirrordown/sat-mark": "workspace:^"
+    "@mirrordown/sat-ruby": "workspace:^"
     "@mirrordown/sat-sectionize": "workspace:^"
     "@mirrordown/sat-slug": "workspace:^"
     "@mirrordown/sat-spoiler": "workspace:^"
@@ -1973,6 +1974,16 @@ __metadata:
   resolution: "@mirrordown/sat-mark@workspace:packages/sat-mark"
   dependencies:
     "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-ruby@workspace:^, @mirrordown/sat-ruby@workspace:packages/sat-ruby":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-ruby@workspace:packages/sat-ruby"
+  dependencies:
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5

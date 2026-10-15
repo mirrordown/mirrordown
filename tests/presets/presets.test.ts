@@ -196,6 +196,7 @@ describe("presets", () => {
       "kbd",
       "lightbox",
       "mark",
+      "ruby",
       "sectionize",
       "slug",
       "spoiler",
@@ -208,7 +209,6 @@ describe("presets", () => {
       abbr: false,
       attrs: false,
       definitionList: false,
-      ruby: false,
       steps: false,
       tabs: false
     });
@@ -234,6 +234,7 @@ describe("presets", () => {
             "kbd",
             "lightbox",
             "mark",
+            "ruby",
             "sectionize",
             "slug",
             "spoiler",
