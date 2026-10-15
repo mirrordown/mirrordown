@@ -1,7 +1,7 @@
 // The hast handler bridges mdast/hast types that don't unify cleanly; the assertions are reviewed and intentional.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { Plugin } from "unified";
-import type { Root, BlockContent, DefinitionContent } from "mdast";
+import type { Root } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
 import {
@@ -52,7 +52,7 @@ const buildListHast = (
 
     const bodyBlocks = item.children.filter(
       (c) => c.type !== "stepsTitle" && c.type !== "stepsList"
-    ) as Array<BlockContent | DefinitionContent>;
+    );
     const nestedLists = item.children.filter(
       (c) => (c as unknown as { type: string }).type === "stepsList"
     ) as unknown as StepsListNode[];
