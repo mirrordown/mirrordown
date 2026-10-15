@@ -166,3 +166,35 @@ Requires `command`/`commandfor`, `<dialog closedby>`, and `@starting-style` (Chr
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-lightbox
+> ```
+>
+> List it before `satteriUnwrapImages`, so an image left alone in its paragraph still unwraps.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriLightbox } from "@mirrordown/sat-lightbox";
+> import "@mirrordown/sat-lightbox/lightbox.css";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriLightbox()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriLightbox } from "@mirrordown/sat-lightbox";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriLightbox()] }),
+>   },
+> });
+>
+> // In your layout:
+> import "@mirrordown/sat-lightbox/lightbox.css";
+> ```

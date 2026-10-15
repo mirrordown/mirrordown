@@ -171,3 +171,35 @@ Use `%%` for a second level of nesting inside a tab:
 >   },
 > });
 > ```
+% Sätteri
+> Install `@mirrordown/sat-tabs` and import the stylesheet. List it after the plugins for inline syntax (mark, kbd and so on), so a panel's `aria-label` reads the label's text rather than its markup:
+>
+> ```sh
+> npm install @mirrordown/sat-tabs
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriTabs } from "@mirrordown/sat-tabs";
+> import "@mirrordown/sat-tabs/tabs.css";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriTabs()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriTabs } from "@mirrordown/sat-tabs";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriTabs()] }),
+>   },
+> });
+>
+> // In your layout:
+> import "@mirrordown/sat-tabs/tabs.css";
+> ```

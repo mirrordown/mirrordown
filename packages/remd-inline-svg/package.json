@@ -20,6 +20,7 @@
     }
   },
   "dependencies": {
+    "@mirrordown/core": "workspace:^",
     "svgo": "catalog:"
   },
   "devDependencies": {

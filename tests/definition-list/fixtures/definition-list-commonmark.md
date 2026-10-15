@@ -333,3 +333,19 @@ Apple
 
 Apple
 :      code
+
+<!-- @case: A term fits on one line: after a longer paragraph the marker line continues it -->
+
+HTTP
+HTTPS
+: Protocols.
+
+Intro text
+Term
+: Definition
+
+<!-- @case: A term in a blockquote fits on one line too -->
+
+> HTTP
+> HTTPS
+> : Protocols.

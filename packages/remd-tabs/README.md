@@ -1,6 +1,6 @@
 # @mirrordown/remd-tabs
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `tabs` syntax extension.
 

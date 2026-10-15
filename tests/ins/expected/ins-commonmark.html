@@ -73,3 +73,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<ins>text</ins></p>
+
+<!-- @case: an odd-length run leaves its extra marker outside the span -->
+<p>+<ins>a</ins>+</p>
+
+<!-- @case: a closer pairs with the nearest opener -->
+<p>++a <ins>b</ins></p>
+
+<!-- @case: spans nest -->
+<p><ins>a <ins>b</ins> c</ins></p>
+
+<!-- @case: a run between spaces neither opens nor closes -->
+<p><ins>a +++ b</ins></p>

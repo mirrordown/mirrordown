@@ -76,3 +76,16 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<kbd>text</kbd></p>
+
+<!-- @case: keys nest -->
+<p><kbd>a <kbd>b</kbd> c</kbd></p>
+
+<!-- @case: a single closing bracket stays in the key -->
+<p><kbd>a]b</kbd></p>
+
+<!-- @case: a line ending inside formatting still ends the attempt -->
+<p>[[<em>a</em>
+b]]</p>
+
+<!-- @case: an extra opening bracket stays outside the key -->
+<p>[<kbd>a</kbd></p>

@@ -1,6 +1,6 @@
 # @mirrordown/mdit-squeeze-paragraphs
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `squeeze-paragraphs` syntax extension.
 
@@ -33,11 +33,11 @@ A paragraph with text.
 A paragraph with *emphasis* and an image ![icon](https://picsum.photos/16/16) is not empty either.
 ````
 
-[!NOTE]
-Because empty paragraphs cannot be written directly in Markdown, the removal behaviour only shows up when another plugin produces one. Place `squeeze-paragraphs` last in your pipeline so it sees that residue.
+> [!NOTE]
+> Because empty paragraphs cannot be written directly in Markdown, the removal behaviour only shows up when another plugin produces one. Place `squeeze-paragraphs` last in your pipeline so it sees that residue.
 
-[!NOTE]
-This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` — and after any plugin whose residue it should clean up.
+> [!NOTE]
+> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` — and after any plugin whose residue it should clean up.
 
 ## Install
 

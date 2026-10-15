@@ -1,6 +1,6 @@
 # @mirrordown/mdit-slug
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `slug` syntax extension.
 
@@ -34,8 +34,8 @@ There is no special syntax — just write headings. Each one receives an `id` ba
 
 The three headings above become `id="a-simple-heading"`, `id="café--crème"`, and `id="a-simple-heading-1"` respectively.
 
-[!NOTE]
-This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline. To honor explicit `{#custom}` ids, place it after [`attrs`](/guide/plugins/attrs).
+> [!NOTE]
+> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline. To honor explicit `{#custom}` ids, place it after [`attrs`](/guide/plugins/attrs).
 
 ## Install
 
@@ -77,7 +77,7 @@ rehypeSlug({ prefix: "user-content-" });
 // <h2 id="user-content-getting-started">Getting Started</h2>
 ```
 
-The markdown-it plugin accepts the same `prefix` option: `md.use(slug, { prefix: "user-content-" })`.
+The markdown-it and Sätteri plugins accept the same `prefix` option: `md.use(slug, { prefix: "user-content-" })` and `satteriSlug({ prefix: "user-content-" })`.
 
 ## Documentation
 

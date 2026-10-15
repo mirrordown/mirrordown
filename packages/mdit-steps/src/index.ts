@@ -259,6 +259,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
             state.env,
             state.tokens
           );
+          // Body tokens nest inside the list, item and body tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
+          childState.level = state.level;
           childState.md.block.tokenize(childState, 0, childState.lineMax);
 
           state.parentType = oldBullet;

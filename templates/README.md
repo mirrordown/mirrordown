@@ -7,20 +7,20 @@ A "plugin set" is the full unit of work — it is **not** a single package:
 | ------------------------------ | ------------------------------------- | ------------------ |
 | markdown-it plugin             | `packages/mdit-<name>/`               | `templates/mdit`   |
 | remark/rehype plugin           | `packages/remd-<name>/`               | `templates/remd`   |
+| Sätteri plugin ¹               | `packages/sat-<name>/`                | `templates/sat`    |
 | VSCode preview extension       | `extensions/markdown-<name>/`         | `templates/extension` |
 | Documentation guide            | `docs/public/guide/plugins/<name>.md` | (write by hand)    |
 | Tests                          | `tests/<name>/`                       | (write by hand)    |
+| Preset entries                 | `packages/preset-*/`                  | (add by hand)      |
+
+¹ If Sätteri already parses the syntax (as with `sub` and `sup`), there is no package: document the Sätteri feature flag in the guide and run the shared fixtures through it in `tests/<name>/sat.test.ts`.
 
 > Building this as an agent? Use the **`author-plugin-set`** skill — it walks the
 > same process below, starting with a scoping conversation.
 
 ## The one rule that matters most
 
-**The `mdit-` and `remd-` plugins must emit byte-identical HTML** for the same
-input. The two ecosystems parse very differently (a flat token stream vs. an
-mdast/hast tree), but consumers should not be able to tell which one rendered a
-page. Every test fixture is run through *both* and compared; keep them in lockstep
-as you build, not at the end.
+**The `mdit-`, `remd-` and `sat-` plugins must emit byte-identical HTML** for the same input. The three engines parse very differently (a flat token stream, a micromark-built mdast/hast tree, a Rust parser with JS visitors), but consumers should not be able to tell which one rendered a page. Every test fixture is run through *all three* and compared; keep them in lockstep as you build, not at the end. The only accepted differences are hard limits of an engine itself (such as `<s>` vs `<del>` for GFM strikethrough), kept out of shared fixtures.
 
 ## Getting started
 
@@ -42,12 +42,14 @@ as you build, not at the end.
    `<name>HastHandlers` (like `github-alerts`, `tabs`, `steps`). markdown-it is
    always a single core/inline rule + renderer.
 
+   The Sätteri plugin is an mdast or hast visitor plugin, written as a factory (`satteri<Name>(options) => (ctx) => plugin`). Sätteri has no mdast→hast handler hook, so new nodes render through `data.hName` / `data.hProperties`. Logic the engines must compute identically (a delimiter scan, marker rules, slugging) belongs in `@mirrordown/core`, not in three copies. See SPEC §4.5 for the Sätteri specifics: minimal plugin types (so `markdownToHtml` stays synchronous), escapes, and positions.
+
 4. **Implement to parity**, writing the shared test fixtures as you go.
 
 5. **Style, if needed.** Put visual defaults inside `@layer markdown-<name>` so
    consumers override them without `!important`. Put *functional* rules that must
    beat a host's unlayered CSS (scroll locks, sizing the preview depends on)
-   **outside** any layer. Mirror the CSS file in both packages.
+   **outside** any layer. Mirror the CSS file in every package that ships it (`mdit`, `remd`, `sat`).
 
 6. **Document, then generate.** Write the guide at
    `docs/public/guide/plugins/<name>.md` (it doubles as the live demo and the
@@ -57,14 +59,18 @@ as you build, not at the end.
    and run them — **package and extension READMEs are generated from the guide**,
    not written by hand. (`inline-svg` is the lone hand-authored exception.)
 
+   The guide's Usage section has a tab per engine (`% Remark`, `% Markdown-It`, `% Sätteri`); each package's README is built from its own engine's tab. Commit the generated READMEs as they come out: they are excluded from `vp fmt`, which would rewrite the markdown inside their samples.
+
 7. **Build the extension** from `templates/extension`, then add
    `saeris.markdown-<name>` to the `extensionPack` in
    `extensions/markdown-preview-extended-syntax`.
 
+8. **Add it to the presets.** Register the feature in `preset-markdown-it`, `preset-remark` and `preset-satteri` under the same camelCase option key, in plugin order, and `@import` its stylesheet in each preset's `styles.css`. Add a sample to the feature table in `tests/presets/presets.test.ts`; the full-suite test there then checks the feature's fixtures against every other plugin, in every engine.
+
 ## Conventions worth knowing
 
 - **Exports & publishing.** `mdit` exposes its stylesheet at `./styles`; `remd`
-  exposes it at `./*.css`. Type-only npm deps (`hast`, `mdast`) go in the
+  and `sat` expose it at `./*.css`. New package names need claiming on npm and JSR before their first publish (SPEC §9.3). Type-only npm deps (`hast`, `mdast`) go in the
   `remd` package's `jsr.json` `imports` map so the JSR build resolves them.
 - **Tests.** Fixtures are `<name>-commonmark.md` / `<name>-gfm.md` paired with
   `expected/*.html`, split on `<!-- @case: NAME -->` markers. Encode invariants
@@ -80,9 +86,9 @@ as you build, not at the end.
 
 Before opening a PR, all of these must hold:
 
-- [ ] `vp check` is clean (format, lint, types).
-- [ ] `vp test` passes; the `mdit` and `remd` outputs are identical across the
-      shared fixtures.
+- [ ] `vp check` is clean (format, lint, types), after `vp run --filter "./packages/**" build`: the type check reads each package's built types, and an unbuilt package's types silently become `any`.
+- [ ] `vp test` passes; the `mdit`, `remd` and `sat` outputs are identical across the shared fixtures.
+- [ ] The feature is in all three presets, and the full-suite test in `tests/presets` passes.
 - [ ] Fixtures cover edge cases, GFM vs CommonMark, combinations (lists,
       blockquotes, tables, links), and compatibility with interacting plugins.
 - [ ] Invariants are encoded as fixture cases, not duplicated assertions.

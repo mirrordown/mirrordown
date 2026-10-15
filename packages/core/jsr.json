@@ -5,6 +5,8 @@
     ".": "./src/index.ts"
   },
   "imports": {
-    "micromark-util-types": "npm:micromark-util-types@^2"
+    "micromark-util-types": "npm:micromark-util-types@^2",
+    "mdast": "npm:@types/mdast@^4",
+    "hast": "npm:@types/hast@^3"
   }
 }

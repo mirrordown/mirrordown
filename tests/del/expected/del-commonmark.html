@@ -70,3 +70,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<del>text</del></p>
+
+<!-- @case: an odd-length run leaves its extra marker outside the span -->
+<p>-<del>a</del>-</p>
+
+<!-- @case: a closer pairs with the nearest opener -->
+<p>--a <del>b</del></p>
+
+<!-- @case: spans nest -->
+<p><del>a <del>b</del> c</del></p>
+
+<!-- @case: a run between spaces neither opens nor closes -->
+<p><del>a --- b</del></p>

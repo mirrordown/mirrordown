@@ -227,3 +227,33 @@ Just a plain line.
 @1. Step one
 Plain line.
 @1. New group
+
+<!-- @case: a step header directly after a list marker -->
+
+- @1. Step
+  > Body.
+
+<!-- @case: a step header lazily continued into a nested blockquote starts the next step -->
+
+@1. One
+> > Quoted.
+@2. Two
+> Body.
+
+<!-- @case: an explicit step header in a nested blockquote stays in it -->
+
+@1. One
+> > @1. Inner
+> > > Inner body.
+@2. Two
+> Body.
+
+<!-- @case: lines after a lazily continued step header keep their blockquotes -->
+
+@1. One
+> > Quoted.
+@2. Two
+> Body.
+> > Deeper.
+@3. Three
+> Last.

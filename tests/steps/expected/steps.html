@@ -458,3 +458,87 @@ Content for step one.</p>
 <p class="markdown-steps-title">New group</p>
 </li>
 </ol>
+
+<!-- @case: a step header directly after a list marker -->
+<ul>
+<li>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+</li>
+</ul>
+
+<!-- @case: a step header lazily continued into a nested blockquote starts the next step -->
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">One</p>
+<div class="markdown-steps-body">
+<blockquote>
+<p>Quoted.</p>
+</blockquote>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Two</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: an explicit step header in a nested blockquote stays in it -->
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">One</p>
+<div class="markdown-steps-body">
+<blockquote>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Inner</p>
+<div class="markdown-steps-body">
+<p>Inner body.</p>
+</div>
+</li>
+</ol>
+</blockquote>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Two</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: lines after a lazily continued step header keep their blockquotes -->
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">One</p>
+<div class="markdown-steps-body">
+<blockquote>
+<p>Quoted.</p>
+</blockquote>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Two</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+<blockquote>
+<p>Deeper.</p>
+</blockquote>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="3">
+<p class="markdown-steps-title">Three</p>
+<div class="markdown-steps-body">
+<p>Last.</p>
+</div>
+</li>
+</ol>

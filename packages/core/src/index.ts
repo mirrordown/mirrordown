@@ -5,4 +5,64 @@ export {
   maskTreeEscapes,
   type TextLikeNode
 } from "./escapes.js";
+export {
+  ALERT_ALIASES,
+  DEFAULT_TITLE,
+  ICONS,
+  createAlertResolver,
+  plainText,
+  splitAlertParagraph,
+  type AlertOptions,
+  type AlertParagraph,
+  type AlertResolver,
+  type AlertType,
+  type PhrasingLike
+} from "./github-alerts/index.js";
+export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
+export { createKbdTransform } from "./kbd.js";
+export {
+  type Positioned,
+  type SpanNodes,
+  type SpanTransform
+} from "./spans.js";
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
+export {
+  LIGHTBOX_MARKER,
+  headingRank,
+  isEmptyParagraph,
+  isImageParagraph,
+  lightboxDialog,
+  lightboxId,
+  lightboxTrigger,
+  sectionize,
+  type HastElementLike,
+  type HastLike
+} from "./hast.js";
+export {
+  createAbbreviationScan,
+  parseAbbreviations,
+  type AbbreviationPart
+} from "./abbr.js";
+export {
+  processSteps,
+  processStepsInChildren,
+  type StepsItemNode,
+  type StepsListNode,
+  type StepsTitleNode
+} from "./steps.js";
+export {
+  processTabs,
+  processTabsInChildren,
+  stripAttrs,
+  tabLabelText,
+  tabsBlockId,
+  type TabsItemNode,
+  type TabsLabelNode,
+  type TabsListNode
+} from "./tabs.js";
+export { editableTree, type EditableTree, type TreeNode } from "./editable.js";
+export {
+  inlineSvgMarkup,
+  svgSpriteId,
+  type InlineSvgLimits
+} from "./inline-svg.js";
