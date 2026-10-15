@@ -91,6 +91,16 @@ describe("presets", () => {
     it.each(fixtureCases)("$name", ({ input }) => {
       expect(md(input)).toBe(rm(input));
     });
+
+    // Attrs apply after the containers are built, so a step title's or tab label's attrs reach its item rather than being lost with the header paragraph.
+    it("applies attrs to step titles and tab labels", () => {
+      const input = "@1. Step {.step}\n> Body.\n\n% Tab {.tab}\n> Panel.";
+      for (const html of [md(input), rm(input)]) {
+        expect(html).toContain('<li class="markdown-steps-item step"');
+        expect(html).toContain('<label class="markdown-tabs-label tab"');
+      }
+      expect(md(input)).toBe(rm(input));
+    });
   });
 
   // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).

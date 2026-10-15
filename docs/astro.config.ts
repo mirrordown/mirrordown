@@ -93,7 +93,6 @@ export default defineConfig({
     remarkPlugins: [
       [remarkGfm, { singleTilde: false }],
       remarkAbbr,
-      remarkAttrs,
       remarkDefinitionList,
       remarkDel,
       remarkGithubAlerts,
@@ -105,7 +104,8 @@ export default defineConfig({
       remarkSpoiler,
       remarkSub,
       remarkSup,
-      remarkTabs
+      remarkTabs,
+      remarkAttrs
     ],
     rehypePlugins: [
       rehypeSectionize,
