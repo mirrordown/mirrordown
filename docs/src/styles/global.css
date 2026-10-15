@@ -2,6 +2,8 @@
 
 @import "./reset.css";
 @import "./theme.css";
+/* The plugins' stylesheets load here, after the layer order above: loaded from a component instead, their layers could come first and lose to `reset` and `base`. */
+@import "@mirrordown/preset-satteri/styles.css";
 
 @layer base {
   html {

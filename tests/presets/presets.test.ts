@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import type { UnifiedProcessorOptions } from "@astrojs/markdown-remark";
+import type { SatteriProcessorOptions } from "@astrojs/markdown-satteri";
 import MarkdownIt from "markdown-it";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
@@ -197,6 +198,12 @@ describe("presets", () => {
   });
 
   describe("preset-satteri", () => {
+    // The annotation is checked by `vp check`: a typed astro.config.ts must take the preset as it is, `processor: satteri(mirrordown())`, plugin factories included. Astro turns smart punctuation on by default, which would undo what the preset configures.
+    it("fits Astro's `satteri()` processor and tells it not to add smart punctuation", () => {
+      const options: SatteriProcessorOptions = satteriPreset();
+      expect(options.features).toMatchObject({ smartPunctuation: false });
+    });
+
     // Sätteri has these features so far; the rest arrive as their ports land.
     const satteriFeatures = [
       "abbr",

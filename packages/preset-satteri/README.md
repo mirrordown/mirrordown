@@ -40,7 +40,7 @@ export default defineConfig({
 });
 ```
 
-Mirrordown's Sätteri plugins are factories (`(ctx) => plugin`), which Sätteri accepts and Astro passes through, but `@astrojs/markdown-satteri` currently types its plugin options as plain plugin definitions, so a type-checked config reports an error here even though it works.
+Mirrordown's Sätteri plugins are factories (`(ctx) => plugin`). `@astrojs/markdown-satteri` 0.4 and later accept them in a type-checked config; older versions typed the plugin options as plain plugin definitions and reported an error, though the config worked.
 
 ### Styles
 
