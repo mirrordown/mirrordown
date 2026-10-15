@@ -31,6 +31,10 @@
       "node ../../scripts/jsr-publish.mjs"
     ]
   },
+  "dependencies": {
+    "@types/hast": "catalog:",
+    "@types/mdast": "catalog:"
+  },
   "devDependencies": {
     "micromark-util-types": "catalog:"
   }

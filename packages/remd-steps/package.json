@@ -22,7 +22,7 @@
     "./*.css": "./dist/*.css"
   },
   "dependencies": {
-    "unist-util-visit": "catalog:"
+    "@mirrordown/core": "workspace:^"
   },
   "devDependencies": {
     "@types/hast": "catalog:",

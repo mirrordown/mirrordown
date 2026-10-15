@@ -1232,6 +1232,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/core@workspace:packages/core"
   dependencies:
+    "@types/hast": "catalog:"
+    "@types/mdast": "catalog:"
     micromark-util-types: "catalog:"
   languageName: unknown
   linkType: soft
@@ -1845,10 +1847,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-steps@workspace:packages/remd-steps"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
   languageName: unknown

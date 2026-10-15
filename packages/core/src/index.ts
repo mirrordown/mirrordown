@@ -43,3 +43,9 @@ export {
   parseAbbreviations,
   type AbbreviationPart
 } from "./abbr.js";
+export {
+  processSteps,
+  processStepsInChildren,
+  type StepsItemNode,
+  type StepsListNode
+} from "./steps.js";
