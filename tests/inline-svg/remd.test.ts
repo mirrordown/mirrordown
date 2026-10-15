@@ -10,7 +10,7 @@ import {
   rehypeInlineSvg,
   type Options
 } from "../../packages/remd-inline-svg/src";
-import { hash } from "../../packages/remd-inline-svg/src/hash";
+import { svgSpriteId } from "../../packages/core/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
@@ -152,7 +152,7 @@ describe("inline-svg (rehype) deduplication", () => {
 ![](./fixtures/flower.svg)`,
       { deduplication: true }
     );
-    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+    expect(result).toContain(`id="${svgSpriteId("fixtures/flower.svg")}"`);
   });
 
   it("uses sprite + use for repeated SVG", async () => {

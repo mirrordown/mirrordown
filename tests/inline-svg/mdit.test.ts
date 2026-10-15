@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, it, describe } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { inlineSvg, type Options } from "../../packages/mdit-inline-svg/src";
-import { hash } from "../../packages/mdit-inline-svg/src/hash";
+import { svgSpriteId } from "../../packages/core/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 const dir = import.meta.dirname;
@@ -148,7 +148,7 @@ describe("inline-svg (markdown-it) deduplication", () => {
 ![](./fixtures/flower.svg)`,
       env
     );
-    expect(result).toContain(`id="svg-sprite-${hash("fixtures/flower.svg")}"`);
+    expect(result).toContain(`id="${svgSpriteId("fixtures/flower.svg")}"`);
   });
 
   it("uses sprite + use for repeated SVG", () => {

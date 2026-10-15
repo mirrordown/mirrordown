@@ -1375,6 +1375,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-inline-svg@workspace:packages/mdit-inline-svg"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
     svgo: "catalog:"
@@ -1717,6 +1718,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-inline-svg@workspace:packages/remd-inline-svg"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     svgo: "catalog:"
     unified: "catalog:"
     vfile: "npm:^6.0.3"
@@ -1948,6 +1950,18 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-inline-svg@workspace:packages/sat-inline-svg":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-inline-svg@workspace:packages/sat-inline-svg"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+    svgo: "catalog:"
   peerDependencies:
     satteri: ^0.10.5
   languageName: unknown

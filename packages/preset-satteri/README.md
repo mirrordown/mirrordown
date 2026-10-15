@@ -89,6 +89,7 @@ mirrordown({
 
 - **Smart punctuation stays off.** The preset sets `smartPunctuation: false`, because hosts such as Astro turn it on by default and smart quotes and dashes rewrite text some plugins read. Pass `features: { smartPunctuation: true }` to turn it back on.
 - **Synchronous.** The preset's plugins are all synchronous, and its types say so, so `markdownToHtml(source, mirrordown())` returns its result directly rather than a Promise.
+- **`inline-svg` is not included.** It reads SVG files from disk; add [`@mirrordown/sat-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/sat-inline-svg) to `hastPlugins` yourself where that fits.
 
 ## License
 

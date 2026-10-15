@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import type MarkdownIt from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 import { type Config, optimize as svgOptimize } from "svgo";
-import { hash } from "./hash.js";
+import { inlineSvgMarkup } from "@mirrordown/core";
 import { SvgCache } from "./cache.js";
 import { applyDefaults, type Options } from "./options.js";
 
@@ -28,64 +28,12 @@ const resolveSvgPath = (
   }
 };
 
-// Sprite ids hash the SVG's path relative to the document, with `/`
-// separators, so the same document renders the same ids on any machine or OS
-// (an absolute path would leak the build machine into the HTML).
-const spriteId = (docDir: string, filePath: string): string =>
-  `svg-sprite-${hash(relative(docDir, filePath).split(sep).join(`/`))}`;
-
 const getAlt = (
   token: Token,
   md: MarkdownIt,
   options: MarkdownIt["options"],
   env: unknown
 ): string => md.renderer.renderInlineAsText(token.children ?? [], options, env);
-
-const extractSvgParts = (
-  content: string
-): { viewBox: string; width: string; height: string; inner: string } => {
-  const openTag = /<svg([^>]*?)>/i.exec(content)?.[1] ?? ``;
-  return {
-    viewBox: /viewBox="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
-    width: /\bwidth="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
-    height: /\bheight="([^"]*)"/i.exec(openTag)?.[1] ?? ``,
-    inner: /<svg[^>]*>([\s\S]*?)<\/svg\s*>/i.exec(content)?.[1]?.trim() ?? ``
-  };
-};
-
-const escAttr = (s: string): string =>
-  s.replace(/&/g, `&amp;`).replace(/"/g, `&quot;`);
-
-const buildFullInline = (content: string, alt: string): string => {
-  if (!alt) return content;
-  return content.replace(
-    /<svg([^>]*)>/i,
-    `<svg$1 aria-label="${escAttr(alt)}">`
-  );
-};
-
-const buildSpriteHtml = (id: string, viewBox: string, inner: string): string =>
-  `<svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">` +
-  `<defs><symbol id="${id}" viewBox="${escAttr(viewBox)}">${inner}</symbol></defs>` +
-  `</svg>`;
-
-const buildUseHtml = (
-  id: string,
-  viewBox: string,
-  width: string,
-  height: string,
-  alt: string
-): string => {
-  const attrs = [
-    viewBox && `viewBox="${escAttr(viewBox)}"`,
-    width && `width="${escAttr(width)}"`,
-    height && `height="${escAttr(height)}"`,
-    alt && `aria-label="${escAttr(alt)}"`
-  ]
-    .filter(Boolean)
-    .join(` `);
-  return `<svg ${attrs}><use href="#${id}"></use></svg>`;
-};
 
 /** markdown-it plugin that inlines referenced `.svg` images as `<svg>` elements. */
 export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
@@ -150,39 +98,17 @@ export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
         }
       }
 
-      // Apply size and occurrence filters
-      if (content.length > options.maxImageSize) {
-        for (const token of tokens) plan.set(token, null);
-        continue;
-      }
-      if (tokens.length > options.maxOccurrences) {
-        for (const token of tokens) plan.set(token, null);
-        continue;
-      }
-      if (tokens.length * content.length > options.maxTotalSize) {
-        for (const token of tokens) plan.set(token, null);
-        continue;
-      }
-
-      const { viewBox, width, height, inner } = extractSvgParts(content);
-
-      if (options.deduplication && tokens.length > 1) {
-        const docDir = dirname(
-          fileURLToPath(String(state.env.currentDocument))
-        );
-        const id = spriteId(docDir, filePath);
-        const sprite = buildSpriteHtml(id, viewBox, inner);
-        for (let i = 0; i < tokens.length; i++) {
-          const alt = getAlt(tokens[i], md, md.options, state.env);
-          const use = buildUseHtml(id, viewBox, width, height, alt);
-          plan.set(tokens[i], i === 0 ? sprite + use : use);
-        }
-      } else {
-        for (const token of tokens) {
-          const alt = getAlt(token, md, md.options, state.env);
-          plan.set(token, buildFullInline(content, alt));
-        }
-      }
+      // The limits, deduplication and markup are shared with the rehype and Sätteri plugins through `@mirrordown/core`.
+      const docDir = dirname(fileURLToPath(String(state.env.currentDocument)));
+      const markup = inlineSvgMarkup(
+        content,
+        tokens.map((token) => getAlt(token, md, md.options, state.env)),
+        relative(docDir, filePath).split(sep).join(`/`),
+        options
+      );
+      tokens.forEach((token, index) => {
+        plan.set(token, markup?.[index] ?? null);
+      });
     }
 
     // Report cache efficiency when counts change

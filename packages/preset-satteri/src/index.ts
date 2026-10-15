@@ -109,7 +109,7 @@ export interface MirrordownPreset {
 }
 
 /**
- * The Mirrordown suite for Sätteri. `features` sets `smartPunctuation: false` explicitly, because hosts such as Astro turn it on by default and it rewrites delimiters some plugins read; pass `features: { smartPunctuation: true }` to turn it back on.
+ * The Mirrordown suite for Sätteri. `inline-svg` is not included: it reads files from disk, so add `@mirrordown/sat-inline-svg` to `hastPlugins` yourself where that fits. `features` sets `smartPunctuation: false` explicitly, because hosts such as Astro turn it on by default and it rewrites delimiters some plugins read; pass `features: { smartPunctuation: true }` to turn it back on.
  */
 export const mirrordown = (
   options: MirrordownOptions = {}
