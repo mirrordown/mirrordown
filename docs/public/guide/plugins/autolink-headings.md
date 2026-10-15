@@ -103,6 +103,40 @@ There is no special syntax — just write headings. Hover one to reveal its link
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-autolink-headings @mirrordown/sat-slug
+> ```
+>
+> It links headings that have an id, so list it after `satteriSlug`. Its options match the rehype plugin's, including the hast-node ones.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSlug } from "@mirrordown/sat-slug";
+> import { satteriAutolinkHeadings } from "@mirrordown/sat-autolink-headings";
+> import "@mirrordown/sat-autolink-headings/autolink-headings.css";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriSlug(), satteriAutolinkHeadings()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSlug } from "@mirrordown/sat-slug";
+> import { satteriAutolinkHeadings } from "@mirrordown/sat-autolink-headings";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriSlug(), satteriAutolinkHeadings()] }),
+>   },
+> });
+>
+> // In your layout:
+> import "@mirrordown/sat-autolink-headings/autolink-headings.css";
+> ```
 
 ## Options
 
