@@ -1621,6 +1621,7 @@ __metadata:
     "@mirrordown/sat-spoiler": "workspace:^"
     "@mirrordown/sat-squeeze-paragraphs": "workspace:^"
     "@mirrordown/sat-steps": "workspace:^"
+    "@mirrordown/sat-tabs": "workspace:^"
     "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
@@ -2053,6 +2054,18 @@ __metadata:
 "@mirrordown/sat-steps@workspace:^, @mirrordown/sat-steps@workspace:packages/sat-steps":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-steps@workspace:packages/sat-steps"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-tabs@workspace:^, @mirrordown/sat-tabs@workspace:packages/sat-tabs":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-tabs@workspace:packages/sat-tabs"
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"

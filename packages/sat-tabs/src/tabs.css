@@ -1,0 +1,369 @@
+/*
+  Markdown Tabs — default stylesheet
+  ------------------------------------
+  All rules live inside @layer markdown-tabs so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  Color tokens use light-dark() so they respond to the nearest `color-scheme`
+  ancestor. Set `color-scheme: light`, `color-scheme: dark`, or
+  `color-scheme: light dark` on :root (or a container) to control the mode.
+
+  To override public tokens, set them on .markdown-tabs or any ancestor:
+
+    .markdown-tabs { --markdown-tabs-accent: oklch(0.55 0.18 145); }
+
+  Panel switching uses two strategies, layered with @supports:
+
+  1. Baseline (all :has() browsers): explicit :nth-of-type(N) rules for N=1–12.
+  2. Enhanced (Chrome 138+, Safari 26.2+): sibling-index() inside :nth-of-type()
+     allows arbitrary tab counts with a single rule pair, replacing the N×2 block.
+*/
+
+@layer markdown-tabs {
+  /* ── Container ──────────────────────────────────────────────────────────── */
+
+  .markdown-tabs {
+    --_tabs-accent: var(
+      --markdown-tabs-accent,
+      light-dark(oklch(0.55 0.15 250), oklch(0.68 0.17 250))
+    );
+    --_tabs-bg: var(--markdown-tabs-bg, transparent);
+    --_tabs-border: var(
+      --markdown-tabs-border,
+      light-dark(oklch(0.88 0.01 250), oklch(0.3 0.03 250))
+    );
+    --_tabs-label-color: var(--markdown-tabs-label-color, inherit);
+    --_tabs-label-hover-color: var(--markdown-tabs-label-hover-color, inherit);
+    --_tabs-label-active-color: var(
+      --markdown-tabs-label-active-color,
+      var(--_tabs-accent)
+    );
+    --_tabs-radius: var(--markdown-tabs-radius, 0.375rem);
+    --_tabs-strip-bg: var(--markdown-tabs-strip-bg, transparent);
+    --_tabs-hover-bg: var(
+      --markdown-tabs-hover-bg,
+      light-dark(oklch(0.88 0.04 250 / 0.8), oklch(0.32 0.05 250 / 0.7))
+    );
+
+    margin-block: 1rem;
+    border: 1px solid var(--_tabs-border);
+    border-radius: var(--_tabs-radius);
+    background: var(--_tabs-bg);
+    overflow: hidden;
+  }
+
+  /* ── Label strip ────────────────────────────────────────────────────────── */
+
+  .markdown-tabs-labels {
+    position: relative;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: var(--_tabs-strip-bg);
+    box-shadow: inset 0 -1px var(--_tabs-border);
+  }
+
+  /* Hide radio inputs without removing them from the DOM (needed for :has()) */
+  .markdown-tabs-labels input[type="radio"] {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Tab labels ─────────────────────────────────────────────────────────── */
+
+  label.markdown-tabs-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    line-height: 3rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--_tabs-label-color);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.25s ease;
+
+    &:hover {
+      color: var(--_tabs-label-hover-color);
+    }
+
+    /* Active indicator bar (pseudo-element on each label) */
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0.5rem;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 2px;
+      background-color: transparent;
+      transition: background-color 0.25s ease;
+    }
+  }
+
+  /* ── Follow-the-leader hover pill (CSS Anchor Positioning) ──────────────── */
+  /*
+    Requires: Chrome 125+, Edge 125+, Firefox 147+, Safari 26+.
+    Falls back to bare color change on hover in older browsers (no @supports guard
+    needed — anchor-name is simply ignored by non-supporting engines).
+
+    Each label registers itself as --tabs-hover when hovered. anchor-scope on the
+    strip limits visibility to that strip so multiple tab groups on the same page
+    don't interfere with each other. The ::before pill on the strip follows the
+    active anchor with position:absolute + anchor() coordinates.
+  */
+
+  @supports (anchor-name: --x) {
+    .markdown-tabs-labels {
+      anchor-scope: --tabs-hover;
+
+      &::before {
+        content: "";
+        position: absolute;
+        position-anchor: --tabs-hover;
+        top: anchor(top);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        right: anchor(right);
+        background-color: var(--_tabs-hover-bg);
+        border-radius: var(--_tabs-radius);
+        pointer-events: none;
+        opacity: 0;
+        transition:
+          top 0.2s ease,
+          left 0.2s ease,
+          right 0.2s ease,
+          bottom 0.2s ease,
+          opacity 0.15s ease;
+      }
+
+      &:has(label:hover)::before {
+        opacity: 1;
+      }
+    }
+
+    label.markdown-tabs-label:hover {
+      anchor-name: --tabs-hover;
+    }
+  }
+
+  /* ── Panels ─────────────────────────────────────────────────────────────── */
+
+  .markdown-tabs-panels {
+    border-block-start: 1px solid var(--_tabs-border);
+  }
+
+  .markdown-tabs-panel {
+    display: none;
+    padding: 1.25rem 1.5rem;
+
+    > :first-child {
+      margin-block-start: 0;
+    }
+    > :last-child {
+      margin-block-end: 0;
+    }
+  }
+
+  /* ── Active tab — baseline: explicit :nth-of-type(N) for N = 1–12 ──────── */
+  /*
+    Supports up to 12 tabs per group. The :has() selector is Baseline 2024.
+    Browsers that support sibling-index() will use the @supports block below
+    instead, which handles any number of tabs.
+  */
+
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(1):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(1) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(1) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(2):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(2) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(2) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(3):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(3) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(3) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(4):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(4) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(4) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(5):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(5) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(5) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(6):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(6) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(6) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(7):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(7) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(7) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(8):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(8) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(8) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(9):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(9) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(9) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(10):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(10) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(10) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(11):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(11) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(11) {
+      display: block;
+    }
+  }
+  .markdown-tabs:has(> .markdown-tabs-labels input:nth-of-type(12):checked) {
+    & > .markdown-tabs-labels > label.markdown-tabs-label:nth-of-type(12) {
+      color: var(--_tabs-label-active-color);
+      &::after {
+        background-color: var(--_tabs-accent);
+      }
+    }
+    & > .markdown-tabs-panels > .markdown-tabs-panel:nth-of-type(12) {
+      display: block;
+    }
+  }
+
+  /* ── Active tab — enhanced: sibling-index() for arbitrary tab counts ────── */
+  /*
+    sibling-index() resolves to each element's 1-based position among its
+    siblings. Used inside :nth-of-type() in a :has() argument, it lets a single
+    rule pair activate the correct label and panel for any number of tabs.
+
+    Supported: Chrome 138+, Edge 138+, Safari 26.2+
+    Not yet supported: Firefox (all versions as of 2026)
+
+    The @supports block overrides the baseline N×2 rules above for browsers
+    that understand sibling-index().
+  */
+
+  @supports (width: calc(1px * sibling-index())) {
+    .markdown-tabs-labels > label.markdown-tabs-label {
+      &:is(
+        .markdown-tabs:has(
+            > .markdown-tabs-labels input:nth-of-type(sibling-index()):checked
+          )
+          > .markdown-tabs-labels
+          > *
+      ) {
+        color: var(--_tabs-label-active-color);
+        &::after {
+          background-color: var(--_tabs-accent);
+        }
+      }
+    }
+
+    .markdown-tabs-panels > .markdown-tabs-panel {
+      &:is(
+        .markdown-tabs:has(
+            > .markdown-tabs-labels input:nth-of-type(sibling-index()):checked
+          )
+          > .markdown-tabs-panels
+          > *
+      ) {
+        display: block;
+      }
+    }
+  }
+
+  /* ── Nested tab groups ──────────────────────────────────────────────────── */
+
+  .markdown-tabs-panel > .markdown-tabs {
+    margin-block: 0;
+  }
+
+  /* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    label.markdown-tabs-label {
+      transition: none;
+      &::after {
+        transition: none;
+      }
+    }
+  }
+}

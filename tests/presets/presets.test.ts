@@ -215,12 +215,12 @@ describe("presets", () => {
       "steps",
       "sub",
       "sup",
+      "tabs",
       "unwrap-images"
     ];
     const remarkWithSatteriFeatures = remark({
       attrs: false,
-      definitionList: false,
-      tabs: false
+      definitionList: false
     });
     const sat = satteri();
     it.each(
@@ -252,6 +252,7 @@ describe("presets", () => {
             "steps",
             "sub",
             "sup",
+            "tabs",
             "unwrapImages"
           ].includes(sample.key)
       )

@@ -5,11 +5,14 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { steps } from "../../packages/mdit-steps/src";
 import { tabs } from "../../packages/mdit-tabs/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
 import { normalizeHtml } from "../utils/index.js";
+import { satteriSteps } from "../../packages/sat-steps/src";
+import { satteriTabs } from "../../packages/sat-tabs/src";
 
 const md = new MarkdownIt().use(steps).use(tabs);
 
@@ -27,6 +30,15 @@ const remd = (src: string) =>
         .use(rehypeStringify, { allowDangerousHtml: true })
         .processSync(src)
     )
+  );
+
+// The same plugins in Sätteri, in the same order.
+const sat = (src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { gfm: true, frontmatter: false, smartPunctuation: false },
+      mdastPlugins: [satteriSteps(), satteriTabs()]
+    }).html
   );
 
 // ── Flat tabs inside a step body ──────────────────────────────────────────────
@@ -71,6 +83,10 @@ describe("steps + tabs: flat tabs inside a single step body", () => {
   it("markdown-it: tabs render inside the step body", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-tabs"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });
 
@@ -120,6 +136,10 @@ describe("steps + tabs: multiple steps each containing tabs", () => {
     expect(result).toContain('data-step="2"');
     expect(result).toContain('class="markdown-tabs"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
 });
 
 // ── Nested tabs (%%}) inside a step body ─────────────────────────────────────
@@ -157,6 +177,10 @@ describe("steps + tabs: nested tabs inside a step body", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });
 
@@ -205,6 +229,10 @@ describe("steps + tabs: tabs inside a nested step body", () => {
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
 });
 
 // ── Step body with both prose and tabs ────────────────────────────────────────
@@ -234,6 +262,10 @@ describe("steps + tabs: step body containing both prose and tabs", () => {
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain("Choose the one that matches your project");
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });
 
@@ -265,5 +297,9 @@ describe("steps + tabs: steps and tabs adjacent at the root level", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain('class="markdown-steps"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });

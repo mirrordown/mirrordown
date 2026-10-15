@@ -304,3 +304,10 @@ const x = 1;
 > a
 % A &amp; B
 > b
+
+<!-- @case: tabs directly after a list marker -->
+
+- % One
+  > First.
+  % Two
+  > Second.

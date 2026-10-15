@@ -36,6 +36,11 @@ import {
   type StepsPlugin
 } from "@mirrordown/sat-steps";
 import {
+  satteriTabs,
+  type TabsOptions,
+  type TabsPlugin
+} from "@mirrordown/sat-tabs";
+import {
   satteriSqueezeParagraphs,
   type SqueezeParagraphsPlugin
 } from "@mirrordown/sat-squeeze-paragraphs";
@@ -67,6 +72,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
+  tabs?: boolean | TabsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
   features?: Features;
@@ -90,6 +96,7 @@ export interface MirrordownPreset {
     | Factory<RubyPlugin>
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
+    | Factory<TabsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -121,7 +128,7 @@ export const mirrordown = (
 
   return {
     features,
-    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have.
+    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs last: a panel's aria-label is its label's text when tabs renders, so the inline plugins must have run.
     mdastPlugins: [
       ...(options.ruby === false
         ? []
@@ -137,7 +144,8 @@ export const mirrordown = (
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
-      ...(options.spoiler === false ? [] : [satteriSpoiler()])
+      ...(options.spoiler === false ? [] : [satteriSpoiler()]),
+      ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))])
     ],
     // In plugin order: sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [

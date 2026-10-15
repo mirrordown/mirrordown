@@ -81,6 +81,7 @@ mirrordown({
 | `steps`             | `@1. Step`                                  | `@mirrordown/sat-steps`              |
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
+| `tabs`              | `% Tab`                                     | `@mirrordown/sat-tabs`               |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
 | `features`          | any other Sätteri feature                   | merged over the preset's features    |
 
