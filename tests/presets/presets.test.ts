@@ -202,6 +202,7 @@ describe("presets", () => {
       "slug",
       "spoiler",
       "squeeze-paragraphs",
+      "steps",
       "sub",
       "sup",
       "unwrap-images"
@@ -209,7 +210,6 @@ describe("presets", () => {
     const remarkWithSatteriFeatures = remark({
       attrs: false,
       definitionList: false,
-      steps: false,
       tabs: false
     });
     const sat = satteri();
@@ -239,6 +239,7 @@ describe("presets", () => {
             "sectionize",
             "slug",
             "spoiler",
+            "steps",
             "sub",
             "sup",
             "unwrapImages"

@@ -78,6 +78,7 @@ mirrordown({
 | `slug`              | heading ids                                 | `@mirrordown/sat-slug`               |
 | `spoiler`           | `\|\|spoiler\|\|`                           | `@mirrordown/sat-spoiler`            |
 | `squeezeParagraphs` | empty paragraphs removed                    | `@mirrordown/sat-squeeze-paragraphs` |
+| `steps`             | `@1. Step`                                  | `@mirrordown/sat-steps`              |
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |

@@ -31,6 +31,11 @@ import {
 } from "@mirrordown/sat-sectionize";
 import { satteriSpoiler, type SpoilerPlugin } from "@mirrordown/sat-spoiler";
 import {
+  satteriSteps,
+  type StepsOptions,
+  type StepsPlugin
+} from "@mirrordown/sat-steps";
+import {
   satteriSqueezeParagraphs,
   type SqueezeParagraphsPlugin
 } from "@mirrordown/sat-squeeze-paragraphs";
@@ -57,6 +62,7 @@ export interface MirrordownOptions {
   slug?: boolean | SlugOptions;
   spoiler?: boolean;
   squeezeParagraphs?: boolean;
+  steps?: boolean | StepsOptions;
   /** Sätteri's built-in `subscript` feature. */
   sub?: boolean;
   /** Sätteri's built-in `superscript` feature. */
@@ -83,6 +89,7 @@ export interface MirrordownPreset {
     | Factory<MarkPlugin>
     | Factory<RubyPlugin>
     | Factory<SpoilerPlugin>
+    | Factory<StepsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -127,6 +134,9 @@ export const mirrordown = (
       ...(options.ins === false ? [] : [satteriIns()]),
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.steps === false
+        ? []
+        : [satteriSteps(settings(options.steps))]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()])
     ],
     // In plugin order: sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
