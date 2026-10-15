@@ -677,3 +677,21 @@ Content for tab one.</p>
 </section>
 </div>
 </div>
+
+<!-- @case: a label's markup, escapes and entities stay out of its group id and aria-label -->
+<div class="markdown-tabs" data-tabs-group="fa22cf58">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-21494190" id="tabs-21494190-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-21494190-0"><a href="https://example.com">Link</a> &amp; <code>code</code></label>
+<input type="radio" name="tabs-21494190" id="tabs-21494190-1" hidden>
+<label class="markdown-tabs-label" for="tabs-21494190-1">A &amp; B</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Link &amp; code">
+<p>a</p>
+</section>
+<section class="markdown-tabs-panel" aria-label="A &amp; B">
+<p>b</p>
+</section>
+</div>
+</div>

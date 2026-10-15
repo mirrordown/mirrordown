@@ -297,3 +297,10 @@ const x = 1;
 %%% Too Deep
 % Tab Two
 > Content for tab two.
+
+<!-- @case: a label's markup, escapes and entities stay out of its group id and aria-label -->
+
+% [Link](https://example.com) \& `code`
+> a
+% A &amp; B
+> b

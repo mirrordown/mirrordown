@@ -54,6 +54,8 @@ export {
   processTabs,
   processTabsInChildren,
   stripAttrs,
+  tabLabelText,
   type TabsItemNode,
+  type TabsLabelNode,
   type TabsListNode
 } from "./tabs.js";

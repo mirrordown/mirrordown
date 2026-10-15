@@ -1,4 +1,8 @@
-export type { TabsItemNode, TabsListNode } from "@mirrordown/core";
+export type {
+  TabsItemNode,
+  TabsLabelNode,
+  TabsListNode
+} from "@mirrordown/core";
 
 /** Options for the {@link remarkTabs} plugin. */
 export interface TabsOptions {

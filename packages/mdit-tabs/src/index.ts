@@ -27,6 +27,18 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
   md.renderer.rules["tab_input"] = (tokens, idx, opts, _env, self): string =>
     self.renderToken(tokens, idx, opts).replace(/ (hidden|checked)=""/g, " $1");
 
+  // A label's plain text, as the remark and Sätteri plugins compute it: the rendered label without its tags and with markdown-it's escapes undone, so the aria-label is escaped once when rendered, and without a trailing attrs block.
+  const plainLabel = (label: string): string =>
+    stripAttrs(
+      md
+        .renderInline(label)
+        .replace(/<[^>]+>/g, "")
+        .replace(/&quot;/g, '"')
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+    );
+
   function tabsRule(
     state: StateBlock,
     startLine: number,
@@ -156,7 +168,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       // Compute ids from the labels at this depth level
       const depthLabels = group
         .filter((f) => f.depth === targetDepth)
-        .map((f) => f.label);
+        .map((f) => plainLabel(f.label));
       const gId = groupId(depthLabels);
       const bId = blockId(mapStart ?? 0, gId);
 
@@ -236,9 +248,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
           continue;
         }
 
-        const labelPlain = stripAttrs(
-          md.renderInline(f.label).replace(/<[^>]+>/g, "")
-        );
+        const labelPlain = plainLabel(f.label);
 
         // Find child frames
         const childStart = panelK + 1;
@@ -266,6 +276,8 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
             state.env,
             state.tokens
           );
+          // Panel tokens nest inside the tabs tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
+          childState.level = state.level;
           childState.md.block.tokenize(childState, 0, childState.lineMax);
 
           state.parentType = oldParentType;

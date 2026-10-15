@@ -4,7 +4,12 @@ import type { Plugin } from "unified";
 import type { Root } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
-import { processTabs, stripAttrs } from "@mirrordown/core";
+import {
+  processTabs,
+  stripAttrs,
+  tabLabelText,
+  type TabsLabelNode
+} from "@mirrordown/core";
 import type { TabsOptions, TabsListNode } from "./types.js";
 
 export type { TabsOptions };
@@ -43,7 +48,11 @@ const buildTabsHast = (
   const panelChildren: ElementContent[] = [];
 
   list.children.forEach((item, idx) => {
-    const labelPlain = stripAttrs(item.labelText);
+    const label =
+      item.children.find((c): c is TabsLabelNode => c.type === "tabsLabel")
+        ?.children ?? [];
+    // From the label as it is now, so plugins that ran after tabs count too.
+    const labelPlain = stripAttrs(tabLabelText(label));
     const inputId = `${list.blockId}-${idx}`;
 
     // <input type="radio">
@@ -72,13 +81,13 @@ const buildTabsHast = (
       properties: labelProps,
       children: state.all({
         type: "paragraph",
-        children: item.label
+        children: label
       })
     });
 
     // Panel body and nested lists
     const bodyBlocks = item.children.filter(
-      (c) => (c as { type: string }).type !== "tabsList"
+      (c) => c.type !== "tabsLabel" && c.type !== "tabsList"
     );
     const nestedLists = item.children.filter(
       (c) => (c as { type: string }).type === "tabsList"

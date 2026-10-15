@@ -26,14 +26,21 @@ export interface TabsListNode {
   data?: { attrsRole?: string; hProperties?: Properties };
 }
 
-/** One tab: its label, panel body and nested tabs. */
+/** A tab's label, rendered as its `<label>`. */
+export interface TabsLabelNode {
+  type: "tabsLabel";
+  children: PhrasingContent[];
+}
+
+/** One tab: its label (always the first child, so transforms that walk children reach it), panel body and nested tabs. */
 export interface TabsItemNode {
   type: "tabsItem";
   depth: number;
-  label: PhrasingContent[];
-  labelText: string; // plain-text version for aria-label and data-tab
+  labelText: string; // plain text of the label as recognized, for the group id
   open: boolean;
-  children: Array<BlockContent | DefinitionContent | TabsListNode>;
+  children: Array<
+    TabsLabelNode | BlockContent | DefinitionContent | TabsListNode
+  >;
   data?: {
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
@@ -133,13 +140,13 @@ const paraToLines = (para: Paragraph): PhrasingContent[][] => {
   return lines;
 };
 
-// Extract plain text from PhrasingContent nodes (strips all markup)
-const toPlainText = (nodes: PhrasingContent[]): string =>
+/** The plain text of a tab label (text and inline code; other markup contributes its text, images nothing), for its group id and `aria-label`. */
+export const tabLabelText = (nodes: PhrasingContent[]): string =>
   nodes
     .map((n) => {
       if (n.type === "text" || n.type === "inlineCode")
         return "value" in n ? n.value : "";
-      if ("children" in n) return toPlainText(n.children);
+      if ("children" in n) return tabLabelText(n.children);
       return "";
     })
     .join("");
@@ -190,7 +197,7 @@ const extractHeaderPara = (
       depth,
       open,
       labelNodes,
-      labelText: toPlainText(labelNodes),
+      labelText: tabLabelText(labelNodes),
       body: []
     });
   }
@@ -313,7 +320,7 @@ const extractTrailingTabHeader = (
         depth: header.depth,
         open: header.open,
         labelNodes,
-        labelText: toPlainText(labelNodes),
+        labelText: tabLabelText(labelNodes),
         body: []
       };
       const truncatedPara = buildParagraph(lines.slice(0, at));
@@ -360,7 +367,7 @@ const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
               depth: header.depth,
               open: header.open,
               labelNodes,
-              labelText: toPlainText(labelNodes),
+              labelText: tabLabelText(labelNodes),
               body: []
             },
             body: [],
@@ -450,7 +457,7 @@ const buildTree = (
   const depthLabels = rawTabs
     .slice(start, end)
     .filter((t) => t.depth === targetDepth)
-    .map((t) => t.labelText);
+    .map((t) => stripAttrs(t.labelText));
 
   const gId = groupId(depthLabels);
   const bId = blockId(startLine, gId);
@@ -481,7 +488,11 @@ const buildTree = (
     // First %+ wins; if none, first tab is open
     const isOpen =
       explicitOpenAbsIdx >= 0 ? i === explicitOpenAbsIdx : tabCounter === 0;
-    const bodyChildren: TabsItemNode["children"] = [...raw.body];
+    // The label node shares `labelNodes` with `attrsTitle`, so attrs trimming one trims the other.
+    const bodyChildren: TabsItemNode["children"] = [
+      { type: "tabsLabel", children: raw.labelNodes },
+      ...raw.body
+    ];
 
     const hasDeeper = rawTabs
       .slice(i + 1, childEnd)
@@ -503,7 +514,6 @@ const buildTree = (
     items.push({
       type: "tabsItem",
       depth: targetDepth,
-      label: raw.labelNodes,
       labelText: raw.labelText,
       open: isOpen,
       children: bodyChildren,
