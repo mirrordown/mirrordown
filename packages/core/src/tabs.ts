@@ -1,0 +1,738 @@
+// Recognition for tabbed content blocks, shared by the remark and Sätteri plugins: header lines (`% Label`) and their `>` bodies become `tabsList`/`tabsItem` nodes, which each engine then renders. It rewrites mdast in place, so a read-only engine runs it on a copy.
+// This module performs heavy tree-rewriting across mdast/unist types that don't unify cleanly; type assertions bridging those boundaries are reviewed and intentional, so the rule is disabled file-wide rather than per-cast. Defensive optional chains on array[i] accesses are also kept because TS doesn't model index access as fallible.
+/* oxlint-disable typescript/no-unsafe-type-assertion */
+/* oxlint-disable typescript/no-unnecessary-condition */
+import type {
+  Root,
+  Paragraph,
+  Blockquote,
+  PhrasingContent,
+  BlockContent,
+  DefinitionContent,
+  RootContent
+} from "mdast";
+import type { Properties } from "hast";
+
+// ── MDAST node types ──────────────────────────────────────────────────────────
+
+/** A group of tabs at one depth, rendered as the tabs container. */
+export interface TabsListNode {
+  type: "tabsList";
+  depth: number;
+  containerClass?: string;
+  groupId: string;
+  blockId: string;
+  children: TabsItemNode[];
+  data?: { attrsRole?: string; hProperties?: Properties };
+}
+
+/** One tab: its label, panel body and nested tabs. */
+export interface TabsItemNode {
+  type: "tabsItem";
+  depth: number;
+  label: PhrasingContent[];
+  labelText: string; // plain-text version for aria-label and data-tab
+  open: boolean;
+  children: Array<BlockContent | DefinitionContent | TabsListNode>;
+  data?: {
+    attrsRole?: string;
+    attrsTitle?: PhrasingContent[];
+    attrsItemTitle?: boolean;
+    hProperties?: Properties;
+  };
+}
+
+// ── Header and ids ────────────────────────────────────────────────────────────
+
+// Matches: %{1,6}+? label text  (prefix-plus form: %+ Label)
+// Groups: 1=% string (depth), 2=+ (open marker, optional), 3=label text
+const TAB_HEADER_RE = /^(%{1,6})(\+)? (.*)/;
+
+interface ParsedTabHeader {
+  depth: number;
+  open: boolean;
+  label: string;
+}
+
+const parseTabHeader = (line: string): ParsedTabHeader | null => {
+  const m = TAB_HEADER_RE.exec(line);
+  if (!m) return null;
+  const [, percents = "", plus, label = ""] = m;
+  return { depth: percents.length, open: plus === "+", label };
+};
+
+// djb2 hash — returns an unsigned 32-bit integer
+const djb2 = (str: string): number => {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  }
+  return h;
+};
+
+/** Strip a trailing attrs block like `{.class #id}` from plain label text, so attrs-consumed markers don't leak into `aria-label`. */
+export const stripAttrs = (text: string): string =>
+  text.replace(/\s*\{[^}]*\}\s*$/, "").trimEnd();
+
+const slugify = (text: string): string =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+// content-based: same label set → same id regardless of page position
+const groupId = (labels: string[]): string => {
+  const key = [...labels].map(slugify).sort().join("-");
+  return djb2(key).toString(16);
+};
+
+// position-based: unique per block even when label sets match
+const blockId = (startLine: number, gId: string): string => {
+  const key = `${startLine}:${gId}`;
+  return "tabs-" + djb2(key).toString(16);
+};
+
+// ── Raw extraction types ──────────────────────────────────────────────────────
+
+interface RawTab {
+  depth: number;
+  open: boolean;
+  labelNodes: PhrasingContent[]; // inline nodes for the label
+  labelText: string; // plain text for aria-label / data-tab
+  body: Array<BlockContent | DefinitionContent>; // blockquote contents
+}
+
+// ── Paragraph line splitting ──────────────────────────────────────────────────
+
+// Split a paragraph's inline children into lines by text "\n" boundaries.
+const paraToLines = (para: Paragraph): PhrasingContent[][] => {
+  type Seg = PhrasingContent | null;
+  const segs: Seg[] = [];
+
+  for (const child of para.children) {
+    if (child.type === "text") {
+      const parts = child.value.split("\n");
+      for (const [p, part] of parts.entries()) {
+        if (p > 0) segs.push(null);
+        if (part !== "") segs.push({ type: "text", value: part });
+      }
+    } else if (child.type === "break") {
+      segs.push(null);
+    } else {
+      segs.push(child);
+    }
+  }
+
+  const lines: PhrasingContent[][] = [[]];
+  for (const seg of segs) {
+    if (seg === null) lines.push([]);
+    else lines.at(-1)?.push(seg);
+  }
+  return lines;
+};
+
+// Extract plain text from PhrasingContent nodes (strips all markup)
+const toPlainText = (nodes: PhrasingContent[]): string =>
+  nodes
+    .map((n) => {
+      if (n.type === "text" || n.type === "inlineCode")
+        return "value" in n ? n.value : "";
+      if ("children" in n) return toPlainText(n.children);
+      return "";
+    })
+    .join("");
+
+// ── Tab group extraction ──────────────────────────────────────────────────────
+
+// Parse a paragraph node that consists entirely of % tab headers (no body
+// content). Returns null if the paragraph isn't all headers. A header that
+// skips a depth level ends the group: it and the lines after it are returned
+// as `rest`, to be rendered as an ordinary paragraph after the tabs.
+// requireDepthOne: if true, the first header must be depth 1 (top-level group start).
+// If false, allows any starting depth (for continuation paragraphs).
+const extractHeaderPara = (
+  para: Paragraph,
+  requireDepthOne = true,
+  prevDepth = 0
+): { tabs: RawTab[]; rest: PhrasingContent[][]; restLine: number } | null => {
+  const lines = paraToLines(para);
+  const tabs: RawTab[] = [];
+  let currentDepth = prevDepth;
+
+  for (const [index, lineSegs] of lines.entries()) {
+    const first = lineSegs[0];
+    if (first?.type !== "text") return null;
+
+    const header = parseTabHeader(first.value);
+    if (!header) return null;
+
+    const { depth, open } = header;
+    if (tabs.length === 0 && requireDepthOne && depth !== 1) return null;
+    if (depth > currentDepth + 1) {
+      return tabs.length > 0
+        ? {
+            tabs,
+            rest: lines.slice(index),
+            restLine: (para.position?.start.line ?? 1) + index
+          }
+        : null;
+    }
+    currentDepth = depth;
+
+    const labelText = header.label;
+    const labelNodes: PhrasingContent[] = labelText
+      ? [{ type: "text", value: labelText }, ...lineSegs.slice(1)]
+      : lineSegs.slice(1);
+
+    tabs.push({
+      depth,
+      open,
+      labelNodes,
+      labelText: toPlainText(labelNodes),
+      body: []
+    });
+  }
+
+  return tabs.length > 0 ? { tabs, rest: [], restLine: 0 } : null;
+};
+
+// Lines left over after a group ends become ordinary paragraphs, split before
+// every line that opens a new group (a depth-1 header), so the main loop can
+// start that group. Positions follow the source lines (paragraph lines map 1:1
+// to source lines) because group ids hash the start line.
+const splitAtGroupStarts = (
+  lines: PhrasingContent[][],
+  firstLine: number
+): Paragraph[] => {
+  const paragraphs: Paragraph[] = [];
+  let start = 0;
+  const flush = (end: number): void => {
+    const para = buildParagraph(lines.slice(start, end));
+    if (!para) return;
+    para.position = {
+      start: { line: firstLine + start, column: 1 },
+      end: { line: firstLine + end - 1, column: 1 }
+    };
+    paragraphs.push(para);
+  };
+  lines.forEach((line, index) => {
+    const first = line[0];
+    const opens =
+      first?.type === "text" && parseTabHeader(first.value)?.depth === 1;
+    if (opens && index > start) {
+      flush(index);
+      start = index;
+    }
+  });
+  flush(lines.length);
+  return paragraphs;
+};
+
+// Split a blockquote node into segments separated by % tab header lines.
+// Each segment is { header: RawTab | null, body: blockquote-like children }.
+//
+// Remark absorbs adjacent non-blank lines into a blockquote, so:
+//   % Tab One
+//   > Content for tab one.
+//   % Tab Two
+//   > Content for tab two.
+//
+// Produces: paragraph("% Tab One") + blockquote containing:
+//   paragraph("Content for tab one.\n% Tab Two\nContent for tab two.")
+//
+// We need to split that paragraph on lines matching tab headers, then
+// reconstruct the body content for each segment.
+interface BQSegment {
+  header: RawTab | null; // null means pre-header content (goes to prev tab)
+  body: Array<BlockContent | DefinitionContent>;
+  // true when this blockquote was written with explicit `> %` nesting (multiple
+  // block children) rather than being the standard absorbed-tabs pattern where
+  // remark collapses consecutive `% Tab\n> body` lines into one blockquote.
+  // Used to apply a depth offset and to unwrap nested blockquote bodies.
+  explicit: boolean;
+}
+
+// A blockquote is "explicit" (`> % Label` nesting) when at least one of its
+// direct paragraph children starts with a tab header. The absorbed pattern
+// (remark collapsing consecutive `% Tab\n> body` lines into one blockquote)
+// never produces standalone header paragraphs — headers are only embedded
+// inside multi-line text nodes.
+const isExplicitBQ = (bq: Blockquote): boolean =>
+  bq.children.some((child) => {
+    if (child.type !== "paragraph") return false;
+    const first = child.children[0];
+    return (
+      first?.type === "text" &&
+      parseTabHeader(first.value.split("\n")[0] ?? "") !== null
+    );
+  });
+
+// Walk to the deepest last child of a node and return its paragraph if one of
+// its lines is a tab header: the first such header, the paragraph truncated
+// before it, and the lines after it (which belong to the new tab, and may hold
+// further headers). Returns null if the paragraph has no tab header line.
+// This handles cases where remark plugins (e.g. remarkDefinitionList) transform
+// absorbed paragraphs into custom nodes — the trailing "% Code" line ends up
+// inside a nested paragraph rather than at the blockquote's top level.
+const extractTrailingTabHeader = (
+  node: BlockContent | DefinitionContent
+): {
+  header: RawTab;
+  truncatedPara: Paragraph | null;
+  rest: PhrasingContent[][];
+  path: Array<BlockContent | DefinitionContent>;
+} | null => {
+  // Walk to the deepest last child that is a paragraph
+  const path: Array<BlockContent | DefinitionContent> = [];
+  let current: BlockContent | DefinitionContent = node;
+  while ("children" in current && current.children.length > 0) {
+    const last = current.children[current.children.length - 1] as
+      | BlockContent
+      | DefinitionContent;
+    if (last.type === "paragraph") {
+      path.push(current);
+      // Find the first line of this paragraph that is a tab header. A nested
+      // blockquote can lazily absorb a header line and the body lines after it.
+      const lines = paraToLines(last);
+      const at = lines.findIndex(
+        (line) => line[0]?.type === "text" && parseTabHeader(line[0].value)
+      );
+      if (at === -1) return null;
+      const headerLine = lines[at] ?? [];
+      const first = headerLine[0];
+      const header =
+        first?.type === "text" ? parseTabHeader(first.value) : null;
+      if (!header) return null;
+      const labelText = header.label;
+      const labelNodes: PhrasingContent[] = labelText
+        ? [{ type: "text", value: labelText }, ...headerLine.slice(1)]
+        : headerLine.slice(1);
+      const rawTab: RawTab = {
+        depth: header.depth,
+        open: header.open,
+        labelNodes,
+        labelText: toPlainText(labelNodes),
+        body: []
+      };
+      const truncatedPara = buildParagraph(lines.slice(0, at));
+      return { header: rawTab, truncatedPara, rest: lines.slice(at + 1), path };
+    }
+    if (!("children" in last)) break;
+    path.push(current);
+    current = last;
+  }
+  return null;
+};
+
+const splitBlockquote = (bq: Blockquote, explicit: boolean): BQSegment[] => {
+  const segments: BQSegment[] = [];
+  let currentSegment: BQSegment = { header: null, body: [], explicit };
+
+  // Split paragraph lines on tab header lines: body lines accumulate into the
+  // current segment, and each header starts a new one.
+  const splitLines = (lines: PhrasingContent[][]): void => {
+    let bodyLines: PhrasingContent[][] = [];
+
+    for (const lineSegs of lines) {
+      const first = lineSegs[0];
+      if (first?.type === "text") {
+        const header = parseTabHeader(first.value);
+        if (header) {
+          // Flush accumulated body lines into current segment
+          if (bodyLines.length > 0) {
+            const bodyPara = buildParagraph(bodyLines);
+            if (bodyPara) currentSegment.body.push(bodyPara);
+            bodyLines = [];
+          }
+
+          // Save current segment, start a new one
+          segments.push(currentSegment);
+
+          const labelText = header.label;
+          const labelNodes: PhrasingContent[] = labelText
+            ? [{ type: "text", value: labelText }, ...lineSegs.slice(1)]
+            : lineSegs.slice(1);
+
+          currentSegment = {
+            header: {
+              depth: header.depth,
+              open: header.open,
+              labelNodes,
+              labelText: toPlainText(labelNodes),
+              body: []
+            },
+            body: [],
+            explicit
+          };
+          continue;
+        }
+      }
+      bodyLines.push(lineSegs);
+    }
+
+    // Flush remaining body lines
+    if (bodyLines.length > 0) {
+      const bodyPara = buildParagraph(bodyLines);
+      if (bodyPara) currentSegment.body.push(bodyPara);
+    }
+  };
+
+  for (const child of bq.children) {
+    if (child.type !== "paragraph") {
+      // For non-paragraph children (e.g. defList from remarkDefinitionList),
+      // check if the deepest last-child paragraph has a trailing tab header.
+      // Remark may have absorbed a "% NextTab" line into that nested paragraph.
+      const extracted = extractTrailingTabHeader(child);
+      if (extracted) {
+        // Clone the child with the trailing header line removed from its nested paragraph
+        const cloned = JSON.parse(JSON.stringify(child)) as
+          | BlockContent
+          | DefinitionContent;
+        // Navigate to the deepest last child and replace the paragraph.
+        // Tree walking through heterogeneous mdast Parent shapes — no narrow
+        // type fits all the intermediate nodes we descend through.
+        interface ParentLike {
+          children: ParentLike[];
+        }
+        let target: ParentLike = cloned as unknown as ParentLike;
+        for (let pi = 1; pi < extracted.path.length; pi++) {
+          target = target.children[target.children.length - 1]!;
+        }
+        const deepestParent = target as unknown as { children: unknown[] };
+        if (extracted.truncatedPara) {
+          deepestParent.children[deepestParent.children.length - 1] =
+            extracted.truncatedPara;
+        } else {
+          deepestParent.children.splice(deepestParent.children.length - 1, 1);
+        }
+        currentSegment.body.push(cloned);
+        // Start a new segment for the extracted tab header
+        segments.push(currentSegment);
+        currentSegment = { header: extracted.header, body: [], explicit };
+        splitLines(extracted.rest);
+      } else {
+        currentSegment.body.push(child);
+      }
+      continue;
+    }
+
+    // Check if this paragraph contains tab headers mixed with body text
+    splitLines(paraToLines(child));
+  }
+
+  segments.push(currentSegment);
+  return segments;
+};
+
+// Reconstruct a paragraph node from line arrays
+const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
+  const children: PhrasingContent[] = [];
+  for (const [i, line] of lines.entries()) {
+    if (i > 0) children.push({ type: "text", value: "\n" });
+    children.push(...line);
+  }
+  if (children.length === 0) return null;
+  return { type: "paragraph", children };
+};
+
+// ── Tree builder ──────────────────────────────────────────────────────────────
+
+const buildTree = (
+  rawTabs: RawTab[],
+  targetDepth: number,
+  start: number,
+  end: number,
+  containerClass: string,
+  startLine: number
+): TabsListNode => {
+  const depthLabels = rawTabs
+    .slice(start, end)
+    .filter((t) => t.depth === targetDepth)
+    .map((t) => t.labelText);
+
+  const gId = groupId(depthLabels);
+  const bId = blockId(startLine, gId);
+
+  // Absolute index of the first %+ tab at this depth (-1 if none)
+  const explicitOpenIdx = rawTabs
+    .slice(start, end)
+    .findIndex((t) => t.depth === targetDepth && t.open);
+  const explicitOpenAbsIdx =
+    explicitOpenIdx >= 0 ? start + explicitOpenIdx : -1;
+
+  const items: TabsItemNode[] = [];
+  let tabCounter = 0;
+  let i = start;
+
+  while (i < end) {
+    const raw = rawTabs[i];
+    if (!raw) break;
+    if (raw.depth !== targetDepth) {
+      i++;
+      continue;
+    }
+
+    let childEnd = i + 1;
+    while (childEnd < end && (rawTabs[childEnd]?.depth ?? 0) > targetDepth)
+      childEnd++;
+
+    // First %+ wins; if none, first tab is open
+    const isOpen =
+      explicitOpenAbsIdx >= 0 ? i === explicitOpenAbsIdx : tabCounter === 0;
+    const bodyChildren: TabsItemNode["children"] = [...raw.body];
+
+    const hasDeeper = rawTabs
+      .slice(i + 1, childEnd)
+      .some((t) => t.depth === targetDepth + 1);
+
+    if (hasDeeper) {
+      const nested = buildTree(
+        rawTabs,
+        targetDepth + 1,
+        i + 1,
+        childEnd,
+        containerClass,
+        startLine
+      );
+      nested.containerClass = containerClass;
+      bodyChildren.push(nested);
+    }
+
+    items.push({
+      type: "tabsItem",
+      depth: targetDepth,
+      label: raw.labelNodes,
+      labelText: raw.labelText,
+      open: isOpen,
+      children: bodyChildren,
+      data: {
+        attrsRole: "containerItem",
+        attrsTitle: raw.labelNodes,
+        attrsItemTitle: true,
+        hProperties: {}
+      }
+    });
+
+    tabCounter++;
+    i = childEnd;
+  }
+
+  return {
+    type: "tabsList",
+    depth: targetDepth,
+    groupId: gId,
+    blockId: bId,
+    children: items,
+    data: { attrsRole: "container", hProperties: {} }
+  };
+};
+
+// ── Remark plugin ─────────────────────────────────────────────────────────────
+
+// Process all tab groups found in a children array in-place.
+// Used at root level and recursively inside any parent node's children.
+// checkBlankLines: when false, skip the line-gap termination check (for nested contexts
+// where blank lines inside blockquotes produce position gaps but are still part of the group).
+export const processTabsInChildren = (
+  children: Array<BlockContent | DefinitionContent | RootContent>,
+  containerClass: string,
+  checkBlankLines = true
+): void => {
+  const newChildren: typeof children = [];
+  let i = 0;
+
+  while (i < children.length) {
+    const node = children[i];
+    if (!node) break;
+
+    if (node.type === "paragraph") {
+      const headerPara = extractHeaderPara(node);
+
+      if (headerPara) {
+        const rawTabs: RawTab[] = [...headerPara.tabs];
+        // A group always starts with at least one tab.
+        const lastTab = (): RawTab => rawTabs[rawTabs.length - 1]!;
+        // Lines left over after a depth-skipping header end the group.
+        let rest = headerPara.rest;
+        let restLine = headerPara.restLine;
+        const startLine = (node.position?.start.line ?? 1) - 1;
+        let j = i + 1;
+        let currentTabIdx = rawTabs.length - 1;
+        let prevEndLine = node.position?.end.line ?? 0;
+
+        while (rest.length === 0 && j < children.length) {
+          const sibling = children[j];
+          if (!sibling) break;
+          const siblingStartLine =
+            (sibling as { position?: { start: { line: number } } }).position
+              ?.start.line ?? prevEndLine + 1;
+
+          if (checkBlankLines && siblingStartLine > prevEndLine + 1) break;
+
+          if (sibling.type === "blockquote") {
+            const bq = sibling;
+            const explicit = isExplicitBQ(bq);
+            const segments = splitBlockquote(bq, explicit);
+
+            const firstSeg = segments[0];
+            if (firstSeg?.header === null) {
+              rawTabs[currentTabIdx]?.body.push(...firstSeg.body);
+            }
+
+            // Explicit blockquotes (`> % Label` nesting) have their headers
+            // implicitly one level deeper than the owning tab. Apply a depth
+            // offset so they nest correctly.
+            // Absorbed blockquotes (standard `% Tab\n> body` pattern) keep
+            // literal depths — remark collapses them into a single paragraph child.
+            const depthOffset = explicit ? lastTab().depth : 0;
+
+            for (const seg of segments.slice(1)) {
+              if (!seg.header) continue;
+
+              const adjustedDepth = depthOffset + seg.header.depth;
+              const prevDepth = lastTab().depth;
+              if (adjustedDepth > prevDepth + 1) continue;
+
+              seg.header.depth = adjustedDepth;
+
+              if (explicit) {
+                // For explicit `> %` blockquotes, body items are wrapped in a
+                // nested `> >` blockquote. Unwrap each nested blockquote:
+                // - Non-explicit (absorbed) inner BQs are re-split to extract
+                //   tab headers that remark collapsed into a single paragraph.
+                // - Explicit inner BQs use their children directly.
+                //
+                // "Escaped" segments: when remark absorbs an outer-level tab header
+                // (e.g. `% Code` at root depth) into an inner BQ paragraph, the tab's
+                // body node (code fence etc.) is hoisted to the outer BQ as a direct
+                // child after that inner BQ. Re-split segments with an empty body had
+                // their body hoisted — they are outer-level siblings, not inner children.
+                // Subsequent non-blockquote nodes in seg.body belong to those escaped tabs.
+                const deferredInnerSegs: BQSegment[] = [];
+                // Tracks which re-split segments have empty bodies (body hoisted to outer BQ)
+                const escapedSegs: RawTab[] = [];
+
+                for (const b of seg.body) {
+                  if (b.type !== "blockquote") {
+                    // Non-BQ outer sibling — belongs to the first escaped seg's body
+                    const escaped = escapedSegs.at(-1);
+                    if (escaped) {
+                      escaped.body.push(b);
+                    } else {
+                      seg.header.body.push(b);
+                    }
+                    continue;
+                  }
+                  const innerBq = b;
+                  if (!isExplicitBQ(innerBq)) {
+                    // Re-split absorbed inner blockquote to extract sibling headers
+                    const innerSegs = splitBlockquote(innerBq, false);
+                    const innerFirst = innerSegs[0];
+                    if (innerFirst?.header === null) {
+                      seg.header.body.push(...innerFirst.body);
+                    }
+                    for (const innerSeg of innerSegs.slice(1)) {
+                      if (!innerSeg.header) continue;
+                      // If the re-split segment has no body, its body was hoisted to
+                      // the outer BQ as a direct child — it is an outer-level escaped
+                      // tab (originally root-level, absorbed by remark into this inner BQ).
+                      // Push it at depthOffset (the owning explicit BQ's parent depth).
+                      if (innerSeg.body.length === 0) {
+                        innerSeg.header.depth = depthOffset;
+                        escapedSegs.push(innerSeg.header);
+                        deferredInnerSegs.push(innerSeg);
+                        continue;
+                      }
+                      const tentativeDepth =
+                        depthOffset + innerSeg.header.depth;
+                      const innerPrevDepth = lastTab().depth;
+                      if (tentativeDepth > innerPrevDepth + 1) continue;
+                      innerSeg.header.depth = tentativeDepth;
+                      innerSeg.header.body.push(...innerSeg.body);
+                      deferredInnerSegs.push(innerSeg);
+                    }
+                  } else {
+                    // Explicit inner blockquote — use children directly
+                    seg.header.body.push(...innerBq.children);
+                  }
+                }
+                // Push the current seg first, then any deferred inner siblings
+                rawTabs.push(seg.header);
+                currentTabIdx = rawTabs.length - 1;
+                for (const innerSeg of deferredInnerSegs) {
+                  if (!innerSeg.header) continue;
+                  rawTabs.push(innerSeg.header);
+                  currentTabIdx = rawTabs.length - 1;
+                }
+              } else {
+                seg.header.body.push(...seg.body);
+                rawTabs.push(seg.header);
+                currentTabIdx = rawTabs.length - 1;
+              }
+            }
+
+            prevEndLine = sibling.position?.end.line ?? prevEndLine;
+            j++;
+          } else if (sibling.type === "paragraph") {
+            const prevDepth = lastTab().depth;
+            const contHeaders = extractHeaderPara(sibling, false, prevDepth);
+            if (contHeaders) {
+              rawTabs.push(...contHeaders.tabs);
+              rest = contHeaders.rest;
+              restLine = contHeaders.restLine;
+              currentTabIdx = rawTabs.length - 1;
+              prevEndLine = sibling.position?.end.line ?? prevEndLine;
+              j++;
+              continue;
+            }
+            break;
+          } else {
+            break;
+          }
+        }
+
+        const list = buildTree(
+          rawTabs,
+          1,
+          0,
+          rawTabs.length,
+          containerClass,
+          startLine
+        );
+        list.containerClass = containerClass;
+        newChildren.push(list as unknown as RootContent);
+        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
+        i = j;
+        continue;
+      }
+    }
+
+    newChildren.push(node);
+    i++;
+  }
+
+  children.splice(0, children.length, ...newChildren);
+};
+
+interface Container {
+  children?: unknown[];
+}
+
+/**
+ * Recognize every tab group in the tree: at the root, then inside every container (step bodies, list items, other tabs' panels). Blank-line checks only apply at the root: blank lines inside a blockquote leave position gaps that would wrongly end a group once its content has been lifted out of the blockquote.
+ */
+export const processTabs = (root: Root, containerClass: string): void => {
+  const walk = (node: Container): void => {
+    if (!Array.isArray(node.children) || node.children.length === 0) return;
+    processTabsInChildren(
+      node.children as Array<BlockContent | DefinitionContent>,
+      containerClass,
+      false
+    );
+    for (const child of node.children) walk(child as Container);
+  };
+  processTabsInChildren(root.children, containerClass);
+  for (const child of root.children) walk(child as Container);
+};

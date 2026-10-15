@@ -50,3 +50,10 @@ export {
   type StepsListNode,
   type StepsTitleNode
 } from "./steps.js";
+export {
+  processTabs,
+  processTabsInChildren,
+  stripAttrs,
+  type TabsItemNode,
+  type TabsListNode
+} from "./tabs.js";

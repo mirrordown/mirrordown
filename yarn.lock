@@ -1887,10 +1887,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-tabs@workspace:packages/remd-tabs"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"
-    unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
   languageName: unknown
