@@ -122,3 +122,107 @@ para\
 <!-- @case: braces in image alt text are not list item attributes -->
 
 - ![{.cls}](x.png)
+
+<!-- @case: inline: text after the block stays -->
+This is **important**{.warning} text.
+
+<!-- @case: inline: a link with text after the block -->
+See [the guide](/guide){target=_blank} first.
+
+<!-- @case: inline: blocks that follow one another merge -->
+Run `npm i`{.cmd}{#install} to install.
+
+<!-- @case: inline: a block after a space still ends the paragraph -->
+**bold**{.inner} {#outer}
+
+<!-- @case: inline: nested elements -->
+**a *b*{.in} c**{.out} d
+
+<!-- @case: inline: an element ending a heading takes the block -->
+# Title with **bold**{.mark}
+
+<!-- @case: inline: an element ending a list item takes the block -->
+- item with **bold**{.mark}
+
+<!-- @case: block: text before a block on the last line is not part of it -->
+para
+{.x} {#y}
+
+<!-- @case: inline: an element ending a table cell takes the block -->
+| a **b**{.mark} |
+| --- |
+| c |
+
+<!-- @case: own line: a lazy line after a blockquote goes on the blockquote -->
+> quote
+{.c}
+
+<!-- @case: own line: a line in a blockquote goes on the paragraph -->
+> para
+> {.x}
+
+<!-- @case: own line: a line in the outer of two blockquotes goes on the inner -->
+> > para
+> {.x}
+
+<!-- @case: own line: a lazy line after two blockquotes goes on the outer -->
+> > para
+{.x}
+
+<!-- @case: own line: a line in a blockquote before more blocks goes on the paragraph -->
+> para
+> {.x}
+>
+> more
+
+<!-- @case: own line: a line in a tight list item goes on the item -->
+- a
+  {.x}
+
+<!-- @case: own line: a line in a loose list item goes on the paragraph -->
+- a
+
+  para
+  {.x}
+
+<!-- @case: own line: a lazy line after a loose list item goes on the list -->
+- a
+
+  para
+{.x}
+
+<!-- @case: own line: nested lists take the block by indentation -->
+- item 1{.a}
+  - nested item {.b}
+  {.c}
+    1. nested nested item {.d}
+    {.e}
+
+<!-- @case: own line: a paragraph of its own goes on the outer list -->
+- item
+  - nested
+  {.red}
+
+{.blue}
+
+<!-- @case: own line: a lazy line after a list in a blockquote goes on the list -->
+> - a
+> {.x}
+
+<!-- @case: own line: a line in a list item in a blockquote goes on the item -->
+> - a
+>   {.x}
+
+<!-- @case: own line: a line in a blockquote in a list item goes on the paragraph -->
+- a
+  > q
+  > {.x}
+
+<!-- @case: own line: a lazy line after a blockquote in a list item goes on the blockquote -->
+- a
+  > q
+  {.x}
+
+<!-- @case: own line: a line in an ordered list item goes on the item -->
+1. a
+   {.x}

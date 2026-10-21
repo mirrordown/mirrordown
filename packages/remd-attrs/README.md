@@ -55,6 +55,24 @@ This is **important**{.warning} text.
 {.checklist}
 ````
 
+### Inside blockquotes and lists
+
+A block on a line of its own goes on the block it's written after, at the level its `>` markers and indentation put it, as kramdown places a block IAL. Written inside a blockquote or list item, it goes on the paragraph, or on the item in a tight list. Written outside one, as a lazy continuation line, it goes on that blockquote, or on the item's list.
+
+````markdown
+> A quoted paragraph.
+> {.note}
+
+> A quoted paragraph.
+{.callout}
+
+- Item one
+  {.first}
+- Item two
+````
+
+markdown-it-attrs can't see a line's indentation, so it gives such a line to the outermost block that ends with the paragraph instead.
+
 ## Install
 
 ```sh

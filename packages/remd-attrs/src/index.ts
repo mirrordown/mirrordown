@@ -10,6 +10,7 @@ import type {
   Root,
   Heading,
   Paragraph,
+  List,
   ListItem,
   Code,
   TableCell
@@ -17,6 +18,8 @@ import type {
 import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
 import { applyAttrs } from "./applyAttrs.js";
+import { containersKept } from "./containers.js";
+import type { LineContainer } from "./containers.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
 import type { AttrsOptions } from "./types.js";
 
@@ -29,6 +32,12 @@ export type {
 } from "./types.js";
 
 type AttrNode = Node & { data?: { hProperties?: Properties } };
+
+/** Whether mdast-util-to-hast wraps a list's items' paragraphs in `<p>`, as it does for a loose list. */
+const listLoose = (list: List | undefined): boolean =>
+  !list ||
+  Boolean(list.spread) ||
+  list.children.some((item) => item.spread ?? item.children.length > 1);
 type RuleSet = Set<string>;
 
 const ALL_RULES = new Set([
@@ -78,7 +87,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
   const rules = resolveRules(rule);
   const check = getDelimiterChecker(left, right);
 
-  const transformer: Transformer<Root> = (tree) => {
+  const transformer: Transformer<Root> = (tree, file) => {
     // â”€â”€ fence: code block with attrs in lang string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("fence")) {
       visit(tree, "code", (node: Code) => {
@@ -107,6 +116,118 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       });
     }
 
+    // â”€â”€ inline: attrs after inline elements (em, strong, etc.) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Runs before the block rules, as in markdown-it-attrs, so `**b**{.x}`
+    // ending a heading or list item goes on the `strong`.
+    if (rules.has("inline")) {
+      // Any node holding inline content: paragraphs, headings, table cells
+      // and the inline elements themselves, for nested ones.
+      visit(tree, (node: Node) => {
+        if (!("children" in node)) return;
+        const children = (node as Paragraph).children;
+        for (let i = children.length - 1; i >= 1; i--) {
+          const child = children[i];
+          const prev = children[i - 1];
+          if (child?.type !== "text") continue;
+          if (!prev) continue;
+
+          // Blocks that open the text right after an element go on it, and
+          // the text after them stays, as in markdown-it-attrs.
+          let content = child.value;
+          let range = check(content, "start");
+          if (!range) continue;
+
+          const prevType = prev.type;
+          if (prevType === "text" || prevType === "break") continue;
+
+          while (range) {
+            applyAttrs(prev, content, range, allowed);
+            content = content.slice(range[1] + right.length);
+            range = check(content, "start");
+          }
+          if (content) child.value = content;
+          else children.splice(i, 1);
+        }
+      });
+    }
+
+    // softbreak: a block on a line of its own, ending a paragraph or setext
+    // heading after a soft or hard break, goes on the block that ends right
+    // before it at the level the line is written, as kramdown places a block
+    // IAL: the paragraph (its list item, in a tight list), or, for a line lazily
+    // written outside some of the blockquotes and list items around it, the
+    // outermost of those it leaves (a list item's list). Runs before the list
+    // rule, so the item then reads a block ending its first line.
+    if (rules.has("softbreak")) {
+      const lines = String(file.value).split(/\r?\n/);
+      const parents = new Map<Node, Parent>();
+      visit(tree, (node: Node, _index, parent: Parent | undefined) => {
+        if (parent) parents.set(node, parent);
+      });
+      visit(tree, (node: Node) => {
+        if (node.type !== "paragraph" && node.type !== "heading") return;
+        const children = (node as Paragraph).children;
+        const last = children[children.length - 1];
+        if (last?.type !== "text") return;
+        const hard = children[children.length - 2]?.type === "break";
+        const lineStart = last.value.trimEnd().lastIndexOf("\n");
+        if (!hard && lineStart === -1) return;
+        const content = last.value.slice(lineStart + 1).trim();
+        const range = check(content, "only");
+        if (!range) return;
+
+        // The blockquotes and list items around the block, outermost first.
+        const ancestors: Parent[] = [];
+        for (let p = parents.get(node); p; p = parents.get(p))
+          ancestors.unshift(p);
+        const containers: Array<{ target: Node; line: LineContainer }> = [];
+        for (const [i, ancestor] of ancestors.entries()) {
+          const start = ancestor.position?.start;
+          if (ancestor.type === "blockquote" && start) {
+            // Its own `>` and those before it on its first line, for the
+            // blockquotes (or panels made from them) it's nested in.
+            const before = (lines[start.line - 1] ?? "").slice(
+              0,
+              start.column - 1
+            );
+            containers.push({
+              target: ancestor,
+              line: { kind: "quote", markers: before.split(">").length }
+            });
+          } else if (ancestor.type === "listItem") {
+            const first = ancestor.children[0]?.position?.start;
+            if (!first) return;
+            containers.push({
+              target: ancestors[i - 1] ?? ancestor,
+              line: { kind: "item", column: first.column - 1 }
+            });
+          }
+        }
+
+        const end = last.position?.end;
+        const kept = end
+          ? containersKept(
+              lines[end.line - 1] ?? "",
+              containers.map((c) => c.line)
+            )
+          : containers.length;
+        const parent = parents.get(node);
+        let target = node;
+        if (kept < containers.length) target = containers[kept].target;
+        // A tight list hides its paragraphs, so the item shows the attributes.
+        else if (
+          parent?.type === "listItem" &&
+          !listLoose(parents.get(parent) as List)
+        )
+          target = parent;
+        applyAttrs(target, content, range, allowed);
+
+        // Keep a hard break, as markdown-it-attrs does; drop only the attrs.
+        if (lineStart === -1) children.pop();
+        else last.value = last.value.slice(0, lineStart).trimEnd();
+      });
+    }
+
     // â”€â”€ heading: attrs at end of heading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("heading")) {
       visit(tree, "heading", (node: Heading) => {
@@ -125,43 +246,20 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // list: attrs closing a list item's first paragraph. Runs before `block`,
     // which would otherwise give them to a paragraph that a tight list hides.
     if (rules.has("list")) {
-      visit(
-        tree,
-        "listItem",
-        (
-          node: ListItem,
-          _index: number | undefined,
-          parent: Parent | undefined
-        ) => {
-          const para = node.children[0];
-          if (para?.type !== "paragraph") return;
-          const last = para.children[para.children.length - 1];
-          if (last?.type !== "text") return;
+      visit(tree, "listItem", (node: ListItem) => {
+        const para = node.children[0];
+        if (para?.type !== "paragraph") return;
+        const last = para.children[para.children.length - 1];
+        if (last?.type !== "text") return;
 
-          // An attr line lazily continuing the paragraph applies to the list
-          // holding the item, as markdown-it-attrs' "list softbreak" does.
-          const lineStart = last.value.lastIndexOf("\n");
-          if (lineStart !== -1 && parent?.type === "list") {
-            const line = last.value.slice(lineStart + 1).trim();
-            const lineRange = check(line, "only");
-            if (lineRange) {
-              applyAttrs(parent, line, lineRange, allowed);
-              last.value = last.value.slice(0, lineStart).trimEnd();
-              if (last.value === "") para.children.pop();
-              return;
-            }
-          }
-
-          const content = last.value.trimEnd();
-          const range = check(content, "end");
-          if (!range) return;
-          applyAttrs(node, content, range, allowed);
-          const attrStart = content.lastIndexOf(left, range[0] - 1);
-          last.value = content.slice(0, attrStart).trimEnd();
-          if (last.value === "" && para.children.length > 1)
-            para.children.pop();
-        }
-      );
+        const content = last.value.trimEnd();
+        const range = check(content, "end");
+        if (!range) return;
+        applyAttrs(node, content, range, allowed);
+        const attrStart = content.lastIndexOf(left, range[0] - 1);
+        last.value = content.slice(0, attrStart).trimEnd();
+        if (last.value === "" && para.children.length > 1) para.children.pop();
+      });
     }
 
     // table: attrs at the end of a cell apply to that cell (`td` or `th`).
@@ -176,47 +274,6 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const attrStart = content.lastIndexOf(left, range[0] - 1);
         last.value = content.slice(0, attrStart).trimEnd();
         if (last.value === "" && node.children.length > 1) node.children.pop();
-      });
-    }
-
-    // â”€â”€ softbreak: attr block after softbreak in paragraph â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    if (rules.has("softbreak")) {
-      visit(tree, "paragraph", (node: Paragraph) => {
-        const children = node.children;
-        if (children.length < 2) return;
-        const last = children[children.length - 1];
-        const prev = children[children.length - 2];
-        if (last?.type !== "text") return;
-        if (prev?.type !== "break") return;
-        const content = last.value.trim();
-        const range = check(content, "only");
-        if (!range) return;
-        applyAttrs(node, content, range, allowed);
-        // Keep the hard break, as markdown-it-attrs does; drop only the attrs.
-        children.pop();
-      });
-    }
-
-    // â”€â”€ inline: attrs after inline elements (em, strong, etc.) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    if (rules.has("inline")) {
-      visit(tree, "paragraph", (node: Paragraph) => {
-        const children = node.children;
-        for (let i = children.length - 1; i >= 1; i--) {
-          const child = children[i];
-          const prev = children[i - 1];
-          if (child?.type !== "text") continue;
-          if (!prev) continue;
-
-          const content = child.value;
-          const range = check(content, "only");
-          if (!range) continue;
-
-          const prevType = prev.type;
-          if (prevType === "text" || prevType === "break") continue;
-
-          applyAttrs(prev, content, range, allowed);
-          children.splice(i, 1);
-        }
       });
     }
 

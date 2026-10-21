@@ -9,6 +9,8 @@ export interface AttrRule {
     tokens: Token[],
     index: number,
     position: number,
-    range: DelimiterRange
+    range: DelimiterRange,
+    /** The document's source, which token maps index by line. */
+    src: string
   ): boolean | undefined;
 }
