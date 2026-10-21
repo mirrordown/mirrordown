@@ -61,6 +61,7 @@ export {
   type TabsListNode
 } from "./tabs.js";
 export { editableTree, type EditableTree, type TreeNode } from "./editable.js";
+export { placeCutAttributes, type ReadAttributes } from "./cut-attributes.js";
 export {
   inlineSvgMarkup,
   svgSpriteId,

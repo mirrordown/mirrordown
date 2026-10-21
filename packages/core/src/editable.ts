@@ -6,6 +6,7 @@
 export interface TreeNode {
   type: string;
   children?: readonly TreeNode[];
+  data?: unknown;
 }
 
 /** A copy of a tree, and how to write the changes made to it back. */
@@ -13,7 +14,7 @@ export interface EditableTree<N extends TreeNode> {
   /** A plain, mutable copy of the tree, for recognition to rewrite. */
   tree: N;
   /**
-   * Write a node of the (rewritten) copy back: a node recognition left alone becomes the engine's own node again, so it keeps what the engine tracks for it (such as its source position, which later plugins read), and `setChildren` is called only where a children list changed. `build` converts a node recognition created, writing back any copied nodes inside it.
+   * Write a node of the (rewritten) copy back: a node recognition left alone becomes the engine's own node again, so it keeps what the engine tracks for it (such as its source position, which later plugins read), and `setChildren` is called only where a children list changed, `setData` only where its `data` was replaced. `build` converts a node recognition created, writing back any copied nodes inside it.
    */
   writeBack: (node: N) => N;
 }
@@ -21,7 +22,8 @@ export interface EditableTree<N extends TreeNode> {
 export const editableTree = <N extends TreeNode>(
   root: N,
   build: (node: N, writeBack: (node: N) => N) => N,
-  setChildren: (node: N, children: N[]) => void
+  setChildren: (node: N, children: N[]) => void,
+  setData?: (node: N, data: unknown) => void
 ): EditableTree<N> => {
   const originals = new Map<N, { node: N; children: readonly N[] }>();
 
@@ -40,6 +42,8 @@ export const editableTree = <N extends TreeNode>(
   const writeBack = (node: N): N => {
     const original = originals.get(node);
     if (!original) return build(node, writeBack);
+    if (setData && node.data !== original.node.data)
+      setData(original.node, node.data);
     if (!node.children) return original.node;
     const children = (node.children as readonly N[]).map(writeBack);
     const changed =

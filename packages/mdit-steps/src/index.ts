@@ -248,6 +248,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           bodyOpen.block = true;
 
           const bodyContent = f.bodyLines.join("\n");
+          // Token maps inside the body index its lines, without the `>` markers.
+          bodyOpen.meta = { attrsSource: bodyContent };
           const oldBullet = state.parentType;
           state.parentType = "blockquote" as typeof state.parentType;
           const oldLineMax = state.lineMax;

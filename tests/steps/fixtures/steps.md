@@ -1,3 +1,11 @@
+<!-- @case: a hard break in a body stays one, before a header continues the paragraph -->
+
+@1. Step
+>  line\
+>  more
+@1. Two
+>  b
+
 <!-- @case: single step no body -->
 
 @1. Step one

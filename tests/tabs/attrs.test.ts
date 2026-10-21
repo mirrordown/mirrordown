@@ -5,10 +5,12 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml, type Features } from "satteri";
 import { tabs } from "../../packages/mdit-tabs/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
+import { satteriTabs } from "../../packages/sat-tabs/src";
 import { normalizeHtml } from "../utils/index.js";
 
 const md = new MarkdownIt().use(tabs).use(attrs);
@@ -180,4 +182,69 @@ describe("tabs + attrs: tabs and attrs coexist without interference", () => {
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain('class="outro"');
   });
+});
+
+// A block on a line of its own in a panel goes on the block it's written after, inside the panel: the panel's `>` makes the tab, and markdown-it reads the panel's body without it. A header lazily continuing the panel's last paragraph doesn't change that.
+describe("tabs + attrs: a block on a line of its own in a panel", () => {
+  const panel = (html: string) =>
+    /<section class="markdown-tabs-panel"[^>]*>(.*?)<\/section>/s.exec(
+      html
+    )?.[1];
+  const cases: [string, string, string][] = [
+    [
+      "goes on the paragraph",
+      "% Demo\n> para\n> {.x}",
+      '<p class="x">para</p>'
+    ],
+    [
+      "goes on the paragraph a header continues",
+      "% Demo\n> para\n> {.x}\n% Code\n> b",
+      '<p class="x">para</p>'
+    ],
+    [
+      "after a list, goes on the list",
+      "% Demo\n> - a\n> {.x}\n% Code\n> b",
+      '<ul class="x"><li>a</li></ul>'
+    ],
+    [
+      "in a list item, goes on the item",
+      "% Demo\n> - a\n>   {.x}\n% Code\n> b",
+      '<ul><li class="x">a</li></ul>'
+    ],
+    [
+      "after a blockquote, goes on the blockquote",
+      "% Demo\n> > q\n> {.x}\n% Code\n> b",
+      '<blockquote class="x"><p>q</p></blockquote>'
+    ],
+    [
+      "in a blockquote, goes on its paragraph",
+      "% Demo\n> > q\n> > {.x}",
+      '<blockquote><p class="x">q</p></blockquote>'
+    ]
+  ];
+
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(panel(normalizeHtml(md.render(input)))).toBe(expected);
+  });
+
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(panel(remd(input))).toBe(expected);
+  });
+
+  // Sätteri reads attribute blocks itself, before plugins run, in versions with the `attributes` feature; the plugin places those a header hid.
+  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
+  const features = { attributes: true } as Features;
+  const satteriReadsAttributes = markdownToHtml("a {.x}", {
+    features
+  }).html.includes('class="x"');
+  it.skipIf(!satteriReadsAttributes).each(cases)(
+    "%s (sätteri)",
+    (_, input, expected) => {
+      const html = markdownToHtml(input, {
+        features,
+        mdastPlugins: [satteriTabs()]
+      }).html;
+      expect(panel(normalizeHtml(html))).toBe(expected);
+    }
+  );
 });

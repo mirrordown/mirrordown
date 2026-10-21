@@ -292,6 +292,8 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         // Tokenize panel body
         if (f.bodyLines.length > 0) {
           const bodyContent = f.bodyLines.join("\n");
+          // Token maps inside the body index its lines, without the `>` markers.
+          sectionOpen.meta = { attrsSource: bodyContent };
           const oldParentType = state.parentType;
           state.parentType = "blockquote" as typeof state.parentType;
           const oldLineMax = state.lineMax;

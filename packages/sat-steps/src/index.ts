@@ -2,21 +2,40 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import {
   editableTree,
+  placeCutAttributes,
   processSteps,
   type StepsItemNode,
   type StepsListNode,
-  type StepsTitleNode
+  type StepsTitleNode,
+  type ReadAttributes
 } from "@mirrordown/core";
 import type { Root } from "mdast";
 import {
   defineMdastPlugin,
+  markdownToMdast,
   type Custom,
+  type Features,
   type MdastPluginInstance,
   type MdastTarget,
   type PluginFactoryContext
 } from "satteri";
 
 type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
+
+// An attribute block as Sätteri reads one after text: the properties it gives the paragraph, if all of it is one.
+const readAttributes: ReadAttributes = (block) => {
+  const root = markdownToMdast(`x ${block}`, {
+    // Published Sätteri versions without `attributes` don't type it; they never get here.
+    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
+    features: { attributes: true } as Features
+  }) as unknown as Root;
+  const para = root.children[0];
+  const text = para?.type === `paragraph` ? para.children : [];
+  return text.length === 1 && text[0]?.type === `text` && text[0].value === `x`
+    ? (para?.data as { hProperties?: ReturnType<ReadAttributes> } | undefined)
+        ?.hProperties
+    : undefined;
+};
 
 /** Options for the {@link satteriSteps} plugin. */
 export interface StepsOptions {
@@ -56,7 +75,12 @@ const withAuthorProperties = (
  */
 export const satteriSteps =
   (options: StepsOptions = {}): ((ctx: PluginFactoryContext) => StepsPlugin) =>
-  ({ source }) => {
+  (factory) => {
+    const { source } = factory;
+    // Sätteri reads attribute blocks before plugins run; the document's features say whether it does (Sätteri versions that expose them).
+    const attributes =
+      (factory as { features?: { attributes?: boolean } }).features
+        ?.attributes === true;
     const { containerClass = `markdown-steps` } = options;
 
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
@@ -150,9 +174,23 @@ export const satteriSteps =
           build,
           (node, children) => {
             ctx.setProperty(node, `children`, children);
+          },
+          (node, data) => {
+            ctx.setProperty(
+              node,
+              `data`,
+              data as Record<string, unknown> | null
+            );
           }
         );
         processSteps(tree as unknown as Root, containerClass, source);
+        // Blocks a lazily continued header hid from Sätteri end their paragraphs now.
+        if (attributes)
+          placeCutAttributes(
+            tree as unknown as Root,
+            source.split(/\r?\n/),
+            readAttributes
+          );
         writeBack(tree);
       }
     });

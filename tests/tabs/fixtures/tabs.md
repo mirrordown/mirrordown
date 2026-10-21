@@ -1,3 +1,11 @@
+<!-- @case: a hard break in a panel stays one, before a header continues the paragraph -->
+
+% Demo
+> line\
+> more
+% Code
+> b
+
 <!-- @case: basic two tabs -->
 
 % Tab One

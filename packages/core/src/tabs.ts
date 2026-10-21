@@ -14,7 +14,9 @@ import type {
 import type { Properties } from "hast";
 import {
   blockquoteMarkers,
+  linesToParagraph,
   markerCount,
+  paraToLines,
   rebuildLazyLines,
   type MarkedLine
 } from "./lazy.js";
@@ -120,33 +122,6 @@ interface RawTab {
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
 
-// Split a paragraph's inline children into lines by text "\n" boundaries.
-const paraToLines = (para: Paragraph): PhrasingContent[][] => {
-  type Seg = PhrasingContent | null;
-  const segs: Seg[] = [];
-
-  for (const child of para.children) {
-    if (child.type === "text") {
-      const parts = child.value.split("\n");
-      for (const [p, part] of parts.entries()) {
-        if (p > 0) segs.push(null);
-        if (part !== "") segs.push({ type: "text", value: part });
-      }
-    } else if (child.type === "break") {
-      segs.push(null);
-    } else {
-      segs.push(child);
-    }
-  }
-
-  const lines: PhrasingContent[][] = [[]];
-  for (const seg of segs) {
-    if (seg === null) lines.push([]);
-    else lines.at(-1)?.push(seg);
-  }
-  return lines;
-};
-
 /** The plain text of a tab label (text and inline code; other markup contributes its text, images nothing), for its group id and `aria-label`. */
 export const tabLabelText = (nodes: PhrasingContent[]): string =>
   nodes
@@ -223,7 +198,7 @@ const splitAtGroupStarts = (
   const paragraphs: Paragraph[] = [];
   let start = 0;
   const flush = (end: number): void => {
-    const para = buildParagraph(lines.slice(start, end));
+    const para = linesToParagraph(lines.slice(start, end));
     if (!para) return;
     para.position = {
       start: { line: firstLine + start, column: 1 },
@@ -296,7 +271,8 @@ const isExplicitBQ = (bq: Blockquote): boolean =>
 // absorbed paragraphs into custom nodes — the trailing "% Code" line ends up
 // inside a nested paragraph rather than at the blockquote's top level.
 const extractTrailingTabHeader = (
-  node: BlockContent | DefinitionContent
+  node: BlockContent | DefinitionContent,
+  sourceLines?: readonly string[]
 ): {
   header: RawTab;
   truncatedPara: Paragraph | null;
@@ -317,7 +293,7 @@ const extractTrailingTabHeader = (
       path.push(current);
       // Find the first line of this paragraph that is a tab header. A nested
       // blockquote can lazily absorb a header line and the body lines after it.
-      const lines = paraToLines(last);
+      const lines = paraToLines(last, sourceLines);
       const at = lines.findIndex(
         (line) => line[0]?.type === "text" && parseTabHeader(line[0].value)
       );
@@ -338,7 +314,7 @@ const extractTrailingTabHeader = (
         labelText: tabLabelText(labelNodes),
         body: []
       };
-      const truncatedPara = buildParagraph(lines.slice(0, at));
+      const truncatedPara = linesToParagraph(lines.slice(0, at));
       return {
         header: rawTab,
         truncatedPara,
@@ -374,7 +350,8 @@ const splitBlockquote = (
   // line's `>` markers when the source is known.
   const splitLines = (
     lines: PhrasingContent[][],
-    markersOf?: (index: number) => number
+    markersOf?: (index: number) => number,
+    data?: Paragraph["data"]
   ): void => {
     let bodyLines: PhrasingContent[][] = [];
 
@@ -385,7 +362,7 @@ const splitBlockquote = (
         if (header) {
           // Flush accumulated body lines into current segment
           if (bodyLines.length > 0) {
-            const bodyPara = buildParagraph(bodyLines);
+            const bodyPara = linesToParagraph(bodyLines);
             if (bodyPara) currentSegment.body.push(bodyPara);
             bodyLines = [];
           }
@@ -424,9 +401,11 @@ const splitBlockquote = (
       }
     }
 
-    // Flush remaining body lines
+    // Flush remaining body lines. They end the paragraph, so they keep its
+    // data: attributes the parser read from its end (Sätteri's run before tabs).
     if (bodyLines.length > 0) {
-      const bodyPara = buildParagraph(bodyLines);
+      const bodyPara = linesToParagraph(bodyLines);
+      if (bodyPara && data) bodyPara.data = data;
       if (bodyPara) currentSegment.body.push(bodyPara);
     }
   };
@@ -436,7 +415,7 @@ const splitBlockquote = (
       // For non-paragraph children (e.g. defList from remarkDefinitionList),
       // check if the deepest last-child paragraph has a trailing tab header.
       // Remark may have absorbed a "% NextTab" line into that nested paragraph.
-      const extracted = extractTrailingTabHeader(child);
+      const extracted = extractTrailingTabHeader(child, sourceLines);
       if (extracted) {
         // Clone the child with the trailing header line removed from its nested paragraph
         const cloned = JSON.parse(JSON.stringify(child)) as
@@ -489,26 +468,16 @@ const splitBlockquote = (
     // Check if this paragraph contains tab headers mixed with body text
     const start = child.position?.start.line;
     splitLines(
-      paraToLines(child),
+      paraToLines(child, sourceLines),
       sourceLines && start !== undefined
         ? (index): number => markerCount(sourceLines[start - 1 + index] ?? "")
-        : undefined
+        : undefined,
+      child.data
     );
   }
 
   segments.push(currentSegment);
   return segments;
-};
-
-// Reconstruct a paragraph node from line arrays
-const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
-  const children: PhrasingContent[] = [];
-  for (const [i, line] of lines.entries()) {
-    if (i > 0) children.push({ type: "text", value: "\n" });
-    children.push(...line);
-  }
-  if (children.length === 0) return null;
-  return { type: "paragraph", children };
 };
 
 // The content that a header which skips a level, and what follows it, stand for

@@ -13,7 +13,9 @@ import type {
 import type { Properties } from "hast";
 import {
   blockquoteMarkers,
+  linesToParagraph,
   markerCount,
+  paraToLines,
   rebuildLazyLines,
   type MarkedLine
 } from "./lazy.js";
@@ -78,32 +80,6 @@ interface RawStep {
 }
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
-
-const paraToLines = (para: Paragraph): PhrasingContent[][] => {
-  type Seg = PhrasingContent | null;
-  const segs: Seg[] = [];
-
-  for (const child of para.children) {
-    if (child.type === "text") {
-      const parts = child.value.split("\n");
-      for (const [p, part] of parts.entries()) {
-        if (p > 0) segs.push(null);
-        if (part !== "") segs.push({ type: "text", value: part });
-      }
-    } else if (child.type === "break") {
-      segs.push(null);
-    } else {
-      segs.push(child);
-    }
-  }
-
-  const lines: PhrasingContent[][] = [[]];
-  for (const seg of segs) {
-    if (seg === null) lines.push([]);
-    else lines.at(-1)?.push(seg);
-  }
-  return lines;
-};
 
 // ── Header paragraph extraction ───────────────────────────────────────────────
 
@@ -174,7 +150,7 @@ const splitAtGroupStarts = (
   const paragraphs: Paragraph[] = [];
   let start = 0;
   const flush = (end: number): void => {
-    const para = buildParagraph(lines.slice(start, end));
+    const para = linesToParagraph(lines.slice(start, end));
     if (!para) return;
     para.position = {
       start: { line: firstLine + start, column: 1 },
@@ -204,16 +180,6 @@ interface BQSegment {
   body: Array<BlockContent | DefinitionContent>;
 }
 
-const buildParagraph = (lines: PhrasingContent[][]): Paragraph | null => {
-  const children: PhrasingContent[] = [];
-  for (const [i, line] of lines.entries()) {
-    if (i > 0) children.push({ type: "text", value: "\n" });
-    children.push(...line);
-  }
-  if (children.length === 0) return null;
-  return { type: "paragraph", children };
-};
-
 interface ParentLike {
   type: string;
   children?: ParentLike[];
@@ -236,15 +202,17 @@ const takeLazyLines = (
   const para = last as unknown as Paragraph;
   const start = para.position?.start.line;
   if (start === undefined || !parent.children) return null;
-  const lines = paraToLines(para).map((segs, index): MarkedLine => ({
-    segs,
-    markers: markerCount(sourceLines[start - 1 + index] ?? "")
-  }));
+  const lines = paraToLines(para, sourceLines).map(
+    (segs, index): MarkedLine => ({
+      segs,
+      markers: markerCount(sourceLines[start - 1 + index] ?? "")
+    })
+  );
   const at = lines.findIndex(
     ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
   );
   if (at === -1) return null;
-  const kept = buildParagraph(lines.slice(0, at).map(({ segs }) => segs));
+  const kept = linesToParagraph(lines.slice(0, at).map(({ segs }) => segs));
   parent.children.splice(
     -1,
     1,
@@ -329,11 +297,11 @@ const splitBlockquote = (
     }
 
     let bodyLines: PhrasingContent[][] = [];
-    for (const lineSegs of paraToLines(child)) {
+    for (const lineSegs of paraToLines(child, sourceLines)) {
       const header = stepHeader(lineSegs);
       if (header) {
         // Flush accumulated body lines
-        const bodyPara = buildParagraph(bodyLines);
+        const bodyPara = linesToParagraph(bodyLines);
         if (bodyPara) currentSegment.body.push(bodyPara);
         bodyLines = [];
         startStep(header, lineSegs);
@@ -342,7 +310,10 @@ const splitBlockquote = (
       bodyLines.push(lineSegs);
     }
 
-    const bodyPara = buildParagraph(bodyLines);
+    // These lines end the paragraph, so they keep its data: attributes the
+    // parser read from its end (Sätteri's run before steps).
+    const bodyPara = linesToParagraph(bodyLines);
+    if (bodyPara && child.data) bodyPara.data = child.data;
     if (bodyPara) currentSegment.body.push(bodyPara);
   }
 
