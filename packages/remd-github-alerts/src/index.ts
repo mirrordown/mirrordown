@@ -144,7 +144,8 @@ export const githubAlertsHastHandlers: Record<string, Handler> = {
         children: state.all(node)
       };
       state.patch(node, result);
-      return result;
+      // As the default handler does, so other plugins' `data` (attrs) still apply.
+      return state.applyData(node, result);
     }
 
     const containerClass =
