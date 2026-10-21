@@ -1,6 +1,6 @@
 # @mirrordown/mdit-del
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `del` syntax extension.
 
@@ -21,6 +21,9 @@ Wrap text in double dashes to mark it as deleted:
 
 You can use it inline: the price was --$50-- $35.
 ````
+
+> [!NOTE]
+> Smart punctuation rewrites `--` as an en dash before this plugin sees it, and Astro turns it on by default (`smartypants` for remark, `smartPunctuation` for Sätteri). Turn it off, or use a Mirrordown preset, which does.
 
 ## Install
 

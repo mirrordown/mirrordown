@@ -48,8 +48,8 @@ export const groupId = (labels: string[]): string => {
   return djb2(key).toString(16);
 };
 
-// position-based: unique per block even when label sets match
-export const blockId = (startLine: number, gId: string): string => {
-  const key = `${startLine}:${gId}`;
+// A group's block id: its group id with the group's index among the document's tab groups, counted in the order they open, as the remark and Sätteri plugins count them.
+export const blockId = (index: number, gId: string): string => {
+  const key = `${index}:${gId}`;
   return "tabs-" + djb2(key).toString(16);
 };

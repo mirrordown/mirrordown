@@ -1,6 +1,6 @@
 # @mirrordown/remd-kbd
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A remark/rehype (unified) plugin for the `kbd` syntax extension.
 
@@ -21,6 +21,9 @@ Press [[Enter]] to confirm.
 
 You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
 ````
+
+> [!NOTE]
+> Formatting that crosses a key's brackets, such as `[[*a]]*`, renders differently by engine: markdown-it reads the key first, while remark and Sätteri have already read the emphasis when the plugin runs. Keep formatting inside or outside the brackets.
 
 ## Install
 

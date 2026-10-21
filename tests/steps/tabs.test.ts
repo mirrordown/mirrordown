@@ -5,11 +5,14 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { steps } from "../../packages/mdit-steps/src";
 import { tabs } from "../../packages/mdit-tabs/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
 import { normalizeHtml } from "../utils/index.js";
+import { satteriSteps } from "../../packages/sat-steps/src";
+import { satteriTabs } from "../../packages/sat-tabs/src";
 
 const md = new MarkdownIt().use(steps).use(tabs);
 
@@ -27,6 +30,15 @@ const remd = (src: string) =>
         .use(rehypeStringify, { allowDangerousHtml: true })
         .processSync(src)
     )
+  );
+
+// The same plugins in Sätteri, in the same order.
+const sat = (src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { gfm: true, frontmatter: false, smartPunctuation: false },
+      mdastPlugins: [satteriSteps(), satteriTabs()]
+    }).html
   );
 
 // ── Flat tabs inside a step body ──────────────────────────────────────────────
@@ -71,6 +83,14 @@ describe("steps + tabs: flat tabs inside a single step body", () => {
   it("markdown-it: tabs render inside the step body", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-tabs"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
 
@@ -120,6 +140,14 @@ describe("steps + tabs: multiple steps each containing tabs", () => {
     expect(result).toContain('data-step="2"');
     expect(result).toContain('class="markdown-tabs"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Nested tabs (%%}) inside a step body ─────────────────────────────────────
@@ -157,6 +185,14 @@ describe("steps + tabs: nested tabs inside a step body", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
 
@@ -205,6 +241,14 @@ describe("steps + tabs: tabs inside a nested step body", () => {
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Step body with both prose and tabs ────────────────────────────────────────
@@ -234,6 +278,14 @@ describe("steps + tabs: step body containing both prose and tabs", () => {
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain("Choose the one that matches your project");
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
 
@@ -265,5 +317,75 @@ describe("steps + tabs: steps and tabs adjacent at the root level", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain('class="markdown-steps"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
+});
+
+// ── Tab groups across steps ───────────────────────────────────────────────────
+
+const engines: [string, (src: string) => string][] = [
+  ["markdown-it", (src) => normalizeHtml(md.render(src))],
+  ["remark", remd],
+  ["Sätteri", sat]
+];
+
+// A group's labels, and the radio name its inputs share.
+const groups = (html: string) =>
+  [...html.matchAll(/<div class="markdown-tabs-labels">(.*?)<\/div>/g)].map(
+    ([, strip = ""]) => ({
+      labels: [...strip.matchAll(/<label[^>]*>(.*?)<\/label>/g)].map(
+        ([, label]) => label
+      ),
+      names: [
+        ...new Set(
+          [...strip.matchAll(/name="([^"]+)"/g)].map(([, name]) => name)
+        )
+      ]
+    })
+  );
+
+// Block ids number the document's groups in the order they open, so groups with the same labels never share radio names: shared names would let one group's tabs switch the other's.
+describe("steps + tabs: identical tab groups in two steps stay independent", () => {
+  const input = `@1. Choose
+> % npm
+> > Use npm.
+> % yarn
+> > Use yarn.
+@2. Install
+> % npm
+> > npm install
+> % yarn
+> > yarn`;
+
+  it.each(engines)("%s", (_, render) => {
+    const [first, second] = groups(render(input));
+    expect(first?.labels).toEqual(["npm", "yarn"]);
+    expect(second?.labels).toEqual(["npm", "yarn"]);
+    expect(first?.names).toHaveLength(1);
+    expect(second?.names).toHaveLength(1);
+    expect(first?.names[0]).not.toBe(second?.names[0]);
+  });
+});
+
+// Inside a step body, a blank `>` line is the body's own; at the top level a blank line ends a group, but inside a container the group goes on when another entry follows.
+describe("steps + tabs: a blank `>` line between tab entries in a step body keeps one group", () => {
+  const input = `@1. Choose
+> % npm
+> > Use npm.
+>
+> % yarn
+> > Use yarn.`;
+
+  it.each(engines)("%s", (_, render) => {
+    expect(groups(render(input)).map(({ labels }) => labels)).toEqual([
+      ["npm", "yarn"]
+    ]);
   });
 });

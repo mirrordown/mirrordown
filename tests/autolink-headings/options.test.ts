@@ -3,19 +3,22 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import type { Element } from "hast";
 import { rehypeSlug } from "../../packages/remd-slug/src";
 import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions
 } from "../../packages/remd-autolink-headings/src";
+import { satteriSlug } from "../../packages/sat-slug/src";
+import {
+  satteriAutolinkHeadings,
+  type AutolinkHeadingsOptions as SatOptions
+} from "../../packages/sat-autolink-headings/src";
 import { normalizeHtml } from "../utils/index.js";
 
-// These options carry hast nodes / callbacks, which have no markdown-it
-// equivalent — they are part of the remd-only surface (see the guide's parity
-// note), so they are exercised against rehype alone rather than as shared
-// fixtures.
-const run = (input: string, options: AutolinkHeadingsOptions) =>
+// These options carry hast nodes / callbacks, which have no markdown-it equivalent; the two hast engines (rehype and Sätteri) both take them, so each case runs through both and they must agree.
+const runRemd = (input: string, options: AutolinkHeadingsOptions) =>
   normalizeHtml(
     String(
       unified()
@@ -28,7 +31,18 @@ const run = (input: string, options: AutolinkHeadingsOptions) =>
     )
   );
 
-describe("autolink-headings remd-only options", () => {
+const runSat = (input: string, options: SatOptions) =>
+  normalizeHtml(
+    markdownToHtml(input, {
+      features: { frontmatter: false, smartPunctuation: false },
+      hastPlugins: [satteriSlug(), satteriAutolinkHeadings(options)]
+    }).html
+  );
+
+describe.each([
+  ["rehype", runRemd],
+  ["sätteri", runSat]
+] as const)("autolink-headings hast options (%s)", (_, run) => {
   it("content places a given hast node inside the link", () => {
     const icon: Element = {
       type: "element",
@@ -44,8 +58,9 @@ describe("autolink-headings remd-only options", () => {
   it("content as a function is called with the heading element", () => {
     expect(
       run("## Title", {
-        content: (element) => ({
-          type: "text",
+        // Typed for both engines' heading elements, since `run` is either runner.
+        content: (element: { properties: { id?: unknown } }) => ({
+          type: "text" as const,
           value: `#${String(element.properties.id)}`
         })
       })

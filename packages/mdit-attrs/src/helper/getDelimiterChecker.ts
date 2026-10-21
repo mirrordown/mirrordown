@@ -42,6 +42,8 @@ export const getDelimiterChecker = (
     if (pos === "only") {
       const contentEnd = str.length - rl;
       if (contentEnd <= ll) return null;
+      // `{.a} {#b}` is text followed by a block, as "end" reads it, not one block.
+      if (str.lastIndexOf(left, contentEnd - 1) !== 0) return null;
       return [ll, contentEnd];
     }
 

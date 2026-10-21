@@ -1,4 +1,4 @@
-import type { TabsListNode, TabsItemNode } from "./types";
+import type { TabsListNode, TabsItemNode, TabsLabelNode } from "./types";
 
 // Registers the tabsList/tabsItem node types on mdast so consumers get typed
 // trees. JSR forbids module augmentation, so this file is kept out of the JSR
@@ -7,6 +7,7 @@ declare module "mdast" {
   interface RootContentMap {
     tabsList: TabsListNode;
     tabsItem: TabsItemNode;
+    tabsLabel: TabsLabelNode;
   }
   interface BlockContentMap {
     tabsList: TabsListNode;

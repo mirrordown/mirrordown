@@ -13,9 +13,11 @@ const HEADING_RANK: Record<string, number> = {
 
 // Rank of a heading_open token (h1..h6), else null. Only opening heading
 // tokens delimit sections; heading_close is ignored so a heading and its
-// close stay together inside one section.
+// close stay together inside one section. Only top-level headings count, as
+// in the remark and Sätteri plugins: a section around a heading inside a
+// blockquote, list or step body would close outside its container.
 const headingRank = (token: Token): number | null => {
-  if (token.type !== "heading_open") return null;
+  if (token.type !== "heading_open" || token.level !== 0) return null;
   return HEADING_RANK[token.tag] ?? null;
 };
 

@@ -1,12 +1,15 @@
-// AlertType narrowing via cast — keys may be user-defined and fall through
-// to capitalize. Defensive optional chains on array[i] accesses are also kept.
-/* oxlint-disable typescript/no-unsafe-type-assertion */
+// Defensive optional chains on array[i] accesses are kept.
 /* oxlint-disable typescript/no-unnecessary-condition */
 import type { PluginWithOptions } from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
-import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
-import { ICONS } from "./icons.js";
-import type { AlertOptions, AlertType } from "./types.js";
+import {
+  ALERT_ALIASES,
+  DEFAULT_TITLE,
+  ICONS,
+  createAlertResolver,
+  type AlertOptions,
+  type AlertType
+} from "@mirrordown/core";
 
 export type { AlertOptions, AlertType };
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
@@ -31,37 +34,14 @@ const plainText = (tokens: Token[]): string =>
     )
     .join("");
 
-const capitalize = (s: string): string =>
-  s.charAt(0).toUpperCase() + s.slice(1);
-
 /** markdown-it plugin for GitHub-style alerts/admonitions (`> [!NOTE]`, `> [!WARNING]`, …). */
 export const githubAlerts: PluginWithOptions<AlertOptions> = (
   md,
   options = {}
 ) => {
-  const {
-    types: extraTypes = {},
-    titles: customTitles = {},
-    matchCaseInsensitive = true,
-    icons: showIcons = true,
-    containerClass = "markdown-alert"
-  } = options;
-
-  const aliasMap: Record<string, string> = { ...ALERT_ALIASES, ...extraTypes };
-  const titles: Partial<Record<AlertType, string>> = customTitles;
-
-  const resolve = (keyword: string): string | undefined =>
-    aliasMap[matchCaseInsensitive ? keyword.toLowerCase() : keyword];
-
-  // `type` may be a user-defined alert type from `options.types` that
-  // isn't in DEFAULT_TITLE; capitalize the keyword as a last resort.
-  const titleFor = (type: string): string =>
-    titles[type as AlertType] ??
-    DEFAULT_TITLE[type as AlertType] ??
-    capitalize(type);
-
-  const iconFor = (type: string): string =>
-    showIcons ? ICONS[type as AlertType] : "";
+  // Keyword, title and icon resolution is shared with every engine.
+  const { resolve, titleFor, iconFor, containerClass } =
+    createAlertResolver(options);
 
   // markdown-it renders every attribute as `name="value"`; emit the boolean
   // `open` bare, as hast does, so both engines produce the same HTML.

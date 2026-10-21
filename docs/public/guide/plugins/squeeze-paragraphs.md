@@ -102,3 +102,31 @@ There is no syntax and no visible change for normal Markdown — paragraphs with
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-squeeze-paragraphs
+> ```
+>
+> List it last among your hast plugins, so it sees the residue the others leave.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSqueezeParagraphs } from "@mirrordown/sat-squeeze-paragraphs";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriSqueezeParagraphs()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSqueezeParagraphs } from "@mirrordown/sat-squeeze-paragraphs";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriSqueezeParagraphs()] }),
+>   },
+> });
+> ```

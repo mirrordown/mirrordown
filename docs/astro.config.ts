@@ -1,32 +1,10 @@
 import { defineConfig, fontProviders } from "astro/config";
-import remarkGfm from "remark-gfm";
-import { remarkAbbr } from "@mirrordown/remd-abbr";
-import { remarkAttrs } from "@mirrordown/remd-attrs";
-import {
-  remarkDefinitionList,
-  defListHastHandlers
-} from "@mirrordown/remd-definition-list";
-import { remarkDel } from "@mirrordown/remd-del";
-import {
-  remarkGithubAlerts,
-  githubAlertsHastHandlers
-} from "@mirrordown/remd-github-alerts";
-import { remarkIns } from "@mirrordown/remd-ins";
-import { remarkKbd } from "@mirrordown/remd-kbd";
-import { remarkMark } from "@mirrordown/remd-mark";
-import { remarkRuby } from "@mirrordown/remd-ruby";
-import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
-import { remarkSpoiler, spoilerHastHandlers } from "@mirrordown/remd-spoiler";
-import { remarkSub } from "@mirrordown/remd-sub";
-import { remarkSup } from "@mirrordown/remd-sup";
-import { remarkTabs, tabsHastHandlers } from "@mirrordown/remd-tabs";
-import { rehypeSlug } from "@mirrordown/remd-slug";
-import { rehypeAutolinkHeadings } from "@mirrordown/remd-autolink-headings";
-import { rehypeInlineSvg } from "@mirrordown/remd-inline-svg";
-import { rehypeLightbox } from "@mirrordown/remd-lightbox";
-import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
-import { rehypeSectionize } from "@mirrordown/remd-sectionize";
-import { rehypeSqueezeParagraphs } from "@mirrordown/remd-squeeze-paragraphs";
+import { satteri } from "@astrojs/markdown-satteri";
+import { mirrordown } from "@mirrordown/preset-satteri";
+import { satteriInlineSvg } from "@mirrordown/sat-inline-svg";
+
+// The Mirrordown suite on Sätteri, plus definition lists (Sätteri's own) and inline-svg, which the preset leaves out because it reads files.
+const preset = mirrordown({ features: { definitionList: true } });
 
 export default defineConfig({
   fonts: [
@@ -87,43 +65,9 @@ export default defineConfig({
   ],
   integrations: [],
   markdown: {
-    smartypants: false,
-    // Astro's own GFM uses single-tilde strikethrough, which would take `~sub~` first.
-    gfm: false,
-    remarkPlugins: [
-      [remarkGfm, { singleTilde: false }],
-      remarkAbbr,
-      remarkAttrs,
-      remarkDefinitionList,
-      remarkDel,
-      remarkGithubAlerts,
-      remarkIns,
-      remarkKbd,
-      remarkMark,
-      remarkRuby,
-      remarkSteps,
-      remarkSpoiler,
-      remarkSub,
-      remarkSup,
-      remarkTabs
-    ],
-    rehypePlugins: [
-      rehypeSectionize,
-      rehypeSlug,
-      rehypeAutolinkHeadings,
-      rehypeLightbox,
-      rehypeInlineSvg,
-      rehypeUnwrapImages,
-      rehypeSqueezeParagraphs
-    ],
-    remarkRehype: {
-      handlers: {
-        ...defListHastHandlers,
-        ...githubAlertsHastHandlers,
-        ...stepsHastHandlers,
-        ...spoilerHastHandlers,
-        ...tabsHastHandlers
-      }
-    }
+    processor: satteri({
+      ...preset,
+      hastPlugins: [...preset.hastPlugins, satteriInlineSvg()]
+    })
   }
 });

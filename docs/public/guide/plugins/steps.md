@@ -166,3 +166,33 @@ Use `@@` to nest steps inside a parent step:
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-steps
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSteps } from "@mirrordown/sat-steps";
+> import "@mirrordown/sat-steps/steps.css";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriSteps()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSteps } from "@mirrordown/sat-steps";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriSteps()] }),
+>   },
+> });
+>
+> // In your layout:
+> import "@mirrordown/sat-steps/steps.css";
+> ```

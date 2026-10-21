@@ -40,11 +40,13 @@ export const createRules = (
 
   if (enabled.has("fence")) rules.push(createFenceRule(options));
   if (enabled.has("inline")) rules.push(...createInlineRules(options));
+  // Before the list rules, so a list item's line of its own is placed before
+  // the item reads a block ending its first line.
+  if (enabled.has("softbreak")) rules.push(createSoftbreakRule(options));
   if (enabled.has("table")) rules.push(...createTableRules(options));
   if (enabled.has("list")) rules.push(...createListRules(options));
   if (enabled.has("heading")) rules.push(createHeadingRule(options));
   if (enabled.has("hr")) rules.push(createHrRule(options));
-  if (enabled.has("softbreak")) rules.push(createSoftbreakRule(options));
   if (enabled.has("block")) rules.push(createBlockRule(options));
 
   return rules;

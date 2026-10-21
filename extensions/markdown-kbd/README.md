@@ -20,6 +20,9 @@ Press [[Enter]] to confirm.
 You can combine multiple keys: [[Ctrl]] + [[Shift]] + [[P]] opens the command palette.
 ````
 
+[!NOTE]
+Formatting that crosses a key's brackets, such as `[[*a]]*`, renders differently by engine: markdown-it reads the key first, while remark and Sätteri have already read the emphasis when the plugin runs. Keep formatting inside or outside the brackets.
+
 ## About
 
 Part of **[Markdown Preview Extended Syntax](https://marketplace.visualstudio.com/items?itemName=saeris.markdown-preview-extended-syntax)** — a pack of Markdown preview syntax extensions you can install all at once.

@@ -102,6 +102,32 @@ The three headings above become `id="a-simple-heading"`, `id="café--crème"`, a
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-slug
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSlug } from "@mirrordown/sat-slug";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriSlug()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSlug } from "@mirrordown/sat-slug";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriSlug()] }),
+>   },
+> });
+> ```
 
 ## Options
 
@@ -114,4 +140,4 @@ rehypeSlug({ prefix: "user-content-" });
 // <h2 id="user-content-getting-started">Getting Started</h2>
 ```
 
-The markdown-it plugin accepts the same `prefix` option: `md.use(slug, { prefix: "user-content-" })`.
+The markdown-it and Sätteri plugins accept the same `prefix` option: `md.use(slug, { prefix: "user-content-" })` and `satteriSlug({ prefix: "user-content-" })`.

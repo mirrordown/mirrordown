@@ -248,6 +248,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           bodyOpen.block = true;
 
           const bodyContent = f.bodyLines.join("\n");
+          // Token maps inside the body index its lines, without the `>` markers.
+          bodyOpen.meta = { attrsSource: bodyContent };
           const oldBullet = state.parentType;
           state.parentType = "blockquote" as typeof state.parentType;
           const oldLineMax = state.lineMax;
@@ -259,6 +261,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
             state.env,
             state.tokens
           );
+          // Body tokens nest inside the list, item and body tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
+          childState.level = state.level;
           childState.md.block.tokenize(childState, 0, childState.lineMax);
 
           state.parentType = oldBullet;

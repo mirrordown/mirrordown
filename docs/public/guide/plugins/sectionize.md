@@ -127,3 +127,31 @@ Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-sectionize
+> ```
+>
+> List it before `satteriSlug` and `satteriAutolinkHeadings`, which still find the nested headings.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriSectionize } from "@mirrordown/sat-sectionize";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriSectionize()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriSectionize } from "@mirrordown/sat-sectionize";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriSectionize()] }),
+>   },
+> });
+> ```

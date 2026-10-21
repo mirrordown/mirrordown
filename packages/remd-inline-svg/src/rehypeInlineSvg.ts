@@ -56,28 +56,6 @@ const groupSvgNodes = (
   return groupedNodes;
 };
 
-const filterSvgNodes = (
-  groupedNodes: GroupedImageNodes,
-  svgCache: SvgCache,
-  options: Options
-): GroupedImageNodes => {
-  const filteredNodes: GroupedImageNodes = new Map();
-
-  for (const [filePath, imgNodes] of groupedNodes) {
-    if (imgNodes.length > options.maxOccurrences) continue;
-
-    const fileSize = svgCache.get(filePath)!.length;
-    if (fileSize > options.maxImageSize) continue;
-
-    const totalSize = imgNodes.length * fileSize;
-    if (totalSize > options.maxTotalSize) continue;
-
-    filteredNodes.set(filePath, imgNodes);
-  }
-
-  return filteredNodes;
-};
-
 /** rehype plugin that inlines referenced `.svg` images as `<svg>` elements. */
 export const rehypeInlineSvg = (
   config?: Partial<Options>
@@ -95,9 +73,8 @@ export const rehypeInlineSvg = (
     }
 
     const imgNodes = findSvgNodes(tree);
-    let groupedNodes = groupSvgNodes(imgNodes, file);
+    const groupedNodes = groupSvgNodes(imgNodes, file);
     await svgCache.read(groupedNodes, options.optimize);
-    groupedNodes = filterSvgNodes(groupedNodes, svgCache, options);
     imgToSVG(groupedNodes, svgCache, options, file.dirname!);
 
     if (svgCache.hits !== hits || svgCache.misses !== misses) {

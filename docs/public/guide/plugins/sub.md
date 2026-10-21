@@ -101,3 +101,25 @@ The content is inline markup, like emphasis: it can hold spaces, other formattin
 >   },
 > });
 > ```
+% Sätteri
+> Sätteri parses `~sub~` itself: turn on its `subscript` feature. No Mirrordown package is needed.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+>
+> const { html } = markdownToHtml(source, {
+>   features: { subscript: true },
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ features: { subscript: true } }),
+>   },
+> });
+> ```

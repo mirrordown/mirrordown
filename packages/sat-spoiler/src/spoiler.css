@@ -1,0 +1,316 @@
+/*
+  Spoiler — default stylesheet
+  -----------------------------------------------------------------------------
+  A fully declarative, JavaScript-free Discord-style spoiler. The markup is a
+  <label> wrapping a visually-hidden checkbox and a content <span>:
+
+    <label class="markdown-spoiler">
+      <input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler">
+      <span class="markdown-spoiler-content">hidden text</span>
+    </label>
+
+  Clicking anywhere on the bar (the whole <label> is the hit target) toggles the
+  checkbox; `:checked ~ .content` reveals the text. The checkbox is the only
+  interactive control, so it stays keyboard-operable (Space) and is announced as
+  a control by screen readers — the hidden text is not read aloud until the user
+  chooses to reveal it.
+
+  All visual rules live inside @layer markdown-spoiler so any unlayered consumer
+  CSS overrides them without !important.
+
+  Tunable via public custom properties (set on :root or any ancestor):
+    --markdown-spoiler-bar      obscured bar color (default #202225)
+    --markdown-spoiler-radius   bar corner radius (default 0.25rem)
+    --markdown-spoiler-duration reveal transition duration (default 0.15s)
+    --markdown-spoiler-revealed background behind revealed text
+                                (default: 8% of the current text color)
+*/
+
+@layer markdown-spoiler {
+  .markdown-spoiler {
+    /* stay in the inline flow of the surrounding sentence */
+    cursor: pointer;
+  }
+
+  /*
+    Visually hide the checkbox while keeping it in the accessibility tree and
+    focus order. `display: none` / `visibility: hidden` would remove it from the
+    tab order and break keyboard reveal, so use the clip technique instead.
+  */
+  .markdown-spoiler-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .markdown-spoiler-content {
+    /*
+      Keep the content as plain inline text so it wraps at word boundaries like
+      normal prose. `box-decoration-break: clone` then redraws the bar's
+      background/padding/radius on EACH wrapped line fragment instead of
+      stretching one box across the break — this is what gives Discord's
+      per-line rounded bars. The -webkit- prefix is still required (Safari,
+      Chrome); the property is not yet Baseline.
+    */
+    color: transparent;
+    background-color: var(--markdown-spoiler-bar, #202225);
+    border-radius: var(--markdown-spoiler-radius, 0.25rem);
+    padding: 0 0.15em;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition:
+      color var(--markdown-spoiler-duration, 0.15s) ease,
+      background-color var(--markdown-spoiler-duration, 0.15s) ease;
+  }
+
+  /*
+    Hover: lighten the black bar slightly, matching Discord's subtle hover cue.
+    Only while unrevealed (a revealed spoiler is normal text). `:has()` scopes to
+    an unchecked toggle so the hover lighten doesn't fight the revealed style.
+  */
+  .markdown-spoiler:has(.markdown-spoiler-toggle:not(:checked)):hover
+    .markdown-spoiler-content {
+    background-color: var(
+      --markdown-spoiler-bar-hover,
+      color-mix(in srgb, var(--markdown-spoiler-bar, #202225) 85%, white)
+    );
+  }
+
+  /* Fade embedded media in/out with the same duration as the text reveal. */
+  .markdown-spoiler-content > * {
+    transition:
+      opacity var(--markdown-spoiler-duration, 0.15s) ease,
+      filter var(--markdown-spoiler-duration, 0.15s) ease;
+  }
+
+  /*
+    `color: transparent` only hides text. Inline children that carry their own
+    ink — code spans (own background), nested sub/sup/mark — are hidden with
+    `visibility: hidden`, which keeps their layout box so the bar stays sized to
+    the content and the black bar covers them.
+  */
+  .markdown-spoiler-content > * {
+    visibility: hidden;
+  }
+
+  /*
+    Media spoilers get Discord's treatment, not a black bar: the image stays
+    visible but is heavily blurred, with a centered "SPOILER" pill on top. A
+    black box would hide the fact that there's an image at all; the blur signals
+    "there's media here, click to reveal" while still concealing the content.
+
+    The content becomes inline-block (so it sizes to the media box and can host a
+    centered ::after overlay), the bar background is dropped, and the media child
+    is blurred rather than hidden. :has() detects the media case in pure CSS — no
+    JS, and text spoilers are untouched.
+  */
+  .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger) {
+    display: inline-block;
+    position: relative;
+    vertical-align: text-bottom;
+    background-color: transparent;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger)
+    > * {
+    visibility: visible;
+    display: block;
+    /*
+      `filter: blur()` samples pixels beyond the element's edges; against the
+      transparent area outside the media those samples average toward nothing,
+      producing a DARK vignette at the clipped edges. To hide it, scale the media
+      up so its blurred fringe falls entirely outside the content's overflow clip
+      — only the solid, fully-sampled interior remains visible. The scale factor
+      must cover ~2× the blur radius on each axis; 1.35 clears the default blur.
+      transform-origin defaults to center, so it stays centered under the pill.
+    */
+    scale: 1.35;
+    filter: blur(var(--markdown-spoiler-media-blur, 2.5rem));
+    transition:
+      filter var(--markdown-spoiler-duration, 0.15s) ease,
+      scale var(--markdown-spoiler-duration, 0.15s) ease;
+  }
+
+  /* The centered "SPOILER" pill overlay. A pseudo-element's text is never
+     selectable, matching Discord. Sits above the blurred media, centered.
+     Note: no space before ::after — it's the pseudo-element OF the content span,
+     not of a descendant (a descendant <img> is replaced and has no ::after).
+
+     z-index raises both pseudo-elements above the media child: a blurred child
+     creates its own stacking context, so without an explicit z-index the raster
+     <img> paints over the pill (the img/svg discrepancy — the bright blurred
+     image bled through the semi-transparent pill). ::after (text) sits above
+     ::before (the pill background). */
+  .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    )::after {
+    content: var(--markdown-spoiler-label, "SPOILER");
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+
+  .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    )::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    translate: -50% -50%;
+    width: 5.5rem;
+    height: 1.75rem;
+    border-radius: 1rem;
+    background: rgb(0 0 0 / 60%);
+    pointer-events: none;
+    transition: background var(--markdown-spoiler-duration, 0.15s) ease;
+  }
+
+  /*
+    Image hover (while unrevealed): brighten the blurred media so the whole
+    spoiler reads as "lifting", matching Discord's hover cue. Scoped to an
+    unchecked toggle so a revealed image isn't affected.
+  */
+  .markdown-spoiler:has(.markdown-spoiler-toggle:not(:checked)):hover
+    .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger)
+    > * {
+    /* keep the anti-vignette scale; add brightness so the image lifts */
+    scale: 1.35;
+    filter: blur(var(--markdown-spoiler-media-blur, 2.5rem)) brightness(1.2);
+  }
+
+  /* Hover: the pill goes solid black (Discord raises pill contrast on hover). */
+  .markdown-spoiler:has(.markdown-spoiler-toggle:not(:checked)):hover
+    .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    )::before {
+    background: rgb(0 0 0 / 90%);
+  }
+
+  /* Revealed: the checkbox is checked, so show the content in place. */
+  .markdown-spoiler-toggle:checked ~ .markdown-spoiler-content {
+    color: inherit;
+    background-color: var(
+      --markdown-spoiler-revealed,
+      color-mix(in srgb, currentColor 8%, transparent)
+    );
+    cursor: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+
+  .markdown-spoiler-toggle:checked ~ .markdown-spoiler-content > * {
+    visibility: visible;
+  }
+
+  /* A revealed media spoiler: unblur, drop the bar background and the overlay. */
+  .markdown-spoiler-toggle:checked
+    ~ .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    ) {
+    background-color: transparent;
+  }
+
+  .markdown-spoiler-toggle:checked
+    ~ .markdown-spoiler-content:has(> img, > svg, > .markdown-lightbox-trigger)
+    > * {
+    filter: none;
+    scale: 1; /* undo the anti-vignette upscale so revealed media is 1:1 */
+  }
+
+  .markdown-spoiler-toggle:checked
+    ~ .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    )::before,
+  .markdown-spoiler-toggle:checked
+    ~ .markdown-spoiler-content:has(
+      > img,
+      > svg,
+      > .markdown-lightbox-trigger
+    )::after {
+    content: none;
+  }
+
+  /*
+    The checkbox is visually hidden, so route its focus ring to the visible bar.
+    :has() lets the label style itself based on the descendant checkbox's focus.
+    A plain outline wraps each line-box (so multi-line text bars still get a ring
+    on every fragment) and hugs the single inline-block of a media spoiler.
+  */
+  .markdown-spoiler:has(.markdown-spoiler-toggle:focus-visible)
+    .markdown-spoiler-content {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Respect reduced-motion: reveal instantly, no color fade. */
+  @media (prefers-reduced-motion: reduce) {
+    .markdown-spoiler-content {
+      transition: none;
+    }
+  }
+}
+
+/*
+  Lightbox integration — DELIBERATELY UNLAYERED.
+  --------------------------------------------------------------------------
+  A spoilered lightbox image (`||!![…]()||`) nests a
+  <button class="markdown-lightbox-trigger"> inside the spoiler. While the
+  spoiler is unrevealed the trigger must (a) be visually blurred and (b) NOT
+  intercept the click — otherwise the first click opens the zoom dialog and
+  skips the reveal entirely. The click must fall through to the <label> so the
+  checkbox toggles and reveals first; the trigger becomes interactive only once
+  revealed, giving the intended two-step "reveal, then zoom".
+
+  These rules live OUTSIDE @layer on purpose: @mirrordown/mdit-lightbox's own
+  `.markdown-lightbox-trigger { all: unset }` is inside @layer markdown-lightbox,
+  and whichever layer is declared last would otherwise win and reset
+  pointer-events. An unlayered rule always beats a layered one regardless of
+  stylesheet order, so this functional integration holds either way.
+*/
+.markdown-spoiler-toggle:not(:checked)
+  ~ .markdown-spoiler-content
+  > .markdown-lightbox-trigger {
+  pointer-events: none;
+  filter: blur(var(--markdown-spoiler-media-blur, 2.5rem));
+  scale: 1.35;
+}
+
+/* Once revealed, the trigger is interactive and sharp so the lightbox zoom works. */
+.markdown-spoiler-toggle:checked
+  ~ .markdown-spoiler-content
+  > .markdown-lightbox-trigger {
+  pointer-events: auto;
+  filter: none;
+  scale: 1;
+}

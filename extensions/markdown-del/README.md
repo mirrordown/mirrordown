@@ -20,6 +20,9 @@ Wrap text in double dashes to mark it as deleted:
 You can use it inline: the price was --$50-- $35.
 ````
 
+[!NOTE]
+Smart punctuation rewrites `--` as an en dash before this plugin sees it, and Astro turns it on by default (`smartypants` for remark, `smartPunctuation` for Sätteri). Turn it off, or use a Mirrordown preset, which does.
+
 ## About
 
 Part of **[Markdown Preview Extended Syntax](https://marketplace.visualstudio.com/items?itemName=saeris.markdown-preview-extended-syntax)** — a pack of Markdown preview syntax extensions you can install all at once.

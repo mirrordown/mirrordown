@@ -28,7 +28,7 @@ export const escapedIndices = (
   const escaped = new Set<number>();
   let j = start;
   for (let i = 0; i < value.length && j < end; i++) {
-    const char = value[i];
+    const char = value.charAt(i);
     let entity: RegExpExecArray | null = null;
     while (j < end && source[j] !== char) {
       entity = source[j] === `&` ? ENTITY.exec(source.slice(j, end)) : null;

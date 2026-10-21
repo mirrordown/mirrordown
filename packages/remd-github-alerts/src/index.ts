@@ -1,7 +1,6 @@
-// AlertType cast and the AlertNode subtype bridging across the
-// remark visitor and rehype hast handler require casts the public
-// mdast types cannot carry through. Defensive optional chains on
-// array[i] accesses are also kept (noUncheckedIndexedAccess off).
+// The AlertNode subtype bridging the remark visitor and the rehype hast handler
+// requires casts the public mdast types cannot carry through. Defensive
+// optional chains on array[i] accesses are kept (an empty blockquote has none).
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 /* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
@@ -9,33 +8,18 @@ import type { Plugin } from "unified";
 import type { Root, Blockquote, PhrasingContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
-import { ALERT_ALIASES, DEFAULT_TITLE } from "./types.js";
-import { ICONS } from "./icons.js";
-import type { AlertOptions, AlertType } from "./types.js";
+import {
+  ALERT_ALIASES,
+  DEFAULT_TITLE,
+  ICONS,
+  createAlertResolver,
+  splitAlertParagraph,
+  type AlertOptions,
+  type AlertType
+} from "@mirrordown/core";
 
 export type { AlertOptions, AlertType };
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
-
-// Groups: 1=type keyword, 2=foldable marker (+/-)
-const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
-
-// Plain text of inline content, for the title's aria-label: text, inline code
-// and image alt count; raw HTML does not.
-const plainText = (nodes: PhrasingContent[]): string =>
-  nodes
-    .map((n) =>
-      n.type === "text" || n.type === "inlineCode"
-        ? n.value
-        : n.type === "image"
-          ? (n.alt ?? "")
-          : "children" in n
-            ? plainText(n.children)
-            : ""
-    )
-    .join("");
-
-const capitalize = (s: string): string =>
-  s.charAt(0).toUpperCase() + s.slice(1);
 
 interface AlertData {
   hName: string;
@@ -54,112 +38,38 @@ type AlertNode = Blockquote & { data: AlertData };
 export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   options = {}
 ) => {
-  const {
-    types: extraTypes = {},
-    titles: customTitles = {},
-    matchCaseInsensitive = true,
-    icons: showIcons = true,
-    containerClass = "markdown-alert"
-  } = options;
-
-  const aliasMap: Record<string, string> = { ...ALERT_ALIASES, ...extraTypes };
-  const titles: Partial<Record<AlertType, string>> = customTitles;
-
-  const resolve = (keyword: string): string | undefined =>
-    aliasMap[matchCaseInsensitive ? keyword.toLowerCase() : keyword];
-
-  // `type` may be a user-defined alert type from `options.types` that
-  // isn't in DEFAULT_TITLE; capitalize the keyword as a last resort.
-  const titleFor = (type: string): string =>
-    titles[type as AlertType] ??
-    DEFAULT_TITLE[type as AlertType] ??
-    capitalize(type);
-
-  // User-defined types from `options.types` have no icon.
-  const icons: Partial<Record<string, string>> = ICONS;
-  const iconFor = (type: string): string =>
-    showIcons ? (icons[type] ?? "") : "";
+  const { resolve, titleFor, iconFor, containerClass } =
+    createAlertResolver(options);
 
   return (tree) => {
     visit(tree, "blockquote", (node: Blockquote) => {
       const firstChild = node.children[0];
       if (firstChild?.type !== "paragraph") return;
 
-      const firstText = firstChild.children[0];
-      if (firstText?.type !== "text") return;
-
-      const match = MARKER_RE.exec(firstText.value.trimStart());
-      if (!match) return;
-
-      const [marker, keyword, foldMarker] = match;
-      const type = resolve(keyword);
+      // The marker line rule (title, formatting included; body after the
+      // first line break) is shared with every engine in @mirrordown/core.
+      const alert = splitAlertParagraph(firstChild.children);
+      if (!alert) return;
+      const type = resolve(alert.keyword);
       if (!type) return;
 
-      const isFoldable = foldMarker === "+" || foldMarker === "-";
-
-      // The first line is the marker plus an optional title (inline content,
-      // formatting included); everything after the first line break, soft (a
-      // newline inside a text node) or hard (a `break` node), is the body.
-      const line: PhrasingContent[] = [];
-      const body: PhrasingContent[] = [];
-      const children: PhrasingContent[] = [
-        {
-          ...firstText,
-          value: firstText.value.trimStart().slice(marker.length)
-        },
-        ...firstChild.children.slice(1)
-      ];
-      for (const child of children) {
-        if (body.length > 0 || line.at(-1)?.type === "break") {
-          body.push(child);
-        } else if (child.type === "text" && child.value.includes("\n")) {
-          const at = child.value.indexOf("\n");
-          line.push({ ...child, value: child.value.slice(0, at) });
-          body.push({ ...child, value: child.value.slice(at + 1) });
-        } else {
-          line.push(child);
-        }
-      }
-      if (line.at(-1)?.type === "break") line.pop();
-      const titleNodes = line
-        .map((n, i) =>
-          n.type !== "text"
-            ? n
-            : {
-                ...n,
-                value:
-                  i === 0
-                    ? n.value.trimStart()
-                    : i === line.length - 1
-                      ? n.value.trimEnd()
-                      : n.value
-              }
-        )
-        .filter((n) => n.type !== "text" || n.value !== "");
-      const last = titleNodes.at(-1);
-      if (last?.type === "text") last.value = last.value.trimEnd();
-      const titleText = plainText(titleNodes).trim();
-
-      const bodyNodes = body.filter((n) => n.type !== "text" || n.value !== "");
-      if (bodyNodes.length > 0) {
-        firstChild.children = bodyNodes;
+      if (alert.bodyNodes.length > 0) {
+        firstChild.children = alert.bodyNodes;
       } else {
         node.children.splice(0, 1);
       }
 
-      const title = titleText || titleFor(type);
-
       (node as AlertNode).data = {
-        hName: isFoldable ? "details" : "div",
+        hName: alert.fold ? "details" : "div",
         hProperties: {
           class: containerClass,
           "data-alert": type,
-          ...(foldMarker === "+" ? { open: true } : {})
+          ...(alert.fold === "+" ? { open: true } : {})
         },
         alertType: type,
-        alertTitle: title,
-        ...(titleText ? { alertTitleNodes: titleNodes } : {}),
-        alertFoldable: isFoldable,
+        alertTitle: alert.titleText || titleFor(type),
+        ...(alert.titleText ? { alertTitleNodes: alert.titleNodes } : {}),
+        alertFoldable: alert.fold !== undefined,
         alertIcon: iconFor(type),
         attrsRole: "container"
       };
@@ -234,7 +144,8 @@ export const githubAlertsHastHandlers: Record<string, Handler> = {
         children: state.all(node)
       };
       state.patch(node, result);
-      return result;
+      // As the default handler does, so other plugins' `data` (attrs) still apply.
+      return state.applyData(node, result);
     }
 
     const containerClass =
