@@ -1,0 +1,299 @@
+<!-- @case: image: an image alone is the figure's content -->
+
+<figure class="markdown-caption"><img src="lighthouse.jpg" alt="A lighthouse">
+<figcaption>The lighthouse at dusk.</figcaption>
+</figure>
+
+<!-- @case: image: the caption holds inline markdown -->
+
+<figure class="markdown-caption"><img src="lighthouse.jpg" alt="A lighthouse">
+<figcaption>The <em>Point Reyes</em> light, <code>1870</code>, from <a href="https://www.nps.gov/pore/">the park</a>.</figcaption>
+</figure>
+
+<!-- @case: image: an image in a link -->
+
+<figure class="markdown-caption"><a href="lighthouse-large.jpg"><img src="lighthouse.jpg" alt="A lighthouse"></a>
+<figcaption>Select the image for a larger one.</figcaption>
+</figure>
+
+<!-- @case: image: several images make one figure -->
+
+<figure class="markdown-caption"><img src="a.jpg" alt="First"> <img src="b.jpg" alt="Second">
+<figcaption>Two views of the same coast.</figcaption>
+</figure>
+
+<!-- @case: image: an image in a sentence captions the paragraph -->
+
+<figure class="markdown-caption">
+<p>The coast <img src="lighthouse.jpg" alt="a lighthouse"> at dusk.</p>
+<figcaption>An image inside a sentence isn't a figure of its own.</figcaption>
+</figure>
+
+<!-- @case: image: text before the image captions the paragraph -->
+
+<figure class="markdown-caption">
+<p>Before the image:
+<img src="lighthouse.jpg" alt="A lighthouse"></p>
+<figcaption>The caption covers the whole paragraph.</figcaption>
+</figure>
+
+<!-- @case: image: the caption runs to the end of its paragraph -->
+
+<figure class="markdown-caption"><img src="lighthouse.jpg" alt="A lighthouse">
+<figcaption>The first line of the caption,
+and the second,
+and the third.</figcaption>
+</figure>
+
+<!-- @case: image: a hard break before the caption -->
+
+<figure class="markdown-caption"><img src="lighthouse.jpg" alt="A lighthouse">
+<figcaption>After a hard break.</figcaption>
+</figure>
+
+<!-- @case: image: a later marker is caption text -->
+
+<figure class="markdown-caption"><img src="lighthouse.jpg" alt="A lighthouse">
+<figcaption>The first caption
+~: is all one caption.</figcaption>
+</figure>
+
+<!-- @case: paragraph: text paragraph -->
+
+<figure class="markdown-caption">
+<p>I wandered lonely as a cloud
+That floats on high o'er vales and hills,</p>
+<figcaption>William Wordsworth, <em>Daffodils</em></figcaption>
+</figure>
+
+<!-- @case: blockquote: a caption outside the quote captions it -->
+
+<figure class="markdown-caption">
+<blockquote>
+<p>Do or do not. There is no try.</p>
+</blockquote>
+<figcaption>A little green man, with a saber larger than himself</figcaption>
+</figure>
+
+<!-- @case: blockquote: a caption inside the quote captions its paragraph -->
+
+<blockquote>
+<figure class="markdown-caption">
+<p>Do or do not. There is no try.</p>
+<figcaption>Inside the quote</figcaption>
+</figure>
+</blockquote>
+
+<!-- @case: blockquote: each level captions its own quote -->
+
+<figure class="markdown-caption">
+<blockquote>
+<figure class="markdown-caption">
+<blockquote>
+<p>Inner quote
+continued</p>
+</blockquote>
+<figcaption>The inner quote's caption</figcaption>
+</figure>
+<p>More of the outer quote</p>
+</blockquote>
+<figcaption>The outer quote's caption</figcaption>
+</figure>
+
+<!-- @case: blockquote: lines of the same level continue the caption -->
+
+<figure class="markdown-caption">
+<blockquote>
+<figure class="markdown-caption">
+<blockquote>
+<p>Inner</p>
+</blockquote>
+<figcaption>The inner caption
+still the inner caption</figcaption>
+</figure>
+</blockquote>
+<figcaption>The outer caption</figcaption>
+</figure>
+
+<!-- @case: blockquote: a caption after a quote ending in a list -->
+
+<figure class="markdown-caption">
+<blockquote>
+<ul>
+<li>One</li>
+<li>Two</li>
+</ul>
+</blockquote>
+<figcaption>The caption goes on the quote</figcaption>
+</figure>
+
+<!-- @case: blockquote: a caption after a quote ending in code -->
+
+<figure class="markdown-caption">
+<blockquote>
+<pre><code>code
+</code></pre>
+</blockquote>
+<figcaption>The caption goes on the quote</figcaption>
+</figure>
+
+<!-- @case: blockquote: code in a quote with a caption inside -->
+
+<blockquote>
+<figure class="markdown-caption">
+<pre><code>code
+</code></pre>
+<figcaption>The caption goes on the code</figcaption>
+</figure>
+</blockquote>
+
+<!-- @case: code: fenced -->
+
+<figure class="markdown-caption">
+<pre><code class="language-python">a_highlighted_code(&quot;blah&quot;)
+</code></pre>
+<figcaption>My code <em>caption</em></figcaption>
+</figure>
+
+<!-- @case: code: tilde fence -->
+
+<figure class="markdown-caption">
+<pre><code>code
+</code></pre>
+<figcaption>A caption after a tilde fence</figcaption>
+</figure>
+
+<!-- @case: code: indented -->
+
+<p>Indented:</p>
+<figure class="markdown-caption">
+<pre><code>indented code
+</code></pre>
+<figcaption>A caption after indented code</figcaption>
+</figure>
+
+<!-- @case: list: a caption outside the list captions it -->
+
+<figure class="markdown-caption">
+<ul>
+<li>One</li>
+<li>Two</li>
+</ul>
+<figcaption>The list's caption</figcaption>
+</figure>
+
+<!-- @case: list: ordered -->
+
+<figure class="markdown-caption">
+<ol>
+<li>One</li>
+<li>Two</li>
+</ol>
+<figcaption>An ordered list's caption</figcaption>
+</figure>
+
+<!-- @case: list: loose -->
+
+<figure class="markdown-caption">
+<ul>
+<li>
+<p>One</p>
+</li>
+<li>
+<p>Two</p>
+</li>
+</ul>
+<figcaption>A loose list's caption</figcaption>
+</figure>
+
+<!-- @case: list: a caption inside an item captions its paragraph -->
+
+<ul>
+<li>
+<figure class="markdown-caption">
+<p>One</p>
+<figcaption>The item's caption</figcaption>
+</figure>
+</li>
+<li>Two</li>
+</ul>
+
+<!-- @case: list: a caption outside nested lists captions the outermost -->
+
+<figure class="markdown-caption">
+<ul>
+<li>One
+<ul>
+<li>Nested</li>
+</ul>
+</li>
+</ul>
+<figcaption>The outer list's caption</figcaption>
+</figure>
+
+<!-- @case: list: a caption in an item captions its nested list -->
+
+<ul>
+<li>One
+<figure class="markdown-caption">
+<ul>
+<li>Nested</li>
+</ul>
+<figcaption>The nested list's caption</figcaption>
+</figure>
+</li>
+</ul>
+
+<!-- @case: untouched: after a blank line -->
+
+<pre><code>code
+</code></pre>
+<p>~: Not a caption</p>
+
+<!-- @case: untouched: after a heading -->
+
+<h1>A heading</h1>
+<p>~: Not a caption</p>
+
+<!-- @case: untouched: after a thematic break -->
+
+<hr>
+<p>~: Not a caption</p>
+
+<!-- @case: untouched: after a link reference definition -->
+
+<pre><code>code
+</code></pre>
+<p>~: Not a caption</p>
+
+<!-- @case: untouched: first in the document -->
+
+<p>~: Not a caption</p>
+
+<!-- @case: untouched: escaped marker -->
+
+<p><img src="lighthouse.jpg" alt="A lighthouse">
+~: Not a caption</p>
+
+<!-- @case: untouched: no space after the marker -->
+
+<p><img src="lighthouse.jpg" alt="A lighthouse">
+~:Not a caption</p>
+
+<!-- @case: untouched: nothing after the marker -->
+
+<p><img src="lighthouse.jpg" alt="A lighthouse">
+~:</p>
+
+<!-- @case: untouched: the marker mid-line -->
+
+<p><img src="lighthouse.jpg" alt="A lighthouse"> ~: Not a caption</p>
+
+<!-- @case: untouched: a caption after a caption -->
+
+<figure class="markdown-caption">
+<pre><code>code
+</code></pre>
+<figcaption>The caption</figcaption>
+</figure>
+<p>~: Not a caption</p>

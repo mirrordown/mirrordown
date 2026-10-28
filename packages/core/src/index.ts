@@ -76,3 +76,17 @@ export {
   mermaidSvg,
   type MermaidAttribute
 } from "./mermaid-pele.js";
+export {
+  containersKept,
+  itemColumns,
+  type LineContainer
+} from "./line-containers.js";
+export {
+  CAPTION_CLASS,
+  figureProperties,
+  isAlertMarkerLine,
+  isCaptionLine,
+  processCaptions,
+  startsCaption,
+  stripCaptionMarker
+} from "./caption.js";
