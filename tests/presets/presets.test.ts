@@ -137,6 +137,11 @@ describe("presets", () => {
     },
     { key: "attrs", input: "Text {.note}", marker: 'class="note"' },
     { key: "autolinkHeadings", input: "# Title", marker: 'class="anchor"' },
+    {
+      key: "caption",
+      input: "```\ncode\n```\n~: A caption",
+      marker: "<figcaption>"
+    },
     { key: "definitionList", input: "Term\n: Definition", marker: "<dl>" },
     { key: "del", input: "a --gone-- b", marker: "<del>" },
     {

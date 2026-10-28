@@ -5,6 +5,7 @@ import {
   autolinkHeadings,
   type AutolinkHeadingsOptions
 } from "@mirrordown/mdit-autolink-headings";
+import { caption } from "@mirrordown/mdit-caption";
 import { dl } from "@mirrordown/mdit-definition-list";
 import { del } from "@mirrordown/mdit-del";
 import {
@@ -35,6 +36,7 @@ export interface MirrordownOptions {
   abbr?: boolean;
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  caption?: boolean;
   definitionList?: boolean;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
@@ -92,6 +94,8 @@ export const mirrordown = (
   on(options.sub, sub);
   on(options.sup, sup);
   configured(options.tabs, tabs);
+  // After the containers, whose blocks it captions.
+  on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);
   on(options.sectionize, sectionize);
   // Before autolink-headings, which links to the ids slug sets.

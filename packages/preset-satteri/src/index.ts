@@ -1,5 +1,6 @@
 import type { Features, PluginFactoryContext } from "satteri";
 import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
+import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
   satteriAutolinkHeadings,
   type AutolinkHeadingsOptions,
@@ -62,6 +63,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `attributes` feature, which takes no options. */
   attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  caption?: boolean;
   /** Sätteri's built-in `definitionList` feature. */
   definitionList?: boolean;
   del?: boolean;
@@ -98,6 +100,7 @@ export interface MirrordownPreset {
   features: Features;
   mdastPlugins: Array<
     | Factory<AbbrPlugin>
+    | Factory<CaptionPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
     | Factory<InsPlugin>
@@ -141,7 +144,7 @@ export const mirrordown = (
 
   return {
     features,
-    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs last: a panel's aria-label is its label's text when tabs renders, so the inline plugins must have run.
+    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
       ...(options.ruby === false
         ? []
@@ -158,7 +161,9 @@ export const mirrordown = (
         ? []
         : [satteriSteps(settings(options.steps))]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
-      ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))])
+      ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      // After the containers, whose blocks it captions.
+      ...(options.caption === false ? [] : [satteriCaption()])
     ],
     // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [

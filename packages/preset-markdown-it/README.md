@@ -37,7 +37,7 @@ export default defineConfig({
 
 ### Styles
 
-Tabs, steps, alerts, spoilers, the lightbox, heading anchors and diagrams ship stylesheets. Import them all at once:
+Tabs, steps, alerts, spoilers, the lightbox, heading anchors, captions and diagrams ship stylesheets. Import them all at once:
 
 ```ts
 import "@mirrordown/preset-markdown-it/styles";
@@ -60,6 +60,7 @@ md.use(mirrordown, {
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/mdit-abbr`               |
 | `attrs`             | `{.class #id}`                              | `@mirrordown/mdit-attrs`              |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/mdit-autolink-headings`  |
+| `caption`           | `~: caption` after a block                  | `@mirrordown/mdit-caption`            |
 | `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/mdit-definition-list`    |
 | `del`               | `--deleted--`                               | `@mirrordown/mdit-del`                |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/mdit-github-alerts`      |

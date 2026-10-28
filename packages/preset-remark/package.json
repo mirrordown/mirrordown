@@ -24,6 +24,7 @@
     "@mirrordown/remd-abbr": "workspace:^",
     "@mirrordown/remd-attrs": "workspace:^",
     "@mirrordown/remd-autolink-headings": "workspace:^",
+    "@mirrordown/remd-caption": "workspace:^",
     "@mirrordown/remd-definition-list": "workspace:^",
     "@mirrordown/remd-del": "workspace:^",
     "@mirrordown/remd-github-alerts": "workspace:^",

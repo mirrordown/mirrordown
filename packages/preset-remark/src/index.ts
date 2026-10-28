@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import type { Plugin } from "unified";
 import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs, type AttrsOptions } from "@mirrordown/remd-attrs";
+import { remarkCaption } from "@mirrordown/remd-caption";
 import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions
@@ -53,6 +54,7 @@ export interface MirrordownOptions {
   abbr?: boolean;
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  caption?: boolean;
   definitionList?: boolean;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
@@ -137,7 +139,9 @@ export const mirrordown = (
       ...on(options.sup, remarkSup),
       ...configured(options.tabs, remarkTabs),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
-      ...configured(options.attrs, remarkAttrs)
+      ...configured(options.attrs, remarkAttrs),
+      // After attrs and the containers: attributes ending a caption go on its figure.
+      ...on(options.caption, remarkCaption)
     ],
     rehypePlugins: [
       // First, so the plugins after it see the diagrams' <svg>.
