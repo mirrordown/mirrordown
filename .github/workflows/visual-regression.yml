@@ -8,6 +8,9 @@ name: Visual Regression
 # It runs only when the spoiler plugins (HTML output *or* CSS — the two are
 # coupled, a markup change can break the selectors the CSS targets) or the visual
 # test harness change, so it doesn't gate every push. Also manually dispatchable.
+#
+# Mermaid diagrams (mermaid-pele) are themed entirely by CSS variables, so their
+# light and dark renders are screenshotted too, from the committed expected HTML.
 on:
   push:
     branches: [main]
@@ -15,6 +18,9 @@ on:
       - "packages/mdit-spoiler/**"
       - "packages/remd-spoiler/**"
       - "tests/spoiler/visual.browser.test.ts"
+      - "packages/*-mermaid-pele/src/*.css"
+      - "tests/mermaid-pele/expected/**"
+      - "tests/mermaid-pele/visual.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   pull_request:
@@ -23,6 +29,9 @@ on:
       - "packages/mdit-spoiler/**"
       - "packages/remd-spoiler/**"
       - "tests/spoiler/visual.browser.test.ts"
+      - "packages/*-mermaid-pele/src/*.css"
+      - "tests/mermaid-pele/expected/**"
+      - "tests/mermaid-pele/visual.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   workflow_dispatch:
@@ -56,6 +65,7 @@ jobs:
           # Vitest 5 writes actual/diff images under .vitest/attachments/.
           path: |
             tests/spoiler/__screenshots__/**
+            tests/mermaid-pele/__screenshots__/**
             .vitest/attachments/**
           include-hidden-files: true
           retention-days: 7
