@@ -123,15 +123,21 @@ const captionChildren = (lines: Token[][]): Token[] => {
 };
 
 // Only images (each possibly inside a link) and whitespace.
+// A lightbox's `!` marker (what `!![alt](src)` leaves before its image) counts as part of the image, so a lightbox's trigger is the figure's content too.
 const onlyImages = (children: readonly Token[]): boolean => {
   let images = 0;
   let link = false;
-  for (const child of children) {
+  for (const [index, child] of children.entries()) {
     if (child.type === `image`) images++;
     else if (child.type === `link_open` && !link) link = true;
     else if (child.type === `link_close` && link) link = false;
     else if (
-      !(child.type === `text` && child.content.trim() === ``) &&
+      !(
+        child.type === `text` &&
+        (child.content.trim() === `` ||
+          (/^\s*!$/.test(child.content) &&
+            children[index + 1]?.type === `image`))
+      ) &&
       !BREAKS.has(child.type)
     )
       return false;

@@ -919,3 +919,133 @@ c</p>
 % Two
 z</p>
 </blockquote>
+
+<!-- @case: a line without the panel's > after the last panel follows the group -->
+
+<div class="markdown-tabs" data-tabs-group="6c15bf6e">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-6cc665b1" id="tabs-6cc665b1-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-6cc665b1-0">One</label>
+<input type="radio" name="tabs-6cc665b1" id="tabs-6cc665b1-1" hidden>
+<label class="markdown-tabs-label" for="tabs-6cc665b1-1">Two</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<p>First</p>
+</section>
+<section class="markdown-tabs-panel" aria-label="Two">
+<p>Second</p>
+</section>
+</div>
+</div>
+<p>After the group
+and its next line</p>
+
+<!-- @case: a line without the panel's > after a list in a panel follows the group -->
+
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<ul>
+<li>An item</li>
+</ul>
+</section>
+</div>
+</div>
+<p>After the group</p>
+
+<!-- @case: a line keeping the panel's > continues a quote in the panel -->
+
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<blockquote>
+<p>A quote
+still the quote</p>
+</blockquote>
+</section>
+</div>
+</div>
+
+<!-- @case: a group in a quote ends at the panel's markers, inside the quote -->
+
+<blockquote>
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<p>First</p>
+</section>
+</div>
+</div>
+<p>After the group, in the quote</p>
+</blockquote>
+
+<!-- @case: a tab header interrupts the paragraph before it -->
+
+<p>Before the tabs:</p>
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<p>Body.</p>
+</section>
+</div>
+</div>
+
+<!-- @case: a tab header written with the panel's > starts a group in the panel -->
+
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<p>Body.</p>
+<div class="markdown-tabs" data-tabs-group="fa94021">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-56f5cbf7" id="tabs-56f5cbf7-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-56f5cbf7-0">Inner</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="Inner">
+<p>Inner body.</p>
+</section>
+</div>
+</div>
+</section>
+</div>
+</div>
+
+<!-- @case: a nested tab header written with the panel's > stays text, with no tab to nest in -->
+
+<div class="markdown-tabs" data-tabs-group="b8899a7">
+<div class="markdown-tabs-labels">
+<input type="radio" name="tabs-4eddb7eb" id="tabs-4eddb7eb-0" hidden checked>
+<label class="markdown-tabs-label" for="tabs-4eddb7eb-0">One</label>
+</div>
+<div class="markdown-tabs-panels">
+<section class="markdown-tabs-panel" aria-label="One">
+<p>Body.
+%% Inner</p>
+<blockquote>
+<p>Inner body.</p>
+</blockquote>
+</section>
+</div>
+</div>

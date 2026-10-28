@@ -161,6 +161,12 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       containerClose.block = true;
       containerClose.meta = { attrsRole: "container" };
 
+      // Nest the new tokens at the blockquote's level, as markdown-it's own would be, so plugins that walk tokens by level read the alert's structure.
+      const level = tokens[i].level;
+      containerOpen.level = containerClose.level = level;
+      titleOpen.level = titleClose.level = level + 1;
+      titleInline.level = level + 2;
+
       tokens.splice(i, 1, containerOpen, titleOpen, titleInline, titleClose);
       closeIdx += 3; // 3 tokens inserted before closeIdx
       tokens.splice(closeIdx, 1, containerClose);

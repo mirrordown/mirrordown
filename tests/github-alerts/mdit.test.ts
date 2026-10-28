@@ -36,3 +36,14 @@ describe("github-alerts/mdit", () => {
     }
   );
 });
+
+// The alert's own tokens nest at the blockquote's level, as markdown-it's would, so plugins that walk tokens by level (attrs, caption) read its structure.
+describe("github-alerts/mdit token levels", () => {
+  it("nests the title inside the container", () => {
+    const tokens = md.parse("> [!NOTE]\n> Body.", {});
+    expect(
+      tokens.map(({ type, level }) => `${type}@${level}`).slice(0, 4)
+    ).toStrictEqual(["div_open@0", "p_open@1", "inline@2", "p_close@1"]);
+    expect(tokens.at(-1)).toMatchObject({ type: "div_close", level: 0 });
+  });
+});

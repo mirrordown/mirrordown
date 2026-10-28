@@ -87,10 +87,14 @@ export const satteriSteps =
         (child): child is StepsTitleNode => child.type === `stepsTitle`
       );
       const nodes = item.children as unknown as MdastTarget[];
+      // A step's `@@` sub-steps render after its body; a group written in the body stays in it.
+      const isSubSteps = (child: MdastTarget): boolean =>
+        child.type === `stepsList` &&
+        !(child as unknown as StepsListNode).inBody;
       const body = nodes.filter(
-        (child) => child.type !== `stepsTitle` && child.type !== `stepsList`
+        (child) => child.type !== `stepsTitle` && !isSubSteps(child)
       );
-      const nested = nodes.filter((child) => child.type === `stepsList`);
+      const nested = nodes.filter(isSubSteps);
       return {
         type: `stepsItem`,
         data: {

@@ -81,6 +81,26 @@ An image wrapped in a link is left alone: a `<button>` can't nest in an `<a>`, a
 > [!![Swan boats on the lake](./assets/swan-boats.jpg "Swan boats")](https://example.com)
 > ````
 
+### Captioned images
+
+A lightbox image can take a [caption](/guide/plugins/caption) like any other image: the trigger becomes the figure's content, and the caption stays under the thumbnail. With the `caption` option (below), the dialog shows the caption under the zoomed image too. Repeated images share one dialog, which shows the first caption any of them has.
+
+% Demo
+> !![Mount Fuji at dawn](./assets/fuji.jpg)
+> ~: Mount Fuji from Lake Kawaguchi. Select the image to zoom in.
+>
+% Code
+> ````markdown
+> !![Mount Fuji at dawn](./assets/fuji.jpg)
+> ~: Mount Fuji from Lake Kawaguchi. Select the image to zoom in.
+> ````
+
+## Options
+
+| Option    | Default | Description                                                                                                                      |
+| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `caption` | `false` | Show a captioned image's caption under it in the dialog. List the caption plugin before this one, so the caption is in place when it runs. |
+
 ## Customization
 
 The stylesheet keeps its rules in `@layer markdown-lightbox`, so any unlayered CSS you write overrides them without `!important`. The common knobs are exposed as custom properties — set them on `:root` or any ancestor:
@@ -91,6 +111,7 @@ The stylesheet keeps its rules in `@layer markdown-lightbox`, so any unlayered C
 | `--markdown-lightbox-blur`     | `3px`              | Backdrop blur radius.            |
 | `--markdown-lightbox-radius`   | `0.375rem`         | Image corner radius.             |
 | `--markdown-lightbox-duration` | `0.25s`            | Open/close transition duration.  |
+| `--markdown-lightbox-caption`  | `white`            | Caption text color in the dialog. |
 
 ```css
 :root {

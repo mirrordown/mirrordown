@@ -4,7 +4,8 @@ import { mirrordown } from "@mirrordown/preset-satteri";
 import { satteriInlineSvg } from "@mirrordown/sat-inline-svg";
 
 // The Mirrordown suite on Sätteri, plus inline-svg, which the preset leaves out because it reads files.
-const preset = mirrordown();
+// The lightbox shows a captioned image's caption in its dialog, as its guide demonstrates.
+const preset = mirrordown({ lightbox: { caption: true } });
 
 export default defineConfig({
   fonts: [

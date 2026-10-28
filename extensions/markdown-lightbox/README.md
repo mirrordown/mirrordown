@@ -4,73 +4,110 @@ Adds a JavaScript-free click-to-zoom image lightbox to VSCode's markdown preview
 
 ## Overview
 
-Opt an image into a lightbox with a leading `!!`. The marked image becomes a
-trigger that opens the full-size image in a modal `<dialog>`, dimming and
-blurring the page behind it. Unmarked images (`![…]`) render normally.
+The `lightbox` plugin opts an image into a click-to-zoom lightbox with a leading `!!`. The marked image becomes a trigger button that opens the full-size image in a modal `<dialog>`, dimming and blurring the page behind it. Unmarked images (`![…]`) render normally.
 
-The entire interaction — open, close, backdrop dismiss, `Esc`, focus trapping,
-and the zoom/fade animation — is built from modern declarative HTML and CSS only
-(`<dialog>`, the Invoker Commands API, `closedby="any"`, `@starting-style`). No
-JavaScript runs in the preview, so it works where scripts are disabled.
+The entire interaction — open, close, backdrop dismiss, `Esc`, focus trapping, and the zoom/fade animation — is built from modern declarative HTML and CSS only: [`<dialog>`](https://developer.mozilla.org/docs/Web/HTML/Element/dialog), the [Invoker Commands API](https://developer.mozilla.org/docs/Web/API/Invoker_Commands_API) (`command`/`commandfor`), `closedby="any"`, and [`@starting-style`](https://developer.mozilla.org/docs/Web/CSS/@starting-style). **No JavaScript runs**, so it works in environments that disable scripts, such as the VSCode Markdown preview.
+
+The trigger stays inline; the matching `<dialog>` is emitted at the end of the document (a `<dialog>` is flow content and can't live inside the `<p>` that wraps an inline image), linked by `id`:
+
+```html
+<button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-1h8yfti">
+  <img src="photo.jpg" alt="…" />
+</button>
+
+<!-- …emitted at the end of the document… -->
+<dialog id="markdown-lightbox-1h8yfti" class="markdown-lightbox" closedby="any">
+  <button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-1h8yfti" aria-label="Close image">
+    <img src="photo.jpg" alt="…" />
+  </button>
+</dialog>
+```
 
 ## Syntax
 
-Add a second `!` in front of any image:
+Add a second `!` in front of any image. Click a thumbnail below to zoom; click it again, click the backdrop, or press `Esc` to close.
 
-```markdown
-!![A wild rice field](./wild-rice.jpg "Wild rice")
-```
+````markdown
+!![Wild rice growing in a marsh](./assets/wild-rice.jpg "Wild rice")
+!![A young sapling](./assets/sapling.jpg "Sapling")
+````
 
-Click the image to zoom; click it again, click the backdrop, or press `Esc` to
-close.
+In renderers without the plugin, the extra `!` renders as plain text and the image still shows.
 
-### Repeated images
+### Repeated images share one dialog
 
-Reference the same image more than once and every trigger opens the **same**
-dialog — there's one lightbox per image, not one per mention:
+The dialog `id` is a stable hash of the image `src`, so referencing the same image more than once produces a **single** dialog that every trigger opens — not a duplicate per reference.
 
-```markdown
-!![Diagram](./diagram.png) … later … !![Diagram again](./diagram.png)
-```
+````markdown
+Here is a dock: !![A dock on a still lake](./assets/dock.jpg "Dock").
+And here is the very same dock again: !![The same dock](./assets/dock.jpg "Dock").
+````
 
 ### Naming a lightbox
 
-With the [Markdown Attributes](https://marketplace.visualstudio.com/items?itemName=saeris.markdown-attributes)
-extension installed, give a lightbox a stable id with `{#id}`:
+By default the `id` is hashed from the `src`. With the [`attrs`](/guide/plugins/attrs) plugin you can name it explicitly with `{#id}` — handy for stable, human-readable ids. The id moves onto the dialog, so it isn't duplicated on the image.
 
-```markdown
-!![Hero shot](./hero.jpg){#hero}
-```
+````markdown
+!![Mount Fuji at dawn](./assets/fuji.jpg "Mount Fuji"){#fuji}
+````
 
 ### Images inside links
 
-An image wrapped in a link is left alone — a button can't nest in a link, so the
-link wins and the `!` stays literal:
+An image wrapped in a link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal.
 
-```markdown
-[!![Thumbnail](./thumb.jpg)](https://example.com)
-```
+````markdown
+[!![Swan boats on the lake](./assets/swan-boats.jpg "Swan boats")](https://example.com)
+````
 
-## Styling
+### Captioned images
 
-This extension ships default styles for the preview. Tune them with public
-custom properties, or override the structure entirely, by pointing VSCode's
-`markdown.styles` setting at your own CSS file:
+A lightbox image can take a [caption](/guide/plugins/caption) like any other image: the trigger becomes the figure's content, and the caption stays under the thumbnail. With the `caption` option (below), the dialog shows the caption under the zoomed image too. Repeated images share one dialog, which shows the first caption any of them has.
 
-```jsonc
-// .vscode/settings.json
-{
-  "markdown.styles": ["./my-preview-styles.css"]
-}
-```
+````markdown
+!![Mount Fuji at dawn](./assets/fuji.jpg)
+~: Mount Fuji from Lake Kawaguchi. Select the image to zoom in.
+````
+
+## Options
+
+| Option    | Default | Description                                                                                                                      |
+| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `caption` | `false` | Show a captioned image's caption under it in the dialog. List the caption plugin before this one, so the caption is in place when it runs. |
+
+## Customization
+
+The stylesheet keeps its rules in `@layer markdown-lightbox`, so any unlayered CSS you write overrides them without `!important`. The common knobs are exposed as custom properties — set them on `:root` or any ancestor:
+
+| Property                       | Default            | Description                      |
+| ------------------------------ | ------------------ | -------------------------------- |
+| `--markdown-lightbox-backdrop` | `rgb(0 0 0 / 72%)` | Backdrop color behind the image. |
+| `--markdown-lightbox-blur`     | `3px`              | Backdrop blur radius.            |
+| `--markdown-lightbox-radius`   | `0.375rem`         | Image corner radius.             |
+| `--markdown-lightbox-duration` | `0.25s`            | Open/close transition duration.  |
+| `--markdown-lightbox-caption`  | `white`            | Caption text color in the dialog. |
 
 ```css
-/* my-preview-styles.css */
 :root {
   --markdown-lightbox-backdrop: rgb(0 0 0 / 85%);
   --markdown-lightbox-blur: 6px;
   --markdown-lightbox-radius: 0.5rem;
   --markdown-lightbox-duration: 0.2s;
+}
+```
+
+## Browser support
+
+Requires `command`/`commandfor`, `<dialog closedby>`, and `@starting-style` (Chromium 135+ and equivalent). Where unsupported, images degrade to a plain, non-zooming thumbnail.
+
+## Styling
+
+This extension ships default styles for the rendered output in the preview. To
+customize them, point VSCode's `markdown.styles` setting at your own CSS file:
+
+```jsonc
+// .vscode/settings.json
+{
+  "markdown.styles": ["./my-preview-styles.css"]
 }
 ```
 

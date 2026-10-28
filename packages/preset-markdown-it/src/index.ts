@@ -14,7 +14,7 @@ import {
 } from "@mirrordown/mdit-github-alerts";
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
-import { lightbox } from "@mirrordown/mdit-lightbox";
+import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
 import { mark } from "@mirrordown/mdit-mark";
 import {
   mermaidPele,
@@ -42,7 +42,7 @@ export interface MirrordownOptions {
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
-  lightbox?: boolean;
+  lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | MermaidPeleOptions;
   ruby?: boolean | RubyOptions;
@@ -101,7 +101,7 @@ export const mirrordown = (
   // Before autolink-headings, which links to the ids slug sets.
   configured(options.slug, slug);
   configured(options.autolinkHeadings, autolinkHeadings);
-  on(options.lightbox, lightbox);
+  configured(options.lightbox, lightbox);
   on(options.unwrapImages, unwrapImages);
   on(options.squeezeParagraphs, squeezeParagraphs);
 };

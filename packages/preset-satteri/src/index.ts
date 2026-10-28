@@ -14,7 +14,11 @@ import {
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
-import { satteriLightbox, type LightboxPlugin } from "@mirrordown/sat-lightbox";
+import {
+  satteriLightbox,
+  type LightboxOptions,
+  type LightboxPlugin
+} from "@mirrordown/sat-lightbox";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
   satteriMermaidPele,
@@ -70,7 +74,7 @@ export interface MirrordownOptions {
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
-  lightbox?: boolean;
+  lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
   /** Ruby's own options; its `features` are always the preset's. */
@@ -175,7 +179,9 @@ export const mirrordown = (
       ...(options.autolinkHeadings === false
         ? []
         : [satteriAutolinkHeadings(settings(options.autolinkHeadings))]),
-      ...(options.lightbox === false ? [] : [satteriLightbox()]),
+      ...(options.lightbox === false
+        ? []
+        : [satteriLightbox(settings(options.lightbox))]),
       ...(options.unwrapImages === false ? [] : [satteriUnwrapImages()]),
       ...(options.squeezeParagraphs === false
         ? []

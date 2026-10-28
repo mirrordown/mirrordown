@@ -2,6 +2,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import { isAlertMarkerLine } from "@mirrordown/core";
 import type { StepsOptions } from "./types.js";
 
 export type { StepsOptions };
@@ -125,8 +126,9 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekPos = state.bMarks[peek] + state.tShift[peek];
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
+          // An alert after a blank line is a block of its own, not more of the step's body.
           const isContinuation =
-            CONTINUATION_RE.test(peekLine) ||
+            (CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
             parseStepHeader(peekLine) !== null;
           if (!isContinuation) break;
           // Blank line is part of the body

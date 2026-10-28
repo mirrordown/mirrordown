@@ -17,9 +17,8 @@ import type {
 } from "mdast";
 import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
+import { containersKept, type LineContainer } from "@mirrordown/core";
 import { applyAttrs } from "./applyAttrs.js";
-import { containersKept } from "./containers.js";
-import type { LineContainer } from "./containers.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
 import type { AttrsOptions } from "./types.js";
 

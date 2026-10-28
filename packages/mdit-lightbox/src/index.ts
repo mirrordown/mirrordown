@@ -2,15 +2,43 @@
 // lightboxId/images entries on it.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type MarkdownIt from "markdown-it";
-import type { PluginSimple } from "markdown-it";
+import type { PluginWithOptions } from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 
 interface ImageMeta {
   lightboxId?: string;
 }
 interface DialogsMeta {
-  images: Token[];
+  images: Array<{ image: Token; caption: Token[] | undefined }>;
 }
+
+/** Options for {@link lightbox}. */
+export interface LightboxOptions {
+  /**
+   * Show a captioned image's caption under it in the dialog (an image that is a `~: caption`'s figure content, with mdit-caption installed before this plugin).
+   *
+   * @default false
+   */
+  caption?: boolean | undefined;
+}
+
+// The caption of the figure the inline token at `index` is the content of: mdit-caption's hidden paragraph in a `markdown-caption` figure, followed by its figcaption.
+const figureCaption = (
+  tokens: readonly Token[],
+  index: number
+): Token[] | undefined => {
+  const figure = tokens[index - 2];
+  const paragraph = tokens[index - 1];
+  const figcaption = tokens[index + 3];
+  return figure?.type === "figure_open" &&
+    (figure.attrGet("class") ?? "").split(" ").includes("markdown-caption") &&
+    paragraph?.type === "paragraph_open" &&
+    paragraph.hidden &&
+    tokens[index + 2]?.type === "figcaption_open" &&
+    figcaption?.type === "inline"
+    ? (figcaption.children ?? undefined)
+    : undefined;
+};
 
 // A short, stable id derived from the image src (FNV-1a, base36). The same
 // image always gets the same id — so repeated references share one dialog, and
@@ -36,9 +64,13 @@ const hashId = (src: string): string => {
  * The dialog id is a stable hash of the image src, so repeated references to the
  * same image share a single dialog. An author `{#id}` (via markdown-it-attrs)
  * overrides it. Images inside a link are skipped (a `<button>` can't nest in an
- * `<a>`).
+ * `<a>`). With `caption: true`, an image that is a caption's figure content
+ * shows the caption under it in the dialog too.
  */
-export const lightbox: PluginSimple = (md) => {
+export const lightbox: PluginWithOptions<LightboxOptions> = (
+  md,
+  options = {}
+) => {
   // Default image renderer (or a token fallback), reused for both the inline
   // trigger thumbnail and the full image inside the dialog.
   const renderImage =
@@ -57,9 +89,13 @@ export const lightbox: PluginSimple = (md) => {
       token: Token;
       src: string;
       authorId: string | undefined;
+      caption: Token[] | undefined;
     }> = [];
-    for (const block of state.tokens) {
+    for (const [index, block] of state.tokens.entries()) {
       if (block.type !== "inline" || !block.children) continue;
+      const caption = options.caption
+        ? figureCaption(state.tokens, index)
+        : undefined;
       const children = block.children;
       let linkDepth = 0;
       let stripped = false;
@@ -83,7 +119,8 @@ export const lightbox: PluginSimple = (md) => {
           opted.push({
             token,
             src: token.attrGet("src") ?? "",
-            authorId: token.attrGet("id") ?? undefined
+            authorId: token.attrGet("id") ?? undefined,
+            caption
           });
         }
         prev = token;
@@ -108,15 +145,18 @@ export const lightbox: PluginSimple = (md) => {
     }
 
     // Tag each trigger with its id; collect one dialog image per id.
-    const dialogImages = new Map<string, Token>();
-    for (const { token, src, authorId } of opted) {
+    const dialogImages = new Map<string, DialogsMeta["images"][number]>();
+    for (const { token, src, authorId, caption } of opted) {
       const id = srcToId.get(src) ?? hashId(src);
       if (authorId !== undefined) {
         // the author id becomes the lightbox id; drop it from the <img>
         token.attrs = token.attrs?.filter(([key]) => key !== "id") ?? null;
       }
       (token.meta as ImageMeta) = { ...token.meta, lightboxId: id };
-      if (!dialogImages.has(id)) dialogImages.set(id, token);
+      // Repeated images share one dialog, which shows the first caption any of them has.
+      const shown = dialogImages.get(id);
+      if (!shown) dialogImages.set(id, { image: token, caption });
+      else shown.caption ??= caption;
     }
 
     const token = new state.Token("lightbox_dialogs", "", 0);
@@ -143,10 +183,13 @@ export const lightbox: PluginSimple = (md) => {
     self
   ): string =>
     ((tokens[idx]?.meta as DialogsMeta | undefined)?.images ?? [])
-      .map((image) => {
+      .map(({ image, caption }) => {
         const id = (image.meta as Required<ImageMeta>).lightboxId;
         const img = renderImage([image], 0, opts, env, self);
-        return `<dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image">${img}</button></dialog>`;
+        const text = caption
+          ? `<p class="markdown-lightbox-caption">${self.renderInline(caption, opts, env)}</p>`
+          : "";
+        return `<dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image">${img}</button>${text}</dialog>`;
       })
       .join("\n");
 };

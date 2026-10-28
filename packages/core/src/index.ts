@@ -10,6 +10,7 @@ export {
   DEFAULT_TITLE,
   ICONS,
   createAlertResolver,
+  isAlertMarkerLine,
   plainText,
   splitAlertParagraph,
   type AlertOptions,
@@ -31,6 +32,7 @@ export {
   headingRank,
   isEmptyParagraph,
   isImageParagraph,
+  isCaptionFigure,
   lightboxDialog,
   lightboxId,
   lightboxTrigger,
@@ -84,7 +86,6 @@ export {
 export {
   CAPTION_CLASS,
   figureProperties,
-  isAlertMarkerLine,
   isCaptionLine,
   processCaptions,
   startsCaption,

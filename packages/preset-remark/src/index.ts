@@ -22,7 +22,10 @@ import {
 } from "@mirrordown/remd-github-alerts";
 import { remarkIns } from "@mirrordown/remd-ins";
 import { remarkKbd } from "@mirrordown/remd-kbd";
-import { rehypeLightbox } from "@mirrordown/remd-lightbox";
+import {
+  rehypeLightbox,
+  type LightboxOptions
+} from "@mirrordown/remd-lightbox";
 import { remarkMark } from "@mirrordown/remd-mark";
 import {
   rehypeMermaidPele,
@@ -60,7 +63,7 @@ export interface MirrordownOptions {
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
-  lightbox?: boolean;
+  lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | RehypeMermaidPeleOptions;
   ruby?: boolean | RubyOptions;
@@ -149,7 +152,7 @@ export const mirrordown = (
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),
       ...configured(options.autolinkHeadings, rehypeAutolinkHeadings),
-      ...on(options.lightbox, rehypeLightbox),
+      ...configured(options.lightbox, rehypeLightbox),
       ...on(options.unwrapImages, rehypeUnwrapImages),
       ...on(options.squeezeParagraphs, rehypeSqueezeParagraphs)
     ],
