@@ -37,6 +37,7 @@ const slugs = [
   "github-alerts",
   "ins",
   "kbd",
+  "lightbox",
   "mark",
   "mermaid-pele",
   "ruby",

@@ -72,12 +72,16 @@ interface Node {
 const WHITESPACE = /^\s*$/;
 
 // Only images (each possibly inside a link) and whitespace: the figure holds them directly, as an image alone in its paragraph is the figure.
+// A lightbox's `!` marker (what `!![alt](src)` leaves before its image) counts as part of the image, so a lightbox's trigger is the figure's content too.
 const onlyImages = (children: readonly Node[]): boolean =>
   children.some((child) => child.type !== `text`) &&
   children.every(
-    (child) =>
+    (child, index) =>
       child.type === `image` ||
-      (child.type === `text` && WHITESPACE.test(child.value ?? ``)) ||
+      (child.type === `text` &&
+        (WHITESPACE.test(child.value ?? ``) ||
+          (/^\s*!$/.test(child.value ?? ``) &&
+            children[index + 1]?.type === `image`))) ||
       (child.type === `link` &&
         (child.children ?? []).length > 0 &&
         (child.children ?? []).every((inner) => inner.type === `image`))

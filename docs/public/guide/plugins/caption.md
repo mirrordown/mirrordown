@@ -40,7 +40,7 @@ An image alone in its paragraph becomes the figure's content. Its alt text stays
 > ~: Mount Fuji from Lake Kawaguchi, *at dawn*.
 > ````
 
-Several images in one paragraph make one figure. An image inside a sentence isn't a figure of its own, so a caption after it captions the paragraph.
+A [lightbox](/guide/plugins/lightbox) image (`!![alt](src)`) works the same: its trigger is the figure's content, and the lightbox can show the caption in its dialog too. Several images in one paragraph make one figure. An image inside a sentence isn't a figure of its own, so a caption after it captions the paragraph.
 
 ### Quotes
 

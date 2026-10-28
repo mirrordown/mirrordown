@@ -30,6 +30,7 @@ const EXTENSIONS = [
   ["markdown-github-alerts", "github-alerts"],
   ["markdown-ins", "ins"],
   ["markdown-kbd", "kbd"],
+  ["markdown-lightbox", "lightbox"],
   ["markdown-mark", "mark"],
   ["markdown-mermaid-pele", "mermaid-pele"],
   ["markdown-sectionize", "sectionize"],

@@ -32,6 +32,7 @@ export {
   headingRank,
   isEmptyParagraph,
   isImageParagraph,
+  isCaptionFigure,
   lightboxDialog,
   lightboxId,
   lightboxTrigger,

@@ -1,5 +1,7 @@
 // Logic shared by the rehype and Sätteri hast plugins, so both compute the same result: which paragraphs are empty or hold only images, how headings divide a document into sections, and the lightbox's marker, ids and markup. The plugins apply it with their own tree operations.
 
+import { CAPTION_CLASS } from "./caption.js";
+
 /** The shape of a hast node this module reads and builds. */
 export interface HastLike {
   type: string;
@@ -134,10 +136,11 @@ export const lightboxTrigger = <C>(
   children: [image]
 });
 
-/** The modal dialog, appended at the document end, showing the image full size. */
+/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. */
 export const lightboxDialog = <C>(
   id: string,
-  image: C
+  image: C,
+  caption?: C[]
 ): HastElementLike<HastElementLike<C>> => ({
   type: `element`,
   tagName: `dialog`,
@@ -154,6 +157,26 @@ export const lightboxDialog = <C>(
         ariaLabel: `Close image`
       },
       children: [image]
-    }
+    },
+    ...(caption
+      ? [
+          {
+            type: `element` as const,
+            tagName: `p`,
+            properties: { className: [`markdown-lightbox-caption`] },
+            children: caption
+          }
+        ]
+      : [])
   ]
 });
+
+/** Whether a node is a caption's figure (`<figure class="markdown-caption">`, as the caption plugins make): an image that is its content shows the figure's caption in its lightbox dialog, with the `caption` option. */
+export const isCaptionFigure = (node: HastLike | undefined): boolean => {
+  const className = node?.properties?.className;
+  return (
+    node?.tagName === `figure` &&
+    Array.isArray(className) &&
+    className.includes(CAPTION_CLASS)
+  );
+};
