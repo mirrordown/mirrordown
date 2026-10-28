@@ -5,37 +5,25 @@ import type { VisitorResult } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Parent } from "unist";
 import type { Root, Text, PhrasingContent } from "mdast";
+import { createAbbreviationScan, parseAbbreviations } from "@mirrordown/core";
 
-const DEFINITION_RE = /^\*\[([^[\]]+)\]:\s*(.+)$/;
-
-const ESCAPE_RE = /[.*+?^${}()|[\]\\]/g;
-
-/** remark plugin for abbreviations (`*[term]: definition`), rendering `<abbr>` elements. */
+/** remark plugin for abbreviations (`*[term]: definition`), rendering `<abbr>` elements. The definition and term rules are shared with the Sätteri plugin through `@mirrordown/core`. */
 export const remarkAbbr: Plugin<[], Root> = () => {
   const transformer: Transformer<Root> = (tree) => {
-    const abbreviations: Record<string, string> = {};
+    const abbreviations = new Map<string, string>();
     const nodesToRemove: Array<{ parent: Parent; index: number }> = [];
 
     visit(tree, "paragraph", (node, index, parent) => {
       /* v8 ignore next */
       if (!parent || typeof index === "undefined") return;
-      if (node.children.length !== 1 || node.children[0].type !== "text")
-        return;
-
-      const text = node.children[0].value;
-      const lines = text.split("\n");
-      const defLines: Array<[string, string]> = [];
-
-      for (const line of lines) {
-        const match = DEFINITION_RE.exec(line);
-        if (!match) return;
-        defLines.push([match[1], match[2].trim()]);
+      const [only] = node.children;
+      if (node.children.length !== 1 || only.type !== "text") return;
+      const definitions = parseAbbreviations(only.value);
+      if (!definitions) return;
+      // The first definition of a term wins.
+      for (const [term, title] of definitions) {
+        if (!abbreviations.has(term)) abbreviations.set(term, title);
       }
-
-      for (const [abbr, title] of defLines) {
-        if (!(abbr in abbreviations)) abbreviations[abbr] = title;
-      }
-
       nodesToRemove.push({ parent, index });
     });
 
@@ -43,43 +31,24 @@ export const remarkAbbr: Plugin<[], Root> = () => {
       parent.children.splice(index, 1);
     }
 
-    if (Object.keys(abbreviations).length === 0) return;
-
-    const keys = Object.keys(abbreviations).sort((a, b) => b.length - a.length);
-    const escaped = keys.map((k) => k.replace(ESCAPE_RE, "\\$&"));
-    const regex = new RegExp(`\\b(${escaped.join("|")})\\b`, "g");
+    if (abbreviations.size === 0) return;
+    const scan = createAbbreviationScan(abbreviations);
 
     visit(tree, "text", (node: Text, index, parent): VisitorResult => {
       /* v8 ignore next */
       if (!parent || typeof index === "undefined") return;
       if ((parent as unknown as { type: string }).type === "abbr") return;
-      if (!regex.test(node.value)) return;
-
-      regex.lastIndex = 0;
-      const children: PhrasingContent[] = [];
-      let lastIndex = 0;
-      let match: RegExpExecArray | null;
-
-      while ((match = regex.exec(node.value)) !== null) {
-        const word = match[1];
-        if (match.index > lastIndex) {
-          children.push({
-            type: "text",
-            value: node.value.slice(lastIndex, match.index)
-          });
-        }
-        children.push({
-          type: "abbr",
-          children: [{ type: "text", value: word }],
-          data: { hName: "abbr", hProperties: { title: abbreviations[word] } }
-        });
-        lastIndex = match.index + word.length;
-      }
-
-      if (lastIndex < node.value.length) {
-        children.push({ type: "text", value: node.value.slice(lastIndex) });
-      }
-
+      const parts = scan(node.value);
+      if (!parts) return;
+      const children: PhrasingContent[] = parts.map((part) =>
+        "text" in part
+          ? { type: "text", value: part.text }
+          : {
+              type: "abbr",
+              children: [{ type: "text", value: part.term }],
+              data: { hName: "abbr", hProperties: { title: part.title } }
+            }
+      );
       (parent as Parent).children.splice(index, 1, ...children);
       return [CONTINUE, index + children.length];
     });

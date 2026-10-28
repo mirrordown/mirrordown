@@ -1,0 +1,7 @@
+{
+  "name": "@mirrordown/sat-github-alerts",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

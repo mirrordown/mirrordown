@@ -4,12 +4,15 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
 import {
   remarkGithubAlerts,
   githubAlertsHastHandlers
 } from "../../packages/remd-github-alerts/src";
 import { normalizeHtml } from "../utils/index.js";
+import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
+import { satteriTabs } from "../../packages/sat-tabs/src";
 
 const remd = (src: string) =>
   normalizeHtml(
@@ -28,6 +31,15 @@ const remd = (src: string) =>
         .use(rehypeStringify, { allowDangerousHtml: true })
         .processSync(src)
     )
+  );
+
+// The same plugins in Sätteri, in the same order.
+const sat = (src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { gfm: true, frontmatter: false, smartPunctuation: false },
+      mdastPlugins: [satteriGithubAlerts(), satteriTabs()]
+    }).html
   );
 
 // A blank `>` line before `% Code` is required to prevent lazy continuation
@@ -92,6 +104,10 @@ describe("tabs + github-alerts: alert inside tab body renders as alert", () => {
     expect(result).not.toContain("% Code</p>");
     expect(result).not.toContain("% Code<");
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(singleAlertInput)).toBe(remd(singleAlertInput));
+  });
 });
 
 describe("tabs + github-alerts: all five alert types inside tab body", () => {
@@ -108,6 +124,10 @@ describe("tabs + github-alerts: all five alert types inside tab body", () => {
     const result = remd(allAlertsInput);
     expect(result).toContain("<code");
     expect(result).toContain("[!NOTE]");
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(allAlertsInput)).toBe(remd(allAlertsInput));
   });
 });
 
@@ -126,6 +146,10 @@ describe("tabs + github-alerts: alert alongside tabs does not break tab structur
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain('aria-label="Tab One"');
     expect(result).toContain('aria-label="Tab Two"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });
 
@@ -149,6 +173,10 @@ describe("tabs + github-alerts: foldable alert inside tab body", () => {
     expect(result).toContain('data-alert="warning"');
     expect(result).toContain("<details");
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
 });
 
 describe("tabs + github-alerts: custom title alert inside tab body", () => {
@@ -166,5 +194,9 @@ describe("tabs + github-alerts: custom title alert inside tab body", () => {
     const result = remd(input);
     expect(result).toContain('data-alert="note"');
     expect(result).toContain("Custom Title");
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
   });
 });

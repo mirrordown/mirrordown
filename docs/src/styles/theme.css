@@ -110,10 +110,13 @@
     /*    Lighter weight in dark mode keeps perceived stroke width   */
     /*    consistent across themes without layout shift.             */
 
-    --fw-regular: light-dark(400, 350);
-    --fw-medium: light-dark(500, 450);
-    --fw-semibold: light-dark(600, 550);
-    --fw-bold: light-dark(700, 650);
+    /*    `light-dark()` only takes colors, so the dark weights are set */
+    /*    with the dark color scheme below.                             */
+
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
 
     /* ── Line heights ───────────────────────────────────────────── */
 
@@ -182,5 +185,22 @@
 
   [data-theme="dark"] {
     color-scheme: dark;
+  }
+
+  /* Dark weights: the system preference unless the light theme is chosen, or the dark theme. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fw-regular: 350;
+      --fw-medium: 450;
+      --fw-semibold: 550;
+      --fw-bold: 650;
+    }
+  }
+
+  [data-theme="dark"] {
+    --fw-regular: 350;
+    --fw-medium: 450;
+    --fw-semibold: 550;
+    --fw-bold: 650;
   }
 }

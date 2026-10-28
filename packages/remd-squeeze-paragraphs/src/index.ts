@@ -1,24 +1,12 @@
 import { visit } from "unist-util-visit";
-import { whitespace } from "hast-util-whitespace";
-import type { Element, Root } from "hast";
+import { isEmptyParagraph } from "@mirrordown/core";
+import type { Root } from "hast";
 import type { Plugin } from "unified";
 
-// A <p> is "empty" when it has no children, or every child is whitespace-only
-// text. Mirrors upstream mdast-squeeze-paragraphs' `children.every(text && /^\s*$/)`.
-const isEmpty = (node: Element): boolean =>
-  node.children.every(
-    (child) => child.type === "text" && whitespace(child.value)
-  );
-
-/** rehype plugin that removes empty (whitespace-only) paragraphs. */
+/** rehype plugin that removes empty (whitespace-only) paragraphs. The rule is shared with the Sätteri plugin through `@mirrordown/core`. */
 export const rehypeSqueezeParagraphs: Plugin<[], Root> = () => (tree) => {
   visit(tree, "element", (node, index, parent) => {
-    if (
-      node.tagName === "p" &&
-      parent &&
-      typeof index === "number" &&
-      isEmpty(node)
-    ) {
+    if (parent && typeof index === "number" && isEmptyParagraph(node)) {
       parent.children.splice(index, 1);
       return index;
     }

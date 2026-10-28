@@ -94,3 +94,32 @@ Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-ruby
+> ```
+>
+> It parses each base and reading on its own, with the document's features. Sätteri before 0.11.3 doesn't tell plugins those, so there, pass it the `features` you compile with, as in the Astro example (Astro's Sätteri integration is still on 0.10). List it before other mdast plugins, since it re-reads its blocks from source. The Sätteri preset does both for you.
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriRuby } from "@mirrordown/sat-ruby";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriRuby()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriRuby } from "@mirrordown/sat-ruby";
+>
+> const features = { gfm: true, smartPunctuation: false };
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ features, mdastPlugins: [satteriRuby({ features })] }),
+>   },
+> });
+> ```

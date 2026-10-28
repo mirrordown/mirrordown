@@ -30,6 +30,9 @@ Wrap text in double dashes to mark it as deleted:
 > You can use it inline: the price was --$50-- $35.
 > ````
 
+> [!NOTE]
+> Smart punctuation rewrites `--` as an en dash before this plugin sees it, and Astro turns it on by default (`smartypants` for remark, `smartPunctuation` for Sätteri). Turn it off, or use a Mirrordown preset, which does.
+
 ## Usage
 
 % Remark
@@ -84,6 +87,32 @@ Wrap text in double dashes to mark it as deleted:
 > export default defineConfig({
 >   markdown: {
 >     config: (md) => md.use(del),
+>   },
+> });
+> ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-del
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriDel } from "@mirrordown/sat-del";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriDel()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriDel } from "@mirrordown/sat-del";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriDel()] }),
 >   },
 > });
 > ```

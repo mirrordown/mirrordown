@@ -32,9 +32,10 @@ const TAG = /<(?:[^"'>]|"[^"]*"|'[^']*')*>/g;
 // that: markdown-it writes `&lt;` `&amp;` `&quot;` `&gt;`, while hast writes
 // `&#x3C;` `&#x26;` and leaves `"` and `>` bare in text. Unify the spellings so
 // fixtures compare plugin output, not serializer style. Text gets `"` and `>`
-// decoded (both are safe unescaped there); inside tags only the spelling is
-// unified, because a quote in an attribute value must stay escaped. A raw `<`
-// or `&` is never produced, so a missing escape still fails.
+// decoded (both are safe unescaped there); inside tags `<` and `>` are decoded
+// too (hast leaves both bare in attribute values, where they need no escape),
+// but a quote in an attribute value must stay escaped. A raw `&`, or a raw `<`
+// in text, is never produced, so a missing escape still fails.
 const canonicalReferences = (html: string): string => {
   const spelling = (s: string): string =>
     s
@@ -48,7 +49,7 @@ const canonicalReferences = (html: string): string => {
     out += spelling(html.slice(last, match.index))
       .replace(/&quot;/g, '"')
       .replace(/&gt;/g, ">");
-    out += spelling(match[0]);
+    out += spelling(match[0]).replace(/&lt;/g, "<").replace(/&gt;/g, ">");
     last = match.index + match[0].length;
   }
   return (

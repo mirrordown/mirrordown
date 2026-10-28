@@ -98,3 +98,29 @@ Any image that stands alone on a paragraph — with no other text or inline cont
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-unwrap-images
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriUnwrapImages } from "@mirrordown/sat-unwrap-images";
+>
+> const { html } = markdownToHtml(source, {
+>   hastPlugins: [satteriUnwrapImages()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriUnwrapImages } from "@mirrordown/sat-unwrap-images";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ hastPlugins: [satteriUnwrapImages()] }),
+>   },
+> });
+> ```

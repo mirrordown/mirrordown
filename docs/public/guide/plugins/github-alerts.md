@@ -122,6 +122,10 @@ Set `icons: false` to suppress the SVG icon from every alert title:
 > ```ts
 > md.use(githubAlerts, { icons: false })
 > ```
+% Sätteri
+> ```ts
+> satteriGithubAlerts({ icons: false })
+> ```
 
 ### Override default titles
 
@@ -145,6 +149,10 @@ Supply a `titles` map to replace the default heading text for any built-in type:
 > ```ts
 > md.use(githubAlerts, { titles: { tip: "Pro tip" } })
 > ```
+% Sätteri
+> ```ts
+> satteriGithubAlerts({ titles: { tip: "Pro tip" } })
+> ```
 
 ### Add custom alert types
 
@@ -165,6 +173,18 @@ Register new keywords with `types`. The value is the canonical type name that ap
 % Markdown-It
 > ```ts
 > md.use(githubAlerts, {
+>   types: { release: "release", changelog: "release" },
+>   titles: { release: "Release notes" },
+> })
+> ```
+> ```css
+> [data-alert="release"] {
+>   --markdown-alert-color: oklch(0.55 0.18 300);
+> }
+> ```
+% Sätteri
+> ```ts
+> satteriGithubAlerts({
 >   types: { release: "release", changelog: "release" },
 >   titles: { release: "Release notes" },
 > })
@@ -234,6 +254,32 @@ Register new keywords with `types`. The value is the canonical type name that ap
 > export default defineConfig({
 >   markdown: {
 >     config: (md) => md.use(githubAlerts),
+>   },
+> });
+> ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-github-alerts
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriGithubAlerts } from "@mirrordown/sat-github-alerts";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriGithubAlerts()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriGithubAlerts } from "@mirrordown/sat-github-alerts";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriGithubAlerts()] }),
 >   },
 > });
 > ```

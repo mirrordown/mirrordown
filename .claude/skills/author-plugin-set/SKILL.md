@@ -1,6 +1,6 @@
 ---
 name: author-plugin-set
-description: Use when adding a new markdown syntax extension to this repo (Mirrordown) — building the paired markdown-it (`mdit-*`) and remark/rehype (`remd-*`) plugins, their tests, the VSCode preview extension, and the docs guide. Starts by scoping the syntax and behavior with the user before any code is written. Invoke for requests like "add a new plugin for X syntax", "build a <name> markdown extension", or "author a new plugin set".
+description: Use when adding a new markdown syntax extension to this repo (Mirrordown) — building the matched markdown-it (`mdit-*`), remark/rehype (`remd-*`) and Sätteri (`sat-*`) plugins, their tests, the preset entries, the VSCode preview extension, and the docs guide. Starts by scoping the syntax and behavior with the user before any code is written. Invoke for requests like "add a new plugin for X syntax", "build a <name> markdown extension", or "author a new plugin set".
 ---
 
 # Authoring a new plugin set
@@ -10,18 +10,18 @@ single package:
 
 - `packages/mdit-<name>/` — markdown-it plugin
 - `packages/remd-<name>/` — remark/rehype plugin
-- `tests/<name>/` — shared fixtures run through **both** plugins
+- `packages/sat-<name>/` — Sätteri plugin (none if Sätteri already parses the syntax, as with `sub`/`sup`: then the guide documents Sätteri's feature flag)
+- `tests/<name>/` — shared fixtures run through **all three** engines
+- an entry in each of `packages/preset-{markdown-it,remark,satteri}/`
 - `docs/public/guide/plugins/<name>.md` — the guide (also the README source)
 - `extensions/markdown-<name>/` — VSCode preview extension
 
-Scaffolds live in `templates/{mdit,remd,extension}` **at the repo root** (not in
+Scaffolds live in `templates/{mdit,remd,sat,extension}` **at the repo root** (not in
 this skill directory). General repo/tooling facts (the `vp` CLI, Vite+ rules,
 monorepo layout) are in `CLAUDE.md` — don't re-derive them; this skill only
 covers what's specific to authoring a plugin set.
 
-**The invariant that governs everything: `mdit-<name>` and `remd-<name>` must
-emit byte-identical HTML for the same input.** Verify parity continuously, not at
-the end.
+**The invariant that governs everything: `mdit-<name>`, `remd-<name>` and `sat-<name>` must emit byte-identical HTML for the same input.** Verify parity continuously, not at the end. The only accepted differences are hard limits of an engine itself, kept out of shared fixtures. Sätteri is the one engine we can't change without upstream work, so where engines disagree on something its parser decides, its behavior is usually the target (see `sub`/`sup`).
 
 ## Phase 0 — Scope it with the user (do this first)
 
@@ -59,7 +59,7 @@ Confirm the scope (an `ExitPlanMode` plan is a good fit) before writing code.
 
 ## Phase 1 — Scaffold
 
-Copy `templates/mdit`, `templates/remd`, (and later `templates/extension`) into
+Copy `templates/mdit`, `templates/remd`, `templates/sat` (and later `templates/extension`) into
 place. Replace every `<name>` and rename the generic `plugin` export to something
 descriptive (`lightbox`; `rehypeLightbox`). Match the conventions an existing
 recent package uses for `package.json` / `jsr.json` exports, peer deps, and the
@@ -75,6 +75,8 @@ recent package uses for `package.json` / `jsr.json` exports, peer deps, and the
 
 markdown-it is always a core or inline rule plus a renderer rule.
 
+**The Sätteri shape** (details in SPEC §4.5): an mdast or hast visitor plugin, exported as a factory `satteri<Name>(options) => (ctx) => plugin` so per-document state starts fresh. Type the plugin as a minimal interface listing only its own keys, with synchronous visitors: Sätteri infers whether `markdownToHtml` returns a Promise from every key of the plugin's type. New nodes render through `data.hName` / `data.hProperties` (there's no handler hook). Logic the engines must compute identically goes in `@mirrordown/core` as its own module (e.g. `createDelimitedTransform` for delimiter scans, `createAlertResolver`), not three copies.
+
 **Dependencies — inline tiny one-offs, share the parity-critical ones.** Prefer
 inlining small, single-purpose utilities (e.g. `hast-util-heading-rank`,
 `hast-util-to-string`, a trimmed `convertElement`) as local helpers rather than
@@ -86,7 +88,7 @@ independently-published packages invites the one-character drift that silently
 breaks byte-parity. Add shared deps to the `.yarnrc.yml` `catalog:` block.
 
 **CSS export paths differ by engine** (a real gotcha): `mdit-*` exposes its
-stylesheet at `./styles`, `remd-*` at `./*.css`. Type-only deps (`hast`, `mdast`)
+stylesheet at `./styles`, `remd-*` and `sat-*` at `./*.css`. Type-only deps (`hast`, `mdast`)
 go in the `remd` package's `jsr.json` `imports` map; runtime npm deps go in
 `package.json` as `"catalog:"` and JSR resolves them via byonm (no `jsr.json`
 entry). Some `remd-*` packages also use a separate `./src/jsr.ts` JSR entry to
@@ -115,6 +117,10 @@ diff). Cross-engine traps that have actually bitten this codebase:
   derive anything from heading/inline text (a slug, a label), replicate the hast
   semantics in markdown-it — walk the inline token children collecting `text`/
   `code_inline` and **skip `image`** — or the two engines diverge.
+- **Sätteri never visits nodes a plugin creates.** remark's `visit` walks into restructured children; a Sätteri plugin that builds wrapper nodes must descend into them itself (see `createDelimitedTransform`, which recurses into the wrappers it builds).
+- **Sätteri text values have escapes resolved.** A delimiter scan sees `\==x==` as `==x==`. Set `options: { position: true }` and mask escaped characters with core's `escapedIndices`, aligning each node's position with `ctx.source`. Mask copies, never Sätteri's own nodes.
+- **Narrowing on Sätteri's `MdastTarget` doesn't work.** Custom nodes declare `type: string`, so `node.type === "text"` doesn't narrow; test `typeof node.value` / `"children" in node` instead.
+- **Hosts turn on smart punctuation.** Astro enables it by default in both of its processors; it rewrites `--`, quotes and other delimiters before plugins see them. The presets turn it off; a standalone plugin's guide should say so if it's affected.
 - **Entity encoding differs and isn't yours to fix.** markdown-it emits `&amp;`
   where rehype-stringify emits `&#x26;` for a literal `&`. Like `<s>` vs `<del>`,
   keep such constructs out of _shared_ fixtures (your plugin's own output — the
@@ -133,7 +139,7 @@ Model on an existing `tests/<plugin>/` suite. Structure:
 - `fixtures/<name>-commonmark.md` and `fixtures/<name>-gfm.md`, paired with
   `expected/*.html`, split on `<!-- @case: NAME -->` markers. Generate `expected`
   from one engine, eyeball it, then assert the _other_ engine matches it too.
-- `mdit.test.ts` and `remd.test.ts` each run the **same** fixtures via
+- `mdit.test.ts`, `remd.test.ts` and `sat.test.ts` each run the **same** fixtures via
   `parseFixture`/`normalizeHtml` from `tests/utils`. The remd test runs the
   commonmark fixture through a plain pipeline and the gfm fixture through one with
   `remark-gfm`.
@@ -172,7 +178,7 @@ this boundary in the guide.
   `type RenderRule = NonNullable<typeof md.renderer.rules.heading_open>` rather
   than importing it.
 
-Run the full suite; `mdit` and `remd` must be identical on every shared case.
+Run the full suite; `mdit`, `remd` and `sat` must be identical on every shared case. Before `vp check`, build every package (`vp run --filter "./packages/**" build`), and rebuild after switching branches: the type check reads each package's built types, and a missing or stale build silently turns them into `any`. To prove a type-level test can fail, break the type, `vp fmt` it (`vp check` stops at formatting before type checking), and confirm the error appears.
 
 ## Phase 4 — Cleanup passes
 
@@ -191,8 +197,8 @@ Run the full suite; `mdit` and `remd` must be identical on every shared case.
 
 Write `docs/public/guide/plugins/<name>.md`, modeling structure on an existing
 guide. It uses the `remd-tabs` syntax: `% Demo` / `% Code` pairs for syntax
-examples (live render + raw source), and a `## Usage` section with `% Remark` /
-`% Markdown-It` tabs and `%%` sub-tabs (Unified / Astro / VitePress / Standalone).
+examples (live render + raw source), and a `## Usage` section with `% Remark`,
+`% Markdown-It` and `% Sätteri` tabs and `%%` sub-tabs (Unified / Astro / VitePress / Standalone). VitePress renders with markdown-it, so its example belongs only under Markdown-It.
 Then:
 
 - Add the plugin to `docs/astro.config.ts` (`rehypePlugins`/`remarkPlugins`, plus
@@ -209,11 +215,7 @@ Then:
 `scripts/generate-extension-readmes.mjs` (extension README), then run them. The
 guide is the single source. (`inline-svg` is the only hand-authored exception.)
 
-The generators rewrite **every** README, and their raw output (e.g. 4-backtick
-fences, trailing commas) isn't formatter-clean — the committed form is
-post-`vp fmt`. So the workflow is **generate → `vp fmt` → commit**; after
-formatting, unrelated READMEs revert to no-diff and only yours change. If one
-_doesn't_ revert, the drift is pre-existing: the source `package.json`
+The generators rewrite **every** README. Commit their output as it is: generated READMEs are excluded from `vp fmt`, because the formatter rewrites the markdown inside their ` ````markdown ` samples and breaks the syntax they show. Unrelated READMEs should come out unchanged. If one _doesn't_, the drift is pre-existing: the source `package.json`
 `displayName`/`description` changed but its README was never regenerated. The
 README is **generated from** the manifest — regenerate it to match the manifest;
 do **not** edit the manifest to match the stale README. Before "correcting" any
@@ -247,7 +249,11 @@ adding ids/anchors is safe). A combined extension that bundles both plugins is
 self-contained and idempotent against the host's own ids. The extension's package
 `name` (not its folder) is the marketplace id used in `extensionPack`.
 
-## Phase 7 — Publishing
+## Phase 7 — Presets
+
+Add the feature to `preset-markdown-it`, `preset-remark` and `preset-satteri` under one camelCase option key (`boolean | <Name>Options`), in plugin order, plus hast handlers for remark if any, and `@import` its stylesheet in each preset's `styles.css`. Add a sample input and marker to the feature table in `tests/presets/presets.test.ts`. The full-suite test there runs every feature's shared fixtures through all the plugins at once and requires the engines to agree; composition bugs no per-feature test can see turn up here, so fix them rather than exclude the cases. A plugin that needs the filesystem or async processing stays out of the presets (like `inline-svg`).
+
+## Phase 8 — Publishing
 
 New packages start at `version: 0.0.0` and need a **bump file** to get a first
 release via CI. Add a changeset-style file under `.bumpy/<slug>.md`:
@@ -256,6 +262,7 @@ release via CI. Add a changeset-style file under `.bumpy/<slug>.md`:
 ---
 "@mirrordown/remd-<name>": minor
 "@mirrordown/mdit-<name>": minor
+"@mirrordown/sat-<name>": minor
 ---
 
 One-line changelog description of the new plugin set.
@@ -268,14 +275,16 @@ package listed. The `bumpy` "Version packages" CI job consumes these to bump
 versions, write `CHANGELOG.md`, and trigger publish — so the working branch just
 needs the bump files committed, not the version bumps themselves.
 
+New package names must be claimed on npm and JSR before their first publish. Tell the user which, and give one command per package and registry with the name spelled out: `npx fledgling add @mirrordown/<pkg> --yes` and `npx fledgling jsr @mirrordown/<pkg> --yes` (SPEC §9.3). **Never give the no-name form**: it selects every non-private workspace package, including the VS Code extensions, and once published 19 of them to npm.
+
 ## Quality gates (all must pass)
 
-- `vp check` clean; `vp test` green; `mdit` ≡ `remd` on every shared fixture.
+- Packages built, then `vp check` clean; `vp test` green; `mdit` ≡ `remd` ≡ `sat` on every shared fixture.
+- The feature is in all three presets; the `tests/presets` full-suite test passes.
 - Fixtures cover edge cases, GFM vs CommonMark, combinations, and plugin compat;
   invariants are fixture cases.
 - JSR dry-run: no slow types. Strict-flag `tsc` clean per package.
 - Guide page exists; READMEs regenerated from it.
 - Extension builds/packages and is in the pack.
 
-Work the phases in order, checkpoint after each, and keep the two plugins in
-lockstep throughout.
+Work the phases in order, checkpoint after each, and keep the three plugins in lockstep throughout.

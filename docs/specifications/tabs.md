@@ -66,6 +66,8 @@ This paragraph is outside the tab group.
 A blank line between the last continuation line and a subsequent `%` header would
 also terminate the group and start a new one.
 
+Inside a container (a step body, another tab's panel, a blockquote or a list item), a blank line between a group's entries is the container's own (an empty `>` line, as in `> % npm` … `>` … `> % yarn`), so it does not end the group: the group goes on when the next non-blank line is a `%` header or a `>` continuation, and ends otherwise.
+
 ### Basic example
 
 ````markdown
@@ -494,15 +496,13 @@ plugin set.
 Two blocks with labels `["npm", "pnpm", "yarn"]` and `["yarn", "npm", "pnpm"]`
 produce identical `data-tabs-group` values.
 
-### `block-id` (position-based, page-unique)
+### `block-id` (order-based, page-unique)
 
-1. Take the block's start line number in the source document
-2. Combine with the content-based group hash
+1. Take the group's index among the document's tab groups, counted from 0 in the order they open in the output (a nested group counts after the group around it)
+2. Combine with the content-based group hash as `{index}:{group-hash}`
 3. Apply djb2 and format as a hex string prefixed with `tabs-`, e.g. `"tabs-d4e5f6"`
 
-This ensures two blocks with identical label sets at different positions in the
-document produce different `name` attribute values and do not interfere with each
-other's exclusive-open behavior.
+This ensures two groups with identical label sets anywhere in the document, including groups nested in step bodies or other tabs' panels, produce different `name` attribute values and do not interfere with each other's exclusive-open behavior. Every engine counts the same groups in the same order, so the ids match across engines; a group's id only changes when a group before it is added or removed.
 
 ---
 

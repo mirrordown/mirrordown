@@ -7,13 +7,15 @@ export const createHeadingRule = (options: DelimiterConfig): AttrRule => {
 
   return {
     name: "heading attributes",
+    // Anchored on the inline token, so the inline rules see it first and an
+    // element ending the heading (`**b**{.x}`) takes the block.
     tests: [
       {
-        shift: 0,
+        shift: -1,
         type: "heading_open"
       },
       {
-        shift: 1,
+        shift: 0,
         type: "inline",
         children: [
           {
@@ -26,8 +28,8 @@ export const createHeadingRule = (options: DelimiterConfig): AttrRule => {
       }
     ],
     transform(tokens, index) {
-      const openToken = tokens[index];
-      const inline = tokens[index + 1];
+      const openToken = tokens[index - 1];
+      const inline = tokens[index];
       const children = inline.children!;
       const lastChild = children[children.length - 1];
 

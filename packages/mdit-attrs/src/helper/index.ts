@@ -5,3 +5,5 @@ export type { DelimiterChecker } from "./getDelimiterChecker.js";
 export { testRule } from "./testRule.js";
 export type { RuleTest, TestResult } from "./testRule.js";
 export { getMatchingOpeningToken } from "./getMatchingOpeningToken.js";
+export { containersKept, itemColumns } from "./containers.js";
+export type { LineContainer } from "./containers.js";

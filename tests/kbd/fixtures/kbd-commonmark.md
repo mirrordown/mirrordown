@@ -82,3 +82,20 @@ press [[ key
 <!-- @case: escaped backslash keeps the delimiter -->
 
 \\[[text]]
+
+<!-- @case: keys nest -->
+
+[[a [[b]] c]]
+
+<!-- @case: a single closing bracket stays in the key -->
+
+[[a]b]]
+
+<!-- @case: a line ending inside formatting still ends the attempt -->
+
+[[*a*
+b]]
+
+<!-- @case: an extra opening bracket stays outside the key -->
+
+[[[a]]

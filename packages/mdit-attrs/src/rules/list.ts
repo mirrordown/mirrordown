@@ -5,53 +5,6 @@ import type { AttrRule } from "./types.js";
 export const createListRules = (options: DelimiterConfig): AttrRule[] => {
   const check = getDelimiterChecker(options.left, options.right);
 
-  // Rule 0: an attr line lazily continuing a list item's paragraph applies to
-  // the list holding that item, as markdown-it-attrs' "list softbreak" does:
-  //   - a
-  //   - b
-  //   {.list}
-  // The list is the opener one level above the item, so an earlier item's
-  // nested list is never picked by mistake.
-  const listSoftbreak: AttrRule = {
-    name: "list softbreak",
-    tests: [
-      {
-        shift: 0,
-        type: "inline",
-        children: [
-          { index: -2, type: "softbreak" },
-          {
-            index: -1,
-            type: "text",
-            content: (content: string) => check(content.trim(), "only") !== null
-          }
-        ]
-      },
-      {
-        shift: -2,
-        type: "list_item_open"
-      }
-    ],
-    transform(tokens, index) {
-      const children = tokens[index].children!;
-      const content = children[children.length - 1].content.trim();
-      const range = check(content, "only")!;
-      const item = tokens[index - 2];
-
-      for (let i = index - 3; i >= 0; i--) {
-        const t = tokens[i];
-        if (
-          (t.type === "bullet_list_open" || t.type === "ordered_list_open") &&
-          t.level === item.level - 1
-        ) {
-          addAttrs(t, content, range, options.allowed);
-          children.splice(children.length - 2, 2);
-          return;
-        }
-      }
-    }
-  };
-
   // Rule 1: attrs at end of a list item inline  "- item{.red}"
   // Structure: list_item_open(-2) paragraph_open(-1) inline(0)
   const listItemEnd: AttrRule = {
@@ -298,7 +251,6 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
   };
 
   return [
-    listSoftbreak,
     listItemEnd,
     customItemEnd,
     customItemEndDirect,

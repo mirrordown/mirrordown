@@ -14,7 +14,7 @@ accessed through `vp` — do not invoke vitest, oxlint, oxfmt, tsdown, or yarn d
 @mirrordown/markdown/          # root (private)
 ├── docs/                  # Astro documentation site
 ├── extensions/            # VSCode extensions (one per plugin + one pack)
-├── packages/              # npm/JSR plugin packages (remd-* and mdit-*)
+├── packages/              # npm/JSR packages: mdit-*, remd-*, sat-* plugins, preset-*, core
 └── tests/                 # shared cross-implementation test suite
 ```
 
@@ -87,7 +87,7 @@ significantly. Do not use git subtree or submodules.
 
 ## 3. Naming conventions
 
-- **npm/JSR packages:** `@mirrordown/remd-<name>` and `@mirrordown/mdit-<name>`
+- **npm/JSR packages:** `@mirrordown/remd-<name>`, `@mirrordown/mdit-<name>` and `@mirrordown/sat-<name>` (Sätteri). Presets are named after their ecosystem's well-known name: `@mirrordown/preset-markdown-it`, `@mirrordown/preset-remark`, `@mirrordown/preset-satteri`. Shared logic lives in `@mirrordown/core`.
 - **VSCode extensions:** Keep the existing Marketplace identifier (`markdown-<name>`) exactly.
   The `name` field in `package.json` is the extension ID and is immutable once published.
 - **`<name>` segment rules:**
@@ -105,6 +105,8 @@ unambiguous when multiple plugins are used together in the same file:
 
 - **`remd-*` packages:** `remark<Name>` — e.g., `remarkDel`, `remarkIns`, `remarkMark`
 - **`mdit-*` packages:** `<name>` — the bare feature name, e.g., `del`, `ins`, `mark`
+- **`sat-*` packages:** `satteri<Name>` — e.g., `satteriMark`, `satteriGithubAlerts`; always a plugin factory (see §4.5)
+- **`preset-*` packages:** `mirrordown`, in every ecosystem
 
 The mdit convention avoids a redundant `Plugin` suffix or namespace prefix. Since
 `remark*` and plain names occupy separate import namespaces there are no conflicts when
@@ -415,6 +417,24 @@ export default defineConfig({
 });
 ```
 
+### 4.5 `packages/sat-*/`
+
+Sätteri plugins, scaffolded from `templates/sat`. A feature Sätteri already parses (`sub`, `sup`) gets no package: its guide documents the Sätteri feature flag, and `tests/<name>/sat.test.ts` runs the shared fixtures through that flag instead.
+
+- The export is a **factory**, `satteri<Name>(options) => (ctx: PluginFactoryContext) => plugin`, so per-document state starts fresh and the plugin can read `ctx.source`.
+- The plugin's type is a **minimal interface listing only its own keys**, with synchronous visitors. Sätteri infers whether `markdownToHtml` returns a Promise from every key of a plugin's type, so typing a plugin as `MdastPluginDefinition` (whose optional visitors may be async) makes every caller's result `Result | Promise<Result>`.
+- New node types render through `data.hName` / `data.hProperties`: Sätteri has no mdast→hast handler hook. Sätteri never visits nodes a plugin creates, so a plugin descends into its own new nodes itself.
+- Text node values have escapes already resolved. A delimiter scan sets `options: { position: true }` and masks escaped characters with `@mirrordown/core`'s `escapedIndices`, aligning the node's position with `ctx.source`.
+- `satteri` is a `peerDependency` and `neverBundle`d. Stylesheets are exported at `./*.css`, as in `remd-*`, and are the same file as the other engines'.
+
+### 4.6 `packages/preset-*/`
+
+One preset per ecosystem bundles the whole suite: every feature on by default, `false` turns one off, an options object configures it, with the same camelCase keys in all three. A new plugin set is added to every preset (in plugin order, with its stylesheet `@import`ed in the preset's `styles.css`) and to the feature table in `tests/presets`, whose full-suite test then holds it to cross-engine parity. Plugins that need the filesystem or async processing (`inline-svg`) stay out of the presets.
+
+### 4.7 `packages/core/`
+
+Logic shared between plugins, so every engine computes the same result: escape masking, the github-alerts marker rules and icons, the delimited-inline scan behind `mark`, and the micromark syntax for `sub`/`sup`. Each area is its own module with named exports, and the package declares `"sideEffects": false`, so a plugin that imports one area doesn't carry the rest. Core has no runtime dependencies; engine types it needs (`micromark-util-types`) are devDependencies, kept out of its exported signatures.
+
 ---
 
 ## 5. TypeScript configuration
@@ -573,6 +593,8 @@ jobs:
           node-version: "24"
           cache: true
 
+      # Type-aware lint resolves workspace packages through their built types; an unbuilt package's types silently become `any`.
+      - run: vp run --filter "./packages/**" build
       - run: vp check
       - run: vp test
 ```
@@ -650,10 +672,10 @@ jobs:
   does not trigger other workflows due to GitHub's recursion guard).
 - `VSCE_PAT` — VS Code Marketplace personal access token.
 
-**One-time registry setup (per package, before first publish):** run [fledgling](https://github.com/dmno-dev/fledgling) locally from the repo root. Both commands are idempotent and only act on what's missing; the `fledgling` block in the root `package.json` is the source of truth for the trusted-publishing settings.
+**One-time registry setup (before a package's first publish):** run [fledgling](https://github.com/dmno-dev/fledgling) locally from the repo root. **Always name each package.** Without a name, fledgling selects every workspace package not marked `private`, which includes the VS Code extensions in `extensions/*`; that published 19 of them to npm by mistake once. Both commands are idempotent and only act on what's missing; the `fledgling` block in the root `package.json` is the source of truth for the trusted-publishing settings.
 
-- **npm:** `npx fledgling add <package> --yes` (after `npm login`) claims the name with a placeholder and configures trusted publishing for this repository's `release.yml`.
-- **JSR:** `npx fledgling jsr <package> --yes`, with a full-access JSR token in `JSR_TOKEN`, claims the package, links this repository for OIDC publishing, and syncs its description and runtime compatibility. Runtime compatibility defaults to every runtime (`fledgling.jsr.runtimeCompat` in the root `package.json`); a package that imports `node:` builtins overrides it in its own `package.json` with `browser` and `workerd` set to `false`.
+- **npm:** `npx fledgling add <package> --yes` (after `npm login`) claims the named package with a placeholder and configures trusted publishing for this repository's `release.yml`.
+- **JSR:** `npx fledgling jsr <package> --yes`, with a full-access JSR token in `JSR_TOKEN`, claims the named package, links this repository for OIDC publishing, and syncs its description and runtime compatibility. Runtime compatibility defaults to every runtime (`fledgling.jsr.runtimeCompat` in the root `package.json`); a package that imports `node:` builtins overrides it in its own `package.json` with `browser` and `workerd` set to `false`.
 
 ---
 

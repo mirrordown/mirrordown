@@ -1,0 +1,38 @@
+/**
+ * Default styling for @mirrordown/remd-autolink-headings (and its markdown-it
+ * twin). Visual defaults live in a cascade layer so consumers can override them
+ * without `!important`. These rules target the default `prepend`/`append`/`wrap`
+ * behaviors, where the `.anchor` link is a child of the heading; the `before`/
+ * `after` behaviors place the link as a sibling and are left for consumers to
+ * style.
+ */
+@layer markdown-autolink-headings {
+  :where(h1, h2, h3, h4, h5, h6):has(> .anchor) {
+    position: relative;
+  }
+
+  .anchor {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* The marker is drawn entirely in CSS, so the link itself stays empty. */
+  .anchor::before {
+    content: "#";
+    position: absolute;
+    left: -0.8em;
+    width: 0.8em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  :where(h1, h2, h3, h4, h5, h6):hover > .anchor::before,
+  :where(h1, h2, h3, h4, h5, h6):focus-within > .anchor::before {
+    opacity: 0.5;
+  }
+
+  .anchor:hover::before {
+    opacity: 1;
+  }
+}

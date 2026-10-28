@@ -1,9 +1,29 @@
+import type Token from "markdown-it/lib/token.mjs";
 import type { DelimiterConfig } from "../types.js";
 import { addAttrs, getDelimiterChecker } from "../helper/index.js";
 import type { AttrRule } from "./types.js";
 
 export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
   const check = getDelimiterChecker(options.left, options.right);
+
+  // Blocks that open the text right after an element go on it, and the text
+  // after them stays, as in markdown-it-attrs.
+  const takeLeadingAttrs = (
+    target: Token,
+    children: Token[],
+    i: number
+  ): void => {
+    const child = children[i];
+    let content = child.content;
+    let range = check(content, "start");
+    while (range) {
+      addAttrs(target, content, range, options.allowed);
+      content = content.slice(range[1] + options.right.length);
+      range = check(content, "start");
+    }
+    if (content) child.content = content;
+    else children.splice(i, 1);
+  };
 
   // Handles self-closing inline elements that render attributes: `code` and
   // images. Other nesting-0 tokens (hard breaks, raw HTML) drop attributes when
@@ -20,15 +40,13 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         const child = children[i];
         if (child.type !== "text") continue;
 
-        const range = check(child.content, "only");
-        if (!range) continue;
+        if (!check(child.content, "start")) continue;
 
         const prev = children[i - 1];
         // oxlint-disable-next-line typescript/no-unnecessary-condition
         if (prev?.type !== "image" && prev?.type !== "code_inline") continue;
 
-        addAttrs(prev, child.content, range, options.allowed);
-        children.splice(i, 1);
+        takeLeadingAttrs(prev, children, i);
         modified = true;
       }
 
@@ -54,8 +72,7 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         const child = children[i];
         if (child.type !== "text") continue;
 
-        const range = check(child.content, "only");
-        if (!range) continue;
+        if (!check(child.content, "start")) continue;
 
         // The preceding sibling must be a closing tag (nesting === -1)
         const prev = children[i - 1];
@@ -76,8 +93,7 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         }
         if (openIdx === -1) continue;
 
-        addAttrs(children[openIdx], child.content, range, options.allowed);
-        children.splice(i, 1);
+        takeLeadingAttrs(children[openIdx], children, i);
         modified = true;
       }
 

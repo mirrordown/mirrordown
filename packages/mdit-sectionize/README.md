@@ -1,6 +1,6 @@
 # @mirrordown/mdit-sectionize
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `sectionize` syntax extension.
 
@@ -50,11 +50,11 @@ How to configure it.
 
 Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>` nests as `data-depth="3"` inside the `<h1>`'s section, with no intervening `<h2>` section invented.
 
-[!TIP]
-`sectionize` only wraps — it never touches heading ids. Run it **before** `slug`/`autolink-headings` so those plugins still add ids to the (now nested) headings.
+> [!TIP]
+> `sectionize` only wraps — it never touches heading ids. Run it **before** `slug`/`autolink-headings` so those plugins still add ids to the (now nested) headings.
 
-[!NOTE]
-This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline.
+> [!NOTE]
+> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline.
 
 ## Install
 

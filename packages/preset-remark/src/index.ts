@@ -119,7 +119,6 @@ export const mirrordown = (
     remarkPlugins: [
       ...gfm,
       ...on(options.abbr, remarkAbbr),
-      ...configured(options.attrs, remarkAttrs),
       ...on(options.definitionList, remarkDefinitionList),
       ...on(options.del, remarkDel),
       ...configured(options.githubAlerts, remarkGithubAlerts),
@@ -131,7 +130,9 @@ export const mirrordown = (
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),
       ...on(options.sup, remarkSup),
-      ...configured(options.tabs, remarkTabs)
+      ...configured(options.tabs, remarkTabs),
+      // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
+      ...configured(options.attrs, remarkAttrs)
     ],
     rehypePlugins: [
       ...on(options.sectionize, rehypeSectionize),

@@ -4,6 +4,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { slug } from "../../packages/mdit-slug/src";
 import {
   autolinkHeadings,
@@ -14,6 +15,11 @@ import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions as RemdOptions
 } from "../../packages/remd-autolink-headings/src";
+import { satteriSlug } from "../../packages/sat-slug/src";
+import {
+  satteriAutolinkHeadings,
+  type AutolinkHeadingsOptions as SatOptions
+} from "../../packages/sat-autolink-headings/src";
 import { normalizeHtml } from "../utils/index.js";
 
 type Behavior = AutolinkHeadingsOptions["behavior"];
@@ -34,6 +40,14 @@ const renderRemd = (input: string, options: RemdOptions) =>
         .use(rehypeStringify)
         .processSync(input)
     )
+  );
+
+const renderSat = (input: string, options: SatOptions) =>
+  normalizeHtml(
+    markdownToHtml(input, {
+      features: { frontmatter: false, smartPunctuation: false },
+      hastPlugins: [satteriSlug(), satteriAutolinkHeadings(options)]
+    }).html
   );
 
 // Each behavior must produce the documented HTML AND be identical across engines.
@@ -69,6 +83,7 @@ describe("autolink-headings behaviors", () => {
   it.each(behaviorCases)("$name", ({ behavior, expected }) => {
     expect(renderMdit("## Title", { behavior })).toBe(expected);
     expect(renderRemd("## Title", { behavior })).toBe(expected);
+    expect(renderSat("## Title", { behavior })).toBe(expected);
   });
 
   // The mdit `class` option is a narrow override (it swaps the class but keeps
@@ -103,6 +118,17 @@ describe("autolink-headings: no id means no link", () => {
             .use(rehypeStringify)
             .processSync(input)
         )
+      )
+    ).toBe(expected);
+  });
+
+  it("sätteri", () => {
+    expect(
+      normalizeHtml(
+        markdownToHtml(input, {
+          features: { frontmatter: false },
+          hastPlugins: [satteriAutolinkHeadings()]
+        }).html
       )
     ).toBe(expected);
   });

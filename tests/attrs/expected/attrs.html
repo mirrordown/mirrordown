@@ -179,3 +179,154 @@
 <ul>
 <li><img src="x.png" alt="{.cls}"></li>
 </ul>
+
+<!-- @case: inline: text after the block stays -->
+<p>This is <strong class="warning">important</strong> text.</p>
+
+<!-- @case: inline: a link with text after the block -->
+<p>See <a href="/guide" target="_blank">the guide</a> first.</p>
+
+<!-- @case: inline: blocks that follow one another merge -->
+<p>Run <code class="cmd" id="install">npm i</code> to install.</p>
+
+<!-- @case: inline: a block after a space still ends the paragraph -->
+<p id="outer"><strong class="inner">bold</strong></p>
+
+<!-- @case: inline: nested elements -->
+<p><strong class="out">a <em class="in">b</em> c</strong> d</p>
+
+<!-- @case: inline: an element ending a heading takes the block -->
+<h1>Title with <strong class="mark">bold</strong></h1>
+
+<!-- @case: inline: an element ending a list item takes the block -->
+<ul>
+<li>item with <strong class="mark">bold</strong></li>
+</ul>
+
+<!-- @case: block: text before a block on the last line is not part of it -->
+<p id="y">para
+{.x}</p>
+
+<!-- @case: inline: an element ending a table cell takes the block -->
+<table>
+<thead>
+<tr>
+<th>a <strong class="mark">b</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>c</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: own line: a lazy line after a blockquote goes on the blockquote -->
+<blockquote class="c">
+<p>quote</p>
+</blockquote>
+
+<!-- @case: own line: a line in a blockquote goes on the paragraph -->
+<blockquote>
+<p class="x">para</p>
+</blockquote>
+
+<!-- @case: own line: a line in the outer of two blockquotes goes on the inner -->
+<blockquote>
+<blockquote class="x">
+<p>para</p>
+</blockquote>
+</blockquote>
+
+<!-- @case: own line: a lazy line after two blockquotes goes on the outer -->
+<blockquote class="x">
+<blockquote>
+<p>para</p>
+</blockquote>
+</blockquote>
+
+<!-- @case: own line: a line in a blockquote before more blocks goes on the paragraph -->
+<blockquote>
+<p class="x">para</p>
+<p>more</p>
+</blockquote>
+
+<!-- @case: own line: a line in a tight list item goes on the item -->
+<ul>
+<li class="x">a</li>
+</ul>
+
+<!-- @case: own line: a line in a loose list item goes on the paragraph -->
+<ul>
+<li>
+<p>a</p>
+<p class="x">para</p>
+</li>
+</ul>
+
+<!-- @case: own line: a lazy line after a loose list item goes on the list -->
+<ul class="x">
+<li>
+<p>a</p>
+<p>para</p>
+</li>
+</ul>
+
+<!-- @case: own line: nested lists take the block by indentation -->
+<ul>
+<li class="a">item 1
+<ul class="c">
+<li class="b">nested item
+<ol class="e">
+<li class="d">nested nested item</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: own line: a paragraph of its own goes on the outer list -->
+<ul class="blue">
+<li>item
+<ul class="red">
+<li>nested</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: own line: a lazy line after a list in a blockquote goes on the list -->
+<blockquote>
+<ul class="x">
+<li>a</li>
+</ul>
+</blockquote>
+
+<!-- @case: own line: a line in a list item in a blockquote goes on the item -->
+<blockquote>
+<ul>
+<li class="x">a</li>
+</ul>
+</blockquote>
+
+<!-- @case: own line: a line in a blockquote in a list item goes on the paragraph -->
+<ul>
+<li>a
+<blockquote>
+<p class="x">q</p>
+</blockquote>
+</li>
+</ul>
+
+<!-- @case: own line: a lazy line after a blockquote in a list item goes on the blockquote -->
+<ul>
+<li>a
+<blockquote class="x">
+<p>q</p>
+</blockquote>
+</li>
+</ul>
+
+<!-- @case: own line: a line in an ordered list item goes on the item -->
+<ol>
+<li class="x">a</li>
+</ol>

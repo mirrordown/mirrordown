@@ -91,7 +91,7 @@ export function del(md: MDit): void {
 
       if (
         state.tokens[endDelim.token - 1].type === `text` &&
-        state.tokens[endDelim.token - 1].content === `+`
+        state.tokens[endDelim.token - 1].content === `-`
       ) {
         loneMarkers.push(endDelim.token - 1);
       }

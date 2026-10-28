@@ -5,11 +5,14 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { tabs } from "../../packages/mdit-tabs/src";
 import { steps } from "../../packages/mdit-steps/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
 import { normalizeHtml } from "../utils/index.js";
+import { satteriSteps } from "../../packages/sat-steps/src";
+import { satteriTabs } from "../../packages/sat-tabs/src";
 
 const md = new MarkdownIt().use(steps).use(tabs);
 
@@ -27,6 +30,15 @@ const remd = (src: string) =>
         .use(rehypeStringify, { allowDangerousHtml: true })
         .processSync(src)
     )
+  );
+
+// The same plugins in Sätteri, in the same order.
+const sat = (src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { gfm: true, frontmatter: false, smartPunctuation: false },
+      mdastPlugins: [satteriSteps(), satteriTabs()]
+    }).html
   );
 
 // ── Flat steps inside a tab body ──────────────────────────────────────────────
@@ -82,6 +94,14 @@ describe("tabs + steps: flat steps inside a single tab body", () => {
     expect(result).toContain('data-step="2"');
     expect(result).toContain('data-step="3"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Multiple tabs each containing steps ───────────────────────────────────────
@@ -132,6 +152,14 @@ describe("tabs + steps: multiple tabs each containing steps", () => {
     expect(result).toContain('data-step="1"');
     expect(result).toContain('data-step="2"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Nested steps (@@) inside a tab body ───────────────────────────────────────
@@ -181,6 +209,14 @@ describe("tabs + steps: nested steps inside a tab body", () => {
     expect(result).toContain('class="markdown-tabs"');
     expect(result).toContain('class="markdown-steps"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Nested tabs (Demo/Code pattern) containing steps ─────────────────────────
@@ -219,6 +255,14 @@ describe("tabs + steps: Demo/Code tab pair wrapping steps syntax", () => {
     expect(result).toContain("@1.");
     // The @1. in the code fence should not produce a second step list
     expect(result.match(/class="markdown-steps"/g)?.length).toBe(1);
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
 
@@ -260,6 +304,14 @@ describe("tabs + steps: nested tabs alongside steps within the same tab body", (
     expect(result).toContain('aria-label="React"');
     expect(result).toContain('aria-label="Vue"');
   });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
 });
 
 // ── Steps and tabs adjacent at the root level ─────────────────────────────────
@@ -287,5 +339,41 @@ describe("tabs + steps: steps and tabs adjacent at the root level", () => {
     const result = normalizeHtml(md.render(input));
     expect(result).toContain('class="markdown-steps"');
     expect(result).toContain('class="markdown-tabs"');
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
+  });
+});
+
+// Tabs end a group at a blank line by reading source positions, so they must survive steps rebuilding the tree before tabs run.
+describe("tabs + steps: tab groups after steps stay separate at a blank line", () => {
+  const input = `@1. Build
+> Run the build.
+
+% One
+> First.
+
+% Two
+> Second.`;
+
+  it.each([
+    ["markdown-it", (src: string) => normalizeHtml(md.render(src))],
+    ["remark", remd],
+    ["Sätteri", sat]
+  ])("%s", (_, render) => {
+    expect(render(input).match(/<div class="markdown-tabs"/g)).toHaveLength(2);
+  });
+
+  it("renders in Sätteri what remark does", () => {
+    expect(sat(input)).toBe(remd(input));
+  });
+
+  it("renders in markdown-it what remark does", () => {
+    expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });

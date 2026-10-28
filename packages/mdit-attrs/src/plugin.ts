@@ -39,7 +39,13 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
         });
 
         if (match) {
-          const modified = pattern.transform(tokens, index, position!, range!);
+          const modified = pattern.transform(
+            tokens,
+            index,
+            position!,
+            range!,
+            state.src
+          );
 
           if (
             modified !== false &&

@@ -360,6 +360,27 @@ function innermostContainerContinued(
   return continued >= needed.length;
 }
 
+// Whether the content token at `index` (a single line, such as a row GFM tables
+// try) continues a line of content directly above it, with no blank line between:
+// then it is the last line of a longer paragraph, not a term.
+function continuesLineAbove(
+  flowEvents: EventTuple[],
+  index: number,
+  flowStart: Token
+): boolean {
+  const line = flowEvents[index][1].start.line;
+  for (let i = index - 1; i >= 0; i--) {
+    const token = flowEvents[i][1];
+    if (token.start.offset < flowStart.start.offset) return false;
+    if (token.type === "lineEndingBlank") return false;
+    // The term's own line (a row's cells), and line endings, come first.
+    if (token.start.line >= line || skippableFlowTypes.has(token.type))
+      continue;
+    return token.end.line === line - 1;
+  }
+  return false;
+}
+
 function checkPossibleDefTerm(events: EventTuple[]): boolean {
   if (events.length <= 1) return false;
 
@@ -408,6 +429,15 @@ function checkPossibleDefTerm(events: EventTuple[]): boolean {
       }
       if (!skippableFlowTypes.has(tmpToken.type)) {
         if (flagBlockQuote && !lazyLines[tmpToken.end.line]) return false;
+        // A term fits on one line (Pandoc): after a paragraph of several lines the
+        // marker line continues that paragraph instead.
+        const multiline =
+          tmpToken.type === "paragraph"
+            ? tmpToken.start.line !== tmpToken.end.line
+            : tmpToken.type === "chunkContent"
+              ? (tmpToken as FlowToken).previous != null
+              : continuesLineAbove(flowEvents, i, termFlowStart[1]);
+        if (multiline) return false;
         return validTermTypes.has(tmpToken.type);
       }
     }

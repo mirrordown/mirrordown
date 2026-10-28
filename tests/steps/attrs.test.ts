@@ -4,10 +4,12 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { steps } from "../../packages/mdit-steps/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
+import { satteriSteps } from "../../packages/sat-steps/src";
 import { normalizeHtml } from "../utils/index.js";
 
 const md = new MarkdownIt().use(steps).use(attrs);
@@ -187,5 +189,45 @@ describe("steps + attrs: attrs on standard ordered list adjacent to step block a
     expect(result).toContain('id="step-list"');
     expect(result).toContain('class="my-list"');
     expect(result).not.toMatch(/class="markdown-steps my-list"/);
+  });
+});
+
+// A block on a line of its own in a step's body goes on the block it's written after, inside the body, whose `>` makes the step. A header lazily continuing the body's last paragraph doesn't change that.
+describe("steps + attrs: a block on a line of its own in a body", () => {
+  const body = (html: string) =>
+    /<div class="markdown-steps-body">(.*?)<\/div>/s.exec(html)?.[1];
+  const cases: [string, string, string][] = [
+    [
+      "goes on the paragraph",
+      "@1. Step\n>  para\n>  {.x}",
+      '<p class="x">para</p>'
+    ],
+    [
+      "goes on the paragraph a header continues",
+      "@1. Step\n>  para\n>  {.x}\n@1. Two\n>  b",
+      '<p class="x">para</p>'
+    ],
+    [
+      "after a list, goes on the list",
+      "@1. Step\n>  - a\n>  {.x}",
+      '<ul class="x"><li>a</li></ul>'
+    ]
+  ];
+
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(body(normalizeHtml(md.render(input)))).toBe(expected);
+  });
+
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(body(remd(input))).toBe(expected);
+  });
+
+  // Sätteri reads attribute blocks itself, before plugins run; the plugin places those a header hid.
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    const html = markdownToHtml(input, {
+      features: { attributes: true },
+      mdastPlugins: [satteriSteps()]
+    }).html;
+    expect(body(normalizeHtml(html))).toBe(expected);
   });
 });

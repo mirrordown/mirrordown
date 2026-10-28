@@ -1,6 +1,6 @@
 # @mirrordown/mdit-unwrap-images
 
-> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
+> Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified, markdown-it and Sätteri ecosystems.
 
 A markdown-it plugin for the `unwrap-images` syntax extension.
 
@@ -30,8 +30,8 @@ Images mixed with text are **not** unwrapped:
 Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
 ````
 
-[!NOTE]
-This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline.
+> [!NOTE]
+> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline.
 
 ## Install
 

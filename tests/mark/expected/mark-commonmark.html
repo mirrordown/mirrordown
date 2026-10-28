@@ -73,3 +73,15 @@
 
 <!-- @case: escaped backslash keeps the delimiter -->
 <p>\<mark>text</mark></p>
+
+<!-- @case: an odd-length run leaves its extra marker outside the span -->
+<p>=<mark>a</mark>=</p>
+
+<!-- @case: a closer pairs with the nearest opener -->
+<p>==a <mark>b</mark></p>
+
+<!-- @case: spans nest -->
+<p><mark>a <mark>b</mark> c</mark></p>
+
+<!-- @case: a run between spaces neither opens nor closes -->
+<p><mark>a === b</mark></p>

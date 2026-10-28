@@ -85,3 +85,29 @@ Wrap text in double plus signs to mark it as inserted:
 >   },
 > });
 > ```
+% Sätteri
+> ```sh
+> npm install @mirrordown/sat-ins
+> ```
+%% Standalone
+> ```ts
+> import { markdownToHtml } from "satteri";
+> import { satteriIns } from "@mirrordown/sat-ins";
+>
+> const { html } = markdownToHtml(source, {
+>   mdastPlugins: [satteriIns()],
+> });
+> ```
+%% Astro
+> ```ts
+> // astro.config.ts
+> import { defineConfig } from "astro/config";
+> import { satteri } from "@astrojs/markdown-satteri";
+> import { satteriIns } from "@mirrordown/sat-ins";
+>
+> export default defineConfig({
+>   markdown: {
+>     processor: satteri({ mdastPlugins: [satteriIns()] }),
+>   },
+> });
+> ```
