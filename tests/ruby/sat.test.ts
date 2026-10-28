@@ -29,7 +29,7 @@ const htmlCases = parseFixture(
   read("expected/ruby-html.html")
 );
 
-// The plugin re-parses with the features it is given, so it gets the document's own.
+// The plugin re-parses a ruby's base and reading with the document's features, read from the plugin context, so GFM on or off in the document decides how they parse.
 const render = (input: string, gfm: boolean): string => {
   const features: Features = {
     gfm,
@@ -39,7 +39,7 @@ const render = (input: string, gfm: boolean): string => {
   return normalizeHtml(
     markdownToHtml(input, {
       features,
-      mdastPlugins: [satteriRuby({ features })]
+      mdastPlugins: [satteriRuby()]
     }).html
   );
 };

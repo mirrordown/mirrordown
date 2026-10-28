@@ -16,7 +16,7 @@ export interface RubyOptions {
   /** Fallback parenthesis characters emitted as `<rp>` for browsers without ruby support. */
   rp?: [string, string];
   /**
-   * The Sätteri features the document is compiled with. A ruby's base and reading are parsed on their own, and plugins can't read the document's features, so pass the same ones (the preset does) to parse them alike. Default: GFM on.
+   * The features to parse a ruby's base and reading with, over the document's. They're parsed on their own, with the document's features, which Sätteri 0.11.3 and later tell plugins; with an older Sätteri, pass the features you compile with (the preset does).
    */
   features?: Features;
 }
@@ -90,10 +90,10 @@ const findSpans = (
  */
 export const satteriRuby =
   (options: RubyOptions = {}): ((ctx: PluginFactoryContext) => RubyPlugin) =>
-  ({ source }) => {
+  ({ source, features }) => {
     const { rp } = options;
     const parse = {
-      features: { gfm: true, ...options.features, frontmatter: false }
+      features: { ...features, ...options.features, frontmatter: false }
     };
     // The children of `text` parsed on its own, with the document's features.
     const parseChildren = (text: string): readonly MdastTarget[] => {
