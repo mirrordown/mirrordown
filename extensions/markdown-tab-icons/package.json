@@ -1,7 +1,7 @@
 {
   "name": "markdown-tab-icons",
   "displayName": "Markdown Tab Icons",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Adds icons to tab labels in VSCode's markdown preview, matched from the label (npm, pnpm, vite.config.ts) or named with a [!keyword] marker",
   "categories": [
     "Other"
