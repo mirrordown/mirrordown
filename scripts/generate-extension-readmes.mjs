@@ -23,6 +23,7 @@ const EXTENSIONS = [
   ["markdown-abbr", "abbr"],
   ["markdown-attrs", "attrs"],
   ["markdown-autolink-headings", "autolink-headings"],
+  ["markdown-caption", "caption"],
   ["markdown-definition-list", "definition-list"],
   ["markdown-del", "del"],
   ["markdown-denden-furigana", "ruby"],

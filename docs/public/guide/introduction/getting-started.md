@@ -19,7 +19,7 @@ The plugins are designed to work with [Astro](https://astro.build), [VitePress](
 Standard CommonMark and GitHub Flavored Markdown cover the basics, but technical documentation often needs more:
 
 - **Inline semantics** — strikethrough (`del`), insertion (`ins`), keyboard keys (`kbd`), highlighted text (`mark`), ruby annotations, abbreviations
-- **Rich blocks** — tabbed content for multi-language examples, numbered step sequences, GitHub-style callout alerts, Mermaid diagrams rendered to SVG at build time
+- **Rich blocks** — tabbed content for multi-language examples, numbered step sequences, GitHub-style callout alerts, Mermaid diagrams rendered to SVG at build time, captions for any block
 - **Structural helpers** — definition lists, attribute passthrough, image unwrapping for proper figure markup
 
 Rather than pulling in a monolithic documentation framework, these plugins compose cleanly with your existing markdown pipeline.

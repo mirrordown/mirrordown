@@ -27,6 +27,7 @@
     "@mirrordown/mdit-abbr": "workspace:^",
     "@mirrordown/mdit-attrs": "workspace:^",
     "@mirrordown/mdit-autolink-headings": "workspace:^",
+    "@mirrordown/mdit-caption": "workspace:^",
     "@mirrordown/mdit-definition-list": "workspace:^",
     "@mirrordown/mdit-del": "workspace:^",
     "@mirrordown/mdit-github-alerts": "workspace:^",

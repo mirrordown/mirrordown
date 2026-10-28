@@ -1,0 +1,91 @@
+<!-- @case: table: the caption row is the caption -->
+
+<figure class="markdown-caption">
+<table>
+<thead>
+<tr>
+<th>head1</th>
+<th>head2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bla</td>
+<td>bla</td>
+</tr>
+</tbody>
+</table>
+<figcaption>A table caption</figcaption>
+</figure>
+
+<!-- @case: table: the caption runs to the end of the table -->
+
+<figure class="markdown-caption">
+<table>
+<thead>
+<tr>
+<th>head1</th>
+<th>head2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bla</td>
+<td>bla</td>
+</tr>
+</tbody>
+</table>
+<figcaption>The first line of the caption,
+and the second.</figcaption>
+</figure>
+
+<!-- @case: table: the caption holds inline markdown -->
+
+<figure class="markdown-caption">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>one</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<figcaption>Values, <em>rounded</em></figcaption>
+</figure>
+
+<!-- @case: table: a caption with only a header -->
+
+<figure class="markdown-caption">
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+</tr>
+</thead>
+</table>
+<figcaption>Just the header</figcaption>
+</figure>
+
+<!-- @case: table: a row starting with the marker in a cell isn't a caption -->
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>~: one</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>

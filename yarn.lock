@@ -1148,6 +1148,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-caption@workspace:*, @mirrordown/mdit-caption@workspace:^, @mirrordown/mdit-caption@workspace:packages/mdit-caption":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-caption@workspace:packages/mdit-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-definition-list@workspace:*, @mirrordown/mdit-definition-list@workspace:^, @mirrordown/mdit-definition-list@workspace:packages/mdit-definition-list":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-definition-list@workspace:packages/mdit-definition-list"
@@ -1370,6 +1382,7 @@ __metadata:
     "@mirrordown/mdit-abbr": "workspace:^"
     "@mirrordown/mdit-attrs": "workspace:^"
     "@mirrordown/mdit-autolink-headings": "workspace:^"
+    "@mirrordown/mdit-caption": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
     "@mirrordown/mdit-del": "workspace:^"
     "@mirrordown/mdit-github-alerts": "workspace:^"
@@ -1402,6 +1415,7 @@ __metadata:
     "@mirrordown/remd-abbr": "workspace:^"
     "@mirrordown/remd-attrs": "workspace:^"
     "@mirrordown/remd-autolink-headings": "workspace:^"
+    "@mirrordown/remd-caption": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
     "@mirrordown/remd-del": "workspace:^"
     "@mirrordown/remd-github-alerts": "workspace:^"
@@ -1436,6 +1450,7 @@ __metadata:
   dependencies:
     "@mirrordown/sat-abbr": "workspace:^"
     "@mirrordown/sat-autolink-headings": "workspace:^"
+    "@mirrordown/sat-caption": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
     "@mirrordown/sat-ins": "workspace:^"
@@ -1492,6 +1507,20 @@ __metadata:
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-caption@workspace:^, @mirrordown/remd-caption@workspace:packages/remd-caption":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-caption@workspace:packages/remd-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    unified: "catalog:"
+    vfile: "npm:^6.0.3"
+  peerDependencies:
+    unified: ^11.0.0
+    vfile: ^6.0.0
   languageName: unknown
   linkType: soft
 
@@ -1770,6 +1799,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-autolink-headings@workspace:packages/sat-autolink-headings"
   dependencies:
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5 || ^0.11.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-caption@workspace:^, @mirrordown/sat-caption@workspace:packages/sat-caption":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-caption@workspace:packages/sat-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5 || ^0.11.0
@@ -5825,6 +5865,16 @@ __metadata:
   dependencies:
     "@mirrordown/mdit-autolink-headings": "workspace:*"
     "@mirrordown/mdit-slug": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-caption@workspace:extensions/markdown-caption":
+  version: 0.0.0-use.local
+  resolution: "markdown-caption@workspace:extensions/markdown-caption"
+  dependencies:
+    "@mirrordown/mdit-caption": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

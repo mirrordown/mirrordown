@@ -23,6 +23,7 @@
   "dependencies": {
     "@mirrordown/sat-abbr": "workspace:^",
     "@mirrordown/sat-autolink-headings": "workspace:^",
+    "@mirrordown/sat-caption": "workspace:^",
     "@mirrordown/sat-del": "workspace:^",
     "@mirrordown/sat-github-alerts": "workspace:^",
     "@mirrordown/sat-ins": "workspace:^",

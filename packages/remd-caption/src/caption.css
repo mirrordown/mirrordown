@@ -1,0 +1,23 @@
+/*
+  Captions — default stylesheet
+  -----------------------------
+  All rules live inside @layer markdown-caption so any unlayered consumer CSS
+  overrides them without needing !important.
+
+  A captioned block is wrapped in `<figure class="markdown-caption">`, with its
+  `<figcaption>` last. Browsers indent a figure by 40px on each side, which
+  would narrow the tables, code and lists it holds, so the indent is removed.
+*/
+
+@layer markdown-caption {
+  .markdown-caption {
+    margin-inline: 0;
+    margin-block: 1em;
+  }
+
+  .markdown-caption > figcaption {
+    margin-block-start: 0.5em;
+    font-size: 0.875em;
+    color: color-mix(in oklab, currentColor 70%, transparent);
+  }
+}

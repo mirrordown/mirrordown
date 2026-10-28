@@ -1,0 +1,43 @@
+{
+  "name": "@mirrordown/sat-caption",
+  "description": "A Sätteri plugin to caption any block with a ~: line after it, wrapping it in <figure> with a <figcaption>.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./*.css": "./dist/*.css"
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
+  },
+  "devDependencies": {
+    "satteri": "catalog:"
+  },
+  "peerDependencies": {
+    "satteri": "^0.10.5 || ^0.11.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}

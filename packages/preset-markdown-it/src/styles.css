@@ -1,5 +1,6 @@
 /* Every Mirrordown markdown-it plugin's stylesheet, so one import styles the whole suite. */
 @import "@mirrordown/mdit-autolink-headings/styles";
+@import "@mirrordown/mdit-caption/styles";
 @import "@mirrordown/mdit-github-alerts/styles";
 @import "@mirrordown/mdit-lightbox/styles";
 @import "@mirrordown/mdit-mermaid-pele/styles";

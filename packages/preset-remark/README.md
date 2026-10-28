@@ -58,7 +58,7 @@ const processor = unified()
 
 ### Styles
 
-Tabs, steps, alerts, spoilers, the lightbox, heading anchors and diagrams ship stylesheets. Import them all at once:
+Tabs, steps, alerts, spoilers, the lightbox, heading anchors, captions and diagrams ship stylesheets. Import them all at once:
 
 ```ts
 import "@mirrordown/preset-remark/styles.css";
@@ -82,6 +82,7 @@ mirrordown({
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/remd-abbr`               |
 | `attrs`             | `{.class #id}`                              | `@mirrordown/remd-attrs`              |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/remd-autolink-headings`  |
+| `caption`           | `~: caption` after a block                  | `@mirrordown/remd-caption`            |
 | `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/remd-definition-list`    |
 | `del`               | `--deleted--`                               | `@mirrordown/remd-del`                |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/remd-github-alerts`      |
