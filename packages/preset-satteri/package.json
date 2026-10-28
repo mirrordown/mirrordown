@@ -42,7 +42,7 @@
     "satteri": "catalog:"
   },
   "peerDependencies": {
-    "satteri": "^0.10.5"
+    "satteri": "^0.10.5 || ^0.11.0"
   },
   "engines": {
     "node": ">=24.0.0"
