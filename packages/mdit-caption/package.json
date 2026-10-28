@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/mdit-caption",
   "description": "A markdown-it plugin to caption any block with a ~: line after it, wrapping it in <figure> with a <figcaption>.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

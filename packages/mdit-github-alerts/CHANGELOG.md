@@ -4,6 +4,13 @@
 
 
 
+
+## 0.2.1
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  The alert's container and title tokens now carry the levels markdown-it's own tokens would, so plugins that walk tokens by level read the alert's structure.
+
 ## 0.2.0
 <sub>2026-10-28</sub>
 

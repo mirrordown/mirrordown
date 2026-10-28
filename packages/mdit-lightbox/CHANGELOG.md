@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 0.2.0
+<sub>2026-10-28</sub>
+
+- *(minor)*
+  Captioned lightbox images: a lightbox image (`!![alt](src)`) followed by a `~:` caption is now the figure's content, so its trigger sits directly in the `<figure>` without unwrap-images. The lightbox plugins take a `caption` option (off by default) that shows a captioned image's caption under it in the dialog; repeated images share one dialog, which shows the first caption any of them has. The presets pass lightbox options through (`lightbox: { caption: true }`). The lightbox READMEs are now generated from its guide.
+
 ## 0.1.0
 <sub>2026-06-29</sub>
 

@@ -7,6 +7,14 @@
 
 
 
+
+## 0.1.8
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Add Markdown Mermaid Diagrams (Pele) to the bundled extensions, so installing the pack now also renders ` ```mermaid ` code blocks as diagrams in the preview.
+- *(patch)* Add Markdown Captions to the bundled extensions, so installing the pack now also renders `~:` captions in the preview.
+
 ## 0.1.7
 <sub>2026-10-28</sub>
 

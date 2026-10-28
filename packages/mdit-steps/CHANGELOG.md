@@ -4,6 +4,13 @@
 
 
 
+
+## 0.1.5
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  An alert (`> [!NOTE]`) after a step, with a blank line between, is now a block of its own after the steps in every engine, whether or not the alerts plugin reads it. A plain quote there still continues the last step's body. markdown-it took the alert into the body as text, and remark into the body without its title.
+
 ## 0.1.4
 <sub>2026-10-28</sub>
 
