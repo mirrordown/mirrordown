@@ -4,6 +4,13 @@
 
 
 
+
+## 0.2.1
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  The rule for which blocks a line of its own is written in now comes from `@mirrordown/core`, shared with the caption plugins, instead of a copy in each package.
+
 ## 0.2.0
 <sub>2026-10-28</sub>
 

@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/mdit-lightbox",
   "description": "A markdown-it plugin to opt an image into a JavaScript-free <dialog> lightbox with a leading !! (zoom on click).",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

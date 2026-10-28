@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/mdit-steps",
   "description": "A markdown-it plugin for numbered step sequences, rendering ordered step lists.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

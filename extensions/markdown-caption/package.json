@@ -1,7 +1,7 @@
 {
   "name": "markdown-caption",
   "displayName": "Markdown Captions",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Adds ~: captions for any block (images, quotes, code, tables, lists) to VSCode's markdown preview, as <figure> and <figcaption>",
   "categories": [
     "Other"
