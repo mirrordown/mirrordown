@@ -15,6 +15,7 @@ import {
   blockquoteMarkers,
   linesToParagraph,
   markerCount,
+  paragraphProperties,
   paraToLines,
   rebuildLazyLines,
   type MarkedLine
@@ -77,6 +78,8 @@ interface RawStep {
   number: number;
   titleNodes: PhrasingContent[];
   body: Array<BlockContent | DefinitionContent>;
+  // Attributes the parser read off the end of the header's paragraph, when the header ended it (Sätteri).
+  hProperties?: Properties | undefined;
 }
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
@@ -133,7 +136,15 @@ const extractHeaderPara = (
       ? [{ type: "text", value: header.rest }, ...lineSegs.slice(1)]
       : lineSegs.slice(1);
 
-    steps.push({ depth, number, titleNodes, body: [] });
+    steps.push({
+      depth,
+      number,
+      titleNodes,
+      body: [],
+      ...(index === lines.length - 1
+        ? { hProperties: paragraphProperties(para) }
+        : {})
+    });
   }
 
   return stop(lines.length);
@@ -242,7 +253,8 @@ const splitBlockquote = (
 
   const startStep = (
     header: ParsedHeader,
-    lineSegs: PhrasingContent[]
+    lineSegs: PhrasingContent[],
+    hProperties?: Properties
   ): void => {
     segments.push(currentSegment);
 
@@ -257,7 +269,7 @@ const splitBlockquote = (
       : lineSegs.slice(1);
 
     currentSegment = {
-      header: { depth: header.depth, number, titleNodes },
+      header: { depth: header.depth, number, titleNodes, hProperties },
       body: []
     };
   };
@@ -297,14 +309,19 @@ const splitBlockquote = (
     }
 
     let bodyLines: PhrasingContent[][] = [];
-    for (const lineSegs of paraToLines(child, sourceLines)) {
+    const lines = paraToLines(child, sourceLines);
+    for (const [index, lineSegs] of lines.entries()) {
       const header = stepHeader(lineSegs);
       if (header) {
         // Flush accumulated body lines
         const bodyPara = linesToParagraph(bodyLines);
         if (bodyPara) currentSegment.body.push(bodyPara);
         bodyLines = [];
-        startStep(header, lineSegs);
+        startStep(
+          header,
+          lineSegs,
+          index === lines.length - 1 ? paragraphProperties(child) : undefined
+        );
         continue;
       }
       bodyLines.push(lineSegs);
@@ -361,7 +378,11 @@ const buildTree = (
       depth: targetDepth,
       number: s.number,
       children: bodyChildren,
-      data: { attrsRole: "containerItem", attrsTitle: s.titleNodes }
+      data: {
+        attrsRole: "containerItem",
+        attrsTitle: s.titleNodes,
+        ...(s.hProperties ? { hProperties: { ...s.hProperties } } : {})
+      }
     });
 
     i = childEnd;

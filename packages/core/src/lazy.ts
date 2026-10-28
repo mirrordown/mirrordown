@@ -7,6 +7,7 @@ import type {
   PhrasingContent,
   Text
 } from "mdast";
+import type { Properties } from "hast";
 import { rebuiltParagraphs } from "./cut-attributes.js";
 
 /** The `>` markers a source line starts with. */
@@ -79,6 +80,14 @@ export const paraToLines = (
     }
   }
   return lines;
+};
+
+/** The attributes a paragraph carries, which a parser that reads attribute blocks before recognition (Sätteri) read off its end: they belong to its last line. */
+export const paragraphProperties = (
+  para: Paragraph
+): Properties | undefined => {
+  const data: { hProperties?: Properties } | undefined = para.data;
+  return data?.hProperties;
 };
 
 /** Appends `node` to `children`, merging text into the text before it, as remark keeps a run of text in one node. */

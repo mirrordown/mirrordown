@@ -5,7 +5,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { markdownToHtml, type Features } from "satteri";
+import { markdownToHtml } from "satteri";
 import { tabs } from "../../packages/mdit-tabs/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
@@ -231,20 +231,12 @@ describe("tabs + attrs: a block on a line of its own in a panel", () => {
     expect(panel(remd(input))).toBe(expected);
   });
 
-  // Sätteri reads attribute blocks itself, before plugins run, in versions with the `attributes` feature; the plugin places those a header hid.
-  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
-  const features = { attributes: true } as Features;
-  const satteriReadsAttributes = markdownToHtml("a {.x}", {
-    features
-  }).html.includes('class="x"');
-  it.skipIf(!satteriReadsAttributes).each(cases)(
-    "%s (sätteri)",
-    (_, input, expected) => {
-      const html = markdownToHtml(input, {
-        features,
-        mdastPlugins: [satteriTabs()]
-      }).html;
-      expect(panel(normalizeHtml(html))).toBe(expected);
-    }
-  );
+  // Sätteri reads attribute blocks itself, before plugins run; the plugin places those a header hid.
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    const html = markdownToHtml(input, {
+      features: { attributes: true },
+      mdastPlugins: [satteriTabs()]
+    }).html;
+    expect(panel(normalizeHtml(html))).toBe(expected);
+  });
 });

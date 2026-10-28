@@ -4,7 +4,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { markdownToHtml, type Features } from "satteri";
+import { markdownToHtml } from "satteri";
 import { steps } from "../../packages/mdit-steps/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
@@ -222,20 +222,12 @@ describe("steps + attrs: a block on a line of its own in a body", () => {
     expect(body(remd(input))).toBe(expected);
   });
 
-  // Sätteri reads attribute blocks itself, before plugins run, in versions with the `attributes` feature; the plugin places those a header hid.
-  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
-  const features = { attributes: true } as Features;
-  const satteriReadsAttributes = markdownToHtml("a {.x}", {
-    features
-  }).html.includes('class="x"');
-  it.skipIf(!satteriReadsAttributes).each(cases)(
-    "%s (sätteri)",
-    (_, input, expected) => {
-      const html = markdownToHtml(input, {
-        features,
-        mdastPlugins: [satteriSteps()]
-      }).html;
-      expect(body(normalizeHtml(html))).toBe(expected);
-    }
-  );
+  // Sätteri reads attribute blocks itself, before plugins run; the plugin places those a header hid.
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    const html = markdownToHtml(input, {
+      features: { attributes: true },
+      mdastPlugins: [satteriSteps()]
+    }).html;
+    expect(body(normalizeHtml(html))).toBe(expected);
+  });
 });

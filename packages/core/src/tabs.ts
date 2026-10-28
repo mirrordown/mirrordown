@@ -16,6 +16,7 @@ import {
   blockquoteMarkers,
   linesToParagraph,
   markerCount,
+  paragraphProperties,
   paraToLines,
   rebuildLazyLines,
   type MarkedLine
@@ -118,6 +119,8 @@ interface RawTab {
   body: Array<BlockContent | DefinitionContent>; // blockquote contents
   // Content after the tab's nested groups: headers in its explicit `> %` body that skip a level, kept as written.
   after?: Array<BlockContent | DefinitionContent>;
+  // Attributes the parser read off the end of the header's paragraph, when the header ended it (Sätteri).
+  hProperties?: Properties | undefined;
 }
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
@@ -180,7 +183,10 @@ const extractHeaderPara = (
       open,
       labelNodes,
       labelText: tabLabelText(labelNodes),
-      body: []
+      body: [],
+      ...(index === lines.length - 1
+        ? { hProperties: paragraphProperties(para) }
+        : {})
     });
   }
 
@@ -312,7 +318,10 @@ const extractTrailingTabHeader = (
         open: header.open,
         labelNodes,
         labelText: tabLabelText(labelNodes),
-        body: []
+        body: [],
+        ...(at === lines.length - 1
+          ? { hProperties: paragraphProperties(last) }
+          : {})
       };
       const truncatedPara = linesToParagraph(lines.slice(0, at));
       return {
@@ -351,7 +360,7 @@ const splitBlockquote = (
   const splitLines = (
     lines: PhrasingContent[][],
     markersOf?: (index: number) => number,
-    data?: Paragraph["data"]
+    para?: Paragraph
   ): void => {
     let bodyLines: PhrasingContent[][] = [];
 
@@ -381,7 +390,10 @@ const splitBlockquote = (
               open: header.open,
               labelNodes,
               labelText: tabLabelText(labelNodes),
-              body: []
+              body: [],
+              ...(para && index === lines.length - 1
+                ? { hProperties: paragraphProperties(para) }
+                : {})
             },
             body: [],
             explicit,
@@ -405,7 +417,7 @@ const splitBlockquote = (
     // data: attributes the parser read from its end (Sätteri's run before tabs).
     if (bodyLines.length > 0) {
       const bodyPara = linesToParagraph(bodyLines);
-      if (bodyPara && data) bodyPara.data = data;
+      if (bodyPara && para?.data) bodyPara.data = para.data;
       if (bodyPara) currentSegment.body.push(bodyPara);
     }
   };
@@ -472,7 +484,7 @@ const splitBlockquote = (
       sourceLines && start !== undefined
         ? (index): number => markerCount(sourceLines[start - 1 + index] ?? "")
         : undefined,
-      child.data
+      child
     );
   }
 
@@ -597,7 +609,7 @@ const buildTree = (
         attrsRole: "containerItem",
         attrsTitle: raw.labelNodes,
         attrsItemTitle: true,
-        hProperties: {}
+        hProperties: { ...raw.hProperties }
       }
     });
 

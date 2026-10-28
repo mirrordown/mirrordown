@@ -28,10 +28,8 @@ type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
 // An attribute block as Sätteri reads one after text: the properties it gives the paragraph, if all of it is one.
 const readAttributes: ReadAttributes = (block) => {
   const root = markdownToMdast(`x ${block}`, {
-    // Published Sätteri versions without `attributes` don't type it; they never get here.
-    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
-    features: { attributes: true } as Features
-  }) as unknown as Root;
+    features: { attributes: true }
+  });
   const para = root.children[0];
   const text = para?.type === `paragraph` ? para.children : [];
   return text.length === 1 && text[0]?.type === `text` && text[0].value === `x`
@@ -85,12 +83,10 @@ const element = (
  */
 export const satteriTabs =
   (options: TabsOptions = {}): ((ctx: PluginFactoryContext) => TabsPlugin) =>
-  (factory) => {
-    const { source } = factory;
-    // Sätteri reads attribute blocks before plugins run; the document's features say whether it does (Sätteri versions that expose them).
+  ({ source, features }) => {
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on. Sätteri before 0.11.3 passes no features (and reads no blocks).
     const attributes =
-      (factory as { features?: { attributes?: boolean } }).features
-        ?.attributes === true;
+      (features as Partial<Features> | undefined)?.attributes === true;
     const { containerClass = `markdown-tabs` } = options;
 
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).

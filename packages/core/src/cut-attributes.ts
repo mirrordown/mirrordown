@@ -11,6 +11,15 @@ export type ReadAttributes = (block: string) => Properties | undefined;
 type Node = Root | RootContent;
 type Parent = Extract<Node, { children: unknown }>;
 
+/** A tab or step item recognition built, whose title nodes it shares with its label. */
+interface TitledItem {
+  data: {
+    attrsRole: string;
+    attrsTitle: PhrasingContent[];
+    hProperties?: Properties;
+  };
+}
+
 /** Joins `added` into `properties`: classes accumulate, other attributes replace. */
 const mergeProperties = (
   properties: Properties | undefined,
@@ -43,9 +52,22 @@ export const placeCutAttributes = (
 ): void => {
   const parents = new Map<Node, Parent>();
   const cut: Paragraph[] = [];
+  const items: TitledItem[] = [];
   const walk = (node: Node): void => {
     if (node.type === "paragraph" && rebuiltParagraphs.has(node))
       cut.push(node);
+    const data: unknown = node.data;
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "attrsRole" in data &&
+      data.attrsRole === "containerItem" &&
+      "attrsTitle" in data &&
+      Array.isArray(data.attrsTitle)
+    )
+      // Recognition's own item nodes, which mdast's types don't name.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      items.push(node as unknown as TitledItem);
     if (!("children" in node)) return;
     for (const child of node.children) {
       parents.set(child, node);
@@ -121,5 +143,23 @@ export const placeCutAttributes = (
       : value.slice(0, lineStart + 1) + before;
     if (kept.trimEnd() === "") children.pop();
     else last.value = kept.trimEnd();
+  }
+
+  // A header in the middle of its paragraph kept its block as text, which now
+  // ends its title: it goes on the item, as mdit-attrs and remd-attrs put a
+  // title's block. (A header that ended its paragraph brought the attributes
+  // the parser read off it.)
+  for (const item of items) {
+    const title = item.data.attrsTitle;
+    const last = title.at(-1);
+    if (last?.type !== "text") continue;
+    const value = last.value.trimEnd();
+    const open = value.lastIndexOf("{");
+    if (open === -1) continue;
+    const properties = read(value.slice(open));
+    if (!properties) continue;
+    item.data.hProperties = mergeProperties(item.data.hProperties, properties);
+    last.value = value.slice(0, open).trimEnd();
+    if (last.value === "" && title.length > 1) title.pop();
   }
 };
