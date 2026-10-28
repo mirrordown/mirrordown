@@ -67,3 +67,12 @@ export {
   svgSpriteId,
   type InlineSvgLimits
 } from "./inline-svg.js";
+export {
+  hastAttributes,
+  mermaidDiagram,
+  mermaidFailure,
+  mermaidIdPrefixes,
+  mermaidSource,
+  mermaidSvg,
+  type MermaidAttribute
+} from "./mermaid-pele.js";
