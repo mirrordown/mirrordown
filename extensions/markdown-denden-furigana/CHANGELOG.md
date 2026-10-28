@@ -2,6 +2,13 @@
 
 
 
+
+## 0.1.3
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  A ruby annotation inside image alt text now stays verbatim in the `alt` attribute (`![{word|reading}](image.png)` renders `alt="{word|reading}"`) in both engines. Alt text is an attribute and renders no markup, so the characters reach it exactly as written; `mdit-ruby` produced `alt="wordreading"` and `remd-ruby` an empty `alt`.
+
 ## 0.1.2
 <sub>2026-06-27</sub>
 

@@ -3,6 +3,13 @@
 
 
 
+
+## 0.1.4
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  New `@mirrordown/sat-abbr`: abbreviations (`*[term]: definition`) for Sätteri, with the same output as `remd-abbr` and `mdit-abbr`, and included in `@mirrordown/preset-satteri`. The definition and term rules move into `@mirrordown/core` (`parseAbbreviations`, `createAbbreviationScan`), which `remd-abbr` now uses too; its output is unchanged.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 

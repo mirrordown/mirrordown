@@ -6,6 +6,42 @@
 
 
 
+
+## 0.1.7
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Make `mdit-github-alerts` and `remd-github-alerts` render identical HTML. `remd` no longer drops the first paragraph of an alert when its first line contains formatting or its body starts with formatting (for example `> [!NOTE]` followed by `> **Bold** text`, which lost the whole body). The marker line now works the same in both engines: everything after `[!TYPE]` on the first line is the title, inline formatting included (`> [!NOTE] *Emphasized* title`), with its plain text (including inline code) as the `aria-label`; everything after the first line break, soft or hard, is the body. The icon SVG is no longer wrapped in a redundant `<span aria-hidden>` (`remd`), and a foldable-open alert emits a bare `open` attribute instead of `open=""` (`mdit`).
+- *(patch)*
+  Make `mdit-tabs` and `remd-tabs` render identical HTML. `remd-tabs` no longer drops a depth-skipping header line (`% Tab One` followed by `%%% Too Deep`) and pulls the following content into the previous tab: the skipped-depth line now ends the group and renders as an ordinary paragraph, and a depth-1 header after it starts a new group, as in `mdit-tabs`. `remd-tabs` also splits a tab header that a nested blockquote lazily absorbed (`> > quote` followed by `% Tab Two`), which previously merged the next tab into the quote. `mdit-tabs` now emits the radio inputs' `hidden` and `checked` attributes bare, as `remd-tabs` does, instead of `hidden=""` and `checked=""`.
+- *(patch)*
+  Make `remd-steps` render the same HTML as `mdit-steps`. A step header that skips a depth level (`@1. Step one` followed by `@@@1. Too Deep`) or a plain line inside a run of step headers no longer silently disappears with the following content pulled into the previous step: the group ends at that line, which renders as an ordinary paragraph, and a depth-1 header after it starts a new group.
+- *(patch)*
+  `remd-inline-svg` now gives an inlined `<svg>` its accessible name through `aria-label`, taken from the image's alt text, as `mdit-inline-svg` does. It previously copied `alt` onto the `<svg>`, where it is not a valid attribute, and wrote `alt=""` for images without alt text; an empty alt now adds no attribute.
+- *(patch)*
+  `remd-inline-svg` now inserts the SVG file's markup verbatim as a `raw` node instead of parsing it into hast elements, so its output is byte-for-byte the same as `mdit-inline-svg` (previously hast re-serialized the SVG, rewriting values such as `fill-opacity=".5"` to `"0.5"` and `<path/>` to `<path></path>`). **Breaking:** `rehype-stringify` now needs `allowDangerousHtml: true`, and later rehype plugins see the inlined SVG as an opaque string rather than an element tree. With `deduplication`, the hidden sprite is now emitted right before the first `<use>` reference, as in `mdit-inline-svg`, instead of at the start of the document.
+
+  Both packages: with `deduplication`, sprite ids are now derived from the SVG's path relative to the document instead of its absolute path, so the same document produces the same ids on every machine and OS.
+- *(patch)*
+  Make `mdit-attrs` and `remd-attrs` render identical HTML, following markdown-it-attrs wherever the two disagreed. An attribute line lazily continuing a list's last item (`- a`, `- b`, `{.list}`) now applies to that list, including nested lists, in both engines; it was silently dropped. An attribute block on the line after a hard break now applies to the paragraph and keeps the `<br>` (`mdit-attrs` dropped the class, `remd-attrs` dropped the break). Text consisting only of an attribute block is no longer ignored by either engine's delimiter check. `remd-attrs` now supports attributes after a fence's language (` ```js {.x} `), on table cells (`td` and `th`), and at the end of loose and ordered list items. On fences, `class` is now always the first attribute in both engines (`mdit-attrs` wrote `id` before the language class).
+- *(patch)*
+  `mdit-definition-list` now requires continuation lines to reach a definition's content column, as `remd-definition-list` does: one column past the marker plus the spaces after it (`:   Red.` needs four spaces), or a single space when the marker ends the line or is followed by more than four spaces, in which case the rest is an indented code block. It previously accepted any continuation indented two columns past the marker.
+- *(patch)*
+  A ruby annotation inside image alt text now stays verbatim in the `alt` attribute (`![{word|reading}](image.png)` renders `alt="{word|reading}"`) in both engines. Alt text is an attribute and renders no markup, so the characters reach it exactly as written; `mdit-ruby` produced `alt="wordreading"` and `remd-ruby` an empty `alt`.
+- *(patch)*
+  Backslash-escaped delimiters are now literal in `remd-mark`, `remd-ins`, `remd-del`, `remd-kbd`, `remd-spoiler`, `remd-sub` and `remd-sup`, as they already were in the `mdit-*` plugins: `\==not marked==` renders as `==not marked==` instead of a `<mark>`, while an escaped backslash (`\==marked==`) still allows the markup. These plugins now depend on the new `@mirrordown/core` package, which holds logic shared across Mirrordown's engines.
+- *(patch)*
+  An attribute block on a line of its own now goes on the block it's written after, at the level its `>` markers and indentation put it, as kramdown places a block IAL. Written inside a blockquote or list item, it goes on the paragraph (`> para` then `> {.x}` gives `<p class="x">`), or on the item in a tight list (`- a` then `  {.x}` gives `<li class="x">`). Written outside one, as a lazy continuation line, it goes on that blockquote (`> para` then `{.x}`) or on the item's list (`- a` then `{.x}`), the outermost such block when it leaves several. Both plugins used to give the paragraph every line written inside a blockquote, and the list every line in a list item's first paragraph, whatever its indentation. markdown-it-attrs can't see indentation and gives the line to the outermost block ending with the paragraph; the cases where Mirrordown now differs from it are those where the indentation says otherwise. Inside tab panels and step bodies, the panel's own `>` belongs to the tab: a line written in the panel is placed as it would be at the top level.
+
+  An attribute block right after an inline element now applies when text follows it, as in markdown-it-attrs: `**important**{.warning} text.` gives `<strong class="warning">`, where both plugins kept the block as text unless it ended the text run. Blocks that follow one another merge (`` `npm i`{.cmd}{#install} ``). In `remd-attrs`, inline blocks are also read in headings, table cells and nested elements, and before the heading and list item rules, so `# Title **b**{.x}` gives the `strong` the class, as `mdit-attrs` does. `{.a} {#b}` is no longer read as one block holding `.a} {#b`: only the last block ends the paragraph.
+- *(patch)*
+  Paragraphs in tab panels and step bodies keep what they had when recognition splits them around a header:
+
+  - A hard break (`line\` then `more`) stays a `<br>` in `remd-tabs`, `remd-steps`, `sat-tabs` and `sat-steps`; it became a plain line break, unlike in `mdit-tabs` and `mdit-steps`.
+  - Text split around a header keeps its source position, and the lines left together are one text node again, as remark gives them.
+  - In `sat-tabs` and `sat-steps`, a paragraph keeps the attributes Sätteri read from its end. A header right after a panel's last paragraph continues that paragraph in CommonMark, so Sätteri saw the paragraph's attribute block mid-paragraph; with Sätteri's `attributes` feature on, the plugins now place that block once the header is split off, where Sätteri would have.
+  - `mdit-tabs` and `mdit-steps` give the panel's opening token its body as `meta.attrsSource`, since the tokens inside index the body's lines, so `mdit-attrs` can read a line's indentation there.
+
 ## 0.1.6
 <sub>2026-10-14</sub>
 

@@ -3,6 +3,32 @@
 
 
 
+
+## 0.2.0
+<sub>2026-10-28</sub>
+
+- *(minor)*
+  Make `mdit-tabs` and `remd-tabs` render identical HTML. `remd-tabs` no longer drops a depth-skipping header line (`% Tab One` followed by `%%% Too Deep`) and pulls the following content into the previous tab: the skipped-depth line now ends the group and renders as an ordinary paragraph, and a depth-1 header after it starts a new group, as in `mdit-tabs`. `remd-tabs` also splits a tab header that a nested blockquote lazily absorbed (`> > quote` followed by `% Tab Two`), which previously merged the next tab into the quote. `mdit-tabs` now emits the radio inputs' `hidden` and `checked` attributes bare, as `remd-tabs` does, instead of `hidden=""` and `checked=""`.
+- *(minor)*
+  Tab labels behave the same in every engine:
+
+  - `remd-tabs` keeps a tab's label in the tree, as a `tabsLabel` node that is the first child of each `tabsItem` (the `label` field is gone), so remark plugins that run after it also apply to the label, and a panel's `aria-label` is the label's final text.
+  - `data-tabs-group` hashes each label's plain text without a trailing attrs block, as the tabs specification describes. `mdit-tabs` hashed the raw markdown, so labels with links, images, entities or escapes got different ids in markdown-it and remark; labels with a trailing `{…}` change id in both.
+  - `mdit-tabs` escapes a panel's `aria-label` once: `npm & yarn` rendered as `aria-label="npm &amp;amp; yarn"`.
+  - `mdit-tabs` nests its panel tokens inside the tabs tokens, so `mdit-sectionize` no longer opens a `<section>` around a heading in a tab panel that closed outside the panel.
+- *(minor)*
+  Tab groups nested in step bodies and other containers work in every engine:
+
+  - Block ids (the radio `name` and input ids) number the document's tab groups in the order they open, combined with the group id, instead of hashing a start line that nested groups don't reliably have. Two groups with the same labels in different steps shared radio names, so the first loaded with no panel open and the second's tabs switched the first. Ids of the first group on a page are unchanged; later groups' ids change. Core exports `tabsBlockId`, and `TabsListNode` no longer carries a `blockId`.
+  - `mdit-tabs` keeps a group together across blank lines inside a container (a step body, tab panel, blockquote or list item) when another entry follows, as `remd-tabs` does: the empty `>` lines between entries are the container's own. At the top level a blank line still ends a group.
+- *(patch)*
+  Paragraphs in tab panels and step bodies keep what they had when recognition splits them around a header:
+
+  - A hard break (`line\` then `more`) stays a `<br>` in `remd-tabs`, `remd-steps`, `sat-tabs` and `sat-steps`; it became a plain line break, unlike in `mdit-tabs` and `mdit-steps`.
+  - Text split around a header keeps its source position, and the lines left together are one text node again, as remark gives them.
+  - In `sat-tabs` and `sat-steps`, a paragraph keeps the attributes Sätteri read from its end. A header right after a panel's last paragraph continues that paragraph in CommonMark, so Sätteri saw the paragraph's attribute block mid-paragraph; with Sätteri's `attributes` feature on, the plugins now place that block once the header is split off, where Sätteri would have.
+  - `mdit-tabs` and `mdit-steps` give the panel's opening token its body as `meta.attrsSource`, since the tokens inside index the body's lines, so `mdit-attrs` can read a line's indentation there.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 

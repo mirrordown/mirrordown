@@ -3,6 +3,24 @@
 
 
 
+
+## 0.1.4
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Backslash-escaped delimiters are now literal in `remd-mark`, `remd-ins`, `remd-del`, `remd-kbd`, `remd-spoiler`, `remd-sub` and `remd-sup`, as they already were in the `mdit-*` plugins: `\==not marked==` renders as `==not marked==` instead of a `<mark>`, while an escaped backslash (`\==marked==`) still allows the markup. These plugins now depend on the new `@mirrordown/core` package, which holds logic shared across Mirrordown's engines.
+- *(patch)*
+  `[[key]]` now scans the same way in every engine. `@mirrordown/core`'s new `createKbdTransform` ports markdown-it-kbd's tokenizer, and `remd-kbd` and the new `@mirrordown/sat-kbd` run on it:
+
+  - Keys nest: `[[a [[b]] c]]`.
+  - A single `]` stays inside a key: `[[a]b]]`.
+  - A line ending before the closing `]]` cancels the key even when formatting sits in between.
+  - `[[[a]]` keeps the extra `[` outside the key.
+
+  `remd-kbd` drops its `unist-util-find-*` and `unist-builder` dependencies. One difference is inherent to the engines and documented in the guide: markdown-it reads `[[*a]]*` as a key, while remark and Sätteri have already read the emphasis.
+
+  `@mirrordown/sat-kbd` is included in `@mirrordown/preset-satteri`.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 

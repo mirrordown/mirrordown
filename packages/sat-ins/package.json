@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/sat-ins",
   "description": "A Sätteri plugin for insertion syntax (++text++), rendering <ins> elements.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {
