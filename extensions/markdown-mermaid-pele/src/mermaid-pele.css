@@ -1,0 +1,24 @@
+@import "../../../packages/mdit-mermaid-pele/src/mermaid-pele.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  The plugin derives Pele's colors from the page's `Canvas` and `CanvasText`
+  system colors, which follow `color-scheme`. VSCode's preview paints itself
+  with the editor theme instead (and doesn't set `color-scheme` to match), so
+  diagrams would stay light on a dark theme.
+
+  Derive them from the editor theme here, unlayered, since this is a
+  host-integration concern rather than a plugin one. The mixes match the
+  plugin's, so diagrams keep the same contrast steps.
+*/
+:root {
+  --pele-bg: var(--vscode-editor-background, Canvas);
+  --pele-fg: var(--vscode-editor-foreground, CanvasText);
+  --pele-muted: color-mix(in oklab, var(--pele-fg) 57%, var(--pele-bg));
+  --pele-line: var(--pele-fg);
+  --pele-surface: color-mix(in oklab, var(--pele-fg) 5%, var(--pele-bg));
+  --pele-surface-alt: color-mix(in oklab, var(--pele-fg) 10%, var(--pele-bg));
+  --pele-border: color-mix(in oklab, var(--pele-fg) 46%, var(--pele-bg));
+  --pele-accent: var(--vscode-textLink-foreground, #5b7bd5);
+}

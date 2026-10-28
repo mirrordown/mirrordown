@@ -22,6 +22,7 @@ import {
   type MirrordownOptions as RemarkOptions
 } from "../../packages/preset-remark/src";
 import { normalizeHtml, parseFixture } from "../utils/index.js";
+import { options as mermaidPele } from "../mermaid-pele/options.js";
 
 const markdownIt = (options: MarkdownItOptions = {}) => {
   const md = new MarkdownIt().use(markdownItPreset, options);
@@ -35,7 +36,8 @@ const remark = (options: RemarkOptions = {}) => {
     .use(preset.remarkPlugins)
     .use(remarkRehype, preset.remarkRehype)
     .use(preset.rehypePlugins)
-    .use(rehypeStringify);
+    // Diagrams are raw nodes, so their <svg> reaches the HTML as Pele wrote it.
+    .use(rehypeStringify, { allowDangerousHtml: true });
   return (input: string): string =>
     normalizeHtml(String(processor.processSync(input)));
 };
@@ -88,9 +90,10 @@ const fixtureCases = readdirSync(testsDir)
 describe("presets", () => {
   // The presets' promise: the whole suite composes, and a document renders the same whichever engine you choose.
   describe("with every feature on, all three engines render the same", () => {
-    const md = markdownIt();
-    const rm = remark();
-    const sat = satteri();
+    // Gantt charts mark "today", so it's fixed, as in the mermaid-pele suites.
+    const md = markdownIt({ mermaidPele });
+    const rm = remark({ mermaidPele });
+    const sat = satteri({ mermaidPele });
     it.each(fixtureCases)("$name", ({ input }) => {
       const expected = rm(input);
       expect(md(input)).toBe(expected);
@@ -145,6 +148,11 @@ describe("presets", () => {
     { key: "kbd", input: "[[Ctrl]]", marker: "<kbd>" },
     { key: "lightbox", input: "!![Alt](pic.png)", marker: "<dialog" },
     { key: "mark", input: "==hi==", marker: "<mark>" },
+    {
+      key: "mermaidPele",
+      input: "```mermaid\nflowchart LR\n  A --> B\n```",
+      marker: 'class="pele pele-flowchart"'
+    },
     { key: "ruby", input: "{漢字|かんじ}", marker: "<ruby>" },
     { key: "sectionize", input: "# Title\n\nText", marker: "<section" },
     { key: "slug", input: "## Sub Title", marker: 'id="sub-title"' },

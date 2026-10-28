@@ -37,7 +37,7 @@ export default defineConfig({
 
 ### Styles
 
-Tabs, steps, alerts, spoilers, the lightbox and heading anchors ship stylesheets. Import them all at once:
+Tabs, steps, alerts, spoilers, the lightbox, heading anchors and diagrams ship stylesheets. Import them all at once:
 
 ```ts
 import "@mirrordown/preset-markdown-it/styles";
@@ -55,28 +55,29 @@ md.use(mirrordown, {
 });
 ```
 
-| Option              | Syntax                          | Plugin                                |
-| ------------------- | ------------------------------- | ------------------------------------- |
-| `abbr`              | `*[HTML]: HyperText…`           | `@mirrordown/mdit-abbr`               |
-| `attrs`             | `{.class #id}`                  | `@mirrordown/mdit-attrs`              |
-| `autolinkHeadings`  | anchor links on headings        | `@mirrordown/mdit-autolink-headings`  |
-| `definitionList`    | `Term` / `: Definition`         | `@mirrordown/mdit-definition-list`    |
-| `del`               | `--deleted--`                   | `@mirrordown/mdit-del`                |
-| `githubAlerts`      | `> [!NOTE]`                     | `@mirrordown/mdit-github-alerts`      |
-| `ins`               | `++inserted++`                  | `@mirrordown/mdit-ins`                |
-| `kbd`               | `[[Ctrl]]`                      | `@mirrordown/mdit-kbd`                |
-| `lightbox`          | `!![alt](image.png)`            | `@mirrordown/mdit-lightbox`           |
-| `mark`              | `==highlight==`                 | `@mirrordown/mdit-mark`               |
-| `ruby`              | `{漢字\|かんじ}`                | `@mirrordown/mdit-ruby`               |
-| `sectionize`        | headings wrapped in `<section>` | `@mirrordown/mdit-sectionize`         |
-| `slug`              | heading ids                     | `@mirrordown/mdit-slug`               |
-| `spoiler`           | `\|\|spoiler\|\|`               | `@mirrordown/mdit-spoiler`            |
-| `squeezeParagraphs` | empty paragraphs removed        | `@mirrordown/mdit-squeeze-paragraphs` |
-| `steps`             | `@1. Step`                      | `@mirrordown/mdit-steps`              |
-| `sub`               | `~subscript~`                   | `@mirrordown/mdit-sub`                |
-| `sup`               | `^superscript^`                 | `@mirrordown/mdit-sup`                |
-| `tabs`              | `% Tab`                         | `@mirrordown/mdit-tabs`               |
-| `unwrapImages`      | images not wrapped in `<p>`     | `@mirrordown/mdit-unwrap-images`      |
+| Option              | Syntax                                      | Plugin                                |
+| ------------------- | ------------------------------------------- | ------------------------------------- |
+| `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/mdit-abbr`               |
+| `attrs`             | `{.class #id}`                              | `@mirrordown/mdit-attrs`              |
+| `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/mdit-autolink-headings`  |
+| `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/mdit-definition-list`    |
+| `del`               | `--deleted--`                               | `@mirrordown/mdit-del`                |
+| `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/mdit-github-alerts`      |
+| `ins`               | `++inserted++`                              | `@mirrordown/mdit-ins`                |
+| `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/mdit-kbd`                |
+| `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/mdit-lightbox`           |
+| `mark`              | `==highlight==`                             | `@mirrordown/mdit-mark`               |
+| `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/mdit-mermaid-pele`       |
+| `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/mdit-ruby`               |
+| `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/mdit-sectionize`         |
+| `slug`              | heading ids                                 | `@mirrordown/mdit-slug`               |
+| `spoiler`           | `\|\|spoiler\|\|`                           | `@mirrordown/mdit-spoiler`            |
+| `squeezeParagraphs` | empty paragraphs removed                    | `@mirrordown/mdit-squeeze-paragraphs` |
+| `steps`             | `@1. Step`                                  | `@mirrordown/mdit-steps`              |
+| `sub`               | `~subscript~`                               | `@mirrordown/mdit-sub`                |
+| `sup`               | `^superscript^`                             | `@mirrordown/mdit-sup`                |
+| `tabs`              | `% Tab`                                     | `@mirrordown/mdit-tabs`               |
+| `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/mdit-unwrap-images`      |
 
 ## Notes
 

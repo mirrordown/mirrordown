@@ -1239,6 +1239,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-mermaid-pele@workspace:*, @mirrordown/mdit-mermaid-pele@workspace:^, @mirrordown/mdit-mermaid-pele@workspace:packages/mdit-mermaid-pele":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-mermaid-pele@workspace:packages/mdit-mermaid-pele"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+    pele: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-ruby@workspace:*, @mirrordown/mdit-ruby@workspace:^, @mirrordown/mdit-ruby@workspace:packages/mdit-ruby":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-ruby@workspace:packages/mdit-ruby"
@@ -1364,6 +1377,7 @@ __metadata:
     "@mirrordown/mdit-kbd": "workspace:^"
     "@mirrordown/mdit-lightbox": "workspace:^"
     "@mirrordown/mdit-mark": "workspace:^"
+    "@mirrordown/mdit-mermaid-pele": "workspace:^"
     "@mirrordown/mdit-ruby": "workspace:^"
     "@mirrordown/mdit-sectionize": "workspace:^"
     "@mirrordown/mdit-slug": "workspace:^"
@@ -1395,6 +1409,7 @@ __metadata:
     "@mirrordown/remd-kbd": "workspace:^"
     "@mirrordown/remd-lightbox": "workspace:^"
     "@mirrordown/remd-mark": "workspace:^"
+    "@mirrordown/remd-mermaid-pele": "workspace:^"
     "@mirrordown/remd-ruby": "workspace:^"
     "@mirrordown/remd-sectionize": "workspace:^"
     "@mirrordown/remd-slug": "workspace:^"
@@ -1427,6 +1442,7 @@ __metadata:
     "@mirrordown/sat-kbd": "workspace:^"
     "@mirrordown/sat-lightbox": "workspace:^"
     "@mirrordown/sat-mark": "workspace:^"
+    "@mirrordown/sat-mermaid-pele": "workspace:^"
     "@mirrordown/sat-ruby": "workspace:^"
     "@mirrordown/sat-sectionize": "workspace:^"
     "@mirrordown/sat-slug": "workspace:^"
@@ -1588,6 +1604,22 @@ __metadata:
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-mermaid-pele@workspace:^, @mirrordown/remd-mermaid-pele@workspace:packages/remd-mermaid-pele":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-mermaid-pele@workspace:packages/remd-mermaid-pele"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
+    pele: "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+    vfile: "npm:^6.0.3"
+  peerDependencies:
+    unified: ^11.0.0
+    vfile: ^6.0.0
   languageName: unknown
   linkType: soft
 
@@ -1816,6 +1848,18 @@ __metadata:
   resolution: "@mirrordown/sat-mark@workspace:packages/sat-mark"
   dependencies:
     "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5 || ^0.11.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-mermaid-pele@workspace:^, @mirrordown/sat-mermaid-pele@workspace:packages/sat-mermaid-pele":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-mermaid-pele@workspace:packages/sat-mermaid-pele"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    pele: "catalog:"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5 || ^0.11.0
@@ -5906,6 +5950,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-mermaid-pele@workspace:extensions/markdown-mermaid-pele":
+  version: 0.0.0-use.local
+  resolution: "markdown-mermaid-pele@workspace:extensions/markdown-mermaid-pele"
+  dependencies:
+    "@mirrordown/mdit-mermaid-pele": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-preview-extended-syntax@workspace:extensions/markdown-preview-extended-syntax":
   version: 0.0.0-use.local
   resolution: "markdown-preview-extended-syntax@workspace:extensions/markdown-preview-extended-syntax"
@@ -7186,6 +7240,13 @@ __metadata:
   version: 2.0.3
   resolution: "pathe@npm:2.0.3"
   checksum: 10/01e9a69928f39087d96e1751ce7d6d50da8c39abf9a12e0ac2389c42c83bc76f78c45a475bd9026a02e6a6f79be63acc75667df855862fe567d99a00a540d23d
+  languageName: node
+  linkType: hard
+
+"pele@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "pele@npm:1.12.0"
+  checksum: 10/14a0b90b02e69b66c805030c466fdd703e6e03390ac1a4e90c6154bbd523556d9433cab38840ceb5614bd4aea745a6224f90ee1e086a9111ad07a30c33e09aa2
   languageName: node
   linkType: hard
 

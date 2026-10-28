@@ -37,6 +37,7 @@ const slugs = [
   "ins",
   "kbd",
   "mark",
+  "mermaid-pele",
   "ruby",
   "sectionize",
   "slug",

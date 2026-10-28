@@ -1,0 +1,36 @@
+/*
+  Mermaid diagrams rendered by Pele — default stylesheet
+  -------------------------------------------------------
+  All rules live inside @layer markdown-mermaid-pele so any unlayered consumer
+  CSS overrides them without needing !important.
+
+  Pele themes a diagram with CSS variables (`--pele-bg`, `--pele-fg`, …), read
+  on the <svg> or any ancestor, and falls back to a light theme without them.
+  This stylesheet defines them on the root, from the page's own `Canvas` and
+  `CanvasText` system colors, so diagrams follow the nearest `color-scheme`
+  (set `color-scheme: light dark` on :root to follow the reader's preference).
+  Override any of them on the diagram or an ancestor:
+
+    .content { --pele-bg: #fffcf0; --pele-fg: #100f0f; }
+
+  See https://pele.run/theming for every variable and class.
+*/
+
+@layer markdown-mermaid-pele {
+  :where(:root) {
+    --pele-bg: Canvas;
+    --pele-fg: color-mix(in oklab, CanvasText 88%, Canvas);
+    --pele-muted: color-mix(in oklab, CanvasText 57%, Canvas);
+    --pele-line: color-mix(in oklab, CanvasText 88%, Canvas);
+    --pele-surface: color-mix(in oklab, CanvasText 5%, Canvas);
+    --pele-surface-alt: color-mix(in oklab, CanvasText 10%, Canvas);
+    --pele-border: color-mix(in oklab, CanvasText 46%, Canvas);
+    --pele-accent: light-dark(oklch(0.6 0.14 268), oklch(0.7 0.12 268));
+  }
+
+  /* A diagram replaces a code block, so it keeps a block's place in the flow. */
+  :where(svg.pele) {
+    display: block;
+    margin-block: 1em;
+  }
+}

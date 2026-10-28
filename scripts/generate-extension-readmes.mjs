@@ -30,6 +30,7 @@ const EXTENSIONS = [
   ["markdown-ins", "ins"],
   ["markdown-kbd", "kbd"],
   ["markdown-mark", "mark"],
+  ["markdown-mermaid-pele", "mermaid-pele"],
   ["markdown-sectionize", "sectionize"],
   ["markdown-spoiler", "spoiler"],
   ["markdown-squeeze-paragraphs", "squeeze-paragraphs"],

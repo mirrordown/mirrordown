@@ -1,0 +1,49 @@
+{
+  "name": "@mirrordown/remd-mermaid-pele",
+  "description": "A rehype plugin to render mermaid code blocks to inline SVG with Pele, themed with CSS variables.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "style": "./dist/mermaid-pele.css",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./*.css": "./dist/*.css"
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^",
+    "pele": "catalog:",
+    "unist-util-visit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:",
+    "unified": "catalog:",
+    "vfile": "^6.0.3"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0",
+    "vfile": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}

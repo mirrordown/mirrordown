@@ -19,7 +19,7 @@ The plugins are designed to work with [Astro](https://astro.build), [VitePress](
 Standard CommonMark and GitHub Flavored Markdown cover the basics, but technical documentation often needs more:
 
 - **Inline semantics** — strikethrough (`del`), insertion (`ins`), keyboard keys (`kbd`), highlighted text (`mark`), ruby annotations, abbreviations
-- **Rich blocks** — tabbed content for multi-language examples, numbered step sequences, GitHub-style callout alerts
+- **Rich blocks** — tabbed content for multi-language examples, numbered step sequences, GitHub-style callout alerts, Mermaid diagrams rendered to SVG at build time
 - **Structural helpers** — definition lists, attribute passthrough, image unwrapping for proper figure markup
 
 Rather than pulling in a monolithic documentation framework, these plugins compose cleanly with your existing markdown pipeline.
@@ -34,6 +34,7 @@ yarn add @mirrordown/remd-del @mirrordown/remd-ins @mirrordown/remd-kbd @mirrord
 
 # Block-level components
 yarn add @mirrordown/remd-tabs @mirrordown/remd-steps @mirrordown/remd-github-alerts
+yarn add @mirrordown/remd-mermaid-pele
 
 # Structural helpers
 yarn add @mirrordown/remd-abbr @mirrordown/remd-attrs @mirrordown/remd-definition-list
@@ -51,6 +52,8 @@ import { mirrordown } from "@mirrordown/preset-remark";
 
 export default defineConfig({
   markdown: {
+    // Astro highlights code before the plugins run; mermaid diagrams render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
     processor: unified(mirrordown({ lightbox: false })),
   },
 });
