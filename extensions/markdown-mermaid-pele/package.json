@@ -1,0 +1,38 @@
+{
+  "name": "markdown-mermaid-pele",
+  "displayName": "Markdown Mermaid Diagrams (Pele)",
+  "version": "0.0.0",
+  "description": "Renders mermaid code blocks as diagrams in VSCode's markdown preview, with Pele and no scripts",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "devDependencies": {
+    "@mirrordown/mdit-mermaid-pele": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/mermaid-pele.css"
+    ]
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec postcss src/mermaid-pele.css --output dist/mermaid-pele.css && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}
