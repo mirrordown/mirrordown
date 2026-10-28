@@ -13,6 +13,10 @@ import type {
 import type { Properties } from "hast";
 import {
   blockquoteMarkers,
+  endGroupsAtMarkers,
+  INDENTED_BLOCKS,
+  MARKED_BLOCKS,
+  splitAtOpeningLine,
   linesToParagraph,
   markerCount,
   paragraphProperties,
@@ -20,6 +24,7 @@ import {
   rebuildLazyLines,
   type MarkedLine
 } from "./lazy.js";
+import { isAlertMarkerLine } from "./github-alerts/index.js";
 
 // Groups: 1=@ string (depth), 2=number, 3=rest of line (may be empty or title text)
 const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/s;
@@ -31,6 +36,8 @@ export interface StepsListNode {
   type: "stepsList";
   depth: number;
   containerClass?: string;
+  /** A group written in a step's body (`@1.` with the body's `>`), which renders in the body, rather than the step's `@@` sub-steps. */
+  inBody?: boolean;
   children: StepsItemNode[];
   data?: { attrsRole?: string; hProperties?: Properties };
 }
@@ -310,8 +317,15 @@ const splitBlockquote = (
 
     let bodyLines: PhrasingContent[][] = [];
     const lines = paraToLines(child, sourceLines);
+    const first = child.position?.start.line;
+    // A header written with the body's own `>` markers is the body's content (it can start a group of its own there), as markdown-it reads the body; only one written outside the body starts the next step.
+    const outsideBody = (index: number): boolean =>
+      !sourceLines ||
+      base === undefined ||
+      first === undefined ||
+      markerCount(sourceLines[first - 1 + index] ?? "") < base;
     for (const [index, lineSegs] of lines.entries()) {
-      const header = stepHeader(lineSegs);
+      const header = outsideBody(index) ? stepHeader(lineSegs) : null;
       if (header) {
         // Flush accumulated body lines
         const bodyPara = linesToParagraph(bodyLines);
@@ -403,7 +417,9 @@ const buildTree = (
 export const processStepsInChildren = (
   children: Array<BlockContent | DefinitionContent | Root["children"][number]>,
   containerClass: string,
-  sourceLines?: readonly string[]
+  sourceLines?: readonly string[],
+  quotes = 0,
+  parentType = "root"
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -411,6 +427,24 @@ export const processStepsInChildren = (
   while (i < children.length) {
     const node = children[i];
     if (!node) break;
+
+    // A step header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item or definition, a header line may instead be one CommonMark lazily continued, so those are left as they are.
+    if (
+      node.type === "paragraph" &&
+      sourceLines &&
+      !INDENTED_BLOCKS.has(parentType)
+    ) {
+      const split = splitAtOpeningLine(
+        node,
+        sourceLines,
+        quotes,
+        (text) => parseHeaderPrefix(text)?.depth === 1
+      );
+      if (split) {
+        children.splice(i, 1, ...split);
+        continue;
+      }
+    }
 
     if (node.type === "paragraph") {
       const counters = new Map<number, number>();
@@ -432,6 +466,14 @@ export const processStepsInChildren = (
           if (!sibling) break;
 
           if (sibling.type === "blockquote") {
+            // An alert after a blank line is a block of its own, not more of the step's body.
+            const line = sibling.position?.start.line;
+            if (
+              sourceLines &&
+              line !== undefined &&
+              isAlertMarkerLine(sourceLines[line - 1] ?? "")
+            )
+              break;
             const segments = splitBlockquote(
               sibling,
               counters,
@@ -479,6 +521,7 @@ export const processStepsInChildren = (
 
         const list = buildTree(rawSteps, 1, 0, rawSteps.length);
         list.containerClass = containerClass;
+        if (parentType === "stepsItem") list.inBody = true;
         newChildren.push(list as unknown as Root["children"][number]);
         children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
         i = j;
@@ -494,6 +537,7 @@ export const processStepsInChildren = (
 };
 
 interface Container {
+  type?: string;
   children?: unknown[];
 }
 
@@ -506,15 +550,19 @@ export const processSteps = (
   source?: string
 ): void => {
   const sourceLines = source?.split(/\r?\n/);
-  const walk = (node: Container): void => {
+  const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
+    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
     processStepsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,
-      sourceLines
+      sourceLines,
+      inner,
+      node.type
     );
-    for (const child of node.children) walk(child as Container);
+    for (const child of node.children) walk(child as Container, inner);
   };
   processStepsInChildren(root.children, containerClass, sourceLines);
-  for (const child of root.children) walk(child as Container);
+  for (const child of root.children) walk(child, 0);
+  if (sourceLines) endGroupsAtMarkers(root, sourceLines, `stepsList`);
 };

@@ -382,3 +382,50 @@ const x = 1;
 > y
 % Two
 > z
+
+<!-- @case: a line without the panel's > after the last panel follows the group -->
+
+% One
+> First
+% Two
+> Second
+After the group
+and its next line
+
+<!-- @case: a line without the panel's > after a list in a panel follows the group -->
+
+% One
+> - An item
+After the group
+
+<!-- @case: a line keeping the panel's > continues a quote in the panel -->
+
+% One
+> > A quote
+> still the quote
+
+<!-- @case: a group in a quote ends at the panel's markers, inside the quote -->
+
+> % One
+> > First
+> After the group, in the quote
+
+<!-- @case: a tab header interrupts the paragraph before it -->
+
+Before the tabs:
+% One
+> Body.
+
+<!-- @case: a tab header written with the panel's > starts a group in the panel -->
+
+% One
+> Body.
+> % Inner
+> > Inner body.
+
+<!-- @case: a nested tab header written with the panel's > stays text, with no tab to nest in -->
+
+% One
+> Body.
+> %% Inner
+> > Inner body.

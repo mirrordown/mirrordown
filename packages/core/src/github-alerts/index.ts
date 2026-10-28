@@ -12,6 +12,10 @@ export type { AlertOptions, AlertType };
 // Groups: 1=type keyword, 2=foldable marker (+/-)
 const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
 
+/** Whether a source line opens an alert (`> [!NOTE]`), after its `>` markers and indentation, whether or not the alerts plugin reads it: a block that takes the quote after it as more of its content (a step body) leaves an alert be. */
+export const isAlertMarkerLine = (line: string): boolean =>
+  MARKER_RE.test(line.replace(/^[ 	>]*/, ``));
+
 const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
 

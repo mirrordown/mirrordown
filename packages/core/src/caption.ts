@@ -3,6 +3,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PhrasingContent, Root } from "mdast";
 import type { Properties } from "hast";
+import { isAlertMarkerLine } from "./github-alerts/index.js";
 import { linesToParagraph, paraToLines } from "./lazy.js";
 import { containersKept, type LineContainer } from "./line-containers.js";
 
@@ -69,13 +70,6 @@ interface Node {
 }
 
 const WHITESPACE = /^\s*$/;
-
-// An alert's marker line, `> [!NOTE]`.
-const ALERT_MARKER = /^[ \t>]*\[!/;
-
-/** Whether a source line opens an alert: its paragraph's lines start on the next one. */
-export const isAlertMarkerLine = (line: string): boolean =>
-  ALERT_MARKER.test(line);
 
 // Only images (each possibly inside a link) and whitespace: the figure holds them directly, as an image alone in its paragraph is the figure.
 const onlyImages = (children: readonly Node[]): boolean =>
@@ -262,7 +256,7 @@ export const processCaptions = (root: Root, source: string): void => {
       parent?.type === `alert` ||
       (parent?.type === `blockquote` && parent.data?.alertType !== undefined);
     const start =
-      alert && ALERT_MARKER.test(sourceLines[first - 1] ?? ``)
+      alert && isAlertMarkerLine(sourceLines[first - 1] ?? ``)
         ? first + 1
         : first;
     const isCaptionAt = (index: number): boolean => {

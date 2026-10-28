@@ -265,3 +265,39 @@ Plain line.
 > > Deeper.
 @3. Three
 > Last.
+
+<!-- @case: a line without the body's > after the last step follows the steps -->
+
+@1. Step one
+>  First
+@1. Step two
+>  Second
+After the steps
+
+<!-- @case: an alert after a blank line ends the steps -->
+
+@1. Step one
+>  First
+
+> [!NOTE]
+> A note after the steps
+
+<!-- @case: a step header interrupts the paragraph before it -->
+
+Before the steps:
+@1. Step one
+> Body.
+
+<!-- @case: a step header written with the body's > starts a group in the body -->
+
+@1. Step one
+>  Body.
+>  @1. Inner
+>  >  Inner body.
+
+<!-- @case: a sub-step header written with the body's > stays text, with no step to nest in -->
+
+@1. Step one
+>  Body.
+>  @@1. Sub
+>  >  Sub body.

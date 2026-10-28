@@ -1130,6 +1130,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-attrs@workspace:packages/mdit-attrs"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
   peerDependencies:
@@ -1324,6 +1325,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-steps@workspace:packages/mdit-steps"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
   peerDependencies:
@@ -1489,6 +1491,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-attrs@workspace:packages/remd-attrs"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
     unified: "catalog:"

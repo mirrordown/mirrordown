@@ -560,3 +560,82 @@ Content for step one.</p>
 </div>
 </li>
 </ol>
+
+<!-- @case: a line without the body's > after the last step follows the steps -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>First</p>
+</div>
+</li>
+<li class="markdown-steps-item" data-step="2">
+<p class="markdown-steps-title">Step two</p>
+<div class="markdown-steps-body">
+<p>Second</p>
+</div>
+</li>
+</ol>
+<p>After the steps</p>
+
+<!-- @case: an alert after a blank line ends the steps -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>First</p>
+</div>
+</li>
+</ol>
+<blockquote>
+<p>[!NOTE]
+A note after the steps</p>
+</blockquote>
+
+<!-- @case: a step header interrupts the paragraph before it -->
+
+<p>Before the steps:</p>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+</div>
+</li>
+</ol>
+
+<!-- @case: a step header written with the body's > starts a group in the body -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Body.</p>
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Inner</p>
+<div class="markdown-steps-body">
+<p>Inner body.</p>
+</div>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+
+<!-- @case: a sub-step header written with the body's > stays text, with no step to nest in -->
+
+<ol class="markdown-steps">
+<li class="markdown-steps-item" data-step="1">
+<p class="markdown-steps-title">Step one</p>
+<div class="markdown-steps-body">
+<p>Body.
+@@1. Sub</p>
+<blockquote>
+<p>Sub body.</p>
+</blockquote>
+</div>
+</li>
+</ol>

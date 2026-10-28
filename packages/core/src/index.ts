@@ -10,6 +10,7 @@ export {
   DEFAULT_TITLE,
   ICONS,
   createAlertResolver,
+  isAlertMarkerLine,
   plainText,
   splitAlertParagraph,
   type AlertOptions,
@@ -84,7 +85,6 @@ export {
 export {
   CAPTION_CLASS,
   figureProperties,
-  isAlertMarkerLine,
   isCaptionLine,
   processCaptions,
   startsCaption,

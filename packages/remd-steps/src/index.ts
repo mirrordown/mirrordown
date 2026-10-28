@@ -1,7 +1,7 @@
 // The hast handler bridges mdast/hast types that don't unify cleanly; the assertions are reviewed and intentional.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { Plugin } from "unified";
-import type { Root } from "mdast";
+import type { Root, RootContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
 import {
@@ -50,11 +50,15 @@ const buildListHast = (
       });
     }
 
+    // A step's `@@` sub-steps render after its body; a group written in the body stays in it.
+    const isSubSteps = (c: { type: string }): boolean =>
+      c.type === "stepsList" && !(c as StepsListNode).inBody;
     const bodyBlocks = item.children.filter(
-      (c) => c.type !== "stepsTitle" && c.type !== "stepsList"
+      (c): c is Exclude<typeof c, StepsTitleNode> =>
+        c.type !== "stepsTitle" && !isSubSteps(c)
     );
-    const nestedLists = item.children.filter(
-      (c) => (c as unknown as { type: string }).type === "stepsList"
+    const nestedLists = item.children.filter((c) =>
+      isSubSteps(c)
     ) as unknown as StepsListNode[];
 
     if (bodyBlocks.length > 0) {
@@ -64,7 +68,8 @@ const buildListHast = (
         properties: { class: `${containerClass}-body` },
         children: state.all({
           type: "root",
-          children: bodyBlocks
+          // A group written in the body is a `stepsList`, which `stepsHastHandlers` renders.
+          children: bodyBlocks as unknown as RootContent[]
         })
       });
     }

@@ -14,6 +14,10 @@ import type {
 import type { Properties } from "hast";
 import {
   blockquoteMarkers,
+  endGroupsAtMarkers,
+  INDENTED_BLOCKS,
+  MARKED_BLOCKS,
+  splitAtOpeningLine,
   linesToParagraph,
   markerCount,
   paragraphProperties,
@@ -353,6 +357,9 @@ const splitBlockquote = (
     explicit,
     lines: []
   };
+  // The `>` markers of a plain panel's own lines: a header written with them is the panel's content (it can start a group of its own there), as markdown-it reads the panel; only one written outside the panel starts the next tab. An explicit panel (`> % Label`) places its headers by their markers itself.
+  const base =
+    sourceLines && !explicit ? blockquoteMarkers(bq, sourceLines) : undefined;
 
   // Split paragraph lines on tab header lines: body lines accumulate into the
   // current segment, and each header starts a new one. `markersOf` gives a
@@ -366,7 +373,9 @@ const splitBlockquote = (
 
     for (const [index, lineSegs] of lines.entries()) {
       const first = lineSegs[0];
-      if (first?.type === "text") {
+      const outsidePanel =
+        !markersOf || base === undefined || markersOf(index) < base;
+      if (first?.type === "text" && outsidePanel) {
         const header = parseTabHeader(first.value);
         if (header) {
           // Flush accumulated body lines into current segment
@@ -636,7 +645,9 @@ export const processTabsInChildren = (
   children: Array<BlockContent | DefinitionContent | RootContent>,
   containerClass: string,
   checkBlankLines = true,
-  sourceLines?: readonly string[]
+  sourceLines?: readonly string[],
+  quotes = 0,
+  parentType = "root"
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -644,6 +655,24 @@ export const processTabsInChildren = (
   while (i < children.length) {
     const node = children[i];
     if (!node) break;
+
+    // A tab header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item or definition, a header line may instead be one CommonMark lazily continued, so those are left as they are.
+    if (
+      node.type === "paragraph" &&
+      sourceLines &&
+      !INDENTED_BLOCKS.has(parentType)
+    ) {
+      const split = splitAtOpeningLine(
+        node,
+        sourceLines,
+        quotes,
+        (text) => parseTabHeader(text)?.depth === 1
+      );
+      if (split) {
+        children.splice(i, 1, ...split);
+        continue;
+      }
+    }
 
     if (node.type === "paragraph") {
       const headerPara = extractHeaderPara(node);
@@ -889,6 +918,7 @@ export const processTabsInChildren = (
 };
 
 interface Container {
+  type?: string;
   children?: unknown[];
 }
 
@@ -901,16 +931,20 @@ export const processTabs = (
   source?: string
 ): void => {
   const sourceLines = source?.split(/\r?\n/);
-  const walk = (node: Container): void => {
+  const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
+    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
     processTabsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,
       false,
-      sourceLines
+      sourceLines,
+      inner,
+      node.type
     );
-    for (const child of node.children) walk(child as Container);
+    for (const child of node.children) walk(child as Container, inner);
   };
   processTabsInChildren(root.children, containerClass, true, sourceLines);
-  for (const child of root.children) walk(child as Container);
+  for (const child of root.children) walk(child, 0);
+  if (sourceLines) endGroupsAtMarkers(root, sourceLines, `tabsList`);
 };

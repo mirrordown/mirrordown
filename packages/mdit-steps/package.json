@@ -24,6 +24,9 @@
       "default": "./dist/steps.css"
     }
   },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
+  },
   "devDependencies": {
     "@types/markdown-it": "catalog:",
     "markdown-it": "catalog:"
