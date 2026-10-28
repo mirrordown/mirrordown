@@ -24,15 +24,27 @@ Apple
 
 Orange
 : A citrus fruit with orange skin.
-
-Multiple terms can share definitions:
-
-HTTP
-HTTPS
-: Protocols for transferring data on the web.
 ````
 
+A term fits on one line: a marker after a paragraph of two or more lines continues that paragraph instead of starting a list, as in Pandoc.
+
 Each definition is tight or loose on its own. A definition is loose, and wraps its content in `<p>`, when a blank line comes directly before its marker or separates blocks inside it. Otherwise its paragraphs render unwrapped. A marker with nothing after it produces an empty `<dd>`.
+
+### Styling
+
+The plugin ships no stylesheet: `<dl>`, `<dt>` and `<dd>` get the browser's defaults, which indent each definition and leave its term plain. The examples in the Mirrordown docs use the docs' own styles, which bold the term and set each definition off with a rule:
+
+```css
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin-inline-start: 0.25rem;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid #e5e7eb;
+}
+```
 
 ## About
 
