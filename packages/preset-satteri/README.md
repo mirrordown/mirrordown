@@ -33,6 +33,8 @@ import { mirrordown } from "@mirrordown/preset-satteri";
 
 export default defineConfig({
   markdown: {
+    // Astro highlights code before the plugins run; mermaid diagrams render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
     processor: satteri(mirrordown())
   }
 });
@@ -73,6 +75,7 @@ mirrordown({
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
 | `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
+| `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/sat-mermaid-pele`       |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/sat-ruby`               |
 | `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/sat-sectionize`         |
 | `slug`              | heading ids                                 | `@mirrordown/sat-slug`               |

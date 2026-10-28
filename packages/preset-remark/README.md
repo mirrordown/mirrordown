@@ -26,6 +26,8 @@ import { mirrordown } from "@mirrordown/preset-remark";
 
 export default defineConfig({
   markdown: {
+    // Astro highlights code before the plugins run; mermaid diagrams render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
     processor: unified(mirrordown())
   }
 });
@@ -51,12 +53,12 @@ const processor = unified()
   .use(remarkPlugins)
   .use(remarkRehype, remarkRehypeOptions)
   .use(rehypePlugins)
-  .use(rehypeStringify);
+  .use(rehypeStringify, { allowDangerousHtml: true });
 ```
 
 ### Styles
 
-Tabs, steps, alerts, spoilers, the lightbox and heading anchors ship stylesheets. Import them all at once:
+Tabs, steps, alerts, spoilers, the lightbox, heading anchors and diagrams ship stylesheets. Import them all at once:
 
 ```ts
 import "@mirrordown/preset-remark/styles.css";
@@ -74,32 +76,34 @@ mirrordown({
 });
 ```
 
-| Option              | Syntax                           | Plugin                                |
-| ------------------- | -------------------------------- | ------------------------------------- |
-| `gfm`               | tables, `~~strike~~`, task lists | `remark-gfm`                          |
-| `abbr`              | `*[HTML]: HyperText…`            | `@mirrordown/remd-abbr`               |
-| `attrs`             | `{.class #id}`                   | `@mirrordown/remd-attrs`              |
-| `autolinkHeadings`  | anchor links on headings         | `@mirrordown/remd-autolink-headings`  |
-| `definitionList`    | `Term` / `: Definition`          | `@mirrordown/remd-definition-list`    |
-| `del`               | `--deleted--`                    | `@mirrordown/remd-del`                |
-| `githubAlerts`      | `> [!NOTE]`                      | `@mirrordown/remd-github-alerts`      |
-| `ins`               | `++inserted++`                   | `@mirrordown/remd-ins`                |
-| `kbd`               | `[[Ctrl]]`                       | `@mirrordown/remd-kbd`                |
-| `lightbox`          | `!![alt](image.png)`             | `@mirrordown/remd-lightbox`           |
-| `mark`              | `==highlight==`                  | `@mirrordown/remd-mark`               |
-| `ruby`              | `{漢字\|かんじ}`                 | `@mirrordown/remd-ruby`               |
-| `sectionize`        | headings wrapped in `<section>`  | `@mirrordown/remd-sectionize`         |
-| `slug`              | heading ids                      | `@mirrordown/remd-slug`               |
-| `spoiler`           | `\|\|spoiler\|\|`                | `@mirrordown/remd-spoiler`            |
-| `squeezeParagraphs` | empty paragraphs removed         | `@mirrordown/remd-squeeze-paragraphs` |
-| `steps`             | `@1. Step`                       | `@mirrordown/remd-steps`              |
-| `sub`               | `~subscript~`                    | `@mirrordown/remd-sub`                |
-| `sup`               | `^superscript^`                  | `@mirrordown/remd-sup`                |
-| `tabs`              | `% Tab`                          | `@mirrordown/remd-tabs`               |
-| `unwrapImages`      | images not wrapped in `<p>`      | `@mirrordown/remd-unwrap-images`      |
+| Option              | Syntax                                      | Plugin                                |
+| ------------------- | ------------------------------------------- | ------------------------------------- |
+| `gfm`               | tables, `~~strike~~`, task lists            | `remark-gfm`                          |
+| `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/remd-abbr`               |
+| `attrs`             | `{.class #id}`                              | `@mirrordown/remd-attrs`              |
+| `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/remd-autolink-headings`  |
+| `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/remd-definition-list`    |
+| `del`               | `--deleted--`                               | `@mirrordown/remd-del`                |
+| `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/remd-github-alerts`      |
+| `ins`               | `++inserted++`                              | `@mirrordown/remd-ins`                |
+| `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/remd-kbd`                |
+| `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/remd-lightbox`           |
+| `mark`              | `==highlight==`                             | `@mirrordown/remd-mark`               |
+| `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/remd-mermaid-pele`       |
+| `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/remd-ruby`               |
+| `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/remd-sectionize`         |
+| `slug`              | heading ids                                 | `@mirrordown/remd-slug`               |
+| `spoiler`           | `\|\|spoiler\|\|`                           | `@mirrordown/remd-spoiler`            |
+| `squeezeParagraphs` | empty paragraphs removed                    | `@mirrordown/remd-squeeze-paragraphs` |
+| `steps`             | `@1. Step`                                  | `@mirrordown/remd-steps`              |
+| `sub`               | `~subscript~`                               | `@mirrordown/remd-sub`                |
+| `sup`               | `^superscript^`                             | `@mirrordown/remd-sup`                |
+| `tabs`              | `% Tab`                                     | `@mirrordown/remd-tabs`               |
+| `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/remd-unwrap-images`      |
 
 ## Notes
 
+- **Diagrams are raw HTML.** `mermaidPele` replaces each diagram's code block with Pele's `<svg>` as a `raw` node, so it reaches the HTML exactly as Pele wrote it. Stringify with `allowDangerousHtml: true`, as above (Astro already does), or the diagrams come out as escaped text.
 - **GFM is included.** The preset adds `remark-gfm` with single-tilde strikethrough off, so `~text~` is subscript and `~~text~~` is strikethrough. It returns `gfm: false` so a processor that adds its own GFM, like Astro's, doesn't add it again with single-tilde strikethrough on. Set `gfm: false` in the options to leave GFM out.
 - **Smart punctuation stays off.** The preset returns `smartypants: false`: smart quotes and dashes would rewrite text that `del` and `attrs` read. To turn it on anyway, override it: `unified({ ...mirrordown(), smartypants: true })`.
 - **`inline-svg` is not included.** It reads SVG files from disk and runs asynchronously; add [`@mirrordown/remd-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/remd-inline-svg) to `rehypePlugins` yourself where that fits.

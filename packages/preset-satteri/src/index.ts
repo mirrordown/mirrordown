@@ -16,6 +16,11 @@ import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import { satteriLightbox, type LightboxPlugin } from "@mirrordown/sat-lightbox";
 import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
 import {
+  satteriMermaidPele,
+  type MermaidPelePlugin,
+  type SatteriMermaidPeleOptions
+} from "@mirrordown/sat-mermaid-pele";
+import {
   satteriRuby,
   type RubyOptions,
   type RubyPlugin
@@ -65,6 +70,7 @@ export interface MirrordownOptions {
   kbd?: boolean;
   lightbox?: boolean;
   mark?: boolean;
+  mermaidPele?: boolean | SatteriMermaidPeleOptions;
   /** Ruby's own options; its `features` are always the preset's. */
   ruby?: boolean | Omit<RubyOptions, `features`>;
   sectionize?: boolean;
@@ -105,6 +111,7 @@ export interface MirrordownPreset {
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
     | Factory<LightboxPlugin>
+    | Factory<MermaidPelePlugin>
     | Factory<SectionizePlugin>
     | Factory<SlugPlugin>
     | Factory<SqueezeParagraphsPlugin>
@@ -153,8 +160,11 @@ export const mirrordown = (
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))])
     ],
-    // In plugin order: sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
+    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [
+      ...(options.mermaidPele === false
+        ? []
+        : [satteriMermaidPele(settings(options.mermaidPele))]),
       ...(options.sectionize === false ? [] : [satteriSectionize()]),
       ...(options.slug === false ? [] : [satteriSlug(settings(options.slug))]),
       ...(options.autolinkHeadings === false

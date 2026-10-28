@@ -2,6 +2,7 @@
 @import "@mirrordown/mdit-autolink-headings/styles";
 @import "@mirrordown/mdit-github-alerts/styles";
 @import "@mirrordown/mdit-lightbox/styles";
+@import "@mirrordown/mdit-mermaid-pele/styles";
 @import "@mirrordown/mdit-spoiler/styles";
 @import "@mirrordown/mdit-steps/styles";
 @import "@mirrordown/mdit-tabs/styles";

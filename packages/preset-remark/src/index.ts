@@ -23,6 +23,10 @@ import { remarkIns } from "@mirrordown/remd-ins";
 import { remarkKbd } from "@mirrordown/remd-kbd";
 import { rehypeLightbox } from "@mirrordown/remd-lightbox";
 import { remarkMark } from "@mirrordown/remd-mark";
+import {
+  rehypeMermaidPele,
+  type RehypeMermaidPeleOptions
+} from "@mirrordown/remd-mermaid-pele";
 import { remarkRuby, type RubyOptions } from "@mirrordown/remd-ruby";
 import { rehypeSectionize } from "@mirrordown/remd-sectionize";
 import { rehypeSlug, type SlugOptions } from "@mirrordown/remd-slug";
@@ -56,6 +60,7 @@ export interface MirrordownOptions {
   kbd?: boolean;
   lightbox?: boolean;
   mark?: boolean;
+  mermaidPele?: boolean | RehypeMermaidPeleOptions;
   ruby?: boolean | RubyOptions;
   sectionize?: boolean;
   slug?: boolean | SlugOptions;
@@ -135,6 +140,8 @@ export const mirrordown = (
       ...configured(options.attrs, remarkAttrs)
     ],
     rehypePlugins: [
+      // First, so the plugins after it see the diagrams' <svg>.
+      ...configured(options.mermaidPele, rehypeMermaidPele),
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),
       ...configured(options.autolinkHeadings, rehypeAutolinkHeadings),

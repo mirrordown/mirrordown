@@ -15,6 +15,10 @@ import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox } from "@mirrordown/mdit-lightbox";
 import { mark } from "@mirrordown/mdit-mark";
+import {
+  mermaidPele,
+  type MermaidPeleOptions
+} from "@mirrordown/mdit-mermaid-pele";
 import { ruby, type RubyOptions } from "@mirrordown/mdit-ruby";
 import { sectionize } from "@mirrordown/mdit-sectionize";
 import { slug, type SlugOptions } from "@mirrordown/mdit-slug";
@@ -38,6 +42,7 @@ export interface MirrordownOptions {
   kbd?: boolean;
   lightbox?: boolean;
   mark?: boolean;
+  mermaidPele?: boolean | MermaidPeleOptions;
   ruby?: boolean | RubyOptions;
   sectionize?: boolean;
   slug?: boolean | SlugOptions;
@@ -87,6 +92,7 @@ export const mirrordown = (
   on(options.sub, sub);
   on(options.sup, sup);
   configured(options.tabs, tabs);
+  configured(options.mermaidPele, mermaidPele);
   on(options.sectionize, sectionize);
   // Before autolink-headings, which links to the ids slug sets.
   configured(options.slug, slug);

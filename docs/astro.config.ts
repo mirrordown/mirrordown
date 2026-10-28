@@ -65,6 +65,8 @@ export default defineConfig({
   ],
   integrations: [],
   markdown: {
+    // Astro highlights code before the plugins run; mermaid diagrams render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
     processor: satteri({
       ...preset,
       hastPlugins: [...preset.hastPlugins, satteriInlineSvg()]
