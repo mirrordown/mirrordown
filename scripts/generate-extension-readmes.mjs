@@ -39,6 +39,7 @@ const EXTENSIONS = [
   ["markdown-steps", "steps"],
   ["markdown-sub", "sub"],
   ["markdown-sup", "sup"],
+  ["markdown-tab-icons", "tab-icons"],
   ["markdown-tabs", "tabs"],
   ["markdown-unwrap-images", "unwrap-images"]
   // markdown-inline-svg has no guide and is authored by hand

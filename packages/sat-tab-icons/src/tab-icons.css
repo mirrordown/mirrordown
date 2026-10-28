@@ -1,0 +1,46 @@
+/*
+  Tab icons — default stylesheet
+  ------------------------------
+  All rules live inside @layer markdown-tab-icons so any unlayered consumer
+  CSS overrides them without needing !important.
+
+  An icon fills a square as tall as the label's capital letters (1cap), its
+  drawing fitted inside, so it scales with the label's font. The square has an
+  explicit width because browsers leave an <svg> of auto width out of the
+  label's own width, which ran the text into its padding. Icons with light and dark
+  variants render both, marked data-scheme="light" and "dark"; these rules
+  show one by the reader's preferred color scheme. A site with its own theme
+  switch can show them by it instead, unlayered, e.g.:
+
+    :root[data-theme="light"] .markdown-tab-icon[data-scheme="light"],
+    :root[data-theme="dark"] .markdown-tab-icon[data-scheme="dark"] {
+      display: revert;
+    }
+
+    :root[data-theme="light"] .markdown-tab-icon[data-scheme="dark"],
+    :root[data-theme="dark"] .markdown-tab-icon[data-scheme="light"] {
+      display: none;
+    }
+*/
+
+@layer markdown-tab-icons {
+  .markdown-tab-icon {
+    flex: none;
+    inline-size: 1cap;
+    block-size: 1cap;
+  }
+
+  .markdown-tab-icon[data-scheme="dark"] {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .markdown-tab-icon[data-scheme="light"] {
+      display: none;
+    }
+
+    .markdown-tab-icon[data-scheme="dark"] {
+      display: revert;
+    }
+  }
+}

@@ -173,6 +173,11 @@ describe("presets", () => {
     { key: "sup", input: "x^2^", marker: "<sup>" },
     { key: "tabs", input: "% One\n> a\n% Two\n> b", marker: "markdown-tabs" },
     {
+      key: "tabIcons",
+      input: "% npm\n> a\n% pnpm\n> b",
+      marker: "markdown-tab-icon"
+    },
+    {
       key: "unwrapImages",
       input: "![Alt](pic.png)",
       marker: "<p><img",

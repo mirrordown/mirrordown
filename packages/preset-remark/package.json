@@ -41,6 +41,7 @@
     "@mirrordown/remd-steps": "workspace:^",
     "@mirrordown/remd-sub": "workspace:^",
     "@mirrordown/remd-sup": "workspace:^",
+    "@mirrordown/remd-tab-icons": "workspace:^",
     "@mirrordown/remd-tabs": "workspace:^",
     "@mirrordown/remd-unwrap-images": "workspace:^",
     "mdast-util-to-hast": "^13.0.0",

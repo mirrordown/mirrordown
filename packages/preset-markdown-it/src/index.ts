@@ -29,6 +29,7 @@ import { steps, type StepsOptions } from "@mirrordown/mdit-steps";
 import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
+import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
 
 /** Every feature is on by default: `false` turns one off, an options object configures it. */
@@ -54,6 +55,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
 }
 
@@ -94,6 +96,8 @@ export const mirrordown = (
   on(options.sub, sub);
   on(options.sup, sup);
   configured(options.tabs, tabs);
+  // After tabs and attrs: it reads the labels they leave.
+  configured(options.tabIcons, tabIcons);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

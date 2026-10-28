@@ -51,6 +51,11 @@ import {
   type TabsPlugin
 } from "@mirrordown/sat-tabs";
 import {
+  satteriTabIcons,
+  type TabIconsOptions,
+  type TabIconsPlugin
+} from "@mirrordown/sat-tab-icons";
+import {
   satteriSqueezeParagraphs,
   type SqueezeParagraphsPlugin
 } from "@mirrordown/sat-squeeze-paragraphs";
@@ -89,6 +94,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
   features?: Features;
@@ -122,6 +128,7 @@ export interface MirrordownPreset {
     | Factory<SectionizePlugin>
     | Factory<SlugPlugin>
     | Factory<SqueezeParagraphsPlugin>
+    | Factory<TabIconsPlugin>
     | Factory<UnwrapImagesPlugin>
   >;
 }
@@ -174,6 +181,9 @@ export const mirrordown = (
       ...(options.mermaidPele === false
         ? []
         : [satteriMermaidPele(settings(options.mermaidPele))]),
+      ...(options.tabIcons === false
+        ? []
+        : [satteriTabIcons(settings(options.tabIcons))]),
       ...(options.sectionize === false ? [] : [satteriSectionize()]),
       ...(options.slug === false ? [] : [satteriSlug(settings(options.slug))]),
       ...(options.autolinkHeadings === false

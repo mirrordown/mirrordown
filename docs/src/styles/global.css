@@ -146,3 +146,14 @@
     border-radius: var(--radius-sm);
   }
 }
+
+/* Tab icons with light and dark variants follow the theme switch rather than the system preference alone. Unlayered, to win over the plugin's layer. */
+:root[data-theme="light"] .markdown-tab-icon[data-scheme="light"],
+:root[data-theme="dark"] .markdown-tab-icon[data-scheme="dark"] {
+  display: revert;
+}
+
+:root[data-theme="light"] .markdown-tab-icon[data-scheme="dark"],
+:root[data-theme="dark"] .markdown-tab-icon[data-scheme="light"] {
+  display: none;
+}

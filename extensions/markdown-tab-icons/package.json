@@ -1,0 +1,38 @@
+{
+  "name": "markdown-tab-icons",
+  "displayName": "Markdown Tab Icons",
+  "version": "0.0.0",
+  "description": "Adds icons to tab labels in VSCode's markdown preview, matched from the label (npm, pnpm, vite.config.ts) or named with a [!keyword] marker",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "devDependencies": {
+    "@mirrordown/mdit-tab-icons": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/tab-icons.css"
+    ]
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec postcss src/tab-icons.css --output dist/tab-icons.css && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}

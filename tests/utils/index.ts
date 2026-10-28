@@ -30,7 +30,9 @@ const TAG = /<(?:[^"'>]|"[^"]*"|'[^']*')*>/g;
 
 // Engines spell character references differently, and plugins can't change
 // that: markdown-it writes `&lt;` `&amp;` `&quot;` `&gt;`, while hast writes
-// `&#x3C;` `&#x26;` and leaves `"` and `>` bare in text. Unify the spellings so
+// `&#x3C;` `&#x26;` and leaves `"` and `>` bare in text. An apostrophe is bare
+// in markdown-it's attributes and escaped in hast's (`&#x27;`); attribute values
+// are double-quoted, so it's safe bare everywhere. Unify the spellings so
 // fixtures compare plugin output, not serializer style. Text gets `"` and `>`
 // decoded (both are safe unescaped there); inside tags `<` and `>` are decoded
 // too (hast leaves both bare in attribute values, where they need no escape),
@@ -42,7 +44,8 @@ const canonicalReferences = (html: string): string => {
       .replace(/&#(?:x3c|60);/gi, "&lt;")
       .replace(/&#(?:x26|38);/gi, "&amp;")
       .replace(/&#(?:x22|34);/gi, "&quot;")
-      .replace(/&#(?:x3e|62);/gi, "&gt;");
+      .replace(/&#(?:x3e|62);/gi, "&gt;")
+      .replace(/&#(?:x27|39);/gi, "'");
   let out = "";
   let last = 0;
   for (const match of html.matchAll(TAG)) {

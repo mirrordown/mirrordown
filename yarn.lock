@@ -5,6 +5,16 @@ __metadata:
   version: 10
   cacheKey: 10
 
+"@antfu/install-pkg@npm:^2.0.1":
+  version: 2.1.0
+  resolution: "@antfu/install-pkg@npm:2.1.0"
+  dependencies:
+    package-manager-detector: "npm:^1.8.0"
+    tinyexec: "npm:^1.3.1"
+  checksum: 10/35ea1ad4875db179711fe4acc8ed06e423801922b3c920c3ebb4101c489ff1462fa608922d7c827ecae06a9c42a2c55fdba33570f360e4da41f227da5728051f
+  languageName: node
+  linkType: hard
+
 "@astrojs/check@npm:^0.9.10":
   version: 0.9.10
   resolution: "@astrojs/check@npm:0.9.10"
@@ -772,6 +782,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@iconify-json/logos@npm:^1.2.17":
+  version: 1.2.17
+  resolution: "@iconify-json/logos@npm:1.2.17"
+  dependencies:
+    "@iconify/types": "npm:*"
+  checksum: 10/09dfe12c8d0657949c90d149dd13e4d9d2ea94be7c8016a27b184e95e6e4306b53cdb2702351ae1315cdbd9375c3796210b0c50f7f066121d162060b6d82686f
+  languageName: node
+  linkType: hard
+
+"@iconify-json/vscode-icons@npm:^1.2.93":
+  version: 1.2.93
+  resolution: "@iconify-json/vscode-icons@npm:1.2.93"
+  dependencies:
+    "@iconify/types": "npm:*"
+  checksum: 10/798e04ae8ac54abbe7f7bad3d3517aff261978aa1f30abafde693936ec8d255a1e5f42d1cee799a7b402b0afdae44b1a6db2b1608c0a0281f83848c51c2fe56c
+  languageName: node
+  linkType: hard
+
+"@iconify/types@npm:*, @iconify/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@iconify/types@npm:2.0.0"
+  checksum: 10/1b3425ecbc0eef44f23d3f27355ae7ef306d5119c566f013ef1849995b016e1fdcc5af6b74c3bc0554485d70cf5179cb9c1095b14d662a55abcae1148e1a13c9
+  languageName: node
+  linkType: hard
+
+"@iconify/utils@npm:^3.1.7":
+  version: 3.1.7
+  resolution: "@iconify/utils@npm:3.1.7"
+  dependencies:
+    "@antfu/install-pkg": "npm:^2.0.1"
+    "@iconify/types": "npm:^2.0.0"
+    import-meta-resolve: "npm:^4.2.0"
+  checksum: 10/322873800c0f37c957cdc9739efa227264286b47545b2522090c42abaff49e9f9b897cc03e9ec05542e8be7699b04c6f68ab4980214ec00e5803210f40be4a8e
+  languageName: node
+  linkType: hard
+
 "@img/colour@npm:^1.1.0":
   version: 1.1.0
   resolution: "@img/colour@npm:1.1.0"
@@ -1092,6 +1138,9 @@ __metadata:
   dependencies:
     "@astrojs/markdown-remark": "npm:^7.2.0"
     "@astrojs/markdown-satteri": "npm:^0.4.3"
+    "@iconify-json/logos": "npm:^1.2.17"
+    "@iconify-json/vscode-icons": "npm:^1.2.93"
+    "@iconify/utils": "npm:^3.1.7"
     "@saeris/configs": "npm:^1.6.1"
     "@types/markdown-it": "npm:^14.1.2"
     "@types/node": "npm:^26.0.0"
@@ -1355,6 +1404,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-tab-icons@workspace:*, @mirrordown/mdit-tab-icons@workspace:^, @mirrordown/mdit-tab-icons@workspace:packages/mdit-tab-icons":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-tab-icons@workspace:packages/mdit-tab-icons"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-tabs@workspace:*, @mirrordown/mdit-tabs@workspace:^, @mirrordown/mdit-tabs@workspace:packages/mdit-tabs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-tabs@workspace:packages/mdit-tabs"
@@ -1401,6 +1462,7 @@ __metadata:
     "@mirrordown/mdit-steps": "workspace:^"
     "@mirrordown/mdit-sub": "workspace:^"
     "@mirrordown/mdit-sup": "workspace:^"
+    "@mirrordown/mdit-tab-icons": "workspace:^"
     "@mirrordown/mdit-tabs": "workspace:^"
     "@mirrordown/mdit-unwrap-images": "workspace:^"
     "@types/markdown-it": "catalog:"
@@ -1434,6 +1496,7 @@ __metadata:
     "@mirrordown/remd-steps": "workspace:^"
     "@mirrordown/remd-sub": "workspace:^"
     "@mirrordown/remd-sup": "workspace:^"
+    "@mirrordown/remd-tab-icons": "workspace:^"
     "@mirrordown/remd-tabs": "workspace:^"
     "@mirrordown/remd-unwrap-images": "workspace:^"
     "@types/hast": "catalog:"
@@ -1466,6 +1529,7 @@ __metadata:
     "@mirrordown/sat-spoiler": "workspace:^"
     "@mirrordown/sat-squeeze-paragraphs": "workspace:^"
     "@mirrordown/sat-steps": "workspace:^"
+    "@mirrordown/sat-tab-icons": "workspace:^"
     "@mirrordown/sat-tabs": "workspace:^"
     "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
@@ -1761,6 +1825,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/remd-tab-icons@workspace:^, @mirrordown/remd-tab-icons@workspace:packages/remd-tab-icons":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-tab-icons@workspace:packages/remd-tab-icons"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-tabs@workspace:^, @mirrordown/remd-tabs@workspace:packages/remd-tabs":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-tabs@workspace:packages/remd-tabs"
@@ -1969,6 +2046,17 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5 || ^0.11.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-tab-icons@workspace:^, @mirrordown/sat-tab-icons@workspace:packages/sat-tab-icons":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-tab-icons@workspace:packages/sat-tab-icons"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.10.5 || ^0.11.0
@@ -5304,6 +5392,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"import-meta-resolve@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "import-meta-resolve@npm:4.2.0"
+  checksum: 10/3499ee8b7eddb79be77067b368bcdf39e6f144306dea4686d08071ae7e65a2e3bdca3f98f2a0f4babdcd4ba9d9e7d379ae7e27c4b9bf8b08c1e812a28c674bf3
+  languageName: node
+  linkType: hard
+
 "index-to-position@npm:^1.1.0":
   version: 1.2.0
   resolution: "index-to-position@npm:1.2.0"
@@ -6074,6 +6169,16 @@ __metadata:
   resolution: "markdown-superscript@workspace:extensions/markdown-sup"
   dependencies:
     "@mirrordown/mdit-sup": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-tab-icons@workspace:extensions/markdown-tab-icons":
+  version: 0.0.0-use.local
+  resolution: "markdown-tab-icons@workspace:extensions/markdown-tab-icons"
+  dependencies:
+    "@mirrordown/mdit-tab-icons": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown
