@@ -1,0 +1,19 @@
+@import "../../../packages/mdit-tab-icons/src/tab-icons.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  The preview marks its theme with a class on <body> (vscode-light,
+  vscode-dark), which can differ from the system preference the plugin's
+  stylesheet reads. Show the variant for the editor's theme instead, unlayered
+  so it wins over the plugin's layer.
+*/
+.vscode-light .markdown-tab-icon[data-scheme="light"],
+.vscode-dark .markdown-tab-icon[data-scheme="dark"] {
+  display: revert;
+}
+
+.vscode-light .markdown-tab-icon[data-scheme="dark"],
+.vscode-dark .markdown-tab-icon[data-scheme="light"] {
+  display: none;
+}

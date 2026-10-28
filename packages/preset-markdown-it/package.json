@@ -44,6 +44,7 @@
     "@mirrordown/mdit-steps": "workspace:^",
     "@mirrordown/mdit-sub": "workspace:^",
     "@mirrordown/mdit-sup": "workspace:^",
+    "@mirrordown/mdit-tab-icons": "workspace:^",
     "@mirrordown/mdit-tabs": "workspace:^",
     "@mirrordown/mdit-unwrap-images": "workspace:^"
   },

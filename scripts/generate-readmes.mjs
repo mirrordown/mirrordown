@@ -48,6 +48,7 @@ const slugs = [
   "steps",
   "sub",
   "sup",
+  "tab-icons",
   "tabs",
   "unwrap-images"
 ];

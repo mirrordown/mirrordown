@@ -18,6 +18,11 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./tab-icons": {
+      "development": "./src/tab-icons/index.ts",
+      "types": "./dist/tab-icons.d.mts",
+      "import": "./dist/tab-icons.mjs"
     }
   },
   "engines": {

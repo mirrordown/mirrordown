@@ -37,6 +37,7 @@
     "@mirrordown/sat-spoiler": "workspace:^",
     "@mirrordown/sat-squeeze-paragraphs": "workspace:^",
     "@mirrordown/sat-steps": "workspace:^",
+    "@mirrordown/sat-tab-icons": "workspace:^",
     "@mirrordown/sat-tabs": "workspace:^",
     "@mirrordown/sat-unwrap-images": "workspace:^"
   },

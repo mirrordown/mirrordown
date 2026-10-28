@@ -8,7 +8,8 @@ export default defineConfig({
     }
   },
   pack: {
-    entry: "src/index.ts",
+    // The tab icons are their own entry, so only the tab-icons plugins load them.
+    entry: { index: "src/index.ts", "tab-icons": "src/tab-icons/index.ts" },
     dts: true
   }
 });

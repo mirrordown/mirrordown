@@ -48,6 +48,10 @@ import {
   tabsHastHandlers,
   type TabsOptions
 } from "@mirrordown/remd-tabs";
+import {
+  rehypeTabIcons,
+  type TabIconsOptions
+} from "@mirrordown/remd-tab-icons";
 import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
 
 /** Every feature is on by default: `false` turns one off, an options object configures it. */
@@ -75,6 +79,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
 }
 
@@ -149,6 +154,7 @@ export const mirrordown = (
     rehypePlugins: [
       // First, so the plugins after it see the diagrams' <svg>.
       ...configured(options.mermaidPele, rehypeMermaidPele),
+      ...configured(options.tabIcons, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),
       ...configured(options.autolinkHeadings, rehypeAutolinkHeadings),

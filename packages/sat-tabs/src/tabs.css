@@ -19,6 +19,19 @@
      allows arbitrary tab counts with a single rule pair, replacing the N×2 block.
 */
 
+/* The label strip's edge fades, animated by its scroll position (registered so they animate). */
+@property --_tabs-fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --_tabs-fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
 @layer markdown-tabs {
   /* ── Container ──────────────────────────────────────────────────────────── */
 
@@ -59,8 +72,54 @@
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, currentColor 25%, transparent)
+      transparent;
     background-color: var(--_tabs-strip-bg);
     box-shadow: inset 0 -1px var(--_tabs-border);
+  }
+
+  /*
+    A strip too long for its group fades at each edge that has more labels to
+    scroll to: the scroll position drives the fades, and a strip that fits has
+    no scroll timeline, so it doesn't fade. Requires scroll-driven animations
+    (Chrome 115+, Safari 26+); elsewhere the strip scrolls without the fade.
+  */
+  @keyframes markdown-tabs-edges {
+    from {
+      --_tabs-fade-start: 0px;
+      --_tabs-fade-end: 2rem;
+    }
+    10%,
+    90% {
+      --_tabs-fade-start: 2rem;
+      --_tabs-fade-end: 2rem;
+    }
+    to {
+      --_tabs-fade-start: 2rem;
+      --_tabs-fade-end: 0px;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .markdown-tabs-labels {
+      --_tabs-fade-direction: to right;
+      /* Longhands: minifiers fold `animation` and `animation-timeline` into one shorthand, which browsers reject. */
+      animation-name: markdown-tabs-edges;
+      animation-timing-function: linear;
+      animation-timeline: scroll(self inline);
+      mask-image: linear-gradient(
+        var(--_tabs-fade-direction),
+        transparent,
+        #000 var(--_tabs-fade-start),
+        #000 calc(100% - var(--_tabs-fade-end)),
+        transparent
+      );
+
+      &:dir(rtl) {
+        --_tabs-fade-direction: to left;
+      }
+    }
   }
 
   /* Hide radio inputs without removing them from the DOM (needed for :has()) */

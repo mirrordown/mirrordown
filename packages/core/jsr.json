@@ -2,7 +2,8 @@
   "name": "@mirrordown/core",
   "version": "0.0.0",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tab-icons": "./src/tab-icons/index.ts"
   },
   "imports": {
     "micromark-util-types": "npm:micromark-util-types@^2",
