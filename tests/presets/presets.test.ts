@@ -48,7 +48,8 @@ const satteri = (options: SatteriOptions = {}) => {
 
 const engines = [
   ["markdown-it", markdownIt],
-  ["remark", remark]
+  ["remark", remark],
+  ["sätteri", satteri]
 ] as const;
 
 // Every feature's shared fixtures, minus inline-svg (not in the presets), engine-specific files, and the GFM and raw-HTML variants whose baselines differ between the engines themselves.
@@ -86,27 +87,42 @@ const fixtureCases = readdirSync(testsDir)
 
 describe("presets", () => {
   // The presets' promise: the whole suite composes, and a document renders the same whichever engine you choose.
-  describe("with every feature on, both engines render the same", () => {
+  describe("with every feature on, all three engines render the same", () => {
     const md = markdownIt();
     const rm = remark();
+    const sat = satteri();
     it.each(fixtureCases)("$name", ({ input }) => {
-      expect(md(input)).toBe(rm(input));
+      const expected = rm(input);
+      expect(md(input)).toBe(expected);
+      expect(sat(input)).toBe(expected);
     });
 
     // Attrs apply after the containers are built, so a step title's or tab label's attrs reach its item rather than being lost with the header paragraph.
     it("applies attrs to step titles and tab labels", () => {
       const input = "@1. Step {.step}\n> Body.\n\n% Tab {.tab}\n> Panel.";
-      for (const html of [md(input), rm(input)]) {
+      for (const html of [md(input), rm(input), sat(input)]) {
         expect(html).toContain('<li class="markdown-steps-item step"');
         expect(html).toContain('<label class="markdown-tabs-label tab"');
       }
       expect(md(input)).toBe(rm(input));
+      expect(sat(input)).toBe(rm(input));
+    });
+
+    // Sätteri reads the block that ends a header's paragraph before recognition, and leaves one in the middle as text; either way the item gets it.
+    it("applies attrs to a header in the middle of its paragraph", () => {
+      const input = "@1. One {.one}\n@1. Two {.two}\n>  Body.";
+      for (const html of [md(input), rm(input), sat(input)]) {
+        expect(html).toContain('<li class="markdown-steps-item one"');
+        expect(html).toContain('<li class="markdown-steps-item two"');
+      }
+      expect(md(input)).toBe(rm(input));
+      expect(sat(input)).toBe(rm(input));
     });
   });
 
   // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).
   const features: readonly {
-    key: keyof MarkdownItOptions & keyof RemarkOptions;
+    key: keyof MarkdownItOptions & keyof RemarkOptions & keyof SatteriOptions;
     input: string;
     marker: string;
     absentWhenOn?: boolean;
@@ -202,96 +218,6 @@ describe("presets", () => {
     it("fits Astro's `satteri()` processor and tells it not to add smart punctuation", () => {
       const options: SatteriProcessorOptions = satteriPreset();
       expect(options.features).toMatchObject({ smartPunctuation: false });
-    });
-
-    // Sätteri has these features so far; the rest arrive as their ports land.
-    const satteriFeatures = [
-      "abbr",
-      "autolink-headings",
-      "del",
-      "github-alerts",
-      "ins",
-      "kbd",
-      "lightbox",
-      "mark",
-      "ruby",
-      "sectionize",
-      "slug",
-      "spoiler",
-      "squeeze-paragraphs",
-      "steps",
-      "sub",
-      "sup",
-      "tabs",
-      "unwrap-images"
-    ];
-    const remarkWithSatteriFeatures = remark({
-      attrs: false,
-      definitionList: false
-    });
-    const sat = satteri();
-    it.each(
-      fixtureCases.filter(({ feature }) => satteriFeatures.includes(feature))
-    )("renders what preset-remark does: $name", ({ input }) => {
-      expect(sat(input)).toBe(remarkWithSatteriFeatures(input));
-    });
-
-    it.each(
-      features.filter(
-        (
-          sample
-        ): sample is (typeof features)[number] & {
-          key: keyof SatteriOptions;
-        } =>
-          [
-            "abbr",
-            "autolinkHeadings",
-            "del",
-            "githubAlerts",
-            "ins",
-            "kbd",
-            "lightbox",
-            "mark",
-            "ruby",
-            "sectionize",
-            "slug",
-            "spoiler",
-            "steps",
-            "sub",
-            "sup",
-            "tabs",
-            "unwrapImages"
-          ].includes(sample.key)
-      )
-    )(
-      "$key is on by default and `false` turns it off",
-      ({ key, input, marker, absentWhenOn = false }) => {
-        expect(satteri()(input).includes(marker)).toBe(!absentWhenOn);
-        expect(satteri({ [key]: false })(input).includes(marker)).toBe(
-          absentWhenOn
-        );
-      }
-    );
-
-    // squeeze-paragraphs removes the empty paragraphs other plugins leave, and no Sätteri plugin leaves one until attrs is ported, so its sample can't show it working; check that `false` drops it from the plugins instead.
-    it("squeezeParagraphs is on by default and `false` drops it", () => {
-      const names = (options: SatteriOptions) =>
-        satteriPreset(options).hastPlugins.map(
-          (plugin) => plugin({} as never).name
-        );
-      expect(names({})).toContain("squeeze-paragraphs");
-      expect(names({ squeezeParagraphs: false })).not.toContain(
-        "squeeze-paragraphs"
-      );
-    });
-
-    it("passes an options object to its plugin", () => {
-      expect(
-        satteri({ githubAlerts: { icons: false } })("> [!NOTE]\n> Body")
-      ).not.toContain("<svg");
-      expect(satteri({ slug: { prefix: "doc-" } })("## Sub Title")).toContain(
-        'id="doc-sub-title"'
-      );
     });
 
     // Hosts such as Astro turn smart punctuation on unless the features say otherwise; it would rewrite delimiters the plugins read.

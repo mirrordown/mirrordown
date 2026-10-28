@@ -3,8 +3,8 @@ import { satteri } from "@astrojs/markdown-satteri";
 import { mirrordown } from "@mirrordown/preset-satteri";
 import { satteriInlineSvg } from "@mirrordown/sat-inline-svg";
 
-// The Mirrordown suite on Sätteri, plus definition lists (Sätteri's own) and inline-svg, which the preset leaves out because it reads files.
-const preset = mirrordown({ features: { definitionList: true } });
+// The Mirrordown suite on Sätteri, plus inline-svg, which the preset leaves out because it reads files.
+const preset = mirrordown();
 
 export default defineConfig({
   fonts: [

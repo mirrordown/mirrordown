@@ -54,7 +54,11 @@ export interface MirrordownOptions {
   /** GitHub Flavored Markdown: tables, strikethrough, task lists, autolink literals and footnotes. */
   gfm?: boolean;
   abbr?: boolean;
+  /** Sätteri's built-in `attributes` feature, which takes no options. */
+  attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  /** Sätteri's built-in `definitionList` feature. */
+  definitionList?: boolean;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
@@ -120,6 +124,8 @@ export const mirrordown = (
 
   const features: Features = {
     gfm: options.gfm !== false,
+    attributes: options.attrs !== false,
+    definitionList: options.definitionList !== false,
     smartPunctuation: false,
     subscript: options.sub !== false,
     superscript: options.sup !== false,

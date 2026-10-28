@@ -4,8 +4,6 @@
 
 The Mirrordown suite for [Sätteri](https://github.com/bruits/satteri) in one call. Every feature is on by default and renders the same HTML as [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark) and [`@mirrordown/preset-markdown-it`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-markdown-it). If you only want some features, install the individual `@mirrordown/sat-*` packages instead.
 
-The Sätteri suite is still growing: this preset includes the features ported so far (below), and gains the rest as they land.
-
 ## Install
 
 ```sh
@@ -52,7 +50,7 @@ import "@mirrordown/preset-satteri/styles.css";
 
 ## Options
 
-Every feature is on unless you set it to `false`. Features with options also take an options object, passed to their plugin:
+Every feature is on unless you set it to `false`. Features with options also take an options object, passed to their plugin; `attrs` and `definitionList` are Sätteri's own features and take only `true` or `false`:
 
 ```ts
 mirrordown({
@@ -66,7 +64,9 @@ mirrordown({
 | ------------------- | ------------------------------------------- | ------------------------------------ |
 | `gfm`               | tables, `~~strike~~`, task lists, autolinks | Sätteri's `gfm` feature              |
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/sat-abbr`               |
+| `attrs`             | `{.class #id}`                              | Sätteri's `attributes` feature       |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/sat-autolink-headings`  |
+| `definitionList`    | `Term` / `: Definition`                     | Sätteri's `definitionList` feature   |
 | `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |
 | `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
