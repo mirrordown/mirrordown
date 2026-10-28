@@ -3,6 +3,24 @@
 
 
 
+
+## 0.1.4
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Backslash-escaped delimiters are now literal in `remd-mark`, `remd-ins`, `remd-del`, `remd-kbd`, `remd-spoiler`, `remd-sub` and `remd-sup`, as they already were in the `mdit-*` plugins: `\==not marked==` renders as `==not marked==` instead of a `<mark>`, while an escaped backslash (`\==marked==`) still allows the markup. These plugins now depend on the new `@mirrordown/core` package, which holds logic shared across Mirrordown's engines.
+- *(patch)*
+  `remd-mark` now runs its `==mark==` scan through `createDelimitedTransform` and `MARK_DELIMITERS` from `@mirrordown/core`, which the Sätteri plugin shares, and drops its `unist-util-find-*` and `unist-builder` dependencies. Its output is unchanged.
+- *(patch)*
+  `==mark==`, `++ins++` and `--del--` now pair delimiters the same way in every engine. `@mirrordown/core`'s `createDelimitedTransform` ports markdown-it's delimiter algorithm (the one markdown-it-mark and markdown-it-ins use), and the remark and Sätteri plugins run on it:
+
+  - A closer pairs with the nearest opener: `==a ==b==` highlights only `b`, as markdown-it does.
+  - Spans nest: `==a ==b== c==` is a highlight inside a highlight.
+  - The extra marker of an odd-length run stays outside the span (`===a===` → `=<mark>a</mark>=`); `mdit-del` compared against `+` instead of `-` here, so its marker ended up inside.
+  - `remd-del` no longer mishandles runs such as `--a --- b--` or `--+a+--`, which came from patterns copied from the ins plugin.
+
+  New Sätteri plugins `@mirrordown/sat-ins` and `@mirrordown/sat-del`, also included in `@mirrordown/preset-satteri`. The `del` guide notes that smart punctuation, on by default in Astro, turns `--` into an en dash before the plugin runs.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 

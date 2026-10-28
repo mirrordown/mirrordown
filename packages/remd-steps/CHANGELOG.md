@@ -3,6 +3,30 @@
 
 
 
+
+## 0.1.4
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Make `remd-steps` render the same HTML as `mdit-steps`. A step header that skips a depth level (`@1. Step one` followed by `@@@1. Too Deep`) or a plain line inside a run of step headers no longer silently disappears with the following content pulled into the previous step: the group ends at that line, which renders as an ordinary paragraph, and a depth-1 header after it starts a new group.
+- *(patch)*
+  New `@mirrordown/sat-steps`: numbered step sequences (`@1. Title` with `>` bodies) for Sätteri, with the same output as `remd-steps` and `mdit-steps`, and included in `@mirrordown/preset-satteri` along with its stylesheet. Step recognition moves into `@mirrordown/core` (`processSteps`), which `remd-steps` now uses too; its output is unchanged.
+- *(patch)*
+  Fixes for steps that show up with nesting or other plugins:
+
+  - The steps stylesheet lays out nested steps correctly. Its nested-list rule targeted `.markdown-steps` instead of the `.markdown-steps-list` class nested lists carry, so a nested list fell into the number column and overlapped the step body.
+  - `remd-steps` keeps a step's title in the tree, so remark plugins that run after it, such as `remd-spoiler` in `@mirrordown/preset-remark`, also apply to the title: `@1. A ||secret||` rendered its spoiler in markdown-it but not in remark.
+  - `mdit-sectionize` only wraps top-level headings in sections, as `remd-sectionize` does, and `mdit-steps` nests its body tokens inside the step: a heading in a step body, blockquote or list item opened a `<section>` that closed outside its container, which is invalid HTML.
+- *(patch)*
+  A step header written right after nested content (`> > Quoted.` then `@2. Next`) starts the next step in every engine. CommonMark lazily continues the nested paragraph with it, so the remark and Sätteri plugins rendered the header as text inside the previous step; they now read the source's `>` markers as markdown-it does, recovering the header and the blockquote structure of the lines after it. `processSteps` takes the document's source for this.
+- *(patch)*
+  Paragraphs in tab panels and step bodies keep what they had when recognition splits them around a header:
+
+  - A hard break (`line\` then `more`) stays a `<br>` in `remd-tabs`, `remd-steps`, `sat-tabs` and `sat-steps`; it became a plain line break, unlike in `mdit-tabs` and `mdit-steps`.
+  - Text split around a header keeps its source position, and the lines left together are one text node again, as remark gives them.
+  - In `sat-tabs` and `sat-steps`, a paragraph keeps the attributes Sätteri read from its end. A header right after a panel's last paragraph continues that paragraph in CommonMark, so Sätteri saw the paragraph's attribute block mid-paragraph; with Sätteri's `attributes` feature on, the plugins now place that block once the header is split off, where Sätteri would have.
+  - `mdit-tabs` and `mdit-steps` give the panel's opening token its body as `meta.attrsSource`, since the tokens inside index the body's lines, so `mdit-attrs` can read a line's indentation there.
+
 ## 0.1.3
 <sub>2026-06-28</sub>
 

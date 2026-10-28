@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-lightbox",
   "description": "A rehype plugin to opt an image into a JavaScript-free <dialog> lightbox with a leading !! (zoom on click).",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {
