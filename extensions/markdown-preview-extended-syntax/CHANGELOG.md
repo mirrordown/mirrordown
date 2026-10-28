@@ -8,6 +8,13 @@
 
 
 
+
+## 0.1.9
+<sub>2026-10-28</sub>
+
+- *(patch)*
+  Add Markdown Tab Icons to the bundled extensions, so installing the pack now also renders icons in tab labels in the preview.
+
 ## 0.1.8
 <sub>2026-10-28</sub>
 

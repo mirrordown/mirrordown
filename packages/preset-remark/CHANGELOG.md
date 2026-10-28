@@ -1,6 +1,13 @@
 # Changelog
 
 
+
+## 0.3.0
+<sub>2026-10-28</sub>
+
+- *(minor)*
+  Add `tabIcons`, on by default like every other feature: tab labels get the icon their text matches or a `[!keyword]` marker names. The presets' stylesheets include its styles.
+
 ## 0.2.0
 <sub>2026-10-28</sub>
 
