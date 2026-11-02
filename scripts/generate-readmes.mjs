@@ -32,6 +32,7 @@ const slugs = [
   "attrs",
   "autolink-headings",
   "caption",
+  "copy-code",
   "definition-list",
   "del",
   "github-alerts",

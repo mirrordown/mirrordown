@@ -65,6 +65,12 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | -------------- | ---------------------- | ----------------------------------------------- | ----------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
 | ` ```mermaid ` | inline `<svg>` (no JS) | [mdit-mermaid-pele](packages/mdit-mermaid-pele) | [remd-mermaid-pele](packages/remd-mermaid-pele) | [sat-mermaid-pele](packages/sat-mermaid-pele) | [markdown-mermaid-pele](extensions/markdown-mermaid-pele) |
 
+### Code blocks
+
+| Syntax             | HTML                                                                                           | markdown-it                               | remark                                    | Sätteri                                 | VSCode |
+| ------------------ | ---------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | ------ |
+| ` ``` ` code block | copy [`<button>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button) | [mdit-copy-code](packages/mdit-copy-code) | [remd-copy-code](packages/remd-copy-code) | [sat-copy-code](packages/sat-copy-code) | —      |
+
 ### Headings
 
 | Syntax              | HTML                                                                            | markdown-it                                               | remark                                                    | Sätteri                                                 | VSCode                                                              |
@@ -72,7 +78,7 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | `## Heading` → id   | heading `id` slug                                                               | [mdit-slug](packages/mdit-slug)                           | [remd-slug](packages/remd-slug)                           | [sat-slug](packages/sat-slug)                           | —                                                                   |
 | `## Heading` → link | [`<a>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a) | [mdit-autolink-headings](packages/mdit-autolink-headings) | [remd-autolink-headings](packages/remd-autolink-headings) | [sat-autolink-headings](packages/sat-autolink-headings) | [markdown-autolink-headings](extensions/markdown-autolink-headings) |
 
-> All VSCode extensions are also bundled together in the [Markdown Preview Extended Syntax](extensions/markdown-preview-extended-syntax) pack. Heading slugs are provided in the preview by the Heading Anchors extension (and by VSCode's own built-in heading ids), so `slug` has no standalone extension.
+> All VSCode extensions are also bundled together in the [Markdown Preview Extended Syntax](extensions/markdown-preview-extended-syntax) pack. Heading slugs are provided in the preview by the Heading Anchors extension (and by VSCode's own built-in heading ids), so `slug` has no standalone extension. VSCode's preview has its own copy button on code blocks (1.132+), so `copy-code` has none either.
 
 ---
 

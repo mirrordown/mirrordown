@@ -62,7 +62,9 @@ const cases: [string, string, string[]][] = [
     `attrs: a fence keeps its attributes, the figure takes the caption's`,
     "```js {.numbered}\ncode\n```\n~: Listing {#listing-1}",
     [
-      `<figure class="markdown-caption" id="listing-1"><pre><code class="numbered language-js">`
+      // The <pre> takes copy-code's id; the fence's own attributes stay on the <code>.
+      `<figure class="markdown-caption" id="listing-1"><pre id="code-`,
+      `"><code class="numbered language-js">`
     ]
   ],
   [
@@ -97,7 +99,8 @@ const cases: [string, string, string[]][] = [
     `steps: a caption inside a step body captions its block`,
     "@1. First\n>  ```sh\n>  npm install\n>  ```\n>  ~: The command",
     [
-      `<div class="markdown-steps-body"><figure class="markdown-caption"><pre><code class="language-sh">`
+      `<div class="markdown-steps-body"><figure class="markdown-caption"><pre id="code-`,
+      `"><code class="language-sh">`
     ]
   ],
   [

@@ -142,6 +142,11 @@ describe("presets", () => {
       input: "```\ncode\n```\n~: A caption",
       marker: "<figcaption>"
     },
+    {
+      key: "copyCode",
+      input: "```sh\nnpm test\n```",
+      marker: 'class="markdown-copy-code"'
+    },
     { key: "definitionList", input: "Term\n: Definition", marker: "<dl>" },
     { key: "del", input: "a --gone-- b", marker: "<del>" },
     {

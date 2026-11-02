@@ -6,6 +6,7 @@ import type { Plugin } from "unified";
 import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs, type AttrsOptions } from "@mirrordown/remd-attrs";
 import { remarkCaption } from "@mirrordown/remd-caption";
+import { rehypeCopyCode } from "@mirrordown/remd-copy-code";
 import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions
@@ -62,6 +63,7 @@ export interface MirrordownOptions {
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   caption?: boolean;
+  copyCode?: boolean;
   definitionList?: boolean;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
@@ -154,6 +156,8 @@ export const mirrordown = (
     rehypePlugins: [
       // First, so the plugins after it see the diagrams' <svg>.
       ...configured(options.mermaidPele, rehypeMermaidPele),
+      // After mermaid-pele: a diagram is no longer a code block.
+      ...on(options.copyCode, rehypeCopyCode),
       ...configured(options.tabIcons, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),

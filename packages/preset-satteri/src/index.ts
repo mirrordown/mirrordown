@@ -2,6 +2,10 @@ import type { Features, PluginFactoryContext } from "satteri";
 import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
 import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
+  satteriCopyCode,
+  type CopyCodePlugin
+} from "@mirrordown/sat-copy-code";
+import {
   satteriAutolinkHeadings,
   type AutolinkHeadingsOptions,
   type AutolinkHeadingsPlugin
@@ -73,6 +77,7 @@ export interface MirrordownOptions {
   attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   caption?: boolean;
+  copyCode?: boolean;
   /** Sätteri's built-in `definitionList` feature. */
   definitionList?: boolean;
   del?: boolean;
@@ -123,6 +128,7 @@ export interface MirrordownPreset {
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
+    | Factory<CopyCodePlugin>
     | Factory<LightboxPlugin>
     | Factory<MermaidPelePlugin>
     | Factory<SectionizePlugin>
@@ -176,11 +182,12 @@ export const mirrordown = (
       // After the containers, whose blocks it captions.
       ...(options.caption === false ? [] : [satteriCaption()])
     ],
-    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
+    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [
       ...(options.mermaidPele === false
         ? []
         : [satteriMermaidPele(settings(options.mermaidPele))]),
+      ...(options.copyCode === false ? [] : [satteriCopyCode()]),
       ...(options.tabIcons === false
         ? []
         : [satteriTabIcons(settings(options.tabIcons))]),

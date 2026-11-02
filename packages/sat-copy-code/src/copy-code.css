@@ -1,0 +1,111 @@
+/*
+  Copy code — default stylesheet
+  ------------------------------
+  All rules live inside @layer markdown-copy-code so any unlayered consumer
+  CSS overrides them without needing !important.
+
+  A code block's copy button sits in its <pre>, after the <code>. It renders
+  `hidden`, and the client script shows it where it can copy. Where CSS anchor positioning with
+  anchor-scope is supported, the button sits in the block's top corner,
+  anchored to the <pre> rather than its scrolling content, and on devices that
+  hover it shows while the block is hovered or the button focused; elsewhere
+  it sits at the end of the block.
+
+  To override public tokens, set them on the button or any ancestor:
+
+    .content { --markdown-copy-code-tint: oklch(0.6 0.15 250 / 0.2); }
+*/
+
+@layer markdown-copy-code {
+  .markdown-copy-code {
+    /* The block's own colors, so the button suits any code theme: its text color, and its background under a tint of that color. */
+    --_copy-code-tint: var(
+      --markdown-copy-code-tint,
+      color-mix(in oklch, currentColor 12%, transparent)
+    );
+    --_copy-code-border: var(
+      --markdown-copy-code-border,
+      color-mix(in oklch, currentColor 30%, transparent)
+    );
+
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    margin-inline-start: auto;
+    padding: 0;
+    border: 1px solid var(--_copy-code-border);
+    border-radius: 0.375rem;
+    background-color: inherit;
+    background-image: linear-gradient(
+      var(--_copy-code-tint),
+      var(--_copy-code-tint)
+    );
+    color: inherit;
+    cursor: pointer;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        --_copy-code-tint: color-mix(in oklch, currentColor 20%, transparent);
+      }
+    }
+
+    &:active {
+      --_copy-code-tint: color-mix(in oklch, currentColor 28%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+  }
+
+  .markdown-copy-code-icon {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .markdown-copy-code [data-icon="check"],
+  .markdown-copy-code[data-copied] [data-icon="copy"] {
+    display: none;
+  }
+
+  .markdown-copy-code[data-copied] [data-icon="check"] {
+    display: block;
+  }
+
+  @supports (anchor-scope: --x) {
+    /* Each <pre> scopes the name, so its button anchors to it rather than the page's last block. */
+    pre:has(> .markdown-copy-code) {
+      anchor-name: --markdown-copy-code;
+      anchor-scope: --markdown-copy-code;
+    }
+
+    .markdown-copy-code {
+      position: absolute;
+      position-anchor: --markdown-copy-code;
+      position-visibility: anchors-visible;
+      inset-block-start: anchor(start);
+      inset-inline-end: anchor(end);
+      margin: 0.5rem;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .markdown-copy-code {
+        opacity: 0;
+      }
+
+      pre:hover > .markdown-copy-code,
+      .markdown-copy-code:focus-visible,
+      .markdown-copy-code[data-copied] {
+        opacity: 1;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .markdown-copy-code {
+          transition: opacity 0.15s ease-out;
+        }
+      }
+    }
+  }
+}

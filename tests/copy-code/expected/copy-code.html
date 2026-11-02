@@ -1,0 +1,80 @@
+<!-- @case: fence with a language -->
+
+<pre id="code-mxxtmr"><code class="language-sh">npm install @mirrordown/mdit-copy-code
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-mxxtmr" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: fence without a language -->
+
+<pre id="code-dme5ha"><code>plain text
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-dme5ha" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: indented code block -->
+
+<p>An indented block:</p>
+<pre id="code-1fbu67n"><code>indented code
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-1fbu67n" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: several lines, without the last newline copied -->
+
+<pre id="code-1renyhr"><code class="language-js">const a = 1;
+const b = 2;
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-1renyhr" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: nocopy turns the button off -->
+
+<pre><code class="language-sh">rm -rf build
+</code></pre>
+
+<!-- @case: nocopy among other meta words -->
+
+<pre><code class="language-js">console.log(&quot;hi&quot;);
+</code></pre>
+
+<!-- @case: a word containing nocopy doesn't turn it off -->
+
+<pre id="code-1oeunik"><code class="language-sh">echo kept
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-1oeunik" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: repeated blocks get numbered ids -->
+
+<pre id="code-yagane"><code class="language-sh">echo same
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-yagane" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+<pre id="code-yagane-2"><code class="language-sh">echo same
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-yagane-2" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+<pre id="code-yagane-3"><code class="language-bash">echo same
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-yagane-3" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: an empty block gets no button -->
+
+<pre><code class="language-sh"></code></pre>
+
+<!-- @case: special characters are escaped, and the id hashes the text -->
+
+<pre id="code-i2py3"><code class="language-html">&lt;a href=&quot;?a=1&amp;b=2&quot;&gt;&quot;quoted&quot;&lt;/a&gt;
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-i2py3" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+
+<!-- @case: in a blockquote -->
+
+<blockquote>
+<pre id="code-tqn7l0"><code class="language-sh">echo quoted
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-tqn7l0" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+</blockquote>
+
+<!-- @case: in a list item -->
+
+<ul>
+<li>
+<p>Install:</p>
+<pre id="code-qsgb9h"><code class="language-sh">echo listed
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-qsgb9h" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>
+</li>
+</ul>
+
+<!-- @case: inline code gets no button -->
+
+<p>Run <code>npm test</code> first.</p>
+
+<!-- @case: the ids restart for each document -->
+
+<pre id="code-yagane"><code class="language-sh">echo same
+</code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-yagane" aria-label="Copy code" hidden><svg class="markdown-copy-code-icon" data-icon="copy" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="markdown-copy-code-icon" data-icon="check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button></pre>

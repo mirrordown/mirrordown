@@ -17,6 +17,7 @@
     "@fontsource/monaspace-radon": "^5.3.0",
     "@fontsource/monaspace-xenon": "^5.3.0",
     "@mirrordown/preset-satteri": "workspace:*",
+    "@mirrordown/sat-copy-code": "workspace:*",
     "@mirrordown/sat-inline-svg": "workspace:*",
     "astro": "^7.3.8"
   },
