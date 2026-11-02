@@ -2,6 +2,13 @@
 
 
 
+
+## 0.4.0
+<sub>2026-11-02</sub>
+
+- *(minor)*
+  Add `copyCode`, on by default like every other feature: every code block gets a copy button, shown once the page loads the plugin's client script. An options object sets the button's icons and text. The presets' stylesheets include its styles.
+
 ## 0.3.0
 <sub>2026-10-28</sub>
 
