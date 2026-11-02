@@ -40,3 +40,8 @@ const currentPath = new URL(Astro.request.url).pathname;
     <slot />
   </body>
 </html>
+
+<script>
+  // The guides' code blocks' copy buttons: the preset renders them hidden, and this shows them and copies.
+  import "@mirrordown/sat-copy-code/client";
+</script>

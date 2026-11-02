@@ -1126,6 +1126,7 @@ __metadata:
     "@fontsource/monaspace-radon": "npm:^5.3.0"
     "@fontsource/monaspace-xenon": "npm:^5.3.0"
     "@mirrordown/preset-satteri": "workspace:*"
+    "@mirrordown/sat-copy-code": "workspace:*"
     "@mirrordown/sat-inline-svg": "workspace:*"
     astro: "npm:^7.3.8"
     typescript: "catalog:"
@@ -1201,6 +1202,18 @@ __metadata:
 "@mirrordown/mdit-caption@workspace:*, @mirrordown/mdit-caption@workspace:^, @mirrordown/mdit-caption@workspace:packages/mdit-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-caption@workspace:packages/mdit-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-copy-code@workspace:^, @mirrordown/mdit-copy-code@workspace:packages/mdit-copy-code":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-copy-code@workspace:packages/mdit-copy-code"
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
@@ -1446,6 +1459,7 @@ __metadata:
     "@mirrordown/mdit-attrs": "workspace:^"
     "@mirrordown/mdit-autolink-headings": "workspace:^"
     "@mirrordown/mdit-caption": "workspace:^"
+    "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
     "@mirrordown/mdit-del": "workspace:^"
     "@mirrordown/mdit-github-alerts": "workspace:^"
@@ -1480,6 +1494,7 @@ __metadata:
     "@mirrordown/remd-attrs": "workspace:^"
     "@mirrordown/remd-autolink-headings": "workspace:^"
     "@mirrordown/remd-caption": "workspace:^"
+    "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
     "@mirrordown/remd-del": "workspace:^"
     "@mirrordown/remd-github-alerts": "workspace:^"
@@ -1516,6 +1531,7 @@ __metadata:
     "@mirrordown/sat-abbr": "workspace:^"
     "@mirrordown/sat-autolink-headings": "workspace:^"
     "@mirrordown/sat-caption": "workspace:^"
+    "@mirrordown/sat-copy-code": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
     "@mirrordown/sat-ins": "workspace:^"
@@ -1588,6 +1604,19 @@ __metadata:
   peerDependencies:
     unified: ^11.0.0
     vfile: ^6.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-copy-code@workspace:^, @mirrordown/remd-copy-code@workspace:packages/remd-copy-code":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-copy-code@workspace:packages/remd-copy-code"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
   languageName: unknown
   linkType: soft
 
@@ -1888,6 +1917,17 @@ __metadata:
 "@mirrordown/sat-caption@workspace:^, @mirrordown/sat-caption@workspace:packages/sat-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-caption@workspace:packages/sat-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5 || ^0.11.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-copy-code@workspace:*, @mirrordown/sat-copy-code@workspace:^, @mirrordown/sat-copy-code@workspace:packages/sat-copy-code":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-copy-code@workspace:packages/sat-copy-code"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"

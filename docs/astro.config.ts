@@ -68,6 +68,17 @@ export default defineConfig({
   markdown: {
     // Astro highlights code before the plugins run; mermaid diagrams render instead.
     syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
+    // Shiki rebuilds each code block without its fence's meta; this keeps it on the <pre>, where copy-code reads `nocopy`.
+    shikiConfig: {
+      transformers: [
+        {
+          pre(node): void {
+            const meta = this.options.meta?.__raw;
+            if (meta) node.properties.dataMeta = meta;
+          }
+        }
+      ]
+    },
     processor: satteri({
       ...preset,
       hastPlugins: [...preset.hastPlugins, satteriInlineSvg()]

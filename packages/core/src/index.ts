@@ -91,3 +91,16 @@ export {
   startsCaption,
   stripCaptionMarker
 } from "./caption.js";
+export {
+  COPY_CODE_CLASS,
+  COPY_CODE_COMMAND,
+  COPY_CODE_ICONS,
+  COPY_CODE_TEXT,
+  copyCodeBlock,
+  copyCodeIds,
+  copyCodeOptedOut,
+  copyCodeText,
+  createCopyCodeButton,
+  type CopyCodeOptions,
+  type CopyCodeState
+} from "./copy-code.js";
