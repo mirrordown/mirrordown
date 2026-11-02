@@ -10,6 +10,11 @@ import type {
 import type { Properties } from "hast";
 import { rebuiltParagraphs } from "./cut-attributes.js";
 
+/** A paragraph's data, with the attributes mdast-util-to-hast reads. Its type augmentation adds `hProperties` to mdast's data where it's loaded, but core doesn't load it; the intersection types the property either way. */
+type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
+  hProperties?: Properties;
+};
+
 /** The `>` markers a source line starts with. */
 export const markerCount = (line: string): number =>
   (/^[ \t>]*/.exec(line)?.[0] ?? "").split(">").length - 1;
@@ -86,7 +91,7 @@ export const paraToLines = (
 export const paragraphProperties = (
   para: Paragraph
 ): Properties | undefined => {
-  const data: { hProperties?: Properties } | undefined = para.data;
+  const data: ParagraphAttributes | undefined = para.data;
   return data?.hProperties;
 };
 
@@ -244,10 +249,10 @@ export const endGroupsAtMarkers = (
       const moved = linesToParagraph(lines.slice(outside));
       if (!kept || !moved) continue;
       para.children = kept.children;
-      const data: { hProperties?: Properties } | undefined = para.data;
+      const data: ParagraphAttributes | undefined = para.data;
       if (data?.hProperties) {
         const { hProperties, ...rest } = data;
-        const movedData: { hProperties?: Properties } = { hProperties };
+        const movedData: ParagraphAttributes = { hProperties };
         moved.data = movedData;
         para.data = rest;
       }

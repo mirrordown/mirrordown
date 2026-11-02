@@ -11,13 +11,14 @@ import type {
 
 // micromark syntax for `~subscript~` and `^superscript^`, shared by remd-sub and remd-sup. Each marker is a single-character delimiter run with emphasis-style flanking. One resolver pairs both markers: it takes closers left to right and pairs each with the nearest opener of the same marker, so crossing runs (`^a~b^c~`) resolve leftmost-first and the two nest, as in markdown-it and Sätteri. It runs once however many of the two constructs a document uses, because micromark calls each `resolveAll` function once.
 
+/** The marker characters. Spelled out rather than taken from `SCRIPTS`, which would bring the table into the public API through `scriptSyntax`, and JSR wants explicit types there. */
+type Marker = "~" | "^";
+
 /** The marker characters, and the micromark token types each produces. */
 const SCRIPTS = {
   "~": { code: 126, type: `subscript` },
   "^": { code: 94, type: `superscript` }
-} as const;
-
-type Marker = keyof typeof SCRIPTS;
+} as const satisfies Record<Marker, { code: number; type: string }>;
 
 // Extensions register their token types by augmenting micromark's TokenTypeMap, which JSR rejects; this one assertion stands in for it.
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion
