@@ -1,0 +1,11 @@
+{
+  "name": "@mirrordown/remd-file-tree",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "imports": {
+    "hast": "npm:@types/hast@^3"
+  }
+}

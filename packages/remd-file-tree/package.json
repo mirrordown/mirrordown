@@ -1,0 +1,51 @@
+{
+  "name": "@mirrordown/remd-file-tree",
+  "description": "A rehype plugin to render file trees from filetree code fences, with Seti icons, git status and collapsible folders, that read as plain text where the plugin is not installed.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "style": "./dist/file-tree.css",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./client": {
+      "development": "./src/client.ts",
+      "types": "./dist/client.d.mts",
+      "import": "./dist/client.mjs"
+    },
+    "./*.css": "./dist/*.css"
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^",
+    "unist-util-visit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/hast": "catalog:",
+    "unified": "catalog:"
+  },
+  "peerDependencies": {
+    "unified": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  }
+}

@@ -35,6 +35,7 @@ const slugs = [
   "copy-code",
   "definition-list",
   "del",
+  "file-tree",
   "github-alerts",
   "ins",
   "kbd",

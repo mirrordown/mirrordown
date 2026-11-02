@@ -1,0 +1,38 @@
+{
+  "name": "markdown-file-tree",
+  "displayName": "Markdown File Tree",
+  "version": "0.0.0",
+  "description": "Renders filetree code blocks as file trees in VSCode's markdown preview, like the explorer: Seti icons, git status colors and folders that open and close, in the editor's theme",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "devDependencies": {
+    "@mirrordown/mdit-file-tree": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/file-tree.css"
+    ]
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec postcss src/file-tree.css --output dist/file-tree.css && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}

@@ -9,6 +9,7 @@ import { caption } from "@mirrordown/mdit-caption";
 import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
 import { del } from "@mirrordown/mdit-del";
+import { fileTree, type FileTreeOptions } from "@mirrordown/mdit-file-tree";
 import {
   githubAlerts,
   type AlertOptions
@@ -42,6 +43,7 @@ export interface MirrordownOptions {
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
   del?: boolean;
+  fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
@@ -103,6 +105,7 @@ export const mirrordown = (
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);
+  configured(options.fileTree, fileTree);
   configured(options.copyCode, copyCode);
   on(options.sectionize, sectionize);
   // Before autolink-headings, which links to the ids slug sets.

@@ -27,6 +27,7 @@ const EXTENSIONS = [
   ["markdown-definition-list", "definition-list"],
   ["markdown-del", "del"],
   ["markdown-denden-furigana", "ruby"],
+  ["markdown-file-tree", "file-tree"],
   ["markdown-github-alerts", "github-alerts"],
   ["markdown-ins", "ins"],
   ["markdown-kbd", "kbd"],

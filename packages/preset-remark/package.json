@@ -28,6 +28,7 @@
     "@mirrordown/remd-copy-code": "workspace:^",
     "@mirrordown/remd-definition-list": "workspace:^",
     "@mirrordown/remd-del": "workspace:^",
+    "@mirrordown/remd-file-tree": "workspace:^",
     "@mirrordown/remd-github-alerts": "workspace:^",
     "@mirrordown/remd-ins": "workspace:^",
     "@mirrordown/remd-kbd": "workspace:^",

@@ -7,6 +7,11 @@ import {
   type CopyCodePlugin
 } from "@mirrordown/sat-copy-code";
 import {
+  satteriFileTree,
+  type FileTreeOptions,
+  type FileTreePlugin
+} from "@mirrordown/sat-file-tree";
+import {
   satteriAutolinkHeadings,
   type AutolinkHeadingsOptions,
   type AutolinkHeadingsPlugin
@@ -82,6 +87,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `definitionList` feature. */
   definitionList?: boolean;
   del?: boolean;
+  fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
@@ -130,6 +136,7 @@ export interface MirrordownPreset {
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
     | Factory<CopyCodePlugin>
+    | Factory<FileTreePlugin>
     | Factory<LightboxPlugin>
     | Factory<MermaidPelePlugin>
     | Factory<SectionizePlugin>
@@ -183,11 +190,14 @@ export const mirrordown = (
       // After the containers, whose blocks it captions.
       ...(options.caption === false ? [] : [satteriCaption()])
     ],
-    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
+    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), then file-tree (copy-code no longer sees the trees as code blocks either), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [
       ...(options.mermaidPele === false
         ? []
         : [satteriMermaidPele(settings(options.mermaidPele))]),
+      ...(options.fileTree === false
+        ? []
+        : [satteriFileTree(settings(options.fileTree))]),
       ...(options.copyCode === false
         ? []
         : [satteriCopyCode(settings(options.copyCode))]),
