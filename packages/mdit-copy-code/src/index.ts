@@ -1,10 +1,17 @@
-import type { PluginSimple } from "markdown-it";
+import type { PluginWithOptions } from "markdown-it";
 import {
-  copyCodeButton,
+  COPY_CODE_ICONS,
+  COPY_CODE_TEXT,
   copyCodeIds,
   copyCodeOptedOut,
-  copyCodeText
+  copyCodeText,
+  createCopyCodeButton,
+  type CopyCodeOptions,
+  type CopyCodeState
 } from "@mirrordown/core";
+
+export type { CopyCodeOptions, CopyCodeState };
+export { COPY_CODE_ICONS, COPY_CODE_TEXT };
 
 // The document's id generator, on the render environment: a core rule starts a fresh one for each document.
 const IDS = Symbol(`copyCodeIds`);
@@ -13,10 +20,14 @@ interface CopyCodeEnv {
 }
 
 /**
- * markdown-it plugin that adds a copy button to each code block, fenced or indented, in its `<pre>` after the `<code>`: a `<button class="markdown-copy-code">` sending the `--copy` invoker command to the block's `<pre>`, which takes an id from a hash of its text. The buttons render `hidden`; the client script (`@mirrordown/mdit-copy-code/client`) copies and shows them. ` ```sh nocopy ` leaves a block without one, and a block another plugin renders as something else (such as a mermaid diagram) gets none. The ids and the button are shared with the rehype and Sätteri plugins through `@mirrordown/core`.
+ * markdown-it plugin that adds a copy button to each code block, fenced or indented, in its `<pre>` after the `<code>`: a `<button class="markdown-copy-code">` sending the `--copy` invoker command to the block's `<pre>`, which takes an id from a hash of its text. The buttons render `hidden`; the client script (`@mirrordown/mdit-copy-code/client`) copies and shows them. ` ```sh nocopy ` leaves a block without one, and a block another plugin renders as something else (such as a mermaid diagram) gets none. Options set the button's icons and text. The ids and the button are shared with the rehype and Sätteri plugins through `@mirrordown/core`.
  */
-export const copyCode: PluginSimple = (md) => {
+export const copyCode: PluginWithOptions<CopyCodeOptions> = (
+  md,
+  options = {}
+) => {
   type RenderRule = NonNullable<typeof md.renderer.rules.fence>;
+  const copyCodeButton = createCopyCodeButton(options);
 
   md.core.ruler.push(`copy_code`, (state) => {
     const env: CopyCodeEnv = state.env;

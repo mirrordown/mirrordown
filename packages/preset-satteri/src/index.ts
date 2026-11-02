@@ -3,6 +3,7 @@ import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
 import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
   satteriCopyCode,
+  type CopyCodeOptions,
   type CopyCodePlugin
 } from "@mirrordown/sat-copy-code";
 import {
@@ -77,7 +78,7 @@ export interface MirrordownOptions {
   attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   caption?: boolean;
-  copyCode?: boolean;
+  copyCode?: boolean | CopyCodeOptions;
   /** Sätteri's built-in `definitionList` feature. */
   definitionList?: boolean;
   del?: boolean;
@@ -187,7 +188,9 @@ export const mirrordown = (
       ...(options.mermaidPele === false
         ? []
         : [satteriMermaidPele(settings(options.mermaidPele))]),
-      ...(options.copyCode === false ? [] : [satteriCopyCode()]),
+      ...(options.copyCode === false
+        ? []
+        : [satteriCopyCode(settings(options.copyCode))]),
       ...(options.tabIcons === false
         ? []
         : [satteriTabIcons(settings(options.tabIcons))]),

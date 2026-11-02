@@ -1,6 +1,6 @@
 // oxlint-disable-next-line typescript/triple-slash-reference
 /// <reference types="vite/client" />
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { copyCode } from "../../packages/mdit-copy-code/src";
 import css from "../../packages/mdit-copy-code/src/copy-code.css?inline";
@@ -49,13 +49,47 @@ describe(`copy-code client`, () => {
     expect(copied).toEqual([`npm test`, `const a = 1;\nconst b = 2;`]);
   });
 
-  it(`shows that it copied, with a check and a new label`, () => {
+  // As GitHub does: a check, and the copied text in a pill beside the button, which names it too.
+  it(`shows that it copied, with a check, its copied text and a new label`, () => {
     expect(first?.hasAttribute(`data-copied`)).toBe(true);
-    expect(first?.getAttribute(`aria-label`)).toBe(`Copied`);
-    const check = first?.querySelector(`[data-icon="check"]`);
-    const copy = first?.querySelector(`[data-icon="copy"]`);
-    expect(check && shown(check)).toBe(true);
-    expect(copy && shown(copy)).toBe(false);
+    expect(first?.getAttribute(`aria-label`)).toBe(`Copied!`);
+    const check = first?.querySelector(
+      `.markdown-copy-code-icon[data-state="copied"]`
+    );
+    const copy = first?.querySelector(
+      `.markdown-copy-code-icon[data-state="copy"]`
+    );
+    const text = first?.querySelector(`.markdown-copy-code-text`);
+    if (!first || !check || !copy || !text) throw new Error(`missing parts`);
+    expect(shown(check)).toBe(true);
+    expect(shown(copy)).toBe(false);
+    expect(shown(text)).toBe(true);
+    // Beside the button, toward the block's start, and level with it.
+    const pill = text.getBoundingClientRect();
+    const rect = first.getBoundingClientRect();
+    expect(pill.right).toBeLessThanOrEqual(rect.left);
+    expect(
+      Math.abs(pill.top + pill.height / 2 - (rect.top + rect.height / 2))
+    ).toBeLessThan(1);
+  });
+
+  // The name comes from the plugin's options, so the script must give back the one the button had, not a default.
+  it(`gives back its own label once the copied state ends`, async () => {
+    const pre = document.createElement(`div`);
+    pre.innerHTML = new MarkdownIt()
+      .use(copyCode, { text: { copy: `Copy`, copied: `Done` } })
+      .render("```sh\nls\n```");
+    document.body.append(pre);
+    const button = pre.querySelector<HTMLButtonElement>(`.markdown-copy-code`);
+    vi.useFakeTimers();
+    button?.click();
+    await vi.waitFor(() =>
+      expect(button?.getAttribute(`aria-label`)).toBe(`Done`)
+    );
+    vi.advanceTimersByTime(2000);
+    vi.useRealTimers();
+    expect(button?.getAttribute(`aria-label`)).toBe(`Copy`);
+    expect(button?.hasAttribute(`data-copied`)).toBe(false);
   });
 
   // Without a wrapper, anchor positioning is what puts each button on its own block.

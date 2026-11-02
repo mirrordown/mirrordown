@@ -6,7 +6,7 @@ import {
   type AutolinkHeadingsOptions
 } from "@mirrordown/mdit-autolink-headings";
 import { caption } from "@mirrordown/mdit-caption";
-import { copyCode } from "@mirrordown/mdit-copy-code";
+import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
 import { del } from "@mirrordown/mdit-del";
 import {
@@ -39,7 +39,7 @@ export interface MirrordownOptions {
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   caption?: boolean;
-  copyCode?: boolean;
+  copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
   del?: boolean;
   githubAlerts?: boolean | AlertOptions;
@@ -103,7 +103,7 @@ export const mirrordown = (
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);
-  on(options.copyCode, copyCode);
+  configured(options.copyCode, copyCode);
   on(options.sectionize, sectionize);
   // Before autolink-headings, which links to the ids slug sets.
   configured(options.slug, slug);

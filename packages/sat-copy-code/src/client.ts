@@ -5,6 +5,8 @@ const COMMAND = `--copy`;
 const COPIED_FOR = 2000;
 
 const timers = new WeakMap<HTMLElement, number>();
+// Each button's own name, given back once its copied state ends.
+const labels = new WeakMap<HTMLElement, string>();
 
 // A polite live region, so screen readers hear that the code was copied; attached again after navigation replaces the body it was in.
 const status = document.createElement(`div`);
@@ -23,9 +25,15 @@ const copy = async (button: HTMLElement, pre: Element): Promise<void> => {
     announce(`Couldn't copy the code`);
     return;
   }
-  announce(`Copied`);
+  // The button's copied text, as the plugin's options set it, names it while it shows.
+  const copied =
+    button.querySelector(`.markdown-copy-code-text[data-state="copied"]`)
+      ?.textContent ?? `Copied`;
+  if (!labels.has(button))
+    labels.set(button, button.getAttribute(`aria-label`) ?? ``);
+  announce(copied);
   button.dataset.copied = ``;
-  button.setAttribute(`aria-label`, `Copied`);
+  button.setAttribute(`aria-label`, copied);
   clearTimeout(timers.get(button));
   timers.set(
     button,
@@ -33,7 +41,7 @@ const copy = async (button: HTMLElement, pre: Element): Promise<void> => {
       // Cleared, so copying again is announced again.
       status.textContent = ``;
       delete button.dataset.copied;
-      button.setAttribute(`aria-label`, `Copy code`);
+      button.setAttribute(`aria-label`, labels.get(button) ?? ``);
     }, COPIED_FOR)
   );
 };

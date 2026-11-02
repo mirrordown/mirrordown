@@ -11,6 +11,9 @@
   hover it shows while the block is hovered or the button focused; elsewhere
   it sits at the end of the block.
 
+  Its states follow GitHub's: a muted icon with no fill at rest, a tint on
+  hover, and once copied a green check with its text in a pill beside it.
+
   To override public tokens, set them on the button or any ancestor:
 
     .content { --markdown-copy-code-tint: oklch(0.6 0.15 250 / 0.2); }
@@ -18,40 +21,47 @@
 
 @layer markdown-copy-code {
   .markdown-copy-code {
-    /* The block's own colors, so the button suits any code theme: its text color, and its background under a tint of that color. */
+    /* The block's own colors, so the button suits any code theme: its background, and a tint of its text color on hover. */
     --_copy-code-tint: var(
       --markdown-copy-code-tint,
-      color-mix(in oklch, currentColor 12%, transparent)
+      color-mix(in oklch, currentColor 10%, transparent)
     );
-    --_copy-code-border: var(
-      --markdown-copy-code-border,
-      color-mix(in oklch, currentColor 30%, transparent)
+    /* Green, drawn a quarter of the way toward the text color, so it reads on light and dark blocks alike. */
+    --_copy-code-success: var(
+      --markdown-copy-code-success,
+      color-mix(in oklch, oklch(0.62 0.17 150) 75%, currentColor)
     );
+    --_copy-code-fill: transparent;
 
+    position: relative;
     align-items: center;
     justify-content: center;
     inline-size: 2rem;
     block-size: 2rem;
     margin-inline-start: auto;
     padding: 0;
-    border: 1px solid var(--_copy-code-border);
+    border: 0;
     border-radius: 0.375rem;
     background-color: inherit;
-    background-image: linear-gradient(
-      var(--_copy-code-tint),
-      var(--_copy-code-tint)
-    );
+    /* The tint as an inset shadow over the block's background, so it can fade. */
+    box-shadow: inset 0 0 0 1rem var(--_copy-code-fill);
     color: inherit;
     cursor: pointer;
+    /* GitHub's button timing. */
+    transition: box-shadow 80ms cubic-bezier(0.33, 1, 0.68, 1);
 
     @media (hover: hover) and (pointer: fine) {
       &:hover {
-        --_copy-code-tint: color-mix(in oklch, currentColor 20%, transparent);
+        --_copy-code-fill: var(--_copy-code-tint);
       }
     }
 
     &:active {
-      --_copy-code-tint: color-mix(in oklch, currentColor 28%, transparent);
+      --_copy-code-fill: color-mix(
+        in oklch,
+        var(--_copy-code-tint),
+        currentColor 10%
+      );
     }
 
     &:focus-visible {
@@ -61,17 +71,65 @@
   }
 
   .markdown-copy-code-icon {
+    display: flex;
     inline-size: 1rem;
     block-size: 1rem;
+    color: color-mix(in oklch, currentColor 75%, transparent);
+
+    > svg {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    &[data-state="copied"] {
+      color: var(--_copy-code-success);
+    }
   }
 
-  .markdown-copy-code [data-icon="check"],
-  .markdown-copy-code[data-copied] [data-icon="copy"] {
+  .markdown-copy-code:not([data-copied]) > [data-state="copied"],
+  .markdown-copy-code[data-copied] > [data-state="copy"],
+  .markdown-copy-code-text {
     display: none;
   }
 
-  .markdown-copy-code[data-copied] [data-icon="check"] {
+  /* The text: a pill beside the button, toward the block's start, dark with white text as GitHub's tooltip is, and a lighter gray where the page's color-scheme is dark, so it stands off a dark page. */
+  .markdown-copy-code-text {
+    position: absolute;
+    inset-inline-end: calc(100% + 0.375rem);
+    inset-block-start: 50%;
+    translate: 0 -50%;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    background-color: light-dark(oklch(0.27 0 none), oklch(0.4 0 none));
+    /* A faint ring in its text color, which shows only where the block is as dark as the pill. */
+    box-shadow: 0 0 0 1px color-mix(in oklch, currentColor 25%, transparent);
+    color: oklch(0.98 0 none);
+    font:
+      0.75rem/1.5 system-ui,
+      sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: markdown-copy-code-appear 0.1s ease-out;
+  }
+
+  .markdown-copy-code[data-copied]
+    > .markdown-copy-code-text[data-state="copied"],
+  .markdown-copy-code:not([data-copied]):focus-visible
+    > .markdown-copy-code-text[data-state="copy"] {
     display: block;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .markdown-copy-code:not([data-copied]):hover
+      > .markdown-copy-code-text[data-state="copy"] {
+      display: block;
+    }
+  }
+
+  @keyframes markdown-copy-code-appear {
+    from {
+      opacity: 0;
+    }
   }
 
   @supports (anchor-scope: --x) {
@@ -103,7 +161,9 @@
 
       @media (prefers-reduced-motion: no-preference) {
         .markdown-copy-code {
-          transition: opacity 0.15s ease-out;
+          transition:
+            box-shadow 80ms cubic-bezier(0.33, 1, 0.68, 1),
+            opacity 0.15s ease-out;
         }
       }
     }

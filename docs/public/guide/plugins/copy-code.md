@@ -14,8 +14,9 @@ The `copy-code` plugin adds a copy button to every code block. The button goes i
 ```html
 <pre id="code-mxxtmr"><code class="language-sh">npm install @mirrordown/remd-copy-code
 </code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-mxxtmr" aria-label="Copy code" hidden>
-  <svg data-icon="copy">...</svg>
-  <svg data-icon="check">...</svg>
+  <span class="markdown-copy-code-icon" data-state="copy" aria-hidden="true"><svg>...</svg></span>
+  <span class="markdown-copy-code-icon" data-state="copied" aria-hidden="true"><svg>...</svg></span>
+  <span class="markdown-copy-code-text" data-state="copied" aria-hidden="true">Copied!</span>
 </button></pre>
 ```
 
@@ -85,28 +86,68 @@ Import the script once per page, from the package for your engine. It does three
 
 - **Shows the buttons.** It adopts a small stylesheet into the document, so buttons on pages that client-side navigation swaps in, such as Astro's view transitions, show too.
 - **Copies.** It handles the `--copy` command by copying the text of the block's `<code>`, without the newline markdown ends a block with.
-- **Says so.** The button shows a check and is labeled "Copied" for two seconds, and a polite live region tells screen readers the code was copied.
+- **Says so.** For two seconds, as GitHub's button does, it shows a check with its copied text beside it, "Copied!" by default, and takes that text as its label. A polite live region reads the text to screen readers.
 
 ```ts
 import "@mirrordown/remd-copy-code/client";
 ```
 
+## Configuration
+
+All options are passed when registering the plugin, or as the presets' `copyCode` option.
+
+### Icons
+
+`icons` replaces the button's icon in either state with your own SVG markup: `copy` before the block is copied, `copied` after. The stylesheet sizes it to `1rem` and colors it with `currentColor`. An icon can be replaced but not removed, since it's all the button holds, so an empty one keeps the default. The defaults are Lucide's copy and check icons, exported as `COPY_CODE_ICONS`.
+
+% Remark
+> ```ts
+> rehypeCopyCode({ icons: { copied: `<svg viewBox="0 0 16 16">...</svg>` } })
+> ```
+% Markdown-It
+> ```ts
+> md.use(copyCode, { icons: { copied: `<svg viewBox="0 0 16 16">...</svg>` } })
+> ```
+% Sätteri
+> ```ts
+> satteriCopyCode({ icons: { copied: `<svg viewBox="0 0 16 16">...</svg>` } })
+> ```
+
+### Text
+
+`text` sets the text shown beside the button in each state. The `copied` text, "Copied!" by default, shows once the block is copied. A `copy` text, none by default, shows while the button is hovered or focused. Either one also names the button while it shows, so set them in your page's language. `null` or an empty string shows no text in that state.
+
+% Remark
+> ```ts
+> rehypeCopyCode({ text: { copy: "Copy", copied: "Copied" } })
+> ```
+% Markdown-It
+> ```ts
+> md.use(copyCode, { text: { copy: "Copy", copied: "Copied" } })
+> ```
+% Sätteri
+> ```ts
+> satteriCopyCode({ text: { copy: "Copy", copied: "Copied" } })
+> ```
+
 ## Accessibility
 
-The button is a real `<button>`, labeled "Copy code", so it's reachable by keyboard and named for screen readers. Its icons are `aria-hidden`. The button is hidden until the script can copy, so assistive technology never meets a control that does nothing.
+The button is a real `<button>`, so it's reachable by keyboard and named for screen readers. It's labeled "Copy code", or by its copy text when it has one, so the text a reader sees is the button's name. Its icons and text are `aria-hidden`, since the label already says what they show. The button is hidden until the script can copy, so assistive technology never meets a control that does nothing.
 
 ## Customization
 
 The stylesheet keeps its rules in `@layer markdown-copy-code`, so any unlayered CSS you write overrides them. Where [CSS anchor positioning](https://developer.mozilla.org/docs/Web/CSS/CSS_anchor_positioning) with `anchor-scope` is supported, the button sits in the block's top corner, anchored to the `<pre>` itself, so it stays put while a long line scrolls. On devices that hover, it shows while the block is hovered or the button focused. Elsewhere it sits at the end of the block.
 
-The button takes its colors from the block, so it suits any code theme: the block's text color, and its background under a tint of that color. Change the tint and the border with custom properties on the button or any ancestor:
+Its states follow GitHub's. At rest it's a muted icon on the block's background. Hovered, a tint of the block's text color fades in. Once copied, the icon turns into a green check and the text shows in a pill beside it. The pill is dark with white text, as GitHub's is, in a lighter gray where the page's [`color-scheme`](https://developer.mozilla.org/docs/Web/CSS/color-scheme) is dark, with a faint ring that sets it off a block of the same shade. The button itself takes its colors from the block, so it suits any code theme. Change the hover tint and the green with custom properties on the button or any ancestor:
 
 ```css
 .content {
   --markdown-copy-code-tint: oklch(0.6 0.15 250 / 0.2);
-  --markdown-copy-code-border: oklch(0.6 0.15 250 / 0.5);
+  --markdown-copy-code-success: oklch(0.6 0.15 250);
 }
 ```
+
+To color the pill yourself, set `background-color` and `color` on `.markdown-copy-code-text`. A page that sets no `color-scheme` gets the light page's pill.
 
 ## VS Code
 
