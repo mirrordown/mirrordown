@@ -31,6 +31,7 @@
     "@mirrordown/mdit-copy-code": "workspace:^",
     "@mirrordown/mdit-definition-list": "workspace:^",
     "@mirrordown/mdit-del": "workspace:^",
+    "@mirrordown/mdit-file-tree": "workspace:^",
     "@mirrordown/mdit-github-alerts": "workspace:^",
     "@mirrordown/mdit-ins": "workspace:^",
     "@mirrordown/mdit-kbd": "workspace:^",

@@ -115,8 +115,8 @@
       --content-padding-inline: 0px;
       padding-inline: 0;
       padding-block: 0.75rem 3rem;
-      /* Only pre elements may scroll horizontally; cancel rubberbanding on the content area */
-      overflow-x: hidden;
+      /* Only pre elements may scroll horizontally; cancel rubberbanding on the content area. Clipped rather than hidden, which would make it a scroll container that sticky content (file trees' folder rows) sticks to instead of the page. */
+      overflow-x: clip;
       overscroll-behavior-x: none;
     }
 

@@ -2,6 +2,7 @@
 @import "@mirrordown/remd-autolink-headings/autolink-headings.css";
 @import "@mirrordown/remd-caption/caption.css";
 @import "@mirrordown/remd-copy-code/copy-code.css";
+@import "@mirrordown/remd-file-tree/file-tree.css";
 @import "@mirrordown/remd-github-alerts/github-alerts.css";
 @import "@mirrordown/remd-lightbox/lightbox.css";
 @import "@mirrordown/remd-mermaid-pele/mermaid-pele.css";

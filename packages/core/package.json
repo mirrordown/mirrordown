@@ -23,6 +23,11 @@
       "development": "./src/tab-icons/index.ts",
       "types": "./dist/tab-icons.d.mts",
       "import": "./dist/tab-icons.mjs"
+    },
+    "./file-tree": {
+      "development": "./src/file-tree/index.ts",
+      "types": "./dist/file-tree.d.mts",
+      "import": "./dist/file-tree.mjs"
     }
   },
   "engines": {

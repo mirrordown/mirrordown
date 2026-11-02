@@ -11,6 +11,10 @@ import {
   type CopyCodeOptions
 } from "@mirrordown/remd-copy-code";
 import {
+  rehypeFileTree,
+  type FileTreeOptions
+} from "@mirrordown/remd-file-tree";
+import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions
 } from "@mirrordown/remd-autolink-headings";
@@ -69,6 +73,7 @@ export interface MirrordownOptions {
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
   del?: boolean;
+  fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
   ins?: boolean;
   kbd?: boolean;
@@ -159,7 +164,8 @@ export const mirrordown = (
     rehypePlugins: [
       // First, so the plugins after it see the diagrams' <svg>.
       ...configured(options.mermaidPele, rehypeMermaidPele),
-      // After mermaid-pele: a diagram is no longer a code block.
+      ...configured(options.fileTree, rehypeFileTree),
+      // After mermaid-pele and file-tree: a diagram or a tree is no longer a code block.
       ...configured(options.copyCode, rehypeCopyCode),
       ...configured(options.tabIcons, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),

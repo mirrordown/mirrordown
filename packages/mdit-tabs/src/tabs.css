@@ -62,7 +62,9 @@
     border: 1px solid var(--_tabs-border);
     border-radius: var(--_tabs-radius);
     background: var(--_tabs-bg);
-    overflow: hidden;
+    /* Clipped to the rounded corners rather than hidden, which would make it a scroll container: sticky content inside, such as a file tree's folder rows, would stick to it instead of the page. flow-root keeps the floats inside that overflow: hidden contained. */
+    display: flow-root;
+    overflow: clip;
   }
 
   /* ── Label strip ────────────────────────────────────────────────────────── */

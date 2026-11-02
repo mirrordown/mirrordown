@@ -2,10 +2,15 @@ import { defineConfig, fontProviders } from "astro/config";
 import { satteri } from "@astrojs/markdown-satteri";
 import { mirrordown } from "@mirrordown/preset-satteri";
 import { satteriInlineSvg } from "@mirrordown/sat-inline-svg";
+import githubDark from "@shikijs/themes/github-dark";
 
 // The Mirrordown suite on Sätteri, plus inline-svg, which the preset leaves out because it reads files.
 // The lightbox shows a captioned image's caption in its dialog, as its guide demonstrates.
-const preset = mirrordown({ lightbox: { caption: true } });
+// File trees take the code blocks' Shiki theme, so they match.
+const preset = mirrordown({
+  lightbox: { caption: true },
+  fileTree: { theme: githubDark }
+});
 
 export default defineConfig({
   fonts: [
@@ -66,8 +71,8 @@ export default defineConfig({
   ],
   integrations: [],
   markdown: {
-    // Astro highlights code before the plugins run; mermaid diagrams render instead.
-    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
+    // Astro highlights code before the plugins run; mermaid diagrams and file trees render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid", "filetree"] },
     // Shiki rebuilds each code block without its fence's meta; this keeps it on the <pre>, where copy-code reads `nocopy`.
     shikiConfig: {
       transformers: [

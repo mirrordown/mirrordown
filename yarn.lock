@@ -1127,7 +1127,9 @@ __metadata:
     "@fontsource/monaspace-xenon": "npm:^5.3.0"
     "@mirrordown/preset-satteri": "workspace:*"
     "@mirrordown/sat-copy-code": "workspace:*"
+    "@mirrordown/sat-file-tree": "workspace:*"
     "@mirrordown/sat-inline-svg": "workspace:*"
+    "@shikijs/themes": "npm:^4.5.0"
     astro: "npm:^7.3.8"
     typescript: "catalog:"
   languageName: unknown
@@ -1149,6 +1151,7 @@ __metadata:
     "@vitest/browser-playwright": "catalog:"
     "@vscode/vsce": "npm:^3.9.2"
     markdown-it: "npm:^14.2.0"
+    opentype.js: "npm:^2.0.0"
     playwright: "npm:^1.61.1"
     postcss: "npm:^8.5.15"
     postcss-cli: "npm:^11.0.1"
@@ -1238,6 +1241,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-del@workspace:packages/mdit-del"
   dependencies:
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-file-tree@workspace:*, @mirrordown/mdit-file-tree@workspace:^, @mirrordown/mdit-file-tree@workspace:packages/mdit-file-tree":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-file-tree@workspace:packages/mdit-file-tree"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
   peerDependencies:
@@ -1462,6 +1477,7 @@ __metadata:
     "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
     "@mirrordown/mdit-del": "workspace:^"
+    "@mirrordown/mdit-file-tree": "workspace:^"
     "@mirrordown/mdit-github-alerts": "workspace:^"
     "@mirrordown/mdit-ins": "workspace:^"
     "@mirrordown/mdit-kbd": "workspace:^"
@@ -1497,6 +1513,7 @@ __metadata:
     "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
     "@mirrordown/remd-del": "workspace:^"
+    "@mirrordown/remd-file-tree": "workspace:^"
     "@mirrordown/remd-github-alerts": "workspace:^"
     "@mirrordown/remd-ins": "workspace:^"
     "@mirrordown/remd-kbd": "workspace:^"
@@ -1533,6 +1550,7 @@ __metadata:
     "@mirrordown/sat-caption": "workspace:^"
     "@mirrordown/sat-copy-code": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
+    "@mirrordown/sat-file-tree": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
     "@mirrordown/sat-ins": "workspace:^"
     "@mirrordown/sat-kbd": "workspace:^"
@@ -1645,6 +1663,19 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-file-tree@workspace:^, @mirrordown/remd-file-tree@workspace:packages/remd-file-tree":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-file-tree@workspace:packages/remd-file-tree"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
   peerDependencies:
@@ -1939,6 +1970,17 @@ __metadata:
 "@mirrordown/sat-del@workspace:^, @mirrordown/sat-del@workspace:packages/sat-del":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-del@workspace:packages/sat-del"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.10.5 || ^0.11.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-file-tree@workspace:*, @mirrordown/sat-file-tree@workspace:^, @mirrordown/sat-file-tree@workspace:packages/sat-file-tree":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-file-tree@workspace:packages/sat-file-tree"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
@@ -2891,7 +2933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shikijs/themes@npm:4.5.0":
+"@shikijs/themes@npm:4.5.0, @shikijs/themes@npm:^4.5.0":
   version: 4.5.0
   resolution: "@shikijs/themes@npm:4.5.0"
   dependencies:
@@ -6048,6 +6090,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-file-tree@workspace:extensions/markdown-file-tree":
+  version: 0.0.0-use.local
+  resolution: "markdown-file-tree@workspace:extensions/markdown-file-tree"
+  dependencies:
+    "@mirrordown/mdit-file-tree": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-github-alerts@workspace:extensions/markdown-github-alerts":
   version: 0.0.0-use.local
   resolution: "markdown-github-alerts@workspace:extensions/markdown-github-alerts"
@@ -7106,6 +7158,15 @@ __metadata:
     is-inside-container: "npm:^1.0.0"
     wsl-utils: "npm:^0.1.0"
   checksum: 10/e6ad9474734eac3549dcc7d85e952394856ccaee48107c453bd6a725b82e3b8ed5f427658935df27efa76b411aeef62888edea8a9e347e8e7c82632ec966b30e
+  languageName: node
+  linkType: hard
+
+"opentype.js@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "opentype.js@npm:2.0.0"
+  bin:
+    ot: bin/ot
+  checksum: 10/406ad80d00594f98f10873c01390a8d5533e620cd04a003acc1c7c9615eb93e0620f44cc340a92d020a94207adf540ac72deca64645af90cf83f9b8466ee690f
   languageName: node
   linkType: hard
 

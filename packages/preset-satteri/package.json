@@ -26,6 +26,7 @@
     "@mirrordown/sat-caption": "workspace:^",
     "@mirrordown/sat-copy-code": "workspace:^",
     "@mirrordown/sat-del": "workspace:^",
+    "@mirrordown/sat-file-tree": "workspace:^",
     "@mirrordown/sat-github-alerts": "workspace:^",
     "@mirrordown/sat-ins": "workspace:^",
     "@mirrordown/sat-kbd": "workspace:^",

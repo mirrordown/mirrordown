@@ -8,8 +8,12 @@ export default defineConfig({
     }
   },
   pack: {
-    // The tab icons are their own entry, so only the tab-icons plugins load them.
-    entry: { index: "src/index.ts", "tab-icons": "src/tab-icons/index.ts" },
+    // The tab icons and file-tree icons are their own entries, so only the plugins that use them load them.
+    entry: {
+      index: "src/index.ts",
+      "tab-icons": "src/tab-icons/index.ts",
+      "file-tree": "src/file-tree/index.ts"
+    },
     dts: true
   }
 });

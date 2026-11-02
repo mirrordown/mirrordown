@@ -150,6 +150,11 @@ describe("presets", () => {
     { key: "definitionList", input: "Term\n: Definition", marker: "<dl>" },
     { key: "del", input: "a --gone-- b", marker: "<del>" },
     {
+      key: "fileTree",
+      input: "```filetree\nsrc/\n  index.ts\n```",
+      marker: 'class="markdown-file-tree"'
+    },
+    {
       key: "githubAlerts",
       input: "> [!NOTE]\n> Body",
       marker: "markdown-alert"

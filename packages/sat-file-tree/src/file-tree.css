@@ -1,0 +1,613 @@
+/*
+  File tree — default stylesheet
+  ------------------------------
+  Its visual rules live inside @layer markdown-file-tree so any unlayered
+  consumer CSS overrides them without needing !important. The resets that
+  keep a page's list styles off the tree sit outside the layer, since a
+  page's unlayered CSS would beat them inside it.
+
+  A tree is a <ul class="markdown-file-tree"> of rows, laid out like VS Code's
+  explorer: rows of one height that span the tree, indented by depth, with a
+  chevron on each folder, indent guides, Seti's icons and colors, and git
+  status colors with the status's letter at the row's end. Each folder is a
+  <details>, so it opens and closes without a script; its row sticks to the
+  top of the page while its contents scroll past.
+
+  Each color comes from, in order: a public token set on the tree or any
+  ancestor (--markdown-file-tree-<name>), the Shiki theme the plugin was given
+  (--markdown-file-tree-theme-<name>, set on the tree), or the default here.
+  Each color falls back on its own, so a partial override keeps the rest, and
+  an invalid value is ignored rather than leaving that color unset.
+
+    .content { --markdown-file-tree-hover: oklch(0.6 0.15 250 / 0.15); }
+*/
+
+/*
+  How an invalid value falls back: the tree holds each color's default in a
+  registered private property, and each row reads the public token, or else
+  the theme's, into it again. A registered color property given something
+  that isn't a color, or nothing, inherits instead, so the row keeps the
+  tree's default. (With var() alone, an invalid value would unset the color
+  it's used for.) An invalid public token gives the default, not the theme's
+  color: a fallback can only skip to the parent's value. The registrations
+  are global, so they're named after the plugin.
+*/
+@property --_file-tree-background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-hover {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-highlight {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-highlight-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-guide {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-comment {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-focus {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-added {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-modified {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-deleted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-renamed {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-untracked {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-ignored {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-blue {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-green {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-orange {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-pink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-purple {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-red {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-yellow {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-grey {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-grey-light {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-white {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-ignore {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_file-tree-seti-primary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* Where stuck folder rows stop: below a page's fixed header, for one. Registered, so an invalid value is ignored. */
+@property --markdown-file-tree-sticky-offset {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* Outside the layer, and specific enough to beat `.content ul li`: a page's own list styles, unlayered as prose styles usually are, would otherwise bullet, indent and space the tree's lists, and the rows would no longer span the tree. */
+.markdown-file-tree[class] {
+  padding: 0.375rem 0;
+  list-style: none;
+}
+
+.markdown-file-tree details > ul,
+.markdown-file-tree li[data-depth] {
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  list-style: none;
+}
+
+@layer markdown-file-tree {
+  .markdown-file-tree {
+    /* The defaults: opaque, so a stuck folder row covers the rows scrolling under it. */
+    --_file-tree-background: color-mix(in oklch, Canvas, CanvasText 4%);
+    --_file-tree-foreground: CanvasText;
+    --_file-tree-hover: color-mix(in oklch, currentColor 8%, transparent);
+    --_file-tree-highlight: color-mix(in oklch, currentColor 14%, transparent);
+    --_file-tree-highlight-foreground: currentColor;
+    --_file-tree-guide: color-mix(in oklch, currentColor 20%, transparent);
+    --_file-tree-comment: color-mix(in oklch, currentColor 55%, transparent);
+    --_file-tree-focus: currentColor;
+    --_file-tree-added: light-dark(#587c0c, #81b88b);
+    --_file-tree-modified: light-dark(#895503, #e2c08d);
+    --_file-tree-deleted: light-dark(#ad0707, #c74e39);
+    --_file-tree-renamed: light-dark(#007100, #73c991);
+    --_file-tree-untracked: light-dark(#007100, #73c991);
+    --_file-tree-ignored: light-dark(#8e8e90, #8c8c8c);
+    /* Seti's colors, darkened a fifth on light pages, where Seti's own (made for dark ones) are faint. */
+    --_file-tree-blue: light-dark(
+      color-mix(in oklch, #519aba, black 20%),
+      #519aba
+    );
+    --_file-tree-green: light-dark(
+      color-mix(in oklch, #8dc149, black 20%),
+      #8dc149
+    );
+    --_file-tree-orange: light-dark(
+      color-mix(in oklch, #e37933, black 20%),
+      #e37933
+    );
+    --_file-tree-pink: light-dark(
+      color-mix(in oklch, #f55385, black 20%),
+      #f55385
+    );
+    --_file-tree-purple: light-dark(
+      color-mix(in oklch, #a074c4, black 20%),
+      #a074c4
+    );
+    --_file-tree-red: light-dark(
+      color-mix(in oklch, #cc3e44, black 20%),
+      #cc3e44
+    );
+    --_file-tree-yellow: light-dark(
+      color-mix(in oklch, #cbcb41, black 35%),
+      #cbcb41
+    );
+    --_file-tree-grey: light-dark(#4d5a5e, #6d8086);
+    --_file-tree-grey-light: light-dark(#4d5a5e, #6d8086);
+    --_file-tree-white: light-dark(#4d5a5e, #d4d7d6);
+    --_file-tree-ignore: light-dark(#6d8086, #41535b);
+    --_file-tree-seti-primary: light-dark(
+      color-mix(in oklch, #4d8eb5, black 20%),
+      #4d8eb5
+    );
+
+    --_file-tree-row: 1.625rem;
+    --_file-tree-indent: 1rem;
+    --_file-tree-gutter: 0.5rem;
+    --_file-tree-chevron: 1rem;
+    --_file-tree-depth: 0;
+
+    position: relative;
+    /* Its own stacking context, so the stuck rows stack among themselves and stay under a page's fixed header. */
+    isolation: isolate;
+    border-radius: 0.5rem;
+    color: var(--_file-tree-foreground);
+    font-size: 0.875rem;
+    line-height: var(--_file-tree-row);
+    /* Clipped rather than scrolled, so a folder's row sticks to the page as it scrolls. */
+    overflow-x: clip;
+
+    /* The tree's background, drawn by a pseudo-element, which reads the public tokens as a row does. ::after, since hosts mark blocks with ::before: VS Code's preview borders a hovered block's. */
+    &::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      border-radius: inherit;
+      background-color: var(--_file-tree-background);
+    }
+  }
+
+  /* The public tokens, then the theme's, read where they're used: a color unset or invalid in both keeps the tree's default. */
+  .markdown-file-tree li,
+  .markdown-file-tree::after {
+    --_file-tree-background: var(
+      --markdown-file-tree-background,
+      var(--markdown-file-tree-theme-background)
+    );
+    --_file-tree-foreground: var(
+      --markdown-file-tree-foreground,
+      var(--markdown-file-tree-theme-foreground)
+    );
+    --_file-tree-hover: var(
+      --markdown-file-tree-hover,
+      var(--markdown-file-tree-theme-hover)
+    );
+    --_file-tree-highlight: var(
+      --markdown-file-tree-highlight,
+      var(--markdown-file-tree-theme-highlight)
+    );
+    --_file-tree-highlight-foreground: var(
+      --markdown-file-tree-highlight-foreground,
+      var(--markdown-file-tree-theme-highlight-foreground)
+    );
+    --_file-tree-guide: var(
+      --markdown-file-tree-guide,
+      var(--markdown-file-tree-theme-guide)
+    );
+    --_file-tree-comment: var(
+      --markdown-file-tree-comment,
+      var(--markdown-file-tree-theme-comment)
+    );
+    --_file-tree-focus: var(
+      --markdown-file-tree-focus,
+      var(--markdown-file-tree-theme-focus)
+    );
+    --_file-tree-added: var(
+      --markdown-file-tree-added,
+      var(--markdown-file-tree-theme-added)
+    );
+    --_file-tree-modified: var(
+      --markdown-file-tree-modified,
+      var(--markdown-file-tree-theme-modified)
+    );
+    --_file-tree-deleted: var(
+      --markdown-file-tree-deleted,
+      var(--markdown-file-tree-theme-deleted)
+    );
+    --_file-tree-renamed: var(
+      --markdown-file-tree-renamed,
+      var(--markdown-file-tree-theme-renamed)
+    );
+    --_file-tree-untracked: var(
+      --markdown-file-tree-untracked,
+      var(--markdown-file-tree-theme-untracked)
+    );
+    --_file-tree-ignored: var(
+      --markdown-file-tree-ignored,
+      var(--markdown-file-tree-theme-ignored)
+    );
+    --_file-tree-blue: var(--markdown-file-tree-blue);
+    --_file-tree-green: var(--markdown-file-tree-green);
+    --_file-tree-orange: var(--markdown-file-tree-orange);
+    --_file-tree-pink: var(--markdown-file-tree-pink);
+    --_file-tree-purple: var(--markdown-file-tree-purple);
+    --_file-tree-red: var(--markdown-file-tree-red);
+    --_file-tree-yellow: var(--markdown-file-tree-yellow);
+    --_file-tree-grey: var(--markdown-file-tree-grey);
+    --_file-tree-grey-light: var(--markdown-file-tree-grey-light);
+    --_file-tree-white: var(--markdown-file-tree-white);
+    --_file-tree-ignore: var(--markdown-file-tree-ignore);
+    --_file-tree-seti-primary: var(--markdown-file-tree-seti-primary);
+
+    color: var(--_file-tree-foreground);
+  }
+
+  /* Each row's depth, from its data-depth; rows deeper than twelve keep the twelfth's. */
+  .markdown-file-tree [data-depth="2"] {
+    --_file-tree-depth: 1;
+  }
+  .markdown-file-tree [data-depth="3"] {
+    --_file-tree-depth: 2;
+  }
+  .markdown-file-tree [data-depth="4"] {
+    --_file-tree-depth: 3;
+  }
+  .markdown-file-tree [data-depth="5"] {
+    --_file-tree-depth: 4;
+  }
+  .markdown-file-tree [data-depth="6"] {
+    --_file-tree-depth: 5;
+  }
+  .markdown-file-tree [data-depth="7"] {
+    --_file-tree-depth: 6;
+  }
+  .markdown-file-tree [data-depth="8"] {
+    --_file-tree-depth: 7;
+  }
+  .markdown-file-tree [data-depth="9"] {
+    --_file-tree-depth: 8;
+  }
+  .markdown-file-tree [data-depth="10"] {
+    --_file-tree-depth: 9;
+  }
+  .markdown-file-tree [data-depth="11"] {
+    --_file-tree-depth: 10;
+  }
+  .markdown-file-tree [data-depth="12"] {
+    --_file-tree-depth: 11;
+  }
+
+  .markdown-file-tree-row {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    block-size: var(--_file-tree-row);
+    /* Indented by depth, past the chevron's place, which files keep too so names line up. */
+    padding-inline: calc(
+        var(--_file-tree-gutter) + var(--_file-tree-depth) *
+          var(--_file-tree-indent) + var(--_file-tree-chevron) + 0.125rem
+      )
+      0.75rem;
+    white-space: nowrap;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-image: linear-gradient(var(--_file-tree-hover) 0 0);
+      }
+    }
+  }
+
+  /* A folder's row: its chevron, drawn in CSS so it turns as the folder opens. */
+  summary.markdown-file-tree-row {
+    position: sticky;
+    inset-block-start: calc(
+      var(--markdown-file-tree-sticky-offset) + var(--_file-tree-depth) *
+        var(--_file-tree-row)
+    );
+    z-index: calc(100 - var(--_file-tree-depth));
+    background-color: var(--_file-tree-background);
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: calc(
+        var(--_file-tree-gutter) + var(--_file-tree-depth) *
+          var(--_file-tree-indent) + var(--_file-tree-chevron) / 2
+      );
+      inline-size: 0.375rem;
+      block-size: 0.375rem;
+      border-block-end: 1.5px solid currentColor;
+      border-inline-end: 1.5px solid currentColor;
+      opacity: 0.7;
+      translate: -50% 0;
+      rotate: -45deg;
+    }
+
+    &:dir(rtl)::before {
+      rotate: 135deg;
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--_file-tree-focus);
+      outline-offset: -1px;
+    }
+  }
+
+  details[open] > summary.markdown-file-tree-row::before {
+    translate: -50% -25%;
+    rotate: 45deg;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    summary.markdown-file-tree-row::before {
+      transition: rotate 0.1s ease-out;
+    }
+  }
+
+  /* Indent guides: a line down each open folder's contents, under its chevron, drawn over the rows' hover. */
+  .markdown-file-tree details > ul {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset-block: 0;
+      inset-inline-start: calc(
+        var(--_file-tree-gutter) + var(--_file-tree-depth) *
+          var(--_file-tree-indent) + var(--_file-tree-chevron) / 2
+      );
+      border-inline-start: 1px solid var(--_file-tree-guide);
+      pointer-events: none;
+    }
+  }
+
+  .markdown-file-tree-icon {
+    display: inline-flex;
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: color-mix(in oklch, currentColor 70%, transparent);
+
+    > svg {
+      inline-size: 100%;
+      block-size: 100%;
+      fill: currentColor;
+    }
+  }
+
+  .markdown-file-tree-icon[data-color="blue"] {
+    color: var(--_file-tree-blue);
+  }
+  .markdown-file-tree-icon[data-color="green"] {
+    color: var(--_file-tree-green);
+  }
+  .markdown-file-tree-icon[data-color="orange"] {
+    color: var(--_file-tree-orange);
+  }
+  .markdown-file-tree-icon[data-color="pink"] {
+    color: var(--_file-tree-pink);
+  }
+  .markdown-file-tree-icon[data-color="purple"] {
+    color: var(--_file-tree-purple);
+  }
+  .markdown-file-tree-icon[data-color="red"] {
+    color: var(--_file-tree-red);
+  }
+  .markdown-file-tree-icon[data-color="yellow"] {
+    color: var(--_file-tree-yellow);
+  }
+  .markdown-file-tree-icon[data-color="grey"] {
+    color: var(--_file-tree-grey);
+  }
+  .markdown-file-tree-icon[data-color="grey-light"] {
+    color: var(--_file-tree-grey-light);
+  }
+  .markdown-file-tree-icon[data-color="white"] {
+    color: var(--_file-tree-white);
+  }
+  .markdown-file-tree-icon[data-color="ignore"] {
+    color: var(--_file-tree-ignore);
+  }
+  .markdown-file-tree-icon[data-color="seti-primary"] {
+    color: var(--_file-tree-seti-primary);
+  }
+
+  .markdown-file-tree-name {
+    overflow: clip;
+    text-overflow: ellipsis;
+  }
+
+  .markdown-file-tree-comment {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: clip;
+    padding-inline-start: 0.5rem;
+    color: var(--_file-tree-comment);
+    text-overflow: ellipsis;
+  }
+
+  .markdown-file-tree-status {
+    flex: none;
+    margin-inline-start: auto;
+    padding-inline-start: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .markdown-file-tree-more > .markdown-file-tree-row {
+    color: var(--_file-tree-comment);
+  }
+
+  /* A highlighted row: written **name**. */
+  [data-highlight] > .markdown-file-tree-row,
+  [data-highlight] > details > .markdown-file-tree-row {
+    background-image: linear-gradient(var(--_file-tree-highlight) 0 0);
+    color: var(--_file-tree-highlight-foreground);
+  }
+
+  /* Git status: the name and letter in the status's color. */
+  .markdown-file-tree [data-status] {
+    --_file-tree-status: currentColor;
+  }
+  .markdown-file-tree [data-status="added"] {
+    --_file-tree-status: var(--_file-tree-added);
+  }
+  .markdown-file-tree [data-status="modified"] {
+    --_file-tree-status: var(--_file-tree-modified);
+  }
+  .markdown-file-tree [data-status="deleted"] {
+    --_file-tree-status: var(--_file-tree-deleted);
+  }
+  .markdown-file-tree [data-status="renamed"] {
+    --_file-tree-status: var(--_file-tree-renamed);
+  }
+  .markdown-file-tree [data-status="untracked"] {
+    --_file-tree-status: var(--_file-tree-untracked);
+  }
+  .markdown-file-tree [data-status="ignored"] {
+    --_file-tree-status: var(--_file-tree-ignored);
+  }
+
+  [data-status] > .markdown-file-tree-row,
+  [data-status] > details > .markdown-file-tree-row {
+    > .markdown-file-tree-name,
+    > .markdown-file-tree-status {
+      color: var(--_file-tree-status);
+    }
+  }
+
+  [data-status="deleted"] > .markdown-file-tree-row > .markdown-file-tree-name {
+    text-decoration: line-through;
+  }
+
+  /* A folder holding changes, as VS Code marks one: a dot at its row's end. */
+  .markdown-file-tree-folder:not([data-status]):has(
+      [data-status]:not([data-status="ignored"])
+    )
+    > details
+    > .markdown-file-tree-row::after {
+    content: "";
+    flex: none;
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    margin-inline-start: auto;
+    border-radius: 50%;
+    background-color: color-mix(in oklch, currentColor 60%, transparent);
+  }
+
+  /* With the client script, the tree is an ARIA tree: focus moves between its items (a file's <li>, a folder's <details>), and shows on the focused item's row. */
+  .markdown-file-tree [role="treeitem"] {
+    outline: 2px solid transparent;
+
+    &:focus-visible > .markdown-file-tree-row {
+      outline: 1px solid var(--_file-tree-focus);
+      outline-offset: -1px;
+    }
+  }
+}

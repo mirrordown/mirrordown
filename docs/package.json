@@ -18,7 +18,9 @@
     "@fontsource/monaspace-xenon": "^5.3.0",
     "@mirrordown/preset-satteri": "workspace:*",
     "@mirrordown/sat-copy-code": "workspace:*",
+    "@mirrordown/sat-file-tree": "workspace:*",
     "@mirrordown/sat-inline-svg": "workspace:*",
+    "@shikijs/themes": "^4.5.0",
     "astro": "^7.3.8"
   },
   "devDependencies": {

@@ -1,0 +1,70 @@
+@import "../../../packages/mdit-file-tree/src/file-tree.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  The preview exposes the editor theme's colors as --vscode-* custom
+  properties, named after the same keys a Shiki theme's colors use. Give them
+  to the trees as their theme, so a tree looks like the explorer in whatever
+  theme the editor has, with no theme option; its background is the code
+  blocks', as a Shiki theme's is. A color the theme lacks falls back to the
+  stylesheet's default, as with a Shiki theme. Comments, which a theme colors
+  with a token rule rather than a workbench color, take the theme's
+  description text color.
+
+  The preview marks its theme with a class on <body> rather than setting
+  color-scheme, so set it on the trees from that class: the stylesheet's own
+  colors (Seti's, the defaults) choose their light or dark variant by it.
+*/
+body {
+  --markdown-file-tree-theme-background: var(
+    --vscode-textCodeBlock-background,
+    var(--vscode-editor-background)
+  );
+  --markdown-file-tree-theme-foreground: var(--vscode-editor-foreground);
+  --markdown-file-tree-theme-hover: var(--vscode-list-hoverBackground);
+  --markdown-file-tree-theme-highlight: var(
+    --vscode-list-activeSelectionBackground,
+    var(--vscode-editor-selectionBackground)
+  );
+  --markdown-file-tree-theme-highlight-foreground: var(
+    --vscode-list-activeSelectionForeground
+  );
+  --markdown-file-tree-theme-guide: var(
+    --vscode-tree-indentGuidesStroke,
+    var(--vscode-editorIndentGuide-background1)
+  );
+  --markdown-file-tree-theme-comment: var(--vscode-descriptionForeground);
+  --markdown-file-tree-theme-focus: var(
+    --vscode-list-focusOutline,
+    var(--vscode-focusBorder)
+  );
+  --markdown-file-tree-theme-added: var(
+    --vscode-gitDecoration-addedResourceForeground
+  );
+  --markdown-file-tree-theme-modified: var(
+    --vscode-gitDecoration-modifiedResourceForeground
+  );
+  --markdown-file-tree-theme-deleted: var(
+    --vscode-gitDecoration-deletedResourceForeground
+  );
+  --markdown-file-tree-theme-renamed: var(
+    --vscode-gitDecoration-renamedResourceForeground
+  );
+  --markdown-file-tree-theme-untracked: var(
+    --vscode-gitDecoration-untrackedResourceForeground
+  );
+  --markdown-file-tree-theme-ignored: var(
+    --vscode-gitDecoration-ignoredResourceForeground
+  );
+}
+
+.vscode-light .markdown-file-tree,
+.vscode-high-contrast-light .markdown-file-tree {
+  color-scheme: light;
+}
+
+.vscode-dark .markdown-file-tree,
+.vscode-high-contrast:not(.vscode-high-contrast-light) .markdown-file-tree {
+  color-scheme: dark;
+}

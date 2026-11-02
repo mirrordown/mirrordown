@@ -15,6 +15,10 @@ name: Visual Regression
 # The copy-code client script only works in a browser (invoker commands, the
 # clipboard, anchor positioning), so its behavior test runs here too; it takes
 # no screenshots.
+#
+# The file-tree client script (an ARIA tree, driven by the keyboard) and its
+# colors' fallbacks (registered custom properties) also only exist in a
+# browser, so their behavior test runs here too; it takes no screenshots.
 on:
   push:
     branches: [main]
@@ -28,6 +32,9 @@ on:
       - "packages/*-copy-code/src/client.ts"
       - "packages/*-copy-code/src/*.css"
       - "tests/copy-code/client.browser.test.ts"
+      - "packages/*-file-tree/src/client.ts"
+      - "packages/*-file-tree/src/*.css"
+      - "tests/file-tree/client.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   pull_request:
@@ -42,6 +49,9 @@ on:
       - "packages/*-copy-code/src/client.ts"
       - "packages/*-copy-code/src/*.css"
       - "tests/copy-code/client.browser.test.ts"
+      - "packages/*-file-tree/src/client.ts"
+      - "packages/*-file-tree/src/*.css"
+      - "tests/file-tree/client.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   workflow_dispatch:
