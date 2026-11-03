@@ -19,6 +19,9 @@ name: Visual Regression
 # The file-tree client script (an ARIA tree, driven by the keyboard) and its
 # colors' fallbacks (registered custom properties) also only exist in a
 # browser, so their behavior test runs here too; it takes no screenshots.
+#
+# So do the prompts' copying (the clipboard and the client script) and their
+# colors' fallbacks.
 on:
   push:
     branches: [main]
@@ -35,6 +38,9 @@ on:
       - "packages/*-file-tree/src/client.ts"
       - "packages/*-file-tree/src/*.css"
       - "tests/file-tree/client.browser.test.ts"
+      - "packages/*-prompt/src/client.ts"
+      - "packages/*-prompt/src/*.css"
+      - "tests/prompt/client.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   pull_request:
@@ -52,6 +58,9 @@ on:
       - "packages/*-file-tree/src/client.ts"
       - "packages/*-file-tree/src/*.css"
       - "tests/file-tree/client.browser.test.ts"
+      - "packages/*-prompt/src/client.ts"
+      - "packages/*-prompt/src/*.css"
+      - "tests/prompt/client.browser.test.ts"
       - "vite.config.ts"
       - ".github/workflows/visual-regression.yml"
   workflow_dispatch:

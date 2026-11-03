@@ -15,6 +15,11 @@ import {
   type FileTreeOptions
 } from "@mirrordown/remd-file-tree";
 import {
+  rehypePrompt,
+  remarkPrompt,
+  type PromptOptions
+} from "@mirrordown/remd-prompt";
+import {
   rehypeAutolinkHeadings,
   type AutolinkHeadingsOptions
 } from "@mirrordown/remd-autolink-headings";
@@ -80,6 +85,7 @@ export interface MirrordownOptions {
   lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | RehypeMermaidPeleOptions;
+  prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
   sectionize?: boolean;
   slug?: boolean | SlugOptions;
@@ -143,6 +149,8 @@ export const mirrordown = (
   return {
     remarkPlugins: [
       ...gfm,
+      // First: the plugins after it see a prompt's preview as part of the page.
+      ...on(options.prompt !== false, remarkPrompt),
       ...on(options.abbr, remarkAbbr),
       ...on(options.definitionList, remarkDefinitionList),
       ...on(options.del, remarkDel),
@@ -165,7 +173,8 @@ export const mirrordown = (
       // First, so the plugins after it see the diagrams' <svg>.
       ...configured(options.mermaidPele, rehypeMermaidPele),
       ...configured(options.fileTree, rehypeFileTree),
-      // After mermaid-pele and file-tree: a diagram or a tree is no longer a code block.
+      ...configured(options.prompt, rehypePrompt),
+      // After mermaid-pele, file-tree and prompt: a diagram, a tree or a prompt is no longer a code block.
       ...configured(options.copyCode, rehypeCopyCode),
       ...configured(options.tabIcons, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),

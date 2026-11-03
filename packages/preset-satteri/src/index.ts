@@ -12,6 +12,13 @@ import {
   type FileTreePlugin
 } from "@mirrordown/sat-file-tree";
 import {
+  satteriPrompt,
+  satteriPromptPreview,
+  type PromptOptions,
+  type PromptPlugin,
+  type PromptPreviewPlugin
+} from "@mirrordown/sat-prompt";
+import {
   satteriAutolinkHeadings,
   type AutolinkHeadingsOptions,
   type AutolinkHeadingsPlugin
@@ -94,6 +101,7 @@ export interface MirrordownOptions {
   lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
+  prompt?: boolean | PromptOptions;
   /** Ruby's own options; its `features` are always the preset's. */
   ruby?: boolean | Omit<RubyOptions, `features`>;
   sectionize?: boolean;
@@ -128,6 +136,7 @@ export interface MirrordownPreset {
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
+    | Factory<PromptPreviewPlugin>
     | Factory<RubyPlugin>
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
@@ -139,6 +148,7 @@ export interface MirrordownPreset {
     | Factory<FileTreePlugin>
     | Factory<LightboxPlugin>
     | Factory<MermaidPelePlugin>
+    | Factory<PromptPlugin>
     | Factory<SectionizePlugin>
     | Factory<SlugPlugin>
     | Factory<SqueezeParagraphsPlugin>
@@ -169,8 +179,9 @@ export const mirrordown = (
 
   return {
     features,
-    // Ruby first: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
+    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
+      ...(options.prompt === false ? [] : [satteriPromptPreview()]),
       ...(options.ruby === false
         ? []
         : [satteriRuby({ ...settings(options.ruby), features })]),
@@ -190,7 +201,7 @@ export const mirrordown = (
       // After the containers, whose blocks it captions.
       ...(options.caption === false ? [] : [satteriCaption()])
     ],
-    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), then file-tree (copy-code no longer sees the trees as code blocks either), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
+    // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), then file-tree and prompt (copy-code no longer sees the trees or prompts as code blocks either), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [
       ...(options.mermaidPele === false
         ? []
@@ -198,6 +209,9 @@ export const mirrordown = (
       ...(options.fileTree === false
         ? []
         : [satteriFileTree(settings(options.fileTree))]),
+      ...(options.prompt === false
+        ? []
+        : [satteriPrompt(settings(options.prompt))]),
       ...(options.copyCode === false
         ? []
         : [satteriCopyCode(settings(options.copyCode))]),

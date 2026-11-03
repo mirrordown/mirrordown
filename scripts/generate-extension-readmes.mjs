@@ -34,6 +34,7 @@ const EXTENSIONS = [
   ["markdown-lightbox", "lightbox"],
   ["markdown-mark", "mark"],
   ["markdown-mermaid-pele", "mermaid-pele"],
+  ["markdown-prompt", "prompt"],
   ["markdown-sectionize", "sectionize"],
   ["markdown-spoiler", "spoiler"],
   ["markdown-squeeze-paragraphs", "squeeze-paragraphs"],

@@ -10,6 +10,7 @@ import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
 import { del } from "@mirrordown/mdit-del";
 import { fileTree, type FileTreeOptions } from "@mirrordown/mdit-file-tree";
+import { prompt, type PromptOptions } from "@mirrordown/mdit-prompt";
 import {
   githubAlerts,
   type AlertOptions
@@ -50,6 +51,7 @@ export interface MirrordownOptions {
   lightbox?: boolean | LightboxOptions;
   mark?: boolean;
   mermaidPele?: boolean | MermaidPeleOptions;
+  prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
   sectionize?: boolean;
   slug?: boolean | SlugOptions;
@@ -106,6 +108,7 @@ export const mirrordown = (
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);
   configured(options.fileTree, fileTree);
+  configured(options.prompt, prompt);
   configured(options.copyCode, copyCode);
   on(options.sectionize, sectionize);
   // Before autolink-headings, which links to the ids slug sets.

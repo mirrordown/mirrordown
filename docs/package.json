@@ -20,6 +20,7 @@
     "@mirrordown/sat-copy-code": "workspace:*",
     "@mirrordown/sat-file-tree": "workspace:*",
     "@mirrordown/sat-inline-svg": "workspace:*",
+    "@mirrordown/sat-prompt": "workspace:*",
     "@shikijs/themes": "^4.5.0",
     "astro": "^7.3.8"
   },

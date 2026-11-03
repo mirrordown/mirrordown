@@ -73,8 +73,9 @@ export default defineConfig({
   markdown: {
     // Astro highlights code before the plugins run; mermaid diagrams and file trees render instead.
     syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid", "filetree"] },
-    // Shiki rebuilds each code block without its fence's meta; this keeps it on the <pre>, where copy-code reads `nocopy`.
+    // Shiki rebuilds each code block without its fence's meta; this keeps it on the <pre>, where copy-code reads `nocopy` and prompt reads its services, `open` and title. Prompts are highlighted as the markdown they're written in.
     shikiConfig: {
+      langAlias: { prompt: "markdown" },
       transformers: [
         {
           pre(node): void {

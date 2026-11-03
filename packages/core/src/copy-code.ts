@@ -59,7 +59,7 @@ export interface CopyCodeOptions {
   /** The button's icon in each state, as SVG markup. An icon can be replaced but not removed, since it's all the button holds: an empty one keeps the default. Defaults: {@link COPY_CODE_ICONS}. */
   icons?: Partial<Record<CopyCodeState, string>>;
   /**
-   * Text shown beside the button in each state, and the button's accessible name; `null` or `""` shows none. Defaults: {@link COPY_CODE_TEXT}, none before copying and `Copied!` after. The copy text shows while the button is hovered or focused.
+   * Text shown beside the button in each state, and the button's accessible name; `null` or `""` shows none. Defaults: {@link COPY_CODE_TEXT}, `Copy code` before copying and `Copied!` after. The copy text shows while the button is hovered or focused, as its tooltip.
    */
   text?: Partial<Record<CopyCodeState, string | null>>;
 }
@@ -76,9 +76,9 @@ export const COPY_CODE_ICONS: Record<CopyCodeState, string> = {
   copied: icon(`<path d="M20 6 9 17l-5-5"></path>`)
 };
 
-/** The button's default text in each state, as GitHub shows it: none before copying, `Copied!` after. */
+/** The button's default text in each state: `Copy code` before copying, as its tooltip, and `Copied!` after, as GitHub shows it. */
 export const COPY_CODE_TEXT: Record<CopyCodeState, string> = {
-  copy: ``,
+  copy: `Copy code`,
   copied: `Copied!`
 };
 

@@ -33,6 +33,7 @@
     "@mirrordown/sat-lightbox": "workspace:^",
     "@mirrordown/sat-mark": "workspace:^",
     "@mirrordown/sat-mermaid-pele": "workspace:^",
+    "@mirrordown/sat-prompt": "workspace:^",
     "@mirrordown/sat-ruby": "workspace:^",
     "@mirrordown/sat-sectionize": "workspace:^",
     "@mirrordown/sat-slug": "workspace:^",

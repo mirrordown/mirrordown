@@ -1,0 +1,8 @@
+{
+  "name": "@mirrordown/mdit-prompt",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  }
+}

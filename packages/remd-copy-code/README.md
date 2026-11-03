@@ -13,6 +13,7 @@ The `copy-code` plugin adds a copy button to every code block. The button goes i
 </code><button type="button" class="markdown-copy-code" command="--copy" commandfor="code-mxxtmr" aria-label="Copy code" hidden>
   <span class="markdown-copy-code-icon" data-state="copy" aria-hidden="true"><svg>...</svg></span>
   <span class="markdown-copy-code-icon" data-state="copied" aria-hidden="true"><svg>...</svg></span>
+  <span class="markdown-copy-code-text" data-state="copy" aria-hidden="true">Copy code</span>
   <span class="markdown-copy-code-text" data-state="copied" aria-hidden="true">Copied!</span>
 </button></pre>
 ```
@@ -90,7 +91,7 @@ rehypeCopyCode({ icons: { copied: `<svg viewBox="0 0 16 16">...</svg>` } })
 
 ### Text
 
-`text` sets the text shown beside the button in each state. The `copied` text, "Copied!" by default, shows once the block is copied. A `copy` text, none by default, shows while the button is hovered or focused. Either one also names the button while it shows, so set them in your page's language. `null` or an empty string shows no text in that state.
+`text` sets the text shown beside the button in each state. The `copied` text, "Copied!" by default, shows once the block is copied. The `copy` text, "Copy code" by default, shows while the button is hovered or focused, as its tooltip. Either one also names the button while it shows, so set them in your page's language. `null` or an empty string shows no text in that state.
 
 ```ts
 rehypeCopyCode({ text: { copy: "Copy", copied: "Copied" } })

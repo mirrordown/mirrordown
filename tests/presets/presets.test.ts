@@ -168,6 +168,11 @@ describe("presets", () => {
       input: "```mermaid\nflowchart LR\n  A --> B\n```",
       marker: 'class="pele pele-flowchart"'
     },
+    {
+      key: "prompt",
+      input: "```prompt\nSummarize this page.\n```",
+      marker: 'class="markdown-prompt"'
+    },
     { key: "ruby", input: "{漢字|かんじ}", marker: "<ruby>" },
     { key: "sectionize", input: "# Title\n\nText", marker: "<section" },
     { key: "slug", input: "## Sub Title", marker: 'id="sub-title"' },
