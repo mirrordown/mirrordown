@@ -36,11 +36,12 @@ const button = (html: string): string =>
 const STAR = `<svg viewBox="0 0 16 16"><path d="M8 0l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"></path></svg>`;
 
 describe("copy-code: button options", () => {
-  it(`by default, shows no text before copying and "Copied!" after, as GitHub does`, () => {
+  // An icon alone doesn't say what the button does, so by default its name shows as a tooltip on hover and focus; once copied, "Copied!", as GitHub shows it.
+  it(`by default, shows "Copy code" as its tooltip and "Copied!" after copying`, () => {
     for (const html of render(input, {})) {
       expect(button(html)).toContain(`aria-label="Copy code"`);
-      expect(button(html)).not.toContain(
-        `class="markdown-copy-code-text" data-state="copy"`
+      expect(button(html)).toContain(
+        `<span class="markdown-copy-code-text" data-state="copy" aria-hidden="true">Copy code</span>`
       );
       expect(button(html)).toContain(
         `<span class="markdown-copy-code-text" data-state="copied" aria-hidden="true">Copied!</span>`

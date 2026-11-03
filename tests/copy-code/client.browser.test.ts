@@ -59,8 +59,16 @@ describe(`copy-code client`, () => {
     const copy = first?.querySelector(
       `.markdown-copy-code-icon[data-state="copy"]`
     );
-    const text = first?.querySelector(`.markdown-copy-code-text`);
-    if (!first || !check || !copy || !text) throw new Error(`missing parts`);
+    const text = first?.querySelector(
+      `.markdown-copy-code-text[data-state="copied"]`
+    );
+    const tooltip = first?.querySelector(
+      `.markdown-copy-code-text[data-state="copy"]`
+    );
+    if (!first || !check || !copy || !text || !tooltip)
+      throw new Error(`missing parts`);
+    // The "Copy code" tooltip gives way to the copied text.
+    expect(shown(tooltip)).toBe(false);
     expect(shown(check)).toBe(true);
     expect(shown(copy)).toBe(false);
     expect(shown(text)).toBe(true);
