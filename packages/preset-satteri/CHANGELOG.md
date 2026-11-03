@@ -3,6 +3,15 @@
 
 
 
+
+## 0.5.0
+<sub>2026-11-03</sub>
+
+- *(minor)*
+  Add `fileTree`, on by default like every other feature: ` ```filetree ` fences render as file trees, and an options object passes a theme or icons to the plugin. The presets' stylesheets include its styles. Hosts that highlight code first, such as Astro with Shiki, need `filetree` in their excluded languages, as with `mermaid`.
+- *(minor)*
+  Add `prompt`, on by default like every other feature: ` ```prompt ` fences render as AI prompts to copy or open in AI services, and an options object passes services, text or a highlighter to the plugin. The presets' stylesheets include its styles. Hosts that highlight code first, such as Astro with Shiki, should alias `prompt` to `markdown` and keep each fence's meta on its `<pre>`.
+
 ## 0.4.0
 <sub>2026-11-02</sub>
 

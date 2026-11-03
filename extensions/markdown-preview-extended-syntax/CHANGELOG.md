@@ -9,6 +9,15 @@
 
 
 
+
+## 0.1.10
+<sub>2026-11-03</sub>
+
+- *(patch)*
+  Add Markdown File Tree to the bundled extensions, so installing the pack now also renders ` ```filetree ` blocks as file trees in the preview.
+- *(patch)*
+  Add Markdown AI Prompts to the bundled extensions, so installing the pack now also renders ` ```prompt ` blocks as AI prompts in the preview.
+
 ## 0.1.9
 <sub>2026-10-28</sub>
 

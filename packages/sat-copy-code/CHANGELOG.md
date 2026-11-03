@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-11-03</sub>
+
+- *(patch)*
+  Show "Copy code" as the copy button's tooltip by default, in the pill its copied text already uses, so an icon-only button says what it does when hovered or focused. `text: { copy: null }` turns it off.
+
 ## 0.1.0
 <sub>2026-11-02</sub>
 

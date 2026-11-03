@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/mdit-file-tree",
   "description": "A markdown-it plugin to render file trees from filetree code fences, with Seti icons, git status and collapsible folders, that read as plain text where the plugin is not installed.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {
