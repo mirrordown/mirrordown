@@ -1,0 +1,12 @@
+{
+  "name": "@mirrordown/remd-prompt",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "imports": {
+    "hast": "npm:@types/hast@^3",
+    "mdast": "npm:@types/mdast@^4"
+  }
+}

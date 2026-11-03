@@ -12,7 +12,8 @@ import { rebuiltParagraphs } from "./cut-attributes.js";
 
 /** A paragraph's data, with the attributes mdast-util-to-hast reads. Its type augmentation adds `hProperties` to mdast's data where it's loaded, but core doesn't load it; the intersection types the property either way. */
 type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
-  hProperties?: Properties;
+  // As the augmentation declares it, so the two agree under exactOptionalPropertyTypes.
+  hProperties?: Properties | undefined;
 };
 
 /** The `>` markers a source line starts with. */

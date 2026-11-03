@@ -42,6 +42,7 @@ const slugs = [
   "lightbox",
   "mark",
   "mermaid-pele",
+  "prompt",
   "ruby",
   "sectionize",
   "slug",

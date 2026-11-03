@@ -67,10 +67,11 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Code blocks
 
-| Syntax             | HTML                                                                                                              | markdown-it                               | remark                                    | Sätteri                                 | VSCode                                              |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | --------------------------------------------------- |
-| ` ``` ` code block | copy [`<button>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)                    | [mdit-copy-code](packages/mdit-copy-code) | [remd-copy-code](packages/remd-copy-code) | [sat-copy-code](packages/sat-copy-code) | —                                                   |
-| ` ```filetree `    | file tree, folders as [`<details>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details) | [mdit-file-tree](packages/mdit-file-tree) | [remd-file-tree](packages/remd-file-tree) | [sat-file-tree](packages/sat-file-tree) | [markdown-file-tree](extensions/markdown-file-tree) |
+| Syntax             | HTML                                                                                                                                                  | markdown-it                               | remark                                    | Sätteri                                 | VSCode                                              |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| ` ``` ` code block | copy [`<button>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)                                                        | [mdit-copy-code](packages/mdit-copy-code) | [remd-copy-code](packages/remd-copy-code) | [sat-copy-code](packages/sat-copy-code) | —                                                   |
+| ` ```filetree `    | file tree, folders as [`<details>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details)                                     | [mdit-file-tree](packages/mdit-file-tree) | [remd-file-tree](packages/remd-file-tree) | [sat-file-tree](packages/sat-file-tree) | [markdown-file-tree](extensions/markdown-file-tree) |
+| ` ```prompt `      | AI prompt, collapsed as a [`<details>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details), to copy or open in AI services | [mdit-prompt](packages/mdit-prompt)       | [remd-prompt](packages/remd-prompt)       | [sat-prompt](packages/sat-prompt)       | [markdown-prompt](extensions/markdown-prompt)       |
 
 ### Headings
 
@@ -138,6 +139,7 @@ The plugins in this collection are forked and modernized from the following upst
 - [remark-squeeze-paragraphs](https://github.com/remarkjs/remark-squeeze-paragraphs) — empty-paragraph removal for remark
 - [rehype-mermaid](https://github.com/remcohaszing/rehype-mermaid) — the API and test cases `mermaid-pele` follows; [Pele](https://pele.run) renders the diagrams
 - [Vocs](https://vocs.dev/writing/markdown-extensions#file-tree) — the File Tree `file-tree` ports, as a fence rather than a directive; its icons are [Seti UI](https://github.com/jesseweed/seti-ui)'s, and its design and Shiki theme support follow [Pierre's Trees](https://trees.software/)
+- [Vocs](https://vocs.dev/writing/markdown-extensions#prompts) — the Prompts `prompt` ports, as a fence rather than a directive; its service icons are [Lobe Icons](https://github.com/lobehub/lobe-icons)
 
 ---
 

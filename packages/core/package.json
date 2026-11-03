@@ -28,6 +28,11 @@
       "development": "./src/file-tree/index.ts",
       "types": "./dist/file-tree.d.mts",
       "import": "./dist/file-tree.mjs"
+    },
+    "./prompt": {
+      "development": "./src/prompt/index.ts",
+      "types": "./dist/prompt.d.mts",
+      "import": "./dist/prompt.mjs"
     }
   },
   "engines": {

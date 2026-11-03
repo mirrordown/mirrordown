@@ -1,0 +1,41 @@
+{
+  "name": "markdown-prompt",
+  "displayName": "Markdown AI Prompts",
+  "version": "0.0.0",
+  "description": "Renders prompt code blocks in VSCode's markdown preview as AI prompts to copy or open in Claude, ChatGPT and other services, collapsed by default, in the editor's theme",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "devDependencies": {
+    "@mirrordown/mdit-prompt": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/prompt.css"
+    ],
+    "markdown.previewScripts": [
+      "./dist/preview.iife.js"
+    ]
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec postcss src/prompt.css --output dist/prompt.css && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}

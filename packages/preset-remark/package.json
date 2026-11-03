@@ -35,6 +35,7 @@
     "@mirrordown/remd-lightbox": "workspace:^",
     "@mirrordown/remd-mark": "workspace:^",
     "@mirrordown/remd-mermaid-pele": "workspace:^",
+    "@mirrordown/remd-prompt": "workspace:^",
     "@mirrordown/remd-ruby": "workspace:^",
     "@mirrordown/remd-sectionize": "workspace:^",
     "@mirrordown/remd-slug": "workspace:^",

@@ -133,7 +133,12 @@ export const placeCutAttributes = (
       target = parent;
     }
 
-    const data: { hProperties?: Properties } | undefined = target.data;
+    // Intersected with the node's own data type, as in lazy.ts, so it type-checks whether or not mdast-util-to-hast's augmentation (which adds `hProperties`) is loaded.
+    const data:
+      | (NonNullable<typeof target.data> & {
+          hProperties?: Properties | undefined;
+        })
+      | undefined = target.data;
     target.data = {
       ...data,
       hProperties: mergeProperties(data?.hProperties, properties)

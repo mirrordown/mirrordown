@@ -1,0 +1,549 @@
+/*
+  Prompt — default stylesheet
+  ---------------------------
+  Its visual rules live inside @layer markdown-prompt so any unlayered
+  consumer CSS overrides them without needing !important. The resets that
+  keep a page's code block and link styles off the prompt's <pre> and links
+  sit outside the layer, since a page's unlayered CSS would beat them inside
+  it.
+
+  A prompt is a <div class="markdown-prompt"> holding a <details>, whose
+  <summary> is the title, and the actions (copy and the services), laid over
+  the right of the title's row; each action's label shows as its tooltip.
+  Opened, the prompt shows rendered as markdown, in the page's own prose
+  styles, and a pair of radios switches to its markdown, as a code block.
+
+  Each color comes from a public token set on the prompt or any ancestor
+  (--markdown-prompt-<name>), or else the default here. Each color falls back
+  on its own, so a partial override keeps the rest, and an invalid value is
+  ignored rather than leaving that color unset.
+
+    .content { --markdown-prompt-accent: oklch(0.6 0.2 300); }
+*/
+
+/*
+  How an invalid value falls back, as in the file tree: the prompt holds each
+  color's default in a registered private property, and its parts (and the
+  ::after that draws its background and border) read the public token into
+  it again. A registered color property given something that isn't a color,
+  or nothing, inherits instead, so the part keeps the prompt's default. The
+  registrations are global, so they're named after the plugin.
+*/
+@property --_prompt-background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-hover {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-focus {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --_prompt-warning {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* Outside the layer, and specific enough to beat `.content pre`: a page's own code block styles, unlayered as prose styles usually are, would otherwise give the prompt's <pre> a margin, border and rounded corners inside the prompt's own. Its highlighter's background, set on the <pre> itself, still applies. */
+.markdown-prompt pre.markdown-prompt-body[class] {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* A service that opens for pasting is a link; a page's link colors and underlines would mark it out from the buttons beside it. */
+.markdown-prompt a.markdown-prompt-service[class] {
+  color: inherit;
+  text-decoration: none;
+}
+
+@layer markdown-prompt {
+  .markdown-prompt {
+    /* The defaults: a tinted card on the page, as Vocs draws one. */
+    --_prompt-background: color-mix(in oklch, Canvas, CanvasText 3%);
+    --_prompt-surface: color-mix(in oklch, Canvas, CanvasText 6%);
+    --_prompt-foreground: CanvasText;
+    --_prompt-border: color-mix(in oklch, currentColor 16%, transparent);
+    --_prompt-hover: color-mix(in oklch, currentColor 8%, transparent);
+    --_prompt-accent: LinkText;
+    --_prompt-focus: LinkText;
+    --_prompt-warning: oklch(0.72 0.16 65);
+
+    --_prompt-row: 3rem;
+    --_prompt-button: 2rem;
+    --_prompt-gap: 0.125rem;
+    --_prompt-actions: 0;
+
+    display: grid;
+    grid-template-areas: "prompt";
+    position: relative;
+    /* Its own stacking context, for the ::after drawn under it. */
+    isolation: isolate;
+    margin-block: 1rem;
+    border-radius: 0.5rem;
+    color: var(--_prompt-foreground);
+
+    /* The background and border, drawn by a pseudo-element, which reads the public tokens as the parts do. */
+    &::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      border: 1px solid var(--_prompt-border);
+      border-radius: inherit;
+      background-color: var(--_prompt-background);
+      pointer-events: none;
+    }
+
+    > * {
+      grid-area: prompt;
+      min-inline-size: 0;
+    }
+  }
+
+  /* The public tokens, read where they're used: a color unset or invalid keeps the prompt's default. */
+  .markdown-prompt > *,
+  .markdown-prompt::after {
+    --_prompt-background: var(--markdown-prompt-background);
+    --_prompt-surface: var(--markdown-prompt-surface);
+    --_prompt-foreground: var(--markdown-prompt-foreground);
+    --_prompt-border: var(--markdown-prompt-border);
+    --_prompt-hover: var(--markdown-prompt-hover);
+    --_prompt-accent: var(--markdown-prompt-accent);
+    --_prompt-focus: var(--markdown-prompt-focus);
+    --_prompt-warning: var(--markdown-prompt-warning);
+
+    color: var(--_prompt-foreground);
+  }
+
+  /* How many actions there are, so the title leaves them room. */
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(1)) {
+    --_prompt-actions: 1;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(2)) {
+    --_prompt-actions: 2;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(3)) {
+    --_prompt-actions: 3;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(4)) {
+    --_prompt-actions: 4;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(5)) {
+    --_prompt-actions: 5;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(6)) {
+    --_prompt-actions: 6;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(7)) {
+    --_prompt-actions: 7;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(8)) {
+    --_prompt-actions: 8;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(9)) {
+    --_prompt-actions: 9;
+  }
+  .markdown-prompt:has(> .markdown-prompt-actions > :nth-child(10)) {
+    --_prompt-actions: 10;
+  }
+
+  /* The title's row: a chevron, drawn in CSS so it turns as the prompt opens, the sparkles in the accent color, then the title, leaving room for the actions. */
+  .markdown-prompt-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: var(--_prompt-row);
+    padding-inline: 0.875rem
+      calc(
+        var(--_prompt-actions) * (var(--_prompt-button) + var(--_prompt-gap)) +
+          0.75rem
+      );
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: "";
+      flex: none;
+      inline-size: 0.375rem;
+      block-size: 0.375rem;
+      margin-inline-end: 0.125rem;
+      border-block-end: 1.5px solid currentColor;
+      border-inline-end: 1.5px solid currentColor;
+      opacity: 0.6;
+      rotate: -45deg;
+    }
+
+    &:dir(rtl)::before {
+      rotate: 135deg;
+    }
+
+    > .markdown-prompt-icon {
+      color: var(--_prompt-accent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--_prompt-focus);
+      outline-offset: -2px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: var(--_prompt-hover);
+      }
+    }
+  }
+
+  .markdown-prompt-details[open] > .markdown-prompt-title {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    box-shadow: inset 0 -1px var(--_prompt-border);
+
+    &::before {
+      translate: 0 -25%;
+      rotate: 45deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .markdown-prompt-title::before {
+      transition: rotate 0.1s ease-out;
+    }
+  }
+
+  /* The opened prompt: its views, on the card's deeper tint. */
+  .markdown-prompt-content {
+    display: grid;
+    border-end-start-radius: 0.5rem;
+    border-end-end-radius: 0.5rem;
+    background-color: var(--_prompt-surface);
+    overflow: clip;
+  }
+
+  /* The views' switch: radios, kept focusable for the keyboard but drawn as their labels. */
+  .markdown-prompt-views {
+    display: flex;
+    justify-self: end;
+    gap: 0.125rem;
+    margin: 0.5rem 0.75rem 0;
+    padding: 0.125rem;
+    border: 1px solid var(--_prompt-border);
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+
+    > label {
+      padding: 0.125rem 0.5rem;
+      border-radius: 0.25rem;
+      color: color-mix(in oklch, currentColor 70%, transparent);
+      cursor: pointer;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: inherit;
+        }
+      }
+    }
+  }
+
+  .markdown-prompt-view {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: clip;
+    clip-path: inset(50%);
+    white-space: nowrap;
+
+    &:checked + label {
+      background-color: var(--_prompt-hover);
+      color: inherit;
+    }
+
+    &:focus-visible + label {
+      outline: 2px solid var(--_prompt-focus);
+      outline-offset: 1px;
+    }
+  }
+
+  /* One view at a time; without :has(), both show. */
+  .markdown-prompt-content:has(
+      > .markdown-prompt-views > [value="preview"]:checked
+    )
+    > .markdown-prompt-body,
+  .markdown-prompt-content:has(
+      > .markdown-prompt-views > [value="markdown"]:checked
+    )
+    > .markdown-prompt-preview {
+    display: none;
+  }
+
+  /* The prompt rendered: the page's prose, at a reading size. */
+  .markdown-prompt-preview {
+    padding: 0.5rem 1rem 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+
+    > :first-child {
+      margin-block-start: 0;
+    }
+
+    > :last-child {
+      margin-block-end: 0;
+    }
+  }
+
+  /* A prompt with invisible characters: a warning in its title, a note above its views, and each character marked in its markdown with its code point. */
+  .markdown-prompt-warning {
+    display: inline-flex;
+    flex: none;
+    position: relative;
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: var(--_prompt-warning);
+
+    > svg {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+  }
+
+  .markdown-prompt-note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0.75rem 0;
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.375rem;
+    background-color: color-mix(
+      in oklch,
+      var(--_prompt-warning) 15%,
+      transparent
+    );
+    font-size: 0.8125rem;
+
+    > .markdown-prompt-icon {
+      color: var(--_prompt-warning);
+    }
+  }
+
+  .markdown-prompt-hidden::before {
+    content: attr(data-char);
+    margin-inline: 0.125rem;
+    padding-inline: 0.25rem;
+    border-radius: 0.25rem;
+    background-color: color-mix(
+      in oklch,
+      var(--_prompt-warning) 25%,
+      transparent
+    );
+    font-size: 0.75em;
+  }
+
+  /* The prompt's markdown: wrapped as prose, rather than scrolled. */
+  .markdown-prompt-body {
+    padding: 0.75rem 1rem 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    > code {
+      background: none;
+      padding: 0;
+      font: inherit;
+      white-space: inherit;
+    }
+  }
+
+  /* The actions, laid over the right of the title's row. */
+  .markdown-prompt-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--_prompt-gap);
+    justify-self: end;
+    align-self: start;
+    block-size: var(--_prompt-row);
+    padding-inline-end: 0.5rem;
+  }
+
+  /* A service's form only carries its prompt; its button is laid out with the rest. */
+  .markdown-prompt-service:is(form) {
+    display: contents;
+  }
+
+  .markdown-prompt-copy,
+  form.markdown-prompt-service > button,
+  a.markdown-prompt-service {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    inline-size: var(--_prompt-button);
+    block-size: var(--_prompt-button);
+    padding: 0;
+    border: 0;
+    border-radius: 0.375rem;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: var(--_prompt-hover);
+
+        > .markdown-prompt-icon {
+          color: inherit;
+        }
+      }
+    }
+
+    &:active {
+      background-color: color-mix(in oklch, currentColor 16%, transparent);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--_prompt-focus);
+      outline-offset: 0;
+    }
+  }
+
+  /* Each action's label, which names what it does, as its tooltip; the title's warning's too. */
+  .markdown-prompt-copy,
+  form.markdown-prompt-service > button,
+  a.markdown-prompt-service,
+  .markdown-prompt-warning {
+    &::after {
+      content: attr(aria-label);
+      position: absolute;
+      z-index: 1;
+      inset-block-end: calc(100% + 0.375rem);
+      inset-inline-start: 50%;
+      translate: -50% 0;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--_prompt-border);
+      border-radius: 0.375rem;
+      background-color: var(--_prompt-background);
+      box-shadow: 0 2px 8px oklch(0 0 none / 0.15);
+      color: var(--_prompt-foreground);
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.3;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    &:focus-visible::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0.3s;
+      }
+    }
+  }
+
+  /* Where anchors can be scoped, the tooltip is fixed to its button, so a container that clips its content (such as tabs) can't cut it off; it flips below where there's no room above. */
+  @supports (anchor-scope: --x) {
+    .markdown-prompt-copy,
+    form.markdown-prompt-service > button,
+    a.markdown-prompt-service,
+    .markdown-prompt-warning {
+      anchor-name: --markdown-prompt-action;
+      anchor-scope: --markdown-prompt-action;
+
+      &::after {
+        position: fixed;
+        position-anchor: --markdown-prompt-action;
+        position-area: top center;
+        position-try-fallbacks:
+          flip-block,
+          top span-left,
+          top span-right,
+          bottom span-left,
+          bottom span-right;
+        inset: auto;
+        margin-block: 0.375rem;
+        translate: none;
+      }
+    }
+  }
+
+  .markdown-prompt-copy[hidden] {
+    display: none;
+  }
+
+  /* Dimmed until its button is hovered; on the icon, where a page's link and button colors don't reach. */
+  .markdown-prompt-icon {
+    display: inline-flex;
+    flex: none;
+    inline-size: 1rem;
+    block-size: 1rem;
+    color: color-mix(in oklch, currentColor 70%, transparent);
+
+    > svg {
+      inline-size: 100%;
+      block-size: 100%;
+    }
+  }
+
+  /* The copy button's icon for its state; copied, in the accent color. */
+  .markdown-prompt-copy {
+    > [data-state="copied"] {
+      display: none;
+    }
+
+    &[data-state="copied"] {
+      > [data-state="copy"] {
+        display: none;
+      }
+
+      > [data-state="copied"] {
+        display: inline-flex;
+        color: var(--_prompt-accent);
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+@import "../../../packages/mdit-prompt/src/prompt.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  The plugin draws a prompt in the page's colors, from the `Canvas` and
+  `CanvasText` system colors, which follow `color-scheme`. VSCode's preview
+  paints itself with the editor theme instead (and doesn't set
+  `color-scheme` to match), so prompts would stay light on a dark theme.
+
+  Take them from the editor theme's --vscode-* custom properties here: the
+  card as a tint of the editor's background, the opened prompt on the code
+  blocks' background, links for the accents, and the theme's warning color
+  for invisible characters. A color the theme lacks makes its token invalid,
+  and the stylesheet's default applies.
+*/
+body {
+  --markdown-prompt-foreground: var(--vscode-editor-foreground);
+  --markdown-prompt-background: color-mix(
+    in oklch,
+    var(--vscode-editor-background),
+    var(--vscode-editor-foreground) 3%
+  );
+  --markdown-prompt-surface: var(--vscode-textCodeBlock-background);
+  --markdown-prompt-accent: var(--vscode-textLink-foreground);
+  --markdown-prompt-focus: var(--vscode-focusBorder);
+  --markdown-prompt-warning: var(--vscode-editorWarning-foreground);
+}

@@ -38,6 +38,7 @@
     "@mirrordown/mdit-lightbox": "workspace:^",
     "@mirrordown/mdit-mark": "workspace:^",
     "@mirrordown/mdit-mermaid-pele": "workspace:^",
+    "@mirrordown/mdit-prompt": "workspace:^",
     "@mirrordown/mdit-ruby": "workspace:^",
     "@mirrordown/mdit-sectionize": "workspace:^",
     "@mirrordown/mdit-slug": "workspace:^",
