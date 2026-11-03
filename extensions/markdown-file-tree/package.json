@@ -1,7 +1,7 @@
 {
   "name": "markdown-file-tree",
   "displayName": "Markdown File Tree",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Renders filetree code blocks as file trees in VSCode's markdown preview, like the explorer: Seti icons, git status colors and folders that open and close, in the editor's theme",
   "categories": [
     "Other"

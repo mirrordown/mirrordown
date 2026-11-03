@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/sat-prompt",
   "description": "A Sätteri plugin pair to render prompt code fences as AI prompts readers can copy or open in Claude, ChatGPT and other services, previewed as the page renders markdown and collapsed by default, that read as plain text where the plugins are not installed.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

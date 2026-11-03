@@ -1,7 +1,7 @@
 {
   "name": "markdown-prompt",
   "displayName": "Markdown AI Prompts",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Renders prompt code blocks in VSCode's markdown preview as AI prompts to copy or open in Claude, ChatGPT and other services, collapsed by default, in the editor's theme",
   "categories": [
     "Other"
