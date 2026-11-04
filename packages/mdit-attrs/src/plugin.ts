@@ -22,11 +22,26 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
     };
   }
 
+  // The token type a rule's first test demands of the current token, when it names one outright.
+  // Every token is tried against every rule, and almost every rule anchors on an `inline` token, so
+  // comparing that type first skips the full test run (with its result objects) for the opening and
+  // closing tokens that make up most of the stream.
+  const anchorTypes = rules.map(({ tests: [first] }) =>
+    first.position === undefined &&
+    (first.shift ?? 0) === 0 &&
+    typeof first.type === "string"
+      ? first.type
+      : null
+  );
+
   md.core.ruler.before("linkify", "attrs", (state) => {
     const { tokens } = state;
 
     for (let index = 0; index < tokens.length; index++) {
+      const tokenType = tokens[index].type;
       for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex++) {
+        const anchorType = anchorTypes[ruleIndex];
+        if (anchorType !== null && anchorType !== tokenType) continue;
         const pattern = rules[ruleIndex];
         let position: number | null = null;
         let range: DelimiterRange | null = null;
