@@ -158,11 +158,20 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // outermost of those it leaves (a list item's list). Runs before the list
     // rule, so the item then reads a block ending its first line.
     if (rules.has("softbreak")) {
-      const lines = String(file.value).split(/\r?\n/);
-      const parents = new Map<Node, Parent>();
-      visit(tree, (node: Node, _index, parent: Parent | undefined) => {
-        if (parent) parents.set(node, parent);
-      });
+      // The source lines and the parent map serve only a block found on a line of its own, so
+      // they are built on the first one: most documents have none, and building them cost a
+      // split of the whole source plus a full extra walk per document.
+      let lines: string[] | undefined;
+      let parents: Map<Node, Parent> | undefined;
+      const parentsOf = (): Map<Node, Parent> => {
+        if (parents) return parents;
+        const map = new Map<Node, Parent>();
+        visit(tree, (node: Node, _index, parent: Parent | undefined) => {
+          if (parent) map.set(node, parent);
+        });
+        parents = map;
+        return map;
+      };
       visit(tree, (node: Node) => {
         if (node.type !== "paragraph" && node.type !== "heading") return;
         const children = (node as Paragraph).children;
@@ -174,10 +183,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const content = last.value.slice(lineStart + 1).trim();
         const range = check(content, "only");
         if (!range) return;
+        const parentMap = parentsOf();
+        lines ??= String(file.value).split(/\r?\n/);
 
         // The blockquotes and list items around the block, outermost first.
         const ancestors: Parent[] = [];
-        for (let p = parents.get(node); p; p = parents.get(p))
+        for (let p = parentMap.get(node); p; p = parentMap.get(p))
           ancestors.unshift(p);
         const containers: Array<{ target: Node; line: LineContainer }> = [];
         for (const [i, ancestor] of ancestors.entries()) {
@@ -210,13 +221,13 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
               containers.map((c) => c.line)
             )
           : containers.length;
-        const parent = parents.get(node);
+        const parent = parentMap.get(node);
         let target = node;
         if (kept < containers.length) target = containers[kept].target;
         // A tight list hides its paragraphs, so the item shows the attributes.
         else if (
           parent?.type === "listItem" &&
-          !listLoose(parents.get(parent) as List)
+          !listLoose(parentMap.get(parent) as List)
         )
           target = parent;
         applyAttrs(target, content, range, allowed);
