@@ -14,10 +14,12 @@ import { normalizeHtml } from "../utils/index.js";
 // The caption plugin alone in each engine, for inputs a fixture file can't hold (carriage returns, trailing backslashes) and for the places the engines' recognition once disagreed. Every case must render the same HTML in all three.
 const md = new MarkdownIt().use(caption);
 
-const engines: Array<{
+interface Engine {
   engine: string;
   render: (input: string, gfm: boolean) => string;
-}> = [
+}
+
+const engines: Engine[] = [
   { engine: `markdown-it`, render: (input: string) => md.render(input) },
   {
     engine: `remark`,

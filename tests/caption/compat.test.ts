@@ -206,35 +206,37 @@ describe(`caption + attrs: a table caption's own style goes on the figure`, () =
 });
 
 // mdit-caption reads other plugins' tokens by name and by `meta`, a contract nothing else writes down: the closing tokens of titles, labels and terms (a caption after one stays text), `meta.attrsSource` on a block tokenized from its own source (its tokens' maps index that source, not the page), `meta.githubAlert` on an alert, and a prompt's `prompt_close` naming its fence. A renamed token or a dropped `meta` would make the rule read the wrong lines silently, so the names are pinned here.
-it(`markdown-it: the tokens the caption rule reads from other plugins keep their names`, () => {
-  const tokens = md.parse(
-    "% One\n> text\n\n@1. Step\n>  body\n\n> [!NOTE]-\n> x\n\nTerm\n: Def\n\n```prompt\nx\n```\n",
-    {}
-  );
-  const types = tokens.map((token) => token.type);
-  expect(types).toEqual(
-    expect.arrayContaining([
-      `tab_input`,
-      `tab_label_close`,
-      `tabs_labels_close`,
-      `steps_title_close`,
-      `summary_close`,
-      `dt_close`,
-      `dd_open`,
-      `prompt_close`
-    ])
-  );
-  const withMeta = (key: string): string[] =>
-    tokens
-      .filter((token) => {
-        const meta: unknown = token.meta;
-        return typeof meta === `object` && meta !== null && key in meta;
-      })
-      .map((token) => token.type);
-  expect(withMeta(`attrsSource`)).toEqual([
-    `tab_panel_open`,
-    `steps_body_open`
-  ]);
-  expect(withMeta(`githubAlert`)).toEqual([`details_open`]);
-  expect(withMeta(`fence`)).toEqual([`prompt_close`]);
+describe(`caption + the plugins whose tokens it reads`, () => {
+  it(`markdown-it: the tokens the caption rule reads keep their names`, () => {
+    const tokens = md.parse(
+      "% One\n> text\n\n@1. Step\n>  body\n\n> [!NOTE]-\n> x\n\nTerm\n: Def\n\n```prompt\nx\n```\n",
+      {}
+    );
+    const types = tokens.map((token) => token.type);
+    expect(types).toEqual(
+      expect.arrayContaining([
+        `tab_input`,
+        `tab_label_close`,
+        `tabs_labels_close`,
+        `steps_title_close`,
+        `summary_close`,
+        `dt_close`,
+        `dd_open`,
+        `prompt_close`
+      ])
+    );
+    const withMeta = (key: string): string[] =>
+      tokens
+        .filter((token) => {
+          const meta: unknown = token.meta;
+          return typeof meta === `object` && meta !== null && key in meta;
+        })
+        .map((token) => token.type);
+    expect(withMeta(`attrsSource`)).toEqual([
+      `tab_panel_open`,
+      `steps_body_open`
+    ]);
+    expect(withMeta(`githubAlert`)).toEqual([`details_open`]);
+    expect(withMeta(`fence`)).toEqual([`prompt_close`]);
+  });
 });
