@@ -267,3 +267,32 @@ check(`steps: a blank line without the body's marker ends the blocks before it`,
     expected: `${OL}${LI(1)}${T}S</p>${B}<p>a</p><p>b</p><p>c</p></div></li></ol>`
   }
 ]);
+
+// Without the alerts plugin a `[!NOTE]` line is text. Directly under a header it is the first line of the step's body in every engine (remark and Sätteri used to end the steps there); after a blank line it starts a quote of its own, so a document reads the same once the alerts plugin is added.
+check(`steps: a quote that starts with an alert marker, without the alerts plugin`, [
+  {
+    name: `directly under the header, it is the body`,
+    input: `@1. S\n> [!NOTE]\n> text`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE]\ntext</p></div></li></ol>`
+  },
+  {
+    name: `a marker with text after it is the body too`,
+    input: `@1. S\n> [!NOTE] not alone\n> text`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE] not alone\ntext</p></div></li></ol>`
+  },
+  {
+    name: `nested one level deeper, it is a quote in the body`,
+    input: `@1. S\n> > [!NOTE]\n> > text`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
+  },
+  {
+    name: `after a blank line, it ends the steps`,
+    input: `@1. S\n> body\n\n> [!NOTE]\n> text`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol><blockquote><p>[!NOTE]\ntext</p></blockquote>`
+  },
+  {
+    name: `nested after a blank line, it is a quote in the body`,
+    input: `@1. S\n> body\n\n> > [!NOTE]\n> > text`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p><blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
+  }
+]);

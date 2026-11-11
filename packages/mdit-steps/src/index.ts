@@ -145,7 +145,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
           const isContinuation =
             state.sCount[peek] >= state.blkIndent &&
-            ((CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
+            ((CONTINUATION_RE.test(peekLine) && !isOwnAlertLine(peekLine)) ||
               parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
           // Blank line is part of the body

@@ -19,6 +19,7 @@ import {
   markerLevels,
   splitAtOpeningLine,
   linesToParagraph,
+  markerCount,
   paragraphProperties,
   paraToLines,
   paraToSourceLines,
@@ -356,6 +357,25 @@ const splitBlockquote = (
   return segments;
 };
 
+// Whether a quote after a step is an alert (`> [!NOTE]`), a block of its own, rather than more of the step's body. After a blank line it is, as markdown-it reads it, whether or not the alerts plugin reads it. Directly under the step it is the body, unless the alerts plugin (it runs before steps) has already made it an alert, taking its marker: that can't be made a body again. Only a marker with the quote's own `>` count counts: written deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlert = (
+  bq: Blockquote,
+  before: Paragraph["position"],
+  sourceLines: readonly string[]
+): boolean => {
+  const line = bq.position?.start.line;
+  if (line === undefined) return false;
+  const source = sourceLines[line - 1] ?? "";
+  if (
+    !isAlertMarkerLine(source) ||
+    markerCount(source) !== blockquoteMarkers(bq, sourceLines)
+  )
+    return false;
+  if (before && line > before.end.line + 1) return true;
+  const text = bq.children[0]?.type === "paragraph" && bq.children[0].children[0];
+  return !(text && text.type === "text" && isAlertMarkerLine(text.value));
+};
+
 // ── Tree builder ──────────────────────────────────────────────────────────────
 
 const buildTree = (
@@ -477,12 +497,9 @@ export const processStepsInChildren = (
           if (!sibling) break;
 
           if (sibling.type === "blockquote") {
-            // An alert after a blank line is a block of its own, not more of the step's body.
-            const line = sibling.position?.start.line;
             if (
               sourceLines &&
-              line !== undefined &&
-              isAlertMarkerLine(sourceLines[line - 1] ?? "")
+              isOwnAlert(sibling, children[j - 1]?.position, sourceLines)
             )
               break;
             const segments = splitBlockquote(
