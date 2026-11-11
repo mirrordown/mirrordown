@@ -140,6 +140,35 @@ const cases: [string, string, string[]][] = [
       `<figure class="markdown-caption"><svg xmlns="http://www.w3.org/2000/svg" class="pele pele-flowchart"`,
       `</svg><figcaption>A diagram</figcaption></figure>`
     ]
+  ],
+  // The author's own style is an attribute like any other. markdown-it's rule once dropped any `text-align` style to keep a table cell's alignment off the figure.
+  [
+    `attrs: a text-align style written on the caption goes on the figure`,
+    `![x](a.jpg)\n~: cap {style="text-align:center"}`,
+    [
+      `<figure class="markdown-caption" style="text-align:center"><img src="a.jpg" alt="x"><figcaption>cap</figcaption></figure>`
+    ]
+  ],
+  // markdown-it's prompt is three kinds of token without nesting (its fence, the preview's blocks, a closing token), not the balanced pair the caption rule takes a block to be: the figure once opened inside the preview and closed outside the prompt.
+  [
+    `prompt: a caption after a prompt captions the whole prompt`,
+    "```prompt\nDo the thing\n```\n~: A prompt",
+    [
+      `<figure class="markdown-caption"><div class="markdown-prompt">`,
+      `</div><figcaption>A prompt</figcaption></figure>`
+    ]
+  ],
+  [
+    `prompt: a marker on a prompt's first line has no block before it`,
+    "```prompt\n~: inside\n```",
+    [`<div class="markdown-prompt-preview"><p>~: inside</p></div>`]
+  ],
+  [
+    `prompt: a caption inside a prompt captions its block in the preview`,
+    "```prompt\ntext\n~: cap\n```",
+    [
+      `<div class="markdown-prompt-preview"><figure class="markdown-caption"><p>text</p><figcaption>cap</figcaption></figure></div>`
+    ]
   ]
 ];
 
@@ -150,4 +179,51 @@ describe.each(cases)(`caption + %s`, (_, input, contains) => {
     expect(html).toBe(first);
     for (const part of contains) expect(html).toContain(part);
   });
+});
+
+// The engines write a column's alignment differently (markdown-it and Sätteri as a `style`, remark as `align`), so this reads the figure alone: the caption's own style goes on it, and the column's alignment, which markdown-it's attrs find on the caption's cell, stays with the table.
+describe(`caption + attrs: a table caption's own style goes on the figure`, () => {
+  it.each(engines)(`$engine`, ({ render }) => {
+    const html = render(
+      `| a |\n| :-: |\n| 1 |\n~: cap {style="text-align:right"}`
+    );
+    expect(html).toContain(
+      `<figure class="markdown-caption" style="text-align:right"><table>`
+    );
+    expect(html).toContain(`center`);
+  });
+});
+
+// mdit-caption reads other plugins' tokens by name and by `meta`, a contract nothing else writes down: the closing tokens of titles, labels and terms (a caption after one stays text), `meta.attrsSource` on a block tokenized from its own source (its tokens' maps index that source, not the page), `meta.githubAlert` on an alert, and a prompt's `prompt_close` naming its fence. A renamed token or a dropped `meta` would make the rule read the wrong lines silently, so the names are pinned here.
+it(`markdown-it: the tokens the caption rule reads from other plugins keep their names`, () => {
+  const tokens = md.parse(
+    "% One\n> text\n\n@1. Step\n>  body\n\n> [!NOTE]-\n> x\n\nTerm\n: Def\n\n```prompt\nx\n```\n",
+    {}
+  );
+  const types = tokens.map((token) => token.type);
+  expect(types).toEqual(
+    expect.arrayContaining([
+      `tab_input`,
+      `tab_label_close`,
+      `tabs_labels_close`,
+      `steps_title_close`,
+      `summary_close`,
+      `dt_close`,
+      `dd_open`,
+      `prompt_close`
+    ])
+  );
+  const withMeta = (key: string): string[] =>
+    tokens
+      .filter((token) => {
+        const meta: unknown = token.meta;
+        return typeof meta === `object` && meta !== null && key in meta;
+      })
+      .map((token) => token.type);
+  expect(withMeta(`attrsSource`)).toEqual([
+    `tab_panel_open`,
+    `steps_body_open`
+  ]);
+  expect(withMeta(`githubAlert`)).toEqual([`details_open`]);
+  expect(withMeta(`fence`)).toEqual([`prompt_close`]);
 });

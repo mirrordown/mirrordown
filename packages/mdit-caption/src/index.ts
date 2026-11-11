@@ -31,7 +31,7 @@ const UNCAPTIONED = new Set([
 
 const BREAKS = new Set([`softbreak`, `hardbreak`]);
 
-// The attributes a caption's figure takes: its class, then those written at the end of the caption (a class joins it). A table cell's alignment stays with the table.
+// The attributes a caption's figure takes: its class, then those written at the end of the caption (a class joins it).
 const figureAttrs = (
   author: ReadonlyArray<[string, string]>
 ): Array<[string, string]> => {
@@ -39,8 +39,7 @@ const figureAttrs = (
   const rest: Array<[string, string]> = [];
   for (const [name, value] of author) {
     if (name === `class`) classes.push(...value.split(` `).filter(Boolean));
-    else if (!(name === `style` && value.startsWith(`text-align:`)))
-      rest.push([name, value]);
+    else rest.push([name, value]);
   }
   return [[`class`, classes.join(` `)], ...rest];
 };
@@ -60,8 +59,24 @@ const closeOf = (tokens: readonly Token[], open: number): number => {
   return open;
 };
 
+// The index of the fence opening the prompt `tokens[close]` closes, `-1` for any other token. mdit-prompt renders a prompt from three kinds of token without nesting: its fence, the blocks of its preview, and a `prompt_close` whose `meta.fence` is that fence. This plugin otherwise takes a block to be one token or a balanced pair, so the names are read here and pinned in `tests/caption/compat.test.ts`.
+const promptOpen = (tokens: readonly Token[], close: number): number => {
+  const token = tokens[close];
+  const meta: unknown = token?.meta;
+  if (
+    token?.type !== `prompt_close` ||
+    typeof meta !== `object` ||
+    meta === null ||
+    !(`fence` in meta)
+  )
+    return -1;
+  return tokens.findIndex((t) => t === meta.fence);
+};
+
 // The token opening the block `tokens[close]` closes.
 const openOf = (tokens: readonly Token[], close: number): number => {
+  const fence = promptOpen(tokens, close);
+  if (fence !== -1) return fence;
   if (tokens[close]?.nesting !== -1) return close;
   let depth = 0;
   for (let i = close - 1; i >= 0; i--) {
@@ -98,6 +113,19 @@ const isAlert = (token: Token | undefined): boolean => {
     `githubAlert` in meta &&
     meta.githubAlert === true
   );
+};
+
+// Whether a link reference definition is written between a block (from its `open` token to its `close`) and the caption paragraph starting on line `start`, under the line `above` it. markdown-it keeps definitions out of the token stream (remark's `definition` node is uncaptioned), so one shows only as source lines no token covers. Two such lines or more are a definition, whatever its last line looks like. One line can be a container's own last line (mdit-tabs and mdit-steps map a group up to its last line, not past it, and a block without a map says nothing), so it's a definition if it looks like one; unless it's the last line of a code block (one token, whose map ends where the caption starts), which is code whatever it looks like.
+const definitionAbove = (
+  open: Token,
+  close: Token,
+  start: number,
+  above: string
+): boolean => {
+  const uncovered = open.map ? start - open.map[1] : 1;
+  if (uncovered > 1) return true;
+  if (uncovered < 1 && open === close) return false;
+  return /^[ \t>]*\[[^\]]+\]:/.test(above);
 };
 
 // Inline children split into lines at each soft or hard break, which ends its line, each with the breaks before it: the source lines the paragraph has before the line. A break inside inline markup (emphasis, a link) doesn't end a line, as remark and Sätteri keep such content together: a `~:` after it is text, and no element is cut in two.
@@ -285,7 +313,14 @@ export const caption: PluginSimple = (md) => {
         const lineEnd = new state.Token(`softbreak`, `br`, 0);
         return [...(tokens[open + 2]?.children ?? []), lineEnd];
       });
-      const author = takeAttrs(tokens[captionRows.at(-1)!.open + 1]);
+      // markdown-it aligns a cell with a `style` attribute, which is the table's and stays off the figure: the first column's, as its header cell has it. A `style` the author wrote on the caption replaces it and goes on the figure with the caption's other attributes (one equal to the column's own can't be told from it, and is left out).
+      const align = tokens
+        .slice(index, close)
+        .find((t) => t.type === `th_open`)
+        ?.attrGet(`style`);
+      const author = takeAttrs(tokens[captionRows.at(-1)!.open + 1]).filter(
+        ([name, value]) => !(name === `style` && value === align)
+      );
       for (const { open, close: rowClose } of captionRows)
         for (let i = open; i <= rowClose; i++) dropped.add(tokens[i]!);
       // A body left without rows goes too, as remark leaves it out.
@@ -330,20 +365,23 @@ export const caption: PluginSimple = (md) => {
       if (captionLineAt(0) !== undefined) {
         const previous = tokens[index - 1];
         const above = context.lines[start - 1];
+        const target = tokens[openOf(tokens, index - 1)];
         if (
           !previous ||
+          !target ||
           previous.nesting === 1 ||
           UNCAPTIONED.has(previous.type) ||
           above === undefined ||
           above.replace(/^[ \t>]*/, ``) === `` ||
-          // A link reference definition, which markdown-it keeps out of the token stream (remark's `definition` node is uncaptioned).
-          /^[ \t>]*\[[^\]]+\]:/.test(above) ||
-          captioned.has(tokens[openOf(tokens, index - 1)]!)
+          // The first block of a prompt's preview follows the prompt's own fence, which is the block around it, not a block before it.
+          (previous.type === `fence` &&
+            tokens.some((_, i) => promptOpen(tokens, i) === index - 1)) ||
+          definitionAbove(target, previous, open.map[0], above) ||
+          captioned.has(target)
         )
           continue;
         const author = takeAttrs(open);
         dropped.add(open).add(inline).add(close);
-        const target = tokens[openOf(tokens, index - 1)]!;
         wrap(target, previous, captionChildren(paraLines), author);
         captioned.add(target);
         continue;

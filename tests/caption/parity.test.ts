@@ -95,6 +95,17 @@ const cases: Case[] = [
     input: `-\n    foo\n  ~: cap`,
     expected: `<ul><li>${FIGURE}<p>foo</p><figcaption>cap</figcaption></figure></li></ul>`
   },
+  // A link reference definition between a block and a caption line separates them, and the caption stays text. markdown-it leaves no token for a definition, so its rule reads the source: by the lines no block covers, not by what the line above looks like, which is wrong for a definition that ends on a line of its own and for code that reads like one.
+  {
+    name: `definition: one ending on a line that doesn't look like one still separates the caption`,
+    input: "```\ncode\n```\n[a]:\nb\n~: cap",
+    expected: `<pre><code>code\n</code></pre><p>~: cap</p>`
+  },
+  {
+    name: `definition: indented code that looks like one takes its caption`,
+    input: `Indented:\n\n    [home]: x\n~: A caption`,
+    expected: `<p>Indented:</p>${FIGURE}<pre><code>[home]: x\n</code></pre><figcaption>A caption</figcaption></figure>`
+  },
   // The break has nothing to break before: the caption ends there, as a paragraph ends at the hard break before its caption. Kept, it rendered a `<br>` at the end of the `<figcaption>` in two engines of three.
   {
     name: `hard break: one ending an inner caption isn't part of it`,
