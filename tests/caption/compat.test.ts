@@ -169,6 +169,17 @@ const cases: [string, string, string[]][] = [
     [
       `<div class="markdown-prompt-preview"><figure class="markdown-caption"><p>text</p><figcaption>cap</figcaption></figure></div>`
     ]
+  ],
+  // A known limit, pinned so that a change to it is seen: with subscript on, a `~` later on the caption's line pairs with the marker's before captions are read, in every engine (Sätteri's subscript is built in, so the order can't change there). The guide says to escape that `~`.
+  [
+    `sub: a later ~ on the line pairs with the marker's and the caption is lost`,
+    `![x](y.jpg)\n~: H~2~O formula`,
+    [`<sub>: H</sub>2~O formula</p>`]
+  ],
+  [
+    `sub: escaping the later ~ keeps the caption`,
+    `![x](y.jpg)\n~: H\\~2\\~O formula`,
+    [`<figcaption>H~2~O formula</figcaption></figure>`]
   ]
 ];
 
