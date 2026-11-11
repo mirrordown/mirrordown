@@ -95,8 +95,26 @@
 <!-- @case: a referenced dash between two runs is the span's content -->
 <p><del>-</del></p>
 
+<!-- @case: an escaped character after a run counts as punctuation -->
+<p>a--*b--</p>
+
+<!-- @case: an escaped character before a run counts as punctuation -->
+<p>--a*--b</p>
+
+<!-- @case: a character reference after a run counts as punctuation -->
+<p>a--éb--</p>
+
+<!-- @case: a character reference before a run counts as punctuation -->
+<p>--aé--b</p>
+
+<!-- @case: a referenced letter is still a reference beside a run -->
+<p>a--ab--</p>
+
 <!-- @case: an escape after an astral character reference is honoured -->
 <p>😀 --a--</p>
 
 <!-- @case: autolink text is literal -->
 <p><a href="http://x.com/--a--">http://x.com/--a--</a></p>
+
+<!-- @case: an astral symbol beside a run counts as punctuation -->
+<p>a--😀b--</p>

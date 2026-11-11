@@ -107,6 +107,26 @@ foo --bar
 
 --&#45;--
 
+<!-- @case: an escaped character after a run counts as punctuation -->
+
+a--\*b--
+
+<!-- @case: an escaped character before a run counts as punctuation -->
+
+--a\*--b
+
+<!-- @case: a character reference after a run counts as punctuation -->
+
+a--&eacute;b--
+
+<!-- @case: a character reference before a run counts as punctuation -->
+
+--a&eacute;--b
+
+<!-- @case: a referenced letter is still a reference beside a run -->
+
+a--&#97;b--
+
 <!-- @case: an escape after an astral character reference is honoured -->
 
 &#x1F600; \--a--
@@ -114,3 +134,7 @@ foo --bar
 <!-- @case: autolink text is literal -->
 
 <http://x.com/--a-->
+
+<!-- @case: an astral symbol beside a run counts as punctuation -->
+
+a--😀b--

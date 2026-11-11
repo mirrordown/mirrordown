@@ -10,14 +10,17 @@ import { del } from "../../packages/mdit-del/src";
 import { ins } from "../../packages/mdit-ins/src";
 import { kbd } from "../../packages/mdit-kbd/src";
 import { mark } from "../../packages/mdit-mark/src";
+import { abbr } from "../../packages/mdit-abbr/src";
 import { remarkDel } from "../../packages/remd-del/src";
 import { remarkIns } from "../../packages/remd-ins/src";
 import { remarkKbd } from "../../packages/remd-kbd/src";
 import { remarkMark } from "../../packages/remd-mark/src";
+import { remarkAbbr } from "../../packages/remd-abbr/src";
 import { satteriDel } from "../../packages/sat-del/src";
 import { satteriIns } from "../../packages/sat-ins/src";
 import { satteriKbd } from "../../packages/sat-kbd/src";
 import { satteriMark } from "../../packages/sat-mark/src";
+import { satteriAbbr } from "../../packages/sat-abbr/src";
 import { normalizeHtml } from "../utils/index.js";
 
 // The span plugins run one after another in remark and Sätteri, each over the tree the previous one left. del runs first in the presets, so what it leaves behind decides whether the later plugins can still tell an escaped delimiter from a real one. markdown-it scans every marker in one pass and is the reference.
@@ -128,6 +131,63 @@ describe("del registered twice: the second scan honours the first one's escapes"
         }).html
       )
     ).toBe(expected);
+  });
+});
+
+describe("del beside an abbreviation: the abbreviation is plain text for flanking", () => {
+  // markdown-it applies abbreviations after inline parsing, so a run beside one sees a letter; remark and Sätteri replace the term with an `abbr` node before del runs.
+  const definition = "*[HTML]: Hyper Text\n\n";
+  const cases: [name: string, input: string, expected: string][] = [
+    [
+      "a run between a closing parenthesis and a term does not close",
+      "--(a)--HTML",
+      '<p>--(a)--<abbr title="Hyper Text">HTML</abbr></p>'
+    ],
+    [
+      "a run between a letter and a term opens",
+      "a--HTML--",
+      '<p>a<del><abbr title="Hyper Text">HTML</abbr></del></p>'
+    ]
+  ];
+
+  const abbrMd = new MarkdownIt().use(abbr).use(del);
+  const renders = [
+    ["markdown-it", (input: string) => normalizeHtml(abbrMd.render(input))],
+    [
+      "remark",
+      (input: string) =>
+        normalizeHtml(
+          String(
+            unified()
+              .use(remarkParse)
+              .use(remarkAbbr)
+              .use(remarkDel)
+              .use(remarkRehype)
+              .use(rehypeStringify)
+              .processSync(input)
+          )
+        )
+    ],
+    [
+      "sätteri",
+      (input: string) =>
+        normalizeHtml(
+          markdownToHtml(input, {
+            features: {
+              gfm: false,
+              frontmatter: false,
+              smartPunctuation: false
+            },
+            mdastPlugins: [satteriAbbr(), satteriDel()]
+          }).html
+        )
+    ]
+  ] as const;
+
+  describe.each(renders)("%s", (_engine, render) => {
+    it.each(cases)("%s", (_name, input, expected) => {
+      expect(render(definition + input)).toBe(expected);
+    });
   });
 });
 

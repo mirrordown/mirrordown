@@ -1,3 +1,4 @@
+import { isMasked } from "./escapes.js";
 import type { PhrasingLike } from "./github-alerts/index.js";
 import {
   createSpanTransform,
@@ -27,12 +28,26 @@ const INLINE_PARENTS = new Set([
 
 type CharClass = `space` | `punct` | `other`;
 
-// markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S).
+// markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S). A masked character is punctuation: where the source has an escape or a character reference, markdown-it reads the escaped character or the `;` before a run, and the `\` or the `&` after it.
 const WHITESPACE =
   /^[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]$/u;
 const PUNCTUATION = /^[\p{P}\p{S}]$/u;
 const classify = (char: string): CharClass =>
-  WHITESPACE.test(char) ? `space` : PUNCTUATION.test(char) ? `punct` : `other`;
+  isMasked(char)
+    ? `punct`
+    : WHITESPACE.test(char)
+      ? `space`
+      : PUNCTUATION.test(char)
+        ? `punct`
+        : `other`;
+
+// The whole character that ends before `index`, or starts at it: markdown-it joins a surrogate pair before it classifies the character.
+const charBefore = (value: string, index: number): string => {
+  const pair = value.slice(Math.max(index - 2, 0), index);
+  return pair.codePointAt(0)! > 0xffff ? pair : pair.slice(-1);
+};
+const charAt = (value: string, index: number): string =>
+  String.fromCodePoint(value.codePointAt(index)!);
 
 interface Delimiter {
   open: boolean;
@@ -94,18 +109,24 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
 ): SpanTransform<N> =>
   createSpanTransform(nodes, (children, parentType, { text, wrap }) => {
     const edge: CharClass = INLINE_PARENTS.has(parentType) ? `punct` : `space`;
-    // The character class beside a text node, from its sibling: a break is a line ending; any other node ends in its own delimiter or markup.
+    // The character class beside a text node, from its sibling: a break is a line ending; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
     const beside = (
-      node: N | undefined,
+      sibling: N | undefined,
       side: `before` | `after`
     ): CharClass => {
-      if (!node) return edge;
-      if (node.type === `text` && node.value) {
+      if (!sibling) return edge;
+      const node =
+        sibling.type === `abbr`
+          ? sibling.children?.at(side === `before` ? -1 : 0)
+          : sibling;
+      if (node?.type === `text` && node.value) {
         return classify(
-          side === `before` ? node.value.slice(-1) : node.value.charAt(0)
+          side === `before`
+            ? charBefore(node.value, node.value.length)
+            : charAt(node.value, 0)
         );
       }
-      return node.type === `break` ? `space` : `punct`;
+      return sibling.type === `break` ? `space` : `punct`;
     };
 
     // markdown-it-mark's tokenizer: text between runs is one item, as markdown-it's pending text becomes one token.
@@ -133,11 +154,11 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
         }
         const last =
           i > 0
-            ? classify(value.charAt(i - 1))
+            ? classify(charBefore(value, i))
             : beside(children[index - 1], `before`);
         const next =
           end < value.length
-            ? classify(value.charAt(end))
+            ? classify(charAt(value, end))
             : beside(children[index + 1], `after`);
         const open = next !== `space` && (next !== `punct` || last !== `other`);
         const close =
