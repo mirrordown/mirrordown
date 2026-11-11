@@ -30,12 +30,15 @@ export const remarkTabs: Plugin<[TabsOptions?], Root> = function (
 
 const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   if (!extra) return base;
-  const { class: extraClass, ...rest } = extra;
+  // An author class joins the element's own, whether it's spelled `class` (attrs) or `className` (hast, and most remark plugins), as in the Sätteri plugin.
+  const { class: extraClass, className: extraClassName, ...rest } = extra;
   const result: Properties = { ...base, ...rest };
-  if (extraClass)
-    result.class = base.class
-      ? `${String(base.class)} ${String(extraClass)}`
-      : extraClass;
+  const classes = [base.class, extraClass, extraClassName]
+    .flat()
+    .filter(
+      (value): value is string => typeof value === "string" && value !== ""
+    );
+  if (classes.length > 0) result.class = classes.join(" ");
   return result;
 };
 
