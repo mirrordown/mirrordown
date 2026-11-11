@@ -208,3 +208,52 @@ check(`tabs: a panel's body is read as a blockquote's content`, [
     expected: group([`A`, `<ul><li><p>a</p></li><li><p>b</p></li></ul>`])
   }
 ]);
+
+// markdown-it ends a group at any line that is neither a header nor a `>` line. CommonMark instead continues the paragraph before it with such a line, so remark and Sätteri found it inside a header's paragraph (no tabs at all) or inside a panel (as the panel's text, or the next tab's). Recognition now ends the group there too.
+check(`tabs: a line that is neither a header nor a > line ends the group`, [
+  {
+    name: `right after the header`,
+    input: `% A\ntext`,
+    expected: `${group([`A`])}<p>text</p>`
+  },
+  {
+    name: `after several headers, with a new group after it`,
+    input: `% A\n% B\ntext\n% C`,
+    expected: `${group([`A`], [`B`])}<p>text</p>${group([`C`])}`
+  },
+  {
+    name: `after a body, with a header after it that starts a new group`,
+    input: `% A\n> a\ntext\n% B\n> b`,
+    expected: `${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`, `<p>b</p>`])}`
+  },
+  {
+    name: `right after a header that follows a body`,
+    input: `% One\n> a\n% Two\ntext`,
+    expected: `${group([`One`, `<p>a</p>`], [`Two`])}<p>text</p>`
+  },
+  {
+    name: `right after a header that follows a list in a body`,
+    input: `% A\n> - item\n% B\nplain`,
+    expected: `${group([`A`, `<ul><li>item</li></ul>`], [`B`])}<p>plain</p>`
+  },
+  {
+    name: `after a body, with a > line after it that is then a blockquote`,
+    input: `% One\n> First\nAfter\n> quoted`,
+    expected: `${group([`One`, `<p>First</p>`])}<p>After</p><blockquote><p>quoted</p></blockquote>`
+  },
+  {
+    name: `in a paragraph that isn't the panel's last`,
+    input: `% A\n> a\ntext\n>\n> more\n% B`,
+    expected: `${group([`A`, `<p>a</p>`])}<p>text</p><blockquote><p>more\n% B</p></blockquote>`
+  },
+  {
+    name: `in a blockquote, a line with the blockquote's marker but not the panel's`,
+    input: `> % One\n> > First.\n% Two\n> Second.`,
+    expected: `<blockquote>${group([`One`, `<p>First.</p>`], [`Two`])}<p>Second.</p></blockquote>`
+  },
+  {
+    name: `in a list item, where the line stays in the item`,
+    input: `- % A\n  text`,
+    expected: `<ul><li>${group([`A`])}\ntext</li></ul>`
+  }
+]);

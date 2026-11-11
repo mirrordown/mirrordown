@@ -150,10 +150,11 @@ export const tabLabelText = (nodes: PhrasingContent[]): string =>
 
 // ── Tab group extraction ──────────────────────────────────────────────────────
 
-// Parse a paragraph node that consists entirely of % tab headers (no body
-// content). Returns null if the paragraph isn't all headers. A header that
-// skips a depth level ends the group: it and the lines after it are returned
-// as `rest`, to be rendered as an ordinary paragraph after the tabs.
+// Parse the % tab headers a paragraph node starts with. Returns null if its
+// first line isn't one. A header that skips a depth level, or a line that
+// isn't a header, ends the group, as it does in markdown-it: it and the lines
+// after it are returned as `rest`, to be rendered as ordinary paragraphs after
+// the tabs.
 // requireDepthOne: if true, the first header must be depth 1 (top-level group start).
 // If false, allows any starting depth (for continuation paragraphs).
 const extractHeaderPara = (
@@ -170,14 +171,12 @@ const extractHeaderPara = (
     // A header's line, without the hard break that can't follow it.
     const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
-    if (first?.type !== "text") return null;
+    const header = first?.type === "text" ? parseTabHeader(first.value) : null;
 
-    const header = parseTabHeader(first.value);
-    if (!header) return null;
-
-    const { depth, open } = header;
+    const depth = header?.depth ?? 0;
+    const open = header?.open ?? false;
     if (tabs.length === 0 && requireDepthOne && depth !== 1) return null;
-    if (depth > currentDepth + 1) {
+    if (!header || depth > currentDepth + 1) {
       return tabs.length > 0
         ? {
             tabs,
@@ -268,6 +267,8 @@ interface BQSegment {
   lines: MarkedLine[];
   // The header's line as written, for a header that skips a level and stays text.
   line?: PhrasingContent[];
+  // The group ends here: `lines` are a line that is neither a header nor written with the panel's markers, and the paragraph's lines after it; `body`, the blockquote's blocks after that paragraph.
+  ends?: boolean;
 }
 
 // A blockquote is "explicit" (`> % Label` nesting) when at least one of its
@@ -371,9 +372,13 @@ const extractTrailingTabHeader = (
 const splitBlockquote = (
   bq: Blockquote,
   explicit: boolean,
-  sourceLines?: readonly string[]
+  sourceLines?: readonly string[],
+  // Whether a line that leaves the panel without being a header ends the group (for the bodies of a group's own tabs).
+  endAtUnmarked = false
 ): BQSegment[] => {
   const segments: BQSegment[] = [];
+  // Set once such a line has ended the group: what follows is content after it, not tabs.
+  let ended = false;
   let currentSegment: BQSegment = {
     header: null,
     body: [],
@@ -390,54 +395,89 @@ const splitBlockquote = (
   const splitLines = (
     lines: PhrasingContent[][],
     markersOf?: (index: number) => number,
-    para?: Paragraph
+    para?: Paragraph,
+    // Whether the lines' paragraph is the last block of the blockquote.
+    last = true
   ): void => {
     let bodyLines: PhrasingContent[][] = [];
-
-    for (const [index, line] of lines.entries()) {
-      // A header's line, without the hard break that can't follow it.
-      const lineSegs = headerLineContent(line, sourceLines);
-      const first = lineSegs[0];
+    // The header a line is, when it's written outside the panel.
+    const headerAt = (index: number): ParsedTabHeader | null => {
+      const first = headerLineContent(lines[index] ?? [], sourceLines)[0];
       const outsidePanel =
         !markersOf || base === undefined || markersOf(index) < base;
-      if (first?.type === "text" && outsidePanel) {
-        const header = parseTabHeader(first.value);
-        if (header) {
-          // Flush accumulated body lines into current segment
-          if (bodyLines.length > 0) {
-            const bodyPara = linesToParagraph(bodyLines, sourceLines);
-            if (bodyPara) currentSegment.body.push(bodyPara);
-            bodyLines = [];
-          }
+      return first?.type === "text" && outsidePanel
+        ? parseTabHeader(first.value)
+        : null;
+    };
 
-          // Save current segment, start a new one
-          segments.push(currentSegment);
-
-          const labelText = header.label;
-          const labelNodes: PhrasingContent[] = labelText
-            ? [{ type: "text", value: labelText }, ...lineSegs.slice(1)]
-            : lineSegs.slice(1);
-
-          currentSegment = {
-            header: {
-              depth: header.depth,
-              open: header.open,
-              labelNodes,
-              labelText: tabLabelText(labelNodes),
-              body: [],
-              ...(header.depth > 1 ? { sub: true } : {}),
-              ...(para && index === lines.length - 1
-                ? { hProperties: paragraphProperties(para) }
-                : {})
-            },
-            body: [],
-            explicit,
-            lines: [],
-            line,
-            ...(markersOf ? { markers: markersOf(index) } : {})
-          };
-          continue;
+    for (const [index, line] of lines.entries()) {
+      if (ended) {
+        if (markersOf)
+          currentSegment.lines.push({ segs: line, markers: markersOf(index) });
+        continue;
+      }
+      // A header's line, without the hard break that can't follow it.
+      const lineSegs = headerLineContent(line, sourceLines);
+      const header = headerAt(index);
+      if (header) {
+        // Flush accumulated body lines into current segment
+        if (bodyLines.length > 0) {
+          const bodyPara = linesToParagraph(bodyLines, sourceLines);
+          if (bodyPara) currentSegment.body.push(bodyPara);
+          bodyLines = [];
         }
+
+        // Save current segment, start a new one
+        segments.push(currentSegment);
+
+        const labelText = header.label;
+        const labelNodes: PhrasingContent[] = labelText
+          ? [{ type: "text", value: labelText }, ...lineSegs.slice(1)]
+          : lineSegs.slice(1);
+
+        currentSegment = {
+          header: {
+            depth: header.depth,
+            open: header.open,
+            labelNodes,
+            labelText: tabLabelText(labelNodes),
+            body: [],
+            ...(header.depth > 1 ? { sub: true } : {}),
+            ...(para && index === lines.length - 1
+              ? { hProperties: paragraphProperties(para) }
+              : {})
+          },
+          body: [],
+          explicit,
+          lines: [],
+          line,
+          ...(markersOf ? { markers: markersOf(index) } : {})
+        };
+        continue;
+      }
+      // A line that is neither a header nor written with the panel's markers ends the group, as it does in markdown-it. Here, that's one the pass that ends groups at their markers (`endGroupsAtMarkers`) doesn't reach: the first line after a header (that pass reads a paragraph from its second line), a line with a header after it (it isn't in the group's last panel then), or a line with a block after its paragraph (it isn't in the panel's last paragraph). The other such lines are left to that pass.
+      if (
+        endAtUnmarked &&
+        markersOf &&
+        base !== undefined &&
+        markersOf(index) < base &&
+        (bodyLines.length === 0 ||
+          !last ||
+          lines.some((_, later) => later > index && headerAt(later)))
+      ) {
+        const bodyPara = linesToParagraph(bodyLines, sourceLines);
+        if (bodyPara) currentSegment.body.push(bodyPara);
+        bodyLines = [];
+        segments.push(currentSegment);
+        currentSegment = {
+          header: null,
+          body: [],
+          explicit,
+          lines: [{ segs: line, markers: markersOf(index) }],
+          ends: true
+        };
+        ended = true;
+        continue;
       }
       bodyLines.push(line);
       if (markersOf) {
@@ -457,7 +497,13 @@ const splitBlockquote = (
     }
   };
 
-  for (const child of bq.children) {
+  for (const [childIndex, child] of bq.children.entries()) {
+    const last = childIndex === bq.children.length - 1;
+    // After the group has ended, the blockquote's other blocks follow it as they are.
+    if (ended) {
+      currentSegment.body.push(child);
+      continue;
+    }
     if (child.type !== "paragraph") {
       // For non-paragraph children (e.g. defList from remarkDefinitionList),
       // check if the deepest last-child paragraph has a trailing tab header.
@@ -502,7 +548,9 @@ const splitBlockquote = (
         };
         splitLines(
           extracted.rest,
-          markersOf ? (index): number => markersOf(at + 1 + index) : undefined
+          markersOf ? (index): number => markersOf(at + 1 + index) : undefined,
+          undefined,
+          last
         );
       } else {
         currentSegment.body.push(child);
@@ -515,7 +563,8 @@ const splitBlockquote = (
     splitLines(
       paraToLines(child, sourceLines),
       markers ? (index): number => markers[index] ?? 0 : undefined,
-      child
+      child,
+      last
     );
   }
 
@@ -724,7 +773,7 @@ export const processTabsInChildren = (
           if (sibling.type === "blockquote") {
             const bq = sibling;
             const explicit = isExplicitBQ(bq);
-            const segments = splitBlockquote(bq, explicit, sourceLines);
+            const segments = splitBlockquote(bq, explicit, sourceLines, true);
             // The `>` markers of the owning tab's body lines: an inner header written with fewer belongs outside it.
             const base =
               explicit && sourceLines
@@ -748,6 +797,24 @@ export const processTabsInChildren = (
             let ending: Array<BlockContent | DefinitionContent> | null = null;
 
             for (const [index, seg] of segments.slice(1).entries()) {
+              if (seg.ends) {
+                // The lines that ended the group follow it, rebuilt from their markers over those of the content around the group (one fewer than this blockquote's), with the blockquote's later blocks still quoted.
+                const level =
+                  (blockquoteMarkers(bq, sourceLines ?? []) ?? 1) - 1;
+                ending = rebuildLazyLines(
+                  seg.lines.map((line) => ({
+                    ...line,
+                    markers: line.markers - level
+                  })),
+                  0
+                );
+                const last = ending.at(-1);
+                if (seg.body.length === 0) break;
+                if (last?.type === "blockquote")
+                  last.children.push(...seg.body);
+                else ending.push({ type: "blockquote", children: seg.body });
+                break;
+              }
               if (!seg.header) continue;
 
               // A header remark absorbed into this body from outside it (its line has
