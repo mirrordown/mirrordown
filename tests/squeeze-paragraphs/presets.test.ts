@@ -10,7 +10,7 @@ describe("squeeze-paragraphs is the last plugin each preset runs", () => {
     const md = new MarkdownIt().use(markdownItPreset);
     // markdown-it has no public way to list a chain's rule names.
     const { __rules__: rules } = md.core.ruler as unknown as {
-      __rules__: Array<{ name: string }>;
+      __rules__: { name: string }[];
     };
     expect(rules.at(-1)?.name).toBe(`squeeze_paragraphs`);
   });
