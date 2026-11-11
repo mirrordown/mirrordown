@@ -8,14 +8,16 @@ import type {
 // balance_pairs pairs delimiters by `marker` alone, and strikethrough pushes `~` delimiters too: a value of our own keeps a `~sub~` delimiter from pairing with a `~~strike~~` one.
 const MARKER = 0x7e + 0x10000;
 
-// Ruler has no public way to ask whether a rule is enabled, and rules can be switched after the plugin is added, so this reads its list at parse time.
+// Ruler has no public way to ask whether a rule is enabled, and rules can be switched after the plugin is added, so this reads its list at parse time. The list is a private field: should a markdown-it release drop it, strikethrough counts as on, its default, so documents keep rendering.
 const strikethroughEnabled = (md: MDit): boolean => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const ruler = md.inline.ruler as unknown as {
-    __rules__: Array<{ name: string; enabled: boolean }>;
+    __rules__?: Array<{ name: string; enabled: boolean }>;
   };
-  return ruler.__rules__.some(
-    (rule) => rule.name === `strikethrough` && rule.enabled
+  return (
+    ruler.__rules__?.some(
+      (rule) => rule.name === `strikethrough` && rule.enabled
+    ) ?? true
   );
 };
 
