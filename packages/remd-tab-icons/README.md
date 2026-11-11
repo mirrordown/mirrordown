@@ -187,7 +187,7 @@ Icons with light and dark variants follow the reader's preferred color scheme. A
 }
 ```
 
-The plugin decorates the tab groups that the [tabs](/guide/plugins/tabs) plugin builds, so install that too.
+The plugin decorates the tab groups that the [tabs](/guide/plugins/tabs) plugin builds, so install that too. Register it once: a second copy reads the labels the first one changed, so it adds a second icon and matches a label whose `[!none]` has already come out (unified ignores a plugin registered twice; markdown-it and Sätteri run both).
 
 ## Install
 

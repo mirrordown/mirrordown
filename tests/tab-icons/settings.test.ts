@@ -171,3 +171,42 @@ describe(`tab-icons options: containerClass`, () => {
     });
   });
 });
+
+// The guide says to install the markdown-it plugin after the tabs plugin. Both are core rules that run in install order, and nothing enforces it, so this pins what each order does. After tabs, tab-icons reads the label's plain text, as the other engines do, and tabs has already named the group from the label as written. Before tabs, it reads the label's source, and tabs then names the group from the label without its marker: the same labels, but not the ids the other engines give.
+describe(`tab-icons (markdown-it): install order relative to tabs`, () => {
+  const after = new MarkdownIt().use(tabs).use(tabIcons);
+  const before = new MarkdownIt().use(tabIcons).use(tabs);
+  const withoutIds = (html: string): string =>
+    html.replace(/ (?:data-tabs-group|name|id|for)="[^"]*"/g, ``);
+
+  it(`before tabs gives the same labels and panels, under other ids when a marker came out`, () => {
+    const input = `% [!none] Next steps
+> Body.
+% npm
+> Body.
+% [!yarn] npm install
+> Body.
+% [!npm] **Install**
+> Body.`;
+    const html = after.render(input);
+    expect(html.split(`class="markdown-tab-icon"`)).toHaveLength(4);
+    expect(html).toContain(`aria-label="npm install"`);
+    expect(withoutIds(before.render(input))).toBe(withoutIds(html));
+    expect(before.render(input)).not.toBe(html);
+  });
+
+  it(`before tabs gives the same ids when no marker came out`, () => {
+    const input = `% npm
+> Body.
+% Next steps
+> Body.`;
+    expect(before.render(input)).toBe(after.render(input));
+  });
+
+  it(`only after tabs is a marker written with a character reference read from the label's text`, () => {
+    const input = `% &#91;!none] Next steps
+> Body.`;
+    expect(after.render(input)).toContain(`aria-label="Next steps"`);
+    expect(before.render(input)).toContain(`aria-label="[!none] Next steps"`);
+  });
+});
