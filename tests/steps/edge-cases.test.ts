@@ -330,3 +330,21 @@ check(`steps: an escaped header is text`, [
     expected: `<p>@1. A</p>`
   }
 ]);
+
+// Known difference, pinned so a change to it is noticed. In a list item, a header after a line of text interrupts the paragraph in markdown-it, as its block rule does anywhere. remark and Sätteri leave such a line alone: by indentation they can't tell a header written in the item from one CommonMark lazily continued into it. A blank line before the header reads the same in every engine.
+describe(`steps: a header after text in a list item (known difference)`, () => {
+  const input = `- text\n  @1. Step\n  > Body.`;
+  it.each(engines)(`$engine`, ({ engine, render }) => {
+    const html = normalizeHtml(render(input));
+    if (engine === `markdown-it`)
+      expect(html).toBe(
+        `<ul><li>text\n${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
+      );
+    else expect(html).not.toContain(`markdown-steps`);
+  });
+  it.each(engines)(`$engine: with a blank line before it, the header starts steps`, ({ render }) => {
+    expect(normalizeHtml(render(`- text\n\n  @1. Step\n  > Body.`))).toBe(
+      `<ul><li><p>text</p>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
+    );
+  });
+});
