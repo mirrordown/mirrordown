@@ -13,7 +13,7 @@ import {
   type LineContainer
 } from "@mirrordown/core";
 
-/** The closing tokens of blocks a caption doesn't attach to (headings, thematic breaks, raw HTML, front matter, another caption's figure, and the titles, labels and terms inside containers): a caption after them stays text. */
+/** The closing tokens of blocks a caption doesn't attach to (headings, thematic breaks, raw HTML, front matter, another caption's figure, and the titles, labels and terms inside containers): a caption after them stays text. Several are other plugins' token names, which `tests/caption/compat.test.ts` pins. */
 const UNCAPTIONED = new Set([
   `heading_close`,
   `hr`,
@@ -241,6 +241,7 @@ export const caption: PluginSimple = (md) => {
       for (let i = parentOf(tokens, index); i >= 0; i = parentOf(tokens, i)) {
         const token = tokens[i]!;
         const meta: unknown = token.meta;
+        // `meta.attrsSource` is a convention of the container plugins, written down nowhere else: a block tokenized from its own source (mdit-tabs' panel, mdit-steps' body) names that source there, and its tokens' maps index it, not the page. mdit-attrs reads it too. `tests/caption/compat.test.ts` pins it, with the token names this rule reads.
         const own =
           typeof meta === `object` && meta !== null && `attrsSource` in meta
             ? meta.attrsSource
