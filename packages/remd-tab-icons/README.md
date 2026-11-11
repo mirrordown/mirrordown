@@ -129,7 +129,7 @@ All options are passed when registering the plugin.
 
 ### Add or replace icons
 
-`icons` maps keys to SVG markup. A key with a `.` is matched as a file name or extension, any other key as a keyword, and a key that is also built in replaces that icon. Your file names and extensions are tried before the built-in ones, so `.vitepress` matches `.vitepress/config.ts` before `.ts` does. Icons from [Iconify](https://icon-sets.iconify.design/) work well: copy an icon's SVG.
+`icons` maps keys to SVG markup. A key with a `.` is matched as a file name or extension, any other key as a keyword, and a key that is also built in, in any case, replaces that icon. Your file names and extensions are tried before the built-in ones, so `.vitepress` matches `.vitepress/config.ts` before `.ts` does; the longest keyword still wins, and of two of the same length yours does. Icons from [Iconify](https://icon-sets.iconify.design/) work well: copy an icon's SVG.
 
 ```ts
 rehypeTabIcons({

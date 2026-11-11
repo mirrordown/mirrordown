@@ -6,7 +6,7 @@ export type TabIcon = string | { light: string; dark: string };
 /** Options shared by the tab-icons plugins for every engine. */
 export interface TabIconsOptions {
   /**
-   * Your own icons, by keyword (a whole word of a label, such as `deno`) or file name and extension (a key with a `.`, such as `.astro` or `deno.json`). They're checked before the built-in ones, and replace one with the same key.
+   * Your own icons, by keyword (a whole word of a label, such as `deno`) or file name and extension (a key with a `.`, such as `.astro` or `deno.json`). A key replaces the built-in one it names, in any case. Your file names and extensions are checked before the built-in ones, and of two keywords of the same length yours is.
    */
   icons?: Record<string, TabIcon> | undefined;
   /**

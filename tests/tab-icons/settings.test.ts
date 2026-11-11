@@ -72,6 +72,28 @@ const cases: [string, TabIconsOptions, string, string[]][] = [
     `% npm\n> Body.`,
     [`>${rendered(`mine`)}npm</label>`]
   ],
+  // The options promise that your icons are checked before the built-in ones and replace one with the same key; keys are matched without regard to case, so the same has to hold for how they are merged.
+  [
+    `your keyword comes before a built-in one of the same length`,
+    { icons: { cargo: icon(`cargo`) } },
+    `% cargo and react
+> Body.
+% react and cargo
+> Body.`,
+    [
+      `>${rendered(`cargo`)}cargo and react</label>`,
+      `>${rendered(`cargo`)}react and cargo</label>`
+    ]
+  ],
+  [
+    `your icon replaces a built-in one whatever the case of its key`,
+    { icons: { NPM: icon(`mine`) } },
+    `% npm
+> Body.
+% [!npm] Named
+> Body.`,
+    [`>${rendered(`mine`)}npm</label>`, `>${rendered(`mine`)}Named</label>`]
+  ],
   [
     `your extension comes before a built-in one`,
     { icons: { ".vitepress": icon(`vitepress`) } },

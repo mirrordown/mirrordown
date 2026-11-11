@@ -48,8 +48,16 @@ export const createTabIconResolver = (
   options: TabIconsOptions = {}
 ): ((label: string, lead?: string) => TabLabelIcon) => {
   const { builtin = true, match = true } = options;
-  const custom = options.icons ?? {};
+  // Keys are matched without regard to case, so they're merged that way too: `NPM` replaces the built-in `npm`.
+  const custom = Object.fromEntries(
+    Object.entries(options.icons ?? {}).map(([key, icon]) => [
+      key.toLowerCase(),
+      icon
+    ])
+  );
+  // Yours first, then the built-in ones you didn't replace: the sort by length below is stable, so of two keywords of one length yours is tried first.
   const icons: Record<string, TabIcon> = {
+    ...custom,
     ...(builtin ? BUILTIN_TAB_ICONS : {}),
     ...custom
   };
