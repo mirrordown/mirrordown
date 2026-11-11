@@ -71,7 +71,15 @@ export const spoilerHastHandlers: Record<string, SpoilerHandler> = {
 export const remarkSpoiler: Plugin<[], Root> = () => {
   const transform = createDelimitedTransform<PhrasingContent>(`|`, {
     text: (value) => ({ type: `text`, value }),
-    wrap: (children): Spoiler => ({ type: `spoiler`, children })
+    // `spoilerHastHandlers` builds the element and never reads this data. It is what renders when the handlers were not passed to `remark-rehype`: the content span alone, which the stylesheet covers and nothing can reveal, where the default for an unknown node is a `<div>` with the content in the clear.
+    wrap: (children): Spoiler => ({
+      type: `spoiler`,
+      children,
+      data: {
+        hName: `span`,
+        hProperties: { className: [`markdown-spoiler-content`] }
+      }
+    })
   });
 
   const transformer: Transformer<Root> = (tree, file) => {

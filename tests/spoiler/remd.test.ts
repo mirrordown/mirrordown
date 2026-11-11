@@ -50,4 +50,16 @@ describe("spoiler/remd", () => {
       expected
     );
   });
+
+  // The element is built by `spoilerHastHandlers`, which the caller has to hand to remark-rehype, and nothing can check that they did. remark-rehype's default for an unknown node is a `<div>` holding the content: the secret in the clear, in a block element inside a paragraph. The node therefore carries a fallback that renders the content span alone, which the stylesheet covers and nothing reveals: a spoiler that cannot be opened is a visible mistake, one that shows its content is a silent one.
+  it("keeps the content covered when the handlers were not passed to remark-rehype", () => {
+    const unconfigured = unified()
+      .use(remarkParse)
+      .use(remarkSpoiler)
+      .use(remarkRehype)
+      .use(rehypeStringify);
+    expect(String(unconfigured.processSync("a ||b|| c"))).toBe(
+      '<p>a <span class="markdown-spoiler-content">b</span> c</p>'
+    );
+  });
 });

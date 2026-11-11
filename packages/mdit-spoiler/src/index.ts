@@ -20,6 +20,7 @@ const CLOSE_HTML = `</span></label>`;
 // `text` (the documented "alternative implementation" from markdown-it) with `|`
 // appended to the terminator set — changing only where text runs break, not how
 // any other character is handled.
+// The list is a hand copy of markdown-it's `isTerminatorChar` plus `|`; tests/spoiler/mdit.test.ts fails if the two drift apart. `ruler.at` replaces the rule for the whole instance, so a plugin that replaces `text` after this one silently turns spoilers off.
 const TERMINATOR_RE = /[\n!#$%&*+\-:<=>@[\\\]^_`{}~|]/;
 
 const textWithPipeTerminator = (

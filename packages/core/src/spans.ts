@@ -26,12 +26,13 @@ export interface SpanTransform<N extends PhrasingLike> {
   /** Whether `node` was built by this transform (a wrapper or a text node). */
   built: (node: object) => boolean;
   /**
-   * The transform for engines whose text values have escapes resolved and whose nodes are read-only, such as Sätteri: escaped characters are masked by aligning each positioned text node with `source`, using copies, and restored in the result. The text nodes of the result record their escaped characters in `data.escaped`, so the next plugin's scan still finds them. Returns the new children, or `undefined` when no span forms.
+   * The transform for engines whose text values have escapes resolved and whose nodes are read-only, such as Sätteri: escaped characters are masked by aligning each positioned text node with `source`, using copies, and restored in the result. The text nodes of the result record their escaped characters in `data.escaped`, so the next plugin's scan still finds them. Returns the new children, or `undefined` when no span forms. Pass `inTableCell` when the children are inside a table cell that is not their parent, where `\|` is the table's pipe and not an escape.
    */
   withSource: (
     children: ReadonlyArray<N & Positioned>,
     parentType: string,
-    source: string
+    source: string,
+    inTableCell?: boolean
   ) => N[] | undefined;
 }
 
@@ -81,13 +82,20 @@ export const createSpanTransform = <N extends PhrasingLike>(
   const withSource = (
     children: ReadonlyArray<N & Positioned>,
     parentType: string,
-    source: string
+    source: string,
+    inTableCell = parentType === `tableCell`
   ): N[] | undefined => {
     const masked = children.map((node): N => {
       if (node.type !== `text` || node.value === undefined) return node;
       const value = maskEscaped(
         node.value,
-        textEscapes(node, source, parentType, children.length === 1)
+        textEscapes(
+          node,
+          source,
+          parentType,
+          children.length === 1,
+          inTableCell
+        )
       );
       return value === node.value ? node : tracked.text(value);
     });
