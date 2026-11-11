@@ -16,11 +16,15 @@ export const tabIcons: PluginWithOptions<TabIconsOptions> = (
   options = {}
 ) => {
   const resolve = createTabIconResolver(options);
+  const { containerClass = `markdown-tabs` } = options;
 
   md.core.ruler.push(`tab_icons`, (state) => {
     const { tokens } = state;
     for (const [index, token] of tokens.entries()) {
       if (token.type !== `tabs_open`) continue;
+      // Only the groups with the tabs plugin's class, as the rehype and Sätteri plugins find them.
+      const classes = token.attrGet(`class`)?.split(` `) ?? [];
+      if (!classes.includes(containerClass)) continue;
       // This group's own labels and panels, in order; a group nested in a panel has its own.
       const labels: Token[] = [];
       const panels: Token[] = [];

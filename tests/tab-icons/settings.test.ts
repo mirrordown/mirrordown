@@ -16,12 +16,15 @@ import { satteriTabs } from "../../packages/sat-tabs/src";
 import { satteriTabIcons } from "../../packages/sat-tab-icons/src";
 import { normalizeHtml } from "../utils/index.js";
 
-const engines = (options: TabIconsOptions) =>
+const engines = (options: TabIconsOptions, tabsOptions = {}) =>
   [
     {
       engine: `markdown-it`,
       render: (input: string) =>
-        new MarkdownIt().use(tabs).use(tabIcons, options).render(input)
+        new MarkdownIt()
+          .use(tabs, tabsOptions)
+          .use(tabIcons, options)
+          .render(input)
     },
     {
       engine: `remark`,
@@ -29,7 +32,7 @@ const engines = (options: TabIconsOptions) =>
         String(
           unified()
             .use(remarkParse)
-            .use(remarkTabs)
+            .use(remarkTabs, tabsOptions)
             .use(remarkRehype, { handlers: tabsHastHandlers as never })
             .use(rehypeTabIcons, options)
             .use(rehypeStringify, { allowDangerousHtml: true })
@@ -41,7 +44,7 @@ const engines = (options: TabIconsOptions) =>
       render: (input: string) =>
         markdownToHtml(input, {
           features: { smartPunctuation: false },
-          mdastPlugins: [satteriTabs()],
+          mdastPlugins: [satteriTabs(tabsOptions)],
           hastPlugins: [satteriTabIcons(options)]
         }).html
     }
@@ -110,5 +113,39 @@ describe.each(cases)(`tab-icons options: %s`, (_, options, input, contains) => {
     const html = render(input);
     expect(html).toBe(first);
     for (const part of contains) expect(html).toContain(part);
+  });
+});
+
+// tab-icons finds the tabs plugin's groups by their class, so the option has to mean the same in every engine: a group with another class is not a tab group to decorate.
+describe(`tab-icons options: containerClass`, () => {
+  const input = `% npm
+> Body.
+% [!yarn] Y
+> Body.`;
+
+  describe(`one that isn't the tabs plugin's leaves its groups as they are`, () => {
+    const all = engines({ containerClass: `other` });
+    const [first] = all.map(({ render }) => render(input));
+    it.each(all)(`$engine`, ({ render }) => {
+      const html = render(input);
+      expect(html).toBe(first);
+      expect(html).not.toContain(`markdown-tab-icon`);
+      expect(html).toContain(`>[!yarn] Y</label>`);
+      expect(html).toContain(`aria-label="[!yarn] Y"`);
+    });
+  });
+
+  describe(`the tabs plugin's own gets icons`, () => {
+    const all = engines(
+      { containerClass: `my-tabs` },
+      { containerClass: `my-tabs` }
+    );
+    const [first] = all.map(({ render }) => render(input));
+    it.each(all)(`$engine`, ({ render }) => {
+      const html = render(input);
+      expect(html).toBe(first);
+      expect(html.split(`class="markdown-tab-icon"`)).toHaveLength(3);
+      expect(html).toContain(`aria-label="Y"`);
+    });
   });
 });
