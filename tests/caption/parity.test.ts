@@ -111,6 +111,12 @@ const cases: Case[] = [
     name: `hard break: one ending an inner caption isn't part of it`,
     input: `> > Inner\n> ~: inner\\\n~: outer`,
     expected: `${FIGURE}<blockquote>${FIGURE}<blockquote><p>Inner</p></blockquote><figcaption>inner</figcaption></figure></blockquote><figcaption>outer</figcaption></figure>`
+  },
+  // Undecided, pinned as it is today so that a change is a decision: the guide says a caption line written outside a quote captions the quote, and it does after an image or text. After a block whose caption is a paragraph of its own (code, a list, a nested quote), the outer line is swallowed into that caption instead. The engines agree; whether to start a second caption there or to document this is the owner's call.
+  {
+    name: `undecided: an outer caption line after a code block's caption is part of that caption`,
+    input: "> ```\n> code\n> ```\n> ~: on the code\n~: on the quote",
+    expected: `<blockquote>${FIGURE}<pre><code>code\n</code></pre><figcaption>on the code\n~: on the quote</figcaption></figure></blockquote>`
   }
 ];
 
@@ -129,14 +135,7 @@ describe(`caption parity: a caption in a task item captions the task, as in any 
   it.each(engines.filter(({ engine }) => engine !== `markdown-it`))(
     `$engine`,
     ({ render }) => {
-      const html = normalize(
-        render(
-          `- [ ] Task
-  ~: cap
-- [ ] Two`,
-          true
-        )
-      );
+      const html = normalize(render(`- [ ] Task\n  ~: cap\n- [ ] Two`, true));
       expect(html.startsWith(`<ul class="contains-task-list">`)).toBe(true);
       expect(html).toContain(
         `${FIGURE}<p>Task</p><figcaption>cap</figcaption></figure></li>`
