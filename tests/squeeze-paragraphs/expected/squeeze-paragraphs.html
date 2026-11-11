@@ -12,3 +12,15 @@
 
 <!-- @case: heading and paragraph are untouched -->
 <h1>Title</h1><p>Body.</p>
+
+<!-- @case: paragraph of only a space character reference is removed -->
+<p>Before.</p><p>After.</p>
+
+<!-- @case: emptied blockquote is kept without its paragraph -->
+<blockquote></blockquote>
+
+<!-- @case: whitespace-only paragraph inside a loose list item is removed -->
+<ul><li><p>First.</p><p>Second.</p></li></ul>
+
+<!-- @case: adjacent whitespace-only paragraphs are all removed -->
+<p>Text.</p>

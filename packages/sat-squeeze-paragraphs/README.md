@@ -6,7 +6,7 @@ A Sätteri plugin for the `squeeze-paragraphs` syntax extension.
 
 ## Overview
 
-The `squeeze-paragraphs` plugin removes paragraphs that are empty or contain only whitespace. A paragraph counts as empty when it has no children, or when every child is whitespace-only text.
+The `squeeze-paragraphs` plugin removes paragraphs that are empty or contain only whitespace. A paragraph counts as empty when it has no children, or when every child is whitespace-only text. Whitespace means the characters HTML ignores between elements (space, tab, line feed, form feed and carriage return): a paragraph holding only a no-break space (`&nbsp;`) or another Unicode space is deliberate content and is kept. An empty paragraph is removed even if it carries attributes, such as an `id` or a `class`, and they are dropped with it.
 
 CommonMark never emits an empty paragraph on its own, so this plugin does nothing to ordinary hand-written Markdown. Its job is to run **after** other transforms that can leave an empty `<p>` behind — for example a comment stripper that removes a paragraph's only content, or a plugin that lifts an element out of its wrapping paragraph. Adding `squeeze-paragraphs` last tidies up that residue.
 
