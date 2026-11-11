@@ -83,7 +83,10 @@ const numberedLines = (
         (sourceLines?.[position.start.line - 1] ?? "")
           .slice(position.start.column - 1)
           .trim() !== "";
-      const first = position && position.start.line - (rebuilt ? 1 : 0);
+      const first =
+        position === undefined
+          ? undefined
+          : position.start.line - (rebuilt ? 1 : 0);
       for (const [p, part] of parts.entries()) {
         if (p > 0) open(first === undefined ? undefined : first + p);
         else current.line ??= first;
@@ -268,7 +271,10 @@ export const MARKED_BLOCKS: ReadonlySet<string> = new Set([
 /**
  * The `>` markers a block adds to its lines, over those of the block around it: one for a marked block, none for any other. A sub-item (a `@@` step, a `%%` tab) is a marked block that adds none: it's nested in its parent item, but its body is written with its parent's markers, so recognition sets `sub` in its data, which a renderer that rebuilds the node (Sätteri) keeps for the plugins after it.
  */
-export const markerLevels = (node: { type?: string; data?: unknown }): number => {
+export const markerLevels = (node: {
+  type?: string;
+  data?: unknown;
+}): number => {
   // The data of a recognized item, in the loose node shape the passes walk.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const data = node.data as { sub?: boolean } | null | undefined;
@@ -316,11 +322,11 @@ const lastParagraph = (
 ): { para: Paragraph; parent: GroupTreeNode } | undefined => {
   const last = node?.children?.at(-1);
   if (!node || !last) return undefined;
+  if (last.type !== `paragraph`) return lastParagraph(last);
   // A paragraph of the tree, which the loose node shape doesn't name.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  if (last.type === `paragraph`)
-    return { para: last as unknown as Paragraph, parent: node };
-  return lastParagraph(last);
+  const para = last as unknown as Paragraph;
+  return { para, parent: node };
 };
 
 /**

@@ -36,7 +36,9 @@ const withAuthorProperties = (
   const { class: extraClass, className: extraClassName, ...rest } = author;
   const extra = [extraClass, extraClassName]
     .flat()
-    .filter((value): value is string => typeof value === "string" && value !== "");
+    .filter(
+      (value): value is string => typeof value === "string" && value !== ""
+    );
   return { ...own, class: [own.class, ...extra].join(" "), ...rest };
 };
 

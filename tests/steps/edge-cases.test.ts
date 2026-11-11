@@ -49,11 +49,9 @@ interface Case {
 }
 
 const check = (title: string, cases: Case[]): void => {
-  describe(title, () => {
-    describe.each(cases)(`$name`, ({ input, expected }) => {
-      it.each(engines)(`$engine`, ({ render }) => {
-        expect(normalizeHtml(render(input))).toBe(expected);
-      });
+  describe.each(cases)(`${title}: $name`, ({ input, expected }) => {
+    it.each(engines)(`$engine`, ({ render }) => {
+      expect(normalizeHtml(render(input))).toBe(expected);
     });
   });
 };
@@ -77,18 +75,21 @@ check(`steps: a carriage return ends a line, and never reaches the output`, [
 ]);
 
 // A line's `>` markers are read from the source line it's written on. Counting lines from the paragraph's first one goes wrong after inline content that spans lines, and the step header or the end of the group after it was then missed in remark and Sätteri.
-check(`steps: a line is placed by its own source line, after inline content that spans lines`, [
-  {
-    name: `a header after emphasis spanning two body lines starts the next step`,
-    input: `@1. A\n> *emph\n> more* text\n@1. B`,
-    expected: `${OL}${LI(1)}${T}A</p>${B}<p><em>emph\nmore</em> text</p></div></li>${LI(2)}${T}B</p></li></ol>`
-  },
-  {
-    name: `a line without the body's marker after a code span spanning two lines ends the group`,
-    input: "@1. A\n> `a\n> b` text\nplain",
-    expected: `${OL}${LI(1)}${T}A</p>${B}<p><code>a b</code> text</p></div></li></ol><p>plain</p>`
-  }
-]);
+check(
+  `steps: a line is placed by its own source line, after inline content that spans lines`,
+  [
+    {
+      name: `a header after emphasis spanning two body lines starts the next step`,
+      input: `@1. A\n> *emph\n> more* text\n@1. B`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p><em>emph\nmore</em> text</p></div></li>${LI(2)}${T}B</p></li></ol>`
+    },
+    {
+      name: `a line without the body's marker after a code span spanning two lines ends the group`,
+      input: "@1. A\n> `a\n> b` text\nplain",
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p><code>a b</code> text</p></div></li></ol><p>plain</p>`
+    }
+  ]
+);
 
 // A sub-step is nested in its parent step, but its body is written with the same single `>` as its parent's. Counting one marker per nesting level made remark and Sätteri read every body line after the first as written outside the sub-step, and move it into the parent step.
 check(`steps: a sub-step's body keeps all of its lines`, [
@@ -120,33 +121,36 @@ check(`steps: a sub-step's body keeps all of its lines`, [
 ]);
 
 // markdown-it ends a group at the first line that is neither a header nor a `>` line, and parses what follows as ordinary markdown. CommonMark had already continued those lines into the body's last paragraph, so remark and Sätteri have to rebuild them from their markers: flattened into one paragraph, a quote after the group lost its `>`.
-check(`steps: the lines that end a group are read as the blocks they are written as`, [
-  {
-    name: `a quote after the line that ends the group is a blockquote`,
-    input: `@1. A\n> body\nplain\n> quote`,
-    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
-  },
-  {
-    name: `a line that ends a group in a body ends the group around it too`,
-    input: `@1. A\n> @1. Inner\n> > one\nplain\n> quote`,
-    expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
-  },
-  {
-    name: `a line with the outer body's marker ends only the group written in that body`,
-    input: `@1. A\n> @1. Inner\n> > one\n> plain\n> > quote`,
-    expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote></div></li></ol>`
-  },
-  {
-    name: `a line that ends a sub-step's body ends the whole group, not just the sub-steps`,
-    input: `@1. A\n@@1. B\n> one\nplain\nmore`,
-    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>one</p></div></li></ol></li></ol><p>plain\nmore</p>`
-  },
-  {
-    name: `a line without any marker ends a group in a blockquote and the blockquote`,
-    input: `> @1. A\n> > body\nplain`,
-    expected: `<blockquote>${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol></blockquote><p>plain</p>`
-  }
-]);
+check(
+  `steps: the lines that end a group are read as the blocks they are written as`,
+  [
+    {
+      name: `a quote after the line that ends the group is a blockquote`,
+      input: `@1. A\n> body\nplain\n> quote`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
+    },
+    {
+      name: `a line that ends a group in a body ends the group around it too`,
+      input: `@1. A\n> @1. Inner\n> > one\nplain\n> quote`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
+    },
+    {
+      name: `a line with the outer body's marker ends only the group written in that body`,
+      input: `@1. A\n> @1. Inner\n> > one\n> plain\n> > quote`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote></div></li></ol>`
+    },
+    {
+      name: `a line that ends a sub-step's body ends the whole group, not just the sub-steps`,
+      input: `@1. A\n@@1. B\n> one\nplain\nmore`,
+      expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>one</p></div></li></ol></li></ol><p>plain\nmore</p>`
+    },
+    {
+      name: `a line without any marker ends a group in a blockquote and the blockquote`,
+      input: `> @1. A\n> > body\nplain`,
+      expected: `<blockquote>${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol></blockquote><p>plain</p>`
+    }
+  ]
+);
 
 // A header is one line, so nothing can break after it. CommonMark still reads two trailing spaces or a backslash before the next line as a hard break, which remark and Sätteri kept: a `<br>` ended the title, and the group ended at the empty line the break left behind. markdown-it reads the line itself, where trailing spaces are just that and a backslash is literal (as CommonMark reads one that ends a block).
 check(`steps: a header line ends its title, whatever it ends with`, [
@@ -245,57 +249,63 @@ check(`steps: steps in a list item end with the item`, [
 ]);
 
 // A blank line inside a body needs the body's `>`. Written without it, CommonMark ends the blockquote there, so remark and Sätteri get two quotes and can't join what the blank line separated; markdown-it's steps rule joined the body's lines into one document, where a list or a fence carried on across the blank line. It now reads each run of lines on its own.
-check(`steps: a blank line without the body's marker ends the blocks before it`, [
-  {
-    name: `two lists, not one loose list`,
-    input: `@1. S\n> - a\n\n> - b`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li>a</li></ul><ul><li>b</li></ul></div></li></ol>`
-  },
-  {
-    name: `a fence ends at the blank line`,
-    input: "@1. S\n> ```js\n> a\n\n> b\n> ```",
-    expected: `${OL}${LI(1)}${T}S</p>${B}<pre><code class="language-js">a\n</code></pre><p>b</p><pre><code></code></pre></div></li></ol>`
-  },
-  {
-    name: `a blank line written with the marker keeps a list together`,
-    input: `@1. S\n> - a\n>\n> - b`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li><p>a</p></li><li><p>b</p></li></ul></div></li></ol>`
-  },
-  {
-    name: `paragraphs are the same either way`,
-    input: `@1. S\n> a\n>\n> b\n\n\n> c`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<p>a</p><p>b</p><p>c</p></div></li></ol>`
-  }
-]);
+check(
+  `steps: a blank line without the body's marker ends the blocks before it`,
+  [
+    {
+      name: `two lists, not one loose list`,
+      input: `@1. S\n> - a\n\n> - b`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li>a</li></ul><ul><li>b</li></ul></div></li></ol>`
+    },
+    {
+      name: `a fence ends at the blank line`,
+      input: "@1. S\n> ```js\n> a\n\n> b\n> ```",
+      expected: `${OL}${LI(1)}${T}S</p>${B}<pre><code class="language-js">a\n</code></pre><p>b</p><pre><code></code></pre></div></li></ol>`
+    },
+    {
+      name: `a blank line written with the marker keeps a list together`,
+      input: `@1. S\n> - a\n>\n> - b`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li><p>a</p></li><li><p>b</p></li></ul></div></li></ol>`
+    },
+    {
+      name: `paragraphs are the same either way`,
+      input: `@1. S\n> a\n>\n> b\n\n\n> c`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<p>a</p><p>b</p><p>c</p></div></li></ol>`
+    }
+  ]
+);
 
 // Without the alerts plugin a `[!NOTE]` line is text. Directly under a header it is the first line of the step's body in every engine (remark and Sätteri used to end the steps there); after a blank line it starts a quote of its own, so a document reads the same once the alerts plugin is added.
-check(`steps: a quote that starts with an alert marker, without the alerts plugin`, [
-  {
-    name: `directly under the header, it is the body`,
-    input: `@1. S\n> [!NOTE]\n> text`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE]\ntext</p></div></li></ol>`
-  },
-  {
-    name: `a marker with text after it is the body too`,
-    input: `@1. S\n> [!NOTE] not alone\n> text`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE] not alone\ntext</p></div></li></ol>`
-  },
-  {
-    name: `nested one level deeper, it is a quote in the body`,
-    input: `@1. S\n> > [!NOTE]\n> > text`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
-  },
-  {
-    name: `after a blank line, it ends the steps`,
-    input: `@1. S\n> body\n\n> [!NOTE]\n> text`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol><blockquote><p>[!NOTE]\ntext</p></blockquote>`
-  },
-  {
-    name: `nested after a blank line, it is a quote in the body`,
-    input: `@1. S\n> body\n\n> > [!NOTE]\n> > text`,
-    expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p><blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
-  }
-]);
+check(
+  `steps: a quote that starts with an alert marker, without the alerts plugin`,
+  [
+    {
+      name: `directly under the header, it is the body`,
+      input: `@1. S\n> [!NOTE]\n> text`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE]\ntext</p></div></li></ol>`
+    },
+    {
+      name: `a marker with text after it is the body too`,
+      input: `@1. S\n> [!NOTE] not alone\n> text`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<p>[!NOTE] not alone\ntext</p></div></li></ol>`
+    },
+    {
+      name: `nested one level deeper, it is a quote in the body`,
+      input: `@1. S\n> > [!NOTE]\n> > text`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
+    },
+    {
+      name: `after a blank line, it ends the steps`,
+      input: `@1. S\n> body\n\n> [!NOTE]\n> text`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol><blockquote><p>[!NOTE]\ntext</p></blockquote>`
+    },
+    {
+      name: `nested after a blank line, it is a quote in the body`,
+      input: `@1. S\n> body\n\n> > [!NOTE]\n> > text`,
+      expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p><blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
+    }
+  ]
+);
 
 // A backslash is the only way to write a line that starts with `@1.` and isn't a step. remark and Sätteri read text after escapes and character references are resolved, so they saw a header where markdown-it, reading the line itself, sees none.
 check(`steps: an escaped header is text`, [
@@ -342,9 +352,12 @@ describe(`steps: a header after text in a list item (known difference)`, () => {
       );
     else expect(html).not.toContain(`markdown-steps`);
   });
-  it.each(engines)(`$engine: with a blank line before it, the header starts steps`, ({ render }) => {
-    expect(normalizeHtml(render(`- text\n\n  @1. Step\n  > Body.`))).toBe(
-      `<ul><li><p>text</p>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
-    );
-  });
+  it.each(engines)(
+    `$engine: with a blank line before it, the header starts steps`,
+    ({ render }) => {
+      expect(normalizeHtml(render(`- text\n\n  @1. Step\n  > Body.`))).toBe(
+        `<ul><li><p>text</p>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
+      );
+    }
+  );
 });

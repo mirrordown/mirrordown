@@ -211,8 +211,7 @@ const splitAtGroupStarts = (
   lines.forEach((line, index) => {
     const first = line[0];
     const opens =
-      first?.type === "text" &&
-      writtenHeader(first, sourceLines)?.depth === 1;
+      first?.type === "text" && writtenHeader(first, sourceLines)?.depth === 1;
     if (opens && index > start) {
       flush(index);
       start = index;
@@ -398,7 +397,8 @@ const isOwnAlert = (
   )
     return false;
   if (before && line > before.end.line + 1) return true;
-  const text = bq.children[0]?.type === "paragraph" && bq.children[0].children[0];
+  const text =
+    bq.children[0]?.type === "paragraph" && bq.children[0].children[0];
   return !(text && text.type === "text" && isAlertMarkerLine(text.value));
 };
 

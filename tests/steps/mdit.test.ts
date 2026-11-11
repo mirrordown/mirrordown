@@ -27,7 +27,8 @@ describe("steps/mdit: a body token's map indexes the body's own source", () => {
     const src = "Intro.\n\n@1. Step\n> first\n>\n> second paragraph";
     const tokens = new MarkdownIt().use(steps).parse(src, {});
     const open = tokens.find((token) => token.type === "steps_body_open");
-    const body = String((open?.meta as { attrsSource?: string }).attrsSource);
+    const meta = open?.meta as { attrsSource?: string } | undefined;
+    const body = meta?.attrsSource ?? "";
     const second = tokens.filter((token) => token.type === "paragraph_open")[2];
     const [start, end] = second?.map ?? [-1, -1];
     expect(body.split("\n").slice(start, end)).toEqual(["second paragraph"]);

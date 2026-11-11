@@ -70,9 +70,21 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
     (inline.children ?? []).every(
       (child) => child.type === "text" && child.content === ""
     );
-  md.renderer.rules.steps_title_open = (tokens, idx, opts, _env, self) =>
+  md.renderer.rules.steps_title_open = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
     isEmptied(tokens[idx + 1]) ? "" : self.renderToken(tokens, idx, opts);
-  md.renderer.rules.steps_title_close = (tokens, idx, opts, _env, self) =>
+  md.renderer.rules.steps_title_close = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
     isEmptied(tokens[idx - 1]) ? "" : self.renderToken(tokens, idx, opts);
 
   function stepsRule(

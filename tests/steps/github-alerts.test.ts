@@ -96,9 +96,12 @@ describe("steps + github-alerts: a marker directly under a header, with the aler
       `<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step</p><div class="markdown-steps-body"><p>[!TIP]\nA tip.</p></div></li></ol>`
     );
   });
-  it.each(engines.slice(1))("$engine keeps the alert the plugin made", ({ render }) => {
-    expect(render(input)).toMatch(
-      /^<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step<\/p><\/li><\/ol><div class="markdown-alert" data-alert="tip">/
-    );
-  });
+  it.each(engines.slice(1))(
+    "$engine keeps the alert the plugin made",
+    ({ render }) => {
+      expect(render(input)).toMatch(
+        /^<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step<\/p><\/li><\/ol><div class="markdown-alert" data-alert="tip">/
+      );
+    }
+  );
 });
