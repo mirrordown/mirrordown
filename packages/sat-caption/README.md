@@ -90,6 +90,8 @@ A caption goes on the block it's written after, at the level its `>` markers and
 
 The caption runs to the end of its paragraph, so a `~:` on a later line at the same level is part of it. A caption doesn't attach to a heading, a thematic break, raw HTML, or another caption, and a `~:` after a blank line is text, so a caption always touches its block.
 
+With [subscript](/guide/plugins/sub) on, a `~` later on the caption's line pairs with the marker's as a subscript, and the line stops being a caption. Escape it (`\~`) to keep the caption.
+
 ### Attributes
 
 With the [`attrs`](/guide/plugins/attrs) plugin, attributes written at the end of a caption go on the figure, which gives it an id to link to. A block keeps its own attributes.

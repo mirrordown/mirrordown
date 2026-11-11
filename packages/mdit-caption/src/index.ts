@@ -13,7 +13,7 @@ import {
   type LineContainer
 } from "@mirrordown/core";
 
-/** The closing tokens of blocks a caption doesn't attach to (headings, thematic breaks, raw HTML, front matter, another caption's figure, and the titles, labels and terms inside containers): a caption after them stays text. */
+/** The closing tokens of blocks a caption doesn't attach to (headings, thematic breaks, raw HTML, front matter, another caption's figure, and the titles, labels and terms inside containers): a caption after them stays text. Several are other plugins' token names, which `tests/caption/compat.test.ts` pins. */
 const UNCAPTIONED = new Set([
   `heading_close`,
   `hr`,
@@ -31,7 +31,7 @@ const UNCAPTIONED = new Set([
 
 const BREAKS = new Set([`softbreak`, `hardbreak`]);
 
-// The attributes a caption's figure takes: its class, then those written at the end of the caption (a class joins it). A table cell's alignment stays with the table.
+// The attributes a caption's figure takes: its class, then those written at the end of the caption (a class joins it).
 const figureAttrs = (
   author: ReadonlyArray<[string, string]>
 ): Array<[string, string]> => {
@@ -39,8 +39,7 @@ const figureAttrs = (
   const rest: Array<[string, string]> = [];
   for (const [name, value] of author) {
     if (name === `class`) classes.push(...value.split(` `).filter(Boolean));
-    else if (!(name === `style` && value.startsWith(`text-align:`)))
-      rest.push([name, value]);
+    else rest.push([name, value]);
   }
   return [[`class`, classes.join(` `)], ...rest];
 };
@@ -60,8 +59,24 @@ const closeOf = (tokens: readonly Token[], open: number): number => {
   return open;
 };
 
+// The index of the fence opening the prompt `tokens[close]` closes, `-1` for any other token. mdit-prompt renders a prompt from three kinds of token without nesting: its fence, the blocks of its preview, and a `prompt_close` whose `meta.fence` is that fence. This plugin otherwise takes a block to be one token or a balanced pair, so the names are read here and pinned in `tests/caption/compat.test.ts`.
+const promptOpen = (tokens: readonly Token[], close: number): number => {
+  const token = tokens[close];
+  const meta: unknown = token?.meta;
+  if (
+    token?.type !== `prompt_close` ||
+    typeof meta !== `object` ||
+    meta === null ||
+    !(`fence` in meta)
+  )
+    return -1;
+  return tokens.findIndex((t) => t === meta.fence);
+};
+
 // The token opening the block `tokens[close]` closes.
 const openOf = (tokens: readonly Token[], close: number): number => {
+  const fence = promptOpen(tokens, close);
+  if (fence !== -1) return fence;
   if (tokens[close]?.nesting !== -1) return close;
   let depth = 0;
   for (let i = close - 1; i >= 0; i--) {
@@ -100,12 +115,32 @@ const isAlert = (token: Token | undefined): boolean => {
   );
 };
 
-// Inline children split into lines at each soft or hard break, which ends its line.
-const toLines = (children: readonly Token[]): Token[][] => {
-  const lines: Token[][] = [[]];
+// Whether a link reference definition is written between a block (from its `open` token to its `close`) and the caption paragraph starting on line `start`, under the line `above` it. markdown-it keeps definitions out of the token stream (remark's `definition` node is uncaptioned), so one shows only as source lines no token covers. Two such lines or more are a definition, whatever its last line looks like. One line can be a container's own last line (mdit-tabs and mdit-steps map a group up to its last line, not past it, and a block without a map says nothing), so it's a definition if it looks like one; unless it's the last line of a code block (one token, whose map ends where the caption starts), which is code whatever it looks like.
+const definitionAbove = (
+  open: Token,
+  close: Token,
+  start: number,
+  above: string
+): boolean => {
+  const uncovered = open.map ? start - open.map[1] : 1;
+  if (uncovered > 1) return true;
+  if (uncovered < 1 && open === close) return false;
+  return /^[ \t>]*\[[^\]]+\]:/.test(above);
+};
+
+// Inline children split into lines at each soft or hard break, which ends its line, each with the breaks before it: the source lines the paragraph has before the line. A break inside inline markup (emphasis, a link) doesn't end a line, as remark and Sätteri keep such content together: a `~:` after it is text, and no element is cut in two.
+const toLines = (
+  children: readonly Token[]
+): Array<{ tokens: Token[]; breaks: number }> => {
+  const lines = [{ tokens: [] as Token[], breaks: 0 }];
+  let depth = 0;
+  let breaks = 0;
   for (const child of children) {
-    lines.at(-1)!.push(child);
-    if (BREAKS.has(child.type)) lines.push([]);
+    lines.at(-1)!.tokens.push(child);
+    depth += child.nesting;
+    if (!BREAKS.has(child.type)) continue;
+    breaks++;
+    if (depth === 0) lines.push({ tokens: [], breaks });
   }
   return lines;
 };
@@ -206,6 +241,7 @@ export const caption: PluginSimple = (md) => {
       for (let i = parentOf(tokens, index); i >= 0; i = parentOf(tokens, i)) {
         const token = tokens[i]!;
         const meta: unknown = token.meta;
+        // `meta.attrsSource` is a convention of the container plugins, written down nowhere else: a block tokenized from its own source (mdit-tabs' panel, mdit-steps' body) names that source there, and its tokens' maps index it, not the page. mdit-attrs reads it too. `tests/caption/compat.test.ts` pins it, with the token names this rule reads.
         const own =
           typeof meta === `object` && meta !== null && `attrsSource` in meta
             ? meta.attrsSource
@@ -278,7 +314,14 @@ export const caption: PluginSimple = (md) => {
         const lineEnd = new state.Token(`softbreak`, `br`, 0);
         return [...(tokens[open + 2]?.children ?? []), lineEnd];
       });
-      const author = takeAttrs(tokens[captionRows.at(-1)!.open + 1]);
+      // markdown-it aligns a cell with a `style` attribute, which is the table's and stays off the figure: the first column's, as its header cell has it. A `style` the author wrote on the caption replaces it and goes on the figure with the caption's other attributes (one equal to the column's own can't be told from it, and is left out).
+      const align = tokens
+        .slice(index, close)
+        .find((t) => t.type === `th_open`)
+        ?.attrGet(`style`);
+      const author = takeAttrs(tokens[captionRows.at(-1)!.open + 1]).filter(
+        ([name, value]) => !(name === `style` && value === align)
+      );
       for (const { open, close: rowClose } of captionRows)
         for (let i = open; i <= rowClose; i++) dropped.add(tokens[i]!);
       // A body left without rows goes too, as remark leaves it out.
@@ -298,41 +341,48 @@ export const caption: PluginSimple = (md) => {
       if (inline?.type !== `inline` || !inline.children || !close) continue;
       const context = contextOf(index);
       if (!context) continue;
-      const paraLines = toLines(inline.children);
-      // Each line is one source line. An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its map there.
+      const numbered = toLines(inline.children);
+      const paraLines = numbered.map((line) => line.tokens);
+      const breaks = inline.children.filter((c) => BREAKS.has(c.type)).length;
+      // An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its map there.
       const start =
         open.map[0] +
         Number(
           isAlert(tokens[parentOf(tokens, index)]) &&
             isAlertMarkerLine(context.lines[open.map[0]] ?? ``)
         );
-      const isCaptionAt = (i: number): boolean => {
+      // The source line a caption line is written on, `undefined` for a line that isn't one. A line's place is counted in breaks from the paragraph's start, then from its end: a code span that spans lines hides a line ending (it has no break token), and attributes on a line of their own are taken off the paragraph's end, so each count is right where the other can be wrong.
+      const captionLineAt = (i: number): string | undefined => {
         const text = paraLines[i]?.[0];
-        return (
-          isCaptionLine(context.lines[start + i] ?? ``) &&
-          text?.type === `text` &&
-          startsCaption(text.content)
-        );
+        if (text?.type !== `text` || !startsCaption(text.content))
+          return undefined;
+        const before = numbered[i]!.breaks;
+        return [start + before, open.map![1] - 1 - (breaks - before)]
+          .map((line) => context.lines[line] ?? ``)
+          .find(isCaptionLine);
       };
 
       // A paragraph that is a caption: it captions the block right before it, on the line above.
-      if (isCaptionAt(0)) {
+      if (captionLineAt(0) !== undefined) {
         const previous = tokens[index - 1];
         const above = context.lines[start - 1];
+        const target = tokens[openOf(tokens, index - 1)];
         if (
           !previous ||
+          !target ||
           previous.nesting === 1 ||
           UNCAPTIONED.has(previous.type) ||
           above === undefined ||
           above.replace(/^[ \t>]*/, ``) === `` ||
-          // A link reference definition, which markdown-it keeps out of the token stream (remark's `definition` node is uncaptioned).
-          /^[ \t>]*\[[^\]]+\]:/.test(above) ||
-          captioned.has(tokens[openOf(tokens, index - 1)]!)
+          // The first block of a prompt's preview follows the prompt's own fence, which is the block around it, not a block before it.
+          (previous.type === `fence` &&
+            tokens.some((_, i) => promptOpen(tokens, i) === index - 1)) ||
+          definitionAbove(target, previous, open.map[0], above) ||
+          captioned.has(target)
         )
           continue;
         const author = takeAttrs(open);
         dropped.add(open).add(inline).add(close);
-        const target = tokens[openOf(tokens, index - 1)]!;
         wrap(target, previous, captionChildren(paraLines), author);
         captioned.add(target);
         continue;
@@ -342,9 +392,10 @@ export const caption: PluginSimple = (md) => {
       const { containers } = context;
       const segments: Array<{ line: number; kept: number; target: Token }> = [];
       for (let i = 1; i < paraLines.length; i++) {
-        if (!isCaptionAt(i)) continue;
+        const written = captionLineAt(i);
+        if (written === undefined) continue;
         const kept = containersKept(
-          context.lines[start + i] ?? ``,
+          written,
           containers.map((c) => c.line)
         );
         const previous = segments.at(-1);
