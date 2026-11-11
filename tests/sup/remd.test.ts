@@ -28,8 +28,8 @@ const crossNodeCases = parseFixture(
 );
 
 const footnoteCases = parseFixture(
-  read("fixtures/sup-footnotes.md"),
-  read("expected/sup-footnotes.html")
+  read("fixtures/sup-footnotes-gfm.md"),
+  read("expected/sup-footnotes-gfm.html")
 );
 
 const cmProcessor = unified()
