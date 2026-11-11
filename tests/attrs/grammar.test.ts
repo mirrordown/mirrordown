@@ -162,10 +162,61 @@ const prose: Case[] = [
   ]
 ];
 
+// An author must be able to write a literal `{.a}`. markdown-it and Sätteri see the escape; remark has resolved it by the time a plugin runs, so remd-attrs checks the source.
+const escaped: Case[] = [
+  ["an escaped opening brace", "text \\{.a}", "<p>text {.a}</p>"],
+  ["an escaped closing brace", "text {.a\\}", "<p>text {.a}</p>"],
+  [
+    "an opening brace as a character reference",
+    "text &#123;.a}",
+    "<p>text {.a}</p>"
+  ],
+  [
+    "a closing brace as a character reference",
+    "text {.a&#125;",
+    "<p>text {.a}</p>"
+  ],
+  ["after an inline element", "*em*\\{.a}", "<p><em>em</em>{.a}</p>"],
+  ["on a line of its own", "text\n\\{.a}", "<p>text\n{.a}</p>"],
+  ["ending a list item", "- item \\{.x}", "<ul><li>item {.x}</li></ul>"],
+  [
+    "ending a table cell",
+    "| A |\n|---|\n| a \\{.x} |",
+    "<table><thead><tr><th>A</th></tr></thead><tbody><tr><td>a {.x}</td></tr></tbody></table>"
+  ],
+  [
+    "after a list",
+    "- a\n- b\n\n\\{.x}",
+    "<ul><li>a</li><li>b</li></ul><p>{.x}</p>"
+  ],
+  [
+    "an escape inside the block",
+    'text {title="a\\"b"}',
+    '<p>text {title="a"b"}</p>'
+  ],
+  [
+    "a character reference inside the block",
+    'text {title="a&amp;b"}',
+    '<p>text {title="a&amp;b"}</p>'
+  ],
+  [
+    "a character reference before the block doesn't stop it",
+    "a &amp; *b*{.c} d {.e}",
+    '<p class="e">a &amp; <em class="c">b</em> d</p>'
+  ]
+];
+
 describe.each(engines)("attrs/grammar (%s)", (_engine, render) => {
   it.each(repeated)("one attribute per name: %s", (_why, input, expected) => {
     expect(render(input)).toBe(expected);
   });
+
+  it.each(escaped)(
+    "an escaped delimiter is text: %s",
+    (_why, input, expected) => {
+      expect(render(input)).toBe(expected);
+    }
+  );
 
   it.each(blocks)("one grammar: %s", (_why, input, expected) => {
     expect(render(input)).toBe(expected);
@@ -200,6 +251,24 @@ const limits: Array<
     "# H {.a} #",
     '<h1 class="a">H</h1>',
     "<h1>H {.a}</h1>"
+  ],
+  [
+    "an escaped brace ending a heading, which Sätteri reads before escapes",
+    "# H \\{.x}",
+    "<h1>H {.x}</h1>",
+    '<h1 class="x">H \\</h1>'
+  ],
+  [
+    "a backslash escape earlier in the text",
+    "\\* text {.a}",
+    '<p class="a">* text</p>',
+    "<p>* text {.a}</p>"
+  ],
+  [
+    "an escaped backslash right before the block",
+    "text \\\\{.a}",
+    '<p class="a">text \\</p>',
+    "<p>text \\{.a}</p>"
   ]
 ];
 
@@ -209,5 +278,79 @@ describe("attrs/grammar: Sätteri's limits", () => {
     expect(mdit(input)).toBe(ours);
     expect(remd(input)).toBe(ours);
     expect(sat(input)).toBe(satteri);
+  });
+});
+
+// GFM constructs markdown-it doesn't have without further plugins, so remark is pinned to Sätteri alone.
+describe("attrs/grammar: remark and Sätteri", () => {
+  const [, [, remd], [, sat]] = engines;
+  const both = (input: string): string => {
+    const html = remd(input);
+    expect(html).toBe(sat(input));
+    return html;
+  };
+
+  // mdast-util-to-hast gives task lists and their items a class of its own; a second `class` attribute next to it is invalid, and browsers drop the author's.
+  it("a task item's classes share one attribute with the generated one", () => {
+    expect(both("- [ ] task {.a}")).toBe(
+      '<ul class="contains-task-list"><li class="a task-list-item"><input type="checkbox" disabled> task</li></ul>'
+    );
+  });
+
+  it("a task list's classes share one attribute with the generated one", () => {
+    expect(both("- [x] task\n{.a}")).toContain(
+      '<ul class="a contains-task-list"><li class="task-list-item">'
+    );
+  });
+
+  // The line is indented to the item's content, so it is written in the item, wherever the item's first paragraph starts (after `[x] ` in a task item).
+  it("a block on its own line in a task item goes on the item, not its list", () => {
+    expect(both("- [x] task\n  {.a}")).toContain(
+      '<ul class="contains-task-list"><li class="a task-list-item">'
+    );
+    expect(both("- [x] task\n\n  para\n  {.a}")).toContain(
+      '<p class="a">para</p>'
+    );
+  });
+
+  // A footnote reference can't carry the block (its `<sup>` isn't the author's element), so the block is the paragraph's.
+  it("a block after a footnote reference falls through to the paragraph", () => {
+    expect(both("[^1]{.a}\n\n[^1]: note")).toContain('<p class="a"><sup><a ');
+    expect(both("[^1]{.a} x\n\n[^1]: note")).toContain("</sup>{.a} x</p>");
+  });
+
+  // Raw HTML is dropped by remark-rehype unless allowed, and ignores hProperties either way: a block given to it would vanish with nothing applied.
+  it("a block after raw HTML falls through to the paragraph instead of being lost", () => {
+    expect(remd("<span>x</span>{.a}")).toBe('<p class="a">x</p>');
+    expect(sat("<span>x</span>{.a}")).toBe('<p class="a"><span>x</span></p>');
+    expect(remd("a<br>{.a} b")).toBe("<p>a{.a} b</p>");
+  });
+});
+
+// remark splits a fence's info string at its first space, so a block isn't always in one field.
+describe.each(engines)("attrs/grammar: fences (%s)", (_engine, render) => {
+  it.each<Case>([
+    [
+      "several attributes and no language",
+      "``` {.a .b}\ncode\n```",
+      '<pre><code class="a b">code\n</code></pre>'
+    ],
+    [
+      "a quoted value and no language",
+      '``` {.a title="x y"}\ncode\n```',
+      '<pre><code class="a" title="x y">code\n</code></pre>'
+    ],
+    [
+      "a block right after the language",
+      "```js{.a .b}\ncode\n```",
+      '<pre><code class="a b language-js">code\n</code></pre>'
+    ],
+    [
+      "words between the language and the block",
+      "```js x {.a .b}\ncode\n```",
+      '<pre><code class="a b language-js">code\n</code></pre>'
+    ]
+  ])("%s", (_why, input, expected) => {
+    expect(render(input)).toBe(expected);
   });
 });
