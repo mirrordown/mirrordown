@@ -17,6 +17,9 @@ describe("normalizeHtml", () => {
   });
 
   it("keeps a non-breaking space between tags, so an emptied element is not equal to a deliberate one", () => {
-    expect(normalizeHtml("<li> </li>")).not.toBe(normalizeHtml("<li></li>"));
+    const nbsp = String.fromCodePoint(0xa0);
+    expect(normalizeHtml(`<li>${nbsp}</li>`)).not.toBe(
+      normalizeHtml("<li></li>")
+    );
   });
 });
