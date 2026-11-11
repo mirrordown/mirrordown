@@ -48,6 +48,24 @@ describe("core: escapedIndices", () => {
     expect(escapedIn(String.raw`&lt;\==x==`, "<==x==")).toEqual([0, 1]);
   });
 
+  it("reads a table cell's `\|` as the table's pipe, not as an escaped one", () => {
+    // GFM writes a pipe inside a cell as `\|`, and markdown-it's table rule removes that backslash before inline parsing. So `||` written that way is a real delimiter there, and it is the only way to write one in a cell.
+    const source = String.raw`\|\|x\|\|`;
+    expect([
+      ...escapedIndices("||x||", source, 0, source.length, true)
+    ]).toEqual([]);
+    // Outside a table the same source is four escaped pipes.
+    expect(escapedIn(source, "||x||")).toEqual([0, 1, 3, 4]);
+  });
+
+  it("still marks every other escape, and a referenced pipe, in a table cell", () => {
+    // Only the backslash before a pipe belongs to the table. markdown-it's inline parser still sees `\*`, and never reads `&#124;` as a delimiter.
+    const source = String.raw`\*a\| &#124;`;
+    expect([
+      ...escapedIndices("*a| |", source, 0, source.length, true)
+    ]).toEqual([0, 4]);
+  });
+
   it("lets a reference the parser kept as text match itself", () => {
     // `&T;` is no known reference and `\&` is an escaped ampersand, so the value still holds the reference's own characters.
     expect(escapedIn(String.raw`AT&T; \==x==`, "AT&T; ==x==")).toEqual([6]);
@@ -154,6 +172,43 @@ describe("core: masking", () => {
     expect(text.value).not.toContain("==");
     restore();
     expect(text.value).toBe("http://x.y/==a==");
+  });
+
+  it("leaves a table cell's `\|` unmasked however deep the text is in the cell", () => {
+    // The cell is the text's parent in `| \|\|a\|\| |` and its grandparent in `| *\|\|b\|\|* |`; markdown-it forms a span in both, so neither may be masked.
+    const source = String.raw`| \|\|a\|\| *\|\|b\|\|* |`;
+    const open = source.indexOf("*");
+    const close = source.lastIndexOf("*");
+    const direct = {
+      type: "text",
+      value: "||a|| ",
+      position: { start: { offset: 2 }, end: { offset: open } }
+    };
+    const nested = {
+      type: "text",
+      value: "||b||",
+      position: { start: { offset: open + 1 }, end: { offset: close } }
+    };
+    const cell = {
+      type: "tableCell",
+      children: [direct, { type: "emphasis", children: [nested] }]
+    };
+    const restore = maskTreeEscapes(
+      { type: "table", children: [{ type: "tableRow", children: [cell] }] },
+      source
+    );
+    expect(direct.value).toBe("||a|| ");
+    expect(nested.value).toBe("||b||");
+    restore();
+
+    // The same text outside a table is escaped.
+    const text = {
+      type: "text",
+      value: "||a|| ",
+      position: { start: { offset: 2 }, end: { offset: open } }
+    };
+    maskTreeEscapes({ type: "paragraph", children: [text] }, source);
+    expect(text.value).not.toContain("|");
   });
 
   it("records the escapes of text a scan rebuilt, for the next plugin's scan", () => {

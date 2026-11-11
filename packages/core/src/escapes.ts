@@ -19,13 +19,14 @@ const MASKED_ALL = /[\u{F0000}-\u{FFFFF}]/gu;
 export const isMasked = (char: string): boolean => MASKED.test(char);
 
 /**
- * Indices of `value` whose character is literal in `source`, where `start`–`end` is the source range the text came from: a backslash-escaped character, or one written as a character reference (`&#45;`), which markdown-it never reads as a delimiter either. Characters the parser dropped (container prefixes such as `> `, trailing spaces) are skipped. A character the source does not have at that place (smart punctuation) is passed over, and the alignment picks up again at the next character found nearby.
+ * Indices of `value` whose character is literal in `source`, where `start`–`end` is the source range the text came from: a backslash-escaped character, or one written as a character reference (`&#45;`), which markdown-it never reads as a delimiter either. Characters the parser dropped (container prefixes such as `> `, trailing spaces) are skipped. A character the source does not have at that place (smart punctuation) is passed over, and the alignment picks up again at the next character found nearby. Pass `inTableCell` for text inside a GFM table cell, where `\|` is the table's way to write a pipe and not an inline escape: markdown-it's table rule removes that backslash before inline parsing, so the pipe is an ordinary character there.
  */
 export const escapedIndices = (
   value: string,
   source: string,
   start: number,
-  end: number
+  end: number,
+  inTableCell = false
 ): Set<number> => {
   const escaped = new Set<number>();
   const limit = Math.min(end, source.length);
@@ -45,7 +46,8 @@ export const escapedIndices = (
         // A backslash escape stands for the character after the backslash.
         if (after === char) {
           next = k + 2;
-          literal = true;
+          // In a table cell the backslash before a pipe is the table's, not an inline escape.
+          literal = !(inTableCell && char === `|`);
           break;
         }
         if (!lost) break;
@@ -154,13 +156,14 @@ const recorded = (
 };
 
 /**
- * Indices of a text node's characters that are literal (see {@link escapedIndices}). A node rebuilt by a span scan has no source position, so it carries them in `data.escaped`; any other node is aligned with `source`. Pass the parent's type and whether the node is its `only` child to recognise the text of an autolink (`<https://example.com>`), which is literal throughout: markdown-it emits it as one token that no inline rule reads.
+ * Indices of a text node's characters that are literal (see {@link escapedIndices}). A node rebuilt by a span scan has no source position, so it carries them in `data.escaped`; any other node is aligned with `source`. Pass the parent's type and whether the node is its `only` child to recognise the text of an autolink (`<https://example.com>`), which is literal throughout: markdown-it emits it as one token that no inline rule reads. Pass `inTableCell` when the table cell is a more distant ancestor than the parent (see {@link escapedIndices}).
  */
 export const textEscapes = (
   node: TextLikeNode,
   source: string,
   parentType?: string,
-  only = false
+  only = false,
+  inTableCell = parentType === `tableCell`
 ): Set<number> => {
   const { data, value } = node;
   if (typeof value !== `string`) return new Set();
@@ -176,7 +179,7 @@ export const textEscapes = (
     source.charAt(end) === `>`;
   return autolink
     ? new Set(value.split(``).keys())
-    : escapedIndices(value, source, start, end);
+    : escapedIndices(value, source, start, end, inTableCell);
 };
 
 /**
@@ -223,17 +226,29 @@ export const maskTreeEscapes = (
 ): (() => void) => {
   const walk = (
     node: TextLikeNode,
-    visit: (node: TextLikeNode, parent?: TextLikeNode) => void,
-    parent?: TextLikeNode
+    visit: (
+      node: TextLikeNode,
+      parent?: TextLikeNode,
+      inTableCell?: boolean
+    ) => void,
+    parent?: TextLikeNode,
+    inTableCell = false
   ): void => {
-    visit(node, parent);
-    node.children?.forEach((child) => walk(child, visit, node));
+    visit(node, parent, inTableCell);
+    const inside = inTableCell || node.type === `tableCell`;
+    node.children?.forEach((child) => walk(child, visit, node, inside));
   };
-  walk(tree, (node, parent) => {
+  walk(tree, (node, parent, inTableCell) => {
     if (node.type !== `text` || typeof node.value !== `string`) return;
     node.value = maskEscaped(
       node.value,
-      textEscapes(node, source, parent?.type, parent?.children?.length === 1)
+      textEscapes(
+        node,
+        source,
+        parent?.type,
+        parent?.children?.length === 1,
+        inTableCell
+      )
     );
   });
   return () =>

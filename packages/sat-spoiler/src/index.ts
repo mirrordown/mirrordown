@@ -65,10 +65,20 @@ export const satteriSpoiler =
         const parent = ctx.parent(node);
         if (seen.has(parent)) return;
         seen.add(parent);
+        // In a table cell `\|` is the table's way to write a pipe, the only way to write a spoiler there, and not an escape. The cell may be a distant ancestor (`| *\|\|x\|\|* |`).
+        let inTableCell = false;
+        for (
+          let ancestor: ReturnType<typeof ctx.parent> = parent;
+          ancestor && !inTableCell;
+          ancestor = ctx.parent(ancestor)
+        ) {
+          inTableCell = ancestor.type === `tableCell`;
+        }
         const children = transform.withSource(
           parent.children,
           parent.type,
-          source
+          source,
+          inTableCell
         );
         if (children) ctx.setProperty(parent, `children`, children);
       }
