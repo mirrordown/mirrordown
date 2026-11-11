@@ -9,13 +9,15 @@ import type {
 const MARKER = 0x7e + 0x10000;
 
 // Ruler has no public way to ask whether a rule is enabled, and rules can be switched after the plugin is added, so this reads its list at parse time.
-const strikethroughEnabled = (md: MDit): boolean =>
+const strikethroughEnabled = (md: MDit): boolean => {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  (
-    md.inline.ruler as unknown as {
-      __rules__: Array<{ name: string; enabled: boolean }>;
-    }
-  ).__rules__.some((rule) => rule.name === `strikethrough` && rule.enabled);
+  const ruler = md.inline.ruler as unknown as {
+    __rules__: Array<{ name: string; enabled: boolean }>;
+  };
+  return ruler.__rules__.some(
+    (rule) => rule.name === `strikethrough` && rule.enabled
+  );
+};
 
 /**
  * markdown-it plugin for `~subscript~` syntax, rendering `<sub>` elements. A single `~` is a delimiter run like emphasis: it opens when left-flanking, closes when right-flanking, pairs with the nearest opener, and its content is parsed as inline markup, so subscript nests with superscript and emphasis.
