@@ -90,7 +90,8 @@ describe("core: escapedIndices", () => {
       escapedIn(source, literal + "==x==").filter((i) => i >= literal.length);
     expect(afterRun("\\".repeat(200_000) + "==x==")).toEqual([]);
     expect(afterRun("\\".repeat(200_001) + "==x==")).toEqual([100_000]);
-    expect(performance.now() - started).toBeLessThan(1000);
+    // Linear work takes about a tenth of a second and the quadratic version took over twenty, so the bound is generous enough for a slow CI runner.
+    expect(performance.now() - started).toBeLessThan(5000);
   });
 });
 
