@@ -1,8 +1,10 @@
 export {
+  carryEscapes,
   escapedIndices,
   maskEscaped,
   unmaskEscaped,
   maskTreeEscapes,
+  textEscapes,
   type TextLikeNode
 } from "./escapes.js";
 export {

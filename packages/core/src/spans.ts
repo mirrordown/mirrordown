@@ -1,4 +1,9 @@
-import { escapedIndices, maskEscaped, unmaskEscaped } from "./escapes.js";
+import {
+  maskEscaped,
+  restoreText,
+  textEscapes,
+  type TextLikeNode
+} from "./escapes.js";
 import type { PhrasingLike } from "./github-alerts/index.js";
 
 // The plumbing shared by core's inline span scans (`delimited.ts`, `kbd.ts`): tracking the nodes a scan builds, and masking escaped characters for engines whose nodes are read-only.
@@ -11,15 +16,8 @@ export interface SpanNodes<N extends PhrasingLike> {
   wrap: (children: N[]) => N;
 }
 
-/** A node's source range, as unist positions carry it. */
-export interface Positioned {
-  position?:
-    | {
-        start: { offset?: number | undefined };
-        end: { offset?: number | undefined };
-      }
-    | undefined;
-}
+/** A node's source range, as unist positions carry it, and the `data` a rebuilt text node keeps its literal characters in. */
+export type Positioned = Pick<TextLikeNode, `position` | `data`>;
 
 /** A scan over one parent's children, and the nodes it created. */
 export interface SpanTransform<N extends PhrasingLike> {
@@ -28,7 +26,7 @@ export interface SpanTransform<N extends PhrasingLike> {
   /** Whether `node` was built by this transform (a wrapper or a text node). */
   built: (node: object) => boolean;
   /**
-   * The transform for engines whose text values have escapes resolved and whose nodes are read-only, such as Sätteri: escaped characters are masked by aligning each positioned text node with `source`, using copies, and restored in the result. Returns the new children, or `undefined` when no span forms.
+   * The transform for engines whose text values have escapes resolved and whose nodes are read-only, such as Sätteri: escaped characters are masked by aligning each positioned text node with `source`, using copies, and restored in the result. The text nodes of the result record their escaped characters in `data.escaped`, so the next plugin's scan still finds them. Returns the new children, or `undefined` when no span forms.
    */
   withSource: (
     children: ReadonlyArray<N & Positioned>,
@@ -72,8 +70,8 @@ export const createSpanTransform = <N extends PhrasingLike>(
   const restore = (list: readonly N[]): void => {
     for (const node of list) {
       if (!built.has(node)) continue;
-      if (node.type === `text` && node.value !== undefined) {
-        node.value = unmaskEscaped(node.value);
+      if (node.type === `text`) {
+        restoreText(node);
       } else {
         restore(contents.get(node) ?? []);
       }
@@ -86,19 +84,12 @@ export const createSpanTransform = <N extends PhrasingLike>(
     source: string
   ): N[] | undefined => {
     const masked = children.map((node): N => {
-      const start = node.position?.start.offset;
-      const end = node.position?.end.offset;
-      if (
-        node.type !== `text` ||
-        node.value === undefined ||
-        start === undefined ||
-        end === undefined
-      )
-        return node;
-      const escaped = escapedIndices(node.value, source, start, end);
-      return escaped.size === 0
-        ? node
-        : tracked.text(maskEscaped(node.value, escaped));
+      if (node.type !== `text` || node.value === undefined) return node;
+      const value = maskEscaped(
+        node.value,
+        textEscapes(node, source, parentType, children.length === 1)
+      );
+      return value === node.value ? node : tracked.text(value);
     });
     const next = transform(masked, parentType);
     if (next === masked) return undefined;
