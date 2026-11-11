@@ -2,6 +2,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 import type { TabFrame, TabsBlock, TabsOptions } from "./types.js";
 import {
   parseTabHeader,
@@ -18,12 +19,6 @@ export type { TabsOptions };
 export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-tabs" } = options;
 
-  // Each document's tab groups, counted as they are emitted (in the order they open), for their block ids; reset as each document starts.
-  const groupsEmitted = new WeakMap<object, number>();
-  md.core.ruler.before("block", "tabs_count", (state) => {
-    groupsEmitted.set(state.env as object, 0);
-  });
-
   md.block.ruler.before("blockquote", "tabs", tabsRule, {
     alt: ["paragraph", "reference"]
   });
@@ -33,17 +28,62 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
   md.renderer.rules["tab_input"] = (tokens, idx, opts, _env, self): string =>
     self.renderToken(tokens, idx, opts).replace(/ (hidden|checked)=""/g, " $1");
 
-  // A label's plain text, as the remark and Sätteri plugins compute it: the rendered label without its tags and with markdown-it's escapes undone, so the aria-label is escaped once when rendered, and without a trailing attrs block.
-  const plainLabel = (label: string): string =>
+  // A label's plain text, as the remark and Sätteri plugins compute it: the rendered label without its tags and with markdown-it's escapes undone, so the aria-label is escaped once when rendered, and without a trailing attrs block. It's rendered from the label's own tokens with the document's env, so it reads what the label shows: a link through a reference definition counts as its text.
+  const plainLabel = (label: Token | undefined, env: unknown): string =>
     stripAttrs(
-      md
-        .renderInline(label)
+      md.renderer
+        .renderInline(label?.children ?? [], md.options, env)
         .replace(/<[^>]+>/g, "")
         .replace(/&quot;/g, '"')
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/&amp;/g, "&")
     );
+
+  // A group's ids are set once the whole document is tokenized, so they depend neither on when a group was parsed nor on anything kept between parses. Groups are numbered in the order their tokens are in, which is document order, as the remark and Sätteri plugins number them: a group another rule parses late into its place (a prompt's preview) counts where it is. The label text the ids hash is read after the inline rules and the core rules installed before this one have run. An author's own `for` or `data-tabs-group` (through attrs) is kept.
+  const fill = (
+    token: Token | undefined,
+    name: string,
+    value: string
+  ): void => {
+    if (token?.attrGet(name) === "") token.attrSet(name, value);
+  };
+  md.core.ruler.push("tabs_ids", (state) => {
+    const { tokens } = state;
+    let groups = 0;
+    for (const [index, token] of tokens.entries()) {
+      if (token.type !== "tabs_open") continue;
+      // This group's own inputs, labels and panels, in order; a group nested in a panel has its own.
+      const inputs: Token[] = [];
+      const labels: Token[] = [];
+      const texts: string[] = [];
+      const panels: Token[] = [];
+      let depth = 0;
+      for (let i = index + 1; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (t.type === "tabs_open") depth++;
+        else if (t.type === "tabs_close") {
+          if (depth === 0) break;
+          depth--;
+        } else if (depth > 0) continue;
+        else if (t.type === "tab_input") inputs.push(t);
+        else if (t.type === "tab_label_open") {
+          labels.push(t);
+          texts.push(plainLabel(tokens[i + 1], state.env));
+        } else if (t.type === "tab_panel_open") panels.push(t);
+      }
+      const gId = groupId(texts);
+      const bId = blockId(groups++, gId);
+      fill(token, "data-tabs-group", gId);
+      for (const [k, input] of inputs.entries()) {
+        const inputId = `${bId}-${k}`;
+        input.attrSet("name", bId);
+        input.attrSet("id", inputId);
+        fill(labels[k], "for", inputId);
+        panels[k]?.attrSet("aria-label", texts[k] ?? "");
+      }
+    }
+  });
 
   function tabsRule(
     state: StateBlock,
@@ -189,24 +229,15 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         j++;
       }
 
-      // Compute ids from the labels at this depth level
-      const depthLabels = group
-        .filter((f) => f.depth === targetDepth)
-        .map((f) => plainLabel(f.label));
-      const gId = groupId(depthLabels);
-      const index = groupsEmitted.get(state.env as object) ?? 0;
-      groupsEmitted.set(state.env as object, index + 1);
-      const bId = blockId(index, gId);
-
       // Determine which tab is open: first explicit %+, else first tab
       const explicitOpenIdx = group.findIndex(
         (f) => f.depth === targetDepth && f.open
       );
 
-      // Emit container <div>
+      // Emit container <div>. Its group id, and the ids of its inputs and labels, are placeholders here, in the place they render in: the `tabs_ids` core rule sets them.
       const divOpen = state.push("tabs_open", "div", 1);
       divOpen.attrSet("class", containerClass);
-      divOpen.attrSet("data-tabs-group", gId);
+      divOpen.attrSet("data-tabs-group", "");
       if (mapStart !== undefined && mapEnd !== undefined)
         divOpen.map = [mapStart, mapEnd];
       divOpen.block = true;
@@ -227,20 +258,19 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
         }
         const isOpen =
           explicitOpenIdx >= 0 ? labelK === explicitOpenIdx : labelIdx === 0;
-        const inputId = `${bId}-${labelIdx}`;
 
         // <input type="radio">
         const inputTok = state.push("tab_input", "input", 0);
         inputTok.attrSet("type", "radio");
-        inputTok.attrSet("name", bId);
-        inputTok.attrSet("id", inputId);
+        inputTok.attrSet("name", "");
+        inputTok.attrSet("id", "");
         inputTok.attrSet("hidden", "");
         if (isOpen) inputTok.attrSet("checked", "");
 
         // <label>
         const labelOpen = state.push("tab_label_open", "label", 1);
         labelOpen.attrSet("class", `${containerClass}-label`);
-        labelOpen.attrSet("for", inputId);
+        labelOpen.attrSet("for", "");
         labelOpen.meta = { attrsRole: "containerItem", attrsItemTitle: true };
 
         const labelInline = state.push("inline", "", 0);
@@ -274,8 +304,6 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
           continue;
         }
 
-        const labelPlain = plainLabel(f.label);
-
         // Find child frames
         const childStart = panelK + 1;
         let childEnd = childStart;
@@ -285,8 +313,8 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
 
         // <section>
         const sectionOpen = state.push("tab_panel_open", "section", 1);
+        // Its `aria-label`, the label's plain text, is set by the `tabs_ids` core rule.
         sectionOpen.attrSet("class", `${containerClass}-panel`);
-        sectionOpen.attrSet("aria-label", labelPlain);
         sectionOpen.block = true;
 
         // Tokenize panel body

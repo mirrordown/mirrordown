@@ -36,6 +36,8 @@ export interface TabsListNode {
   depth: number;
   containerClass?: string;
   groupId: string;
+  /** The group's block id (see `tabsBlockId`), which names its radio inputs. `processTabs` sets it once the whole document is recognized, numbering the groups in document order, so it doesn't depend on the order an engine renders them in; it's empty until then. */
+  blockId: string;
   children: TabsItemNode[];
   data?: { attrsRole?: string; hProperties?: Properties };
 }
@@ -112,7 +114,7 @@ const groupId = (labels: string[]): string => {
 };
 
 /**
- * A group's block id, unique on the page even when label sets match: its group id with the group's index among the document's tab groups, counted in the order they open (each nested group after the group around it), so every engine counts the same groups the same way.
+ * A group's block id, unique in its document even when label sets match: its group id with the group's index among the document's tab groups, counted in document order (each nested group after the group around it), so every engine counts the same groups the same way. It is not unique across documents: two documents rendered into one page give their Nth groups the same id when those have the same labels.
  */
 export const tabsBlockId = (index: number, groupId: string): string =>
   "tabs-" + djb2(`${index}:${groupId}`).toString(16);
@@ -651,6 +653,7 @@ const buildTree = (
     type: "tabsList",
     depth: targetDepth,
     groupId: gId,
+    blockId: "",
     children: items,
     data: { attrsRole: "container", hProperties: {} }
   };
@@ -974,4 +977,15 @@ export const processTabs = (
   processTabsInChildren(root.children, containerClass, true, sourceLines);
   for (const child of root.children) walk(child, 0);
   if (sourceLines) endGroupsAtMarkers(root, sourceLines, `tabsList`);
+  // Number the groups where they are in the document (each nested group after the group around it), not as an engine renders them: remark renders footnote definitions last, wherever they're written.
+  let groups = 0;
+  const number = (node: Container): void => {
+    if (node.type === `tabsList`) {
+      const list = node as TabsListNode;
+      list.blockId = tabsBlockId(groups++, list.groupId);
+    }
+    if (Array.isArray(node.children))
+      for (const child of node.children) number(child as Container);
+  };
+  number(root);
 };

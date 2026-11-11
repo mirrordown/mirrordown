@@ -8,7 +8,6 @@ import {
   processTabs,
   stripAttrs,
   tabLabelText,
-  tabsBlockId,
   type TabsLabelNode
 } from "@mirrordown/core";
 import type { TabsOptions, TabsListNode } from "./types.js";
@@ -40,17 +39,13 @@ const mergeHProperties = (base: Properties, extra?: Properties): Properties => {
   return result;
 };
 
-// Each document's tab groups, counted as they render (in the order they open), for their block ids.
-const groupsRendered = new WeakMap<State, number>();
-
 const buildTabsHast = (
   list: TabsListNode,
   containerClass: string,
   state: State
 ): Element => {
-  const index = groupsRendered.get(state) ?? 0;
-  groupsRendered.set(state, index + 1);
-  const blockId = tabsBlockId(index, list.groupId);
+  // Set at recognition, in document order: groups don't always render in that order (footnote definitions render last).
+  const { blockId } = list;
   const labelChildren: ElementContent[] = [];
   const panelChildren: ElementContent[] = [];
 
