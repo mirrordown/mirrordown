@@ -2,6 +2,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 import { isAlertMarkerLine } from "@mirrordown/core";
 import type { StepsOptions } from "./types.js";
 
@@ -62,6 +63,17 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   md.block.ruler.before("blockquote", "steps", stepsRule, {
     alt: ["paragraph", "reference"]
   });
+
+  // A title that held only an attribute block is empty once attrs has taken the block for the step: it renders nothing, like a step written without a title. The check is made when rendering because attrs runs after this rule, whichever plugin is installed first.
+  const isEmptied = (inline: Token | undefined): boolean =>
+    inline?.type === "inline" &&
+    (inline.children ?? []).every(
+      (child) => child.type === "text" && child.content === ""
+    );
+  md.renderer.rules.steps_title_open = (tokens, idx, opts, _env, self) =>
+    isEmptied(tokens[idx + 1]) ? "" : self.renderToken(tokens, idx, opts);
+  md.renderer.rules.steps_title_close = (tokens, idx, opts, _env, self) =>
+    isEmptied(tokens[idx - 1]) ? "" : self.renderToken(tokens, idx, opts);
 
   function stepsRule(
     state: StateBlock,

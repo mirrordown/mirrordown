@@ -123,6 +123,8 @@ interface HeaderPara {
   steps: RawStep[];
   rest: PhrasingContent[][];
   restLine: number;
+  // Attributes the parser read off the end of the paragraph (Sätteri) from a block on a line of its own after the last header: written after the steps, they are the list's, as the attrs plugins of the other engines place them.
+  listProperties?: Properties | undefined;
 }
 
 const extractHeaderPara = (
@@ -135,6 +137,10 @@ const extractHeaderPara = (
   const lines = paraToLines(para, sourceLines);
   const steps: RawStep[] = [];
   let currentDepth = prevDepth;
+  // Whether the paragraph goes on past its last line's text: the parser took an attribute block from a line of its own.
+  const lastText = lines.at(-1)?.at(-1)?.position?.end.line;
+  const ownLine =
+    lastText !== undefined && (para.position?.end.line ?? lastText) > lastText;
   const stop = (index: number): HeaderPara | null =>
     steps.length > 0
       ? {
@@ -170,13 +176,16 @@ const extractHeaderPara = (
       number,
       titleNodes,
       body: [],
-      ...(index === lines.length - 1
+      ...(index === lines.length - 1 && !ownLine
         ? { hProperties: paragraphProperties(para) }
         : {})
     });
   }
 
-  return stop(lines.length);
+  const all = stop(lines.length);
+  return all && ownLine
+    ? { ...all, listProperties: paragraphProperties(para) }
+    : all;
 };
 
 // Lines left over after a group ends become ordinary paragraphs, split before
@@ -503,6 +512,7 @@ export const processStepsInChildren = (
         // Lines left over after a depth-skipping or non-header line end the group.
         let rest = headerPara.rest;
         let restLine = headerPara.restLine;
+        let listProperties = headerPara.listProperties;
         let j = i + 1;
         // A group always starts with at least one step.
         const lastStep = (): RawStep => rawSteps[rawSteps.length - 1]!;
@@ -530,6 +540,10 @@ export const processStepsInChildren = (
             if (firstSeg?.header === null) {
               rawSteps[currentStepIdx]?.body.push(...firstSeg.body);
             }
+            // Attributes on the quote itself (Sätteri) come from a block on a line of its own, written after the body without its `>`: that line ends the steps, and its attributes are the list's.
+            const quoteProperties = paragraphProperties(
+              sibling as unknown as Paragraph
+            );
 
             for (let s = 1; s < segments.length; s++) {
               const seg = segments[s];
@@ -541,6 +555,10 @@ export const processStepsInChildren = (
             }
 
             j++;
+            if (quoteProperties) {
+              listProperties = { ...listProperties, ...quoteProperties };
+              break;
+            }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastStep().depth;
             const contHeaders = extractHeaderPara(
@@ -554,6 +572,7 @@ export const processStepsInChildren = (
               rawSteps.push(...contHeaders.steps);
               rest = contHeaders.rest;
               restLine = contHeaders.restLine;
+              listProperties = contHeaders.listProperties ?? listProperties;
               currentStepIdx = rawSteps.length - 1;
               currentDepth = lastStep().depth;
               j++;
@@ -568,6 +587,8 @@ export const processStepsInChildren = (
         const list = buildTree(rawSteps, 1, 0, rawSteps.length);
         list.containerClass = containerClass;
         if (parentType === "stepsItem") list.inBody = true;
+        if (listProperties)
+          list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as Root["children"][number]);
         children.splice(
           j,
