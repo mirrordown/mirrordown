@@ -283,13 +283,13 @@ export const INDENTED_BLOCKS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * A paragraph split before its first line (after its first) that `opens` a group, written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. Attributes ending the paragraph go with the part they end.
+ * A paragraph split before its first line (after its first) that `opens` a group (given the line's first text, and its node for where it's written), written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. Attributes ending the paragraph go with the part they end.
  */
 export const splitAtOpeningLine = (
   para: Paragraph,
   sourceLines: readonly string[],
   quotes: number,
-  opens: (text: string) => boolean
+  opens: (text: string, node: Text) => boolean
 ): Paragraph[] | null => {
   const lines = paraToSourceLines(para, sourceLines);
   if (!lines) return null;
@@ -298,7 +298,7 @@ export const splitAtOpeningLine = (
     return (
       index > 0 &&
       first?.type === `text` &&
-      opens(first.value) &&
+      opens(first.value, first) &&
       markers === quotes
     );
   });

@@ -6,6 +6,7 @@ import type {
   Root,
   Paragraph,
   Blockquote,
+  Text,
   PhrasingContent,
   BlockContent,
   DefinitionContent
@@ -83,6 +84,20 @@ const parseHeaderPrefix = (text: string): ParsedHeader | null => {
   return { depth: hashes.length, number: parseInt(digits, 10), rest };
 };
 
+// A step header as written. Recognition reads text values, where an escape (`\@1.`) or a character reference (`&#64;1.`) has become the character it stands for; markdown-it reads the line, where those are not a header. So with the source, the text must start with a header there too.
+const SOURCE_HEADER_RE = /^@{1,6}\d+\./;
+
+const writtenHeader = (
+  text: Text,
+  sourceLines?: readonly string[]
+): ParsedHeader | null => {
+  const header = parseHeaderPrefix(text.value);
+  const start = text.position?.start;
+  if (!header || !sourceLines || !start) return header;
+  const source = (sourceLines[start.line - 1] ?? "").slice(start.column - 1);
+  return SOURCE_HEADER_RE.test(source) ? header : null;
+};
+
 // ── Raw step types ────────────────────────────────────────────────────────────
 
 interface RawStep {
@@ -117,7 +132,7 @@ const extractHeaderPara = (
   prevDepth = 0,
   sourceLines?: readonly string[]
 ): HeaderPara | null => {
-  const lines = paraToLines(para);
+  const lines = paraToLines(para, sourceLines);
   const steps: RawStep[] = [];
   let currentDepth = prevDepth;
   const stop = (index: number): HeaderPara | null =>
@@ -134,7 +149,7 @@ const extractHeaderPara = (
     const first = lineSegs[0];
     if (first?.type !== "text") return stop(index);
 
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     if (!header) return stop(index);
 
     const { depth } = header;
@@ -170,7 +185,8 @@ const extractHeaderPara = (
 // to source lines) because group ids hash the start line.
 const splitAtGroupStarts = (
   lines: PhrasingContent[][],
-  firstLine: number
+  firstLine: number,
+  sourceLines?: readonly string[]
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   let start = 0;
@@ -186,7 +202,8 @@ const splitAtGroupStarts = (
   lines.forEach((line, index) => {
     const first = line[0];
     const opens =
-      first?.type === "text" && parseHeaderPrefix(first.value)?.depth === 1;
+      first?.type === "text" &&
+      writtenHeader(first, sourceLines)?.depth === 1;
     if (opens && index > start) {
       flush(index);
       start = index;
@@ -258,7 +275,7 @@ const splitBlockquote = (
   const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {
     const first = lineSegs[0];
     if (first?.type !== "text") return null;
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     return header && header.depth <= currentDepth + 1 ? header : null;
   };
 
@@ -463,7 +480,7 @@ export const processStepsInChildren = (
         node,
         sourceLines,
         quotes,
-        (text) => parseHeaderPrefix(text)?.depth === 1
+        (_, text) => writtenHeader(text, sourceLines)?.depth === 1
       );
       if (split) {
         children.splice(i, 1, ...split);
@@ -552,7 +569,11 @@ export const processStepsInChildren = (
         list.containerClass = containerClass;
         if (parentType === "stepsItem") list.inBody = true;
         newChildren.push(list as unknown as Root["children"][number]);
-        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
+        children.splice(
+          j,
+          0,
+          ...splitAtGroupStarts(rest, restLine, sourceLines)
+        );
         i = j;
         continue;
       }

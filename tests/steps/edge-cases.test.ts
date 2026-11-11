@@ -296,3 +296,37 @@ check(`steps: a quote that starts with an alert marker, without the alerts plugi
     expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p><blockquote><p>[!NOTE]\ntext</p></blockquote></div></li></ol>`
   }
 ]);
+
+// A backslash is the only way to write a line that starts with `@1.` and isn't a step. remark and Sätteri read text after escapes and character references are resolved, so they saw a header where markdown-it, reading the line itself, sees none.
+check(`steps: an escaped header is text`, [
+  {
+    name: `an escaped @ starts no steps`,
+    input: `\\@1. Title`,
+    expected: `<p>@1. Title</p>`
+  },
+  {
+    name: `an escaped @ after a header ends the steps`,
+    input: `@1. A\n\\@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p></li></ol><p>@1. B</p>`
+  },
+  {
+    name: `an escaped @ in a body starts no steps there`,
+    input: `@1. A\n> \\@1. not`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>@1. not</p></div></li></ol>`
+  },
+  {
+    name: `an escaped @ after a body, written without its marker, ends the steps`,
+    input: `@1. A\n> x\n\\@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>x</p></div></li></ol><p>@1. B</p>`
+  },
+  {
+    name: `a character reference for @ starts no steps`,
+    input: `&#64;1. Title`,
+    expected: `<p>@1. Title</p>`
+  },
+  {
+    name: `an escaped dot makes no header`,
+    input: `@1\\. A`,
+    expected: `<p>@1. A</p>`
+  }
+]);
