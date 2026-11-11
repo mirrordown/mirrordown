@@ -42,14 +42,39 @@ export interface TabLabelIcon {
 }
 
 /**
- * A resolver for tab labels' icons under a plugin's options. Given a label's plain text, it returns the icon for its `[!keyword]` marker (an unknown keyword isn't a marker; `[!none]` gives no icon), or, without one, the icon its text matches: the longest keyword that is a whole word of the label (case-insensitive, also after splitting camelCase), else the longest file name or extension it ends with, else one in it. Your icons come before the built-in ones.
+ * A resolver for tab labels' icons under a plugin's options. Given a label's plain text, it returns the icon for its `[!keyword]` marker (an unknown keyword isn't a marker; `[!none]` gives no icon), or, without one, the icon its text matches: the longest keyword that is a whole word of the label (case-insensitive, also after splitting camelCase), else the longest file name or extension it ends with, else one in it. Your icons come before the built-in ones. `lead` is the text the label's markup starts with, `""` when it starts with an element: a marker counts only when that text starts with it, so one inside markup (`**[!npm]**`) or split by it (`[!n**p**m]`) stays as written, and an engine can always cut the marker off that first text node.
  */
 export const createTabIconResolver = (
   options: TabIconsOptions = {}
-): ((label: string) => TabLabelIcon) => {
+): ((label: string, lead?: string) => TabLabelIcon) => {
   const { builtin = true, match = true } = options;
-  const custom = options.icons ?? {};
+  // An icon's markup takes its class and `aria-hidden` on its `<svg>` root, so anything else (an `<img>`, an XML declaration or a comment before the `<svg>`) would render unsized and be announced. It is refused here, when the plugin is created, with the key at fault.
+  const isSvg = (markup: unknown): boolean =>
+    typeof markup === `string` && /^\s*<svg\b/.test(markup);
+  // What a caller without the types may have passed.
+  const given: Record<
+    string,
+    string | { light?: unknown; dark?: unknown } | null | undefined
+  > = options.icons ?? {};
+  for (const [key, icon] of Object.entries(given)) {
+    // `undefined` is left alone: it takes a built-in icon away.
+    if (icon === undefined) continue;
+    const parts = typeof icon === `object` ? [icon?.light, icon?.dark] : [icon];
+    if (!parts.every(isSvg))
+      throw new TypeError(
+        `tab-icons: the icon for "${key}" must be SVG markup that starts with <svg, or a { light, dark } pair of such markup`
+      );
+  }
+  // Keys are matched without regard to case, so they're merged that way too: `NPM` replaces the built-in `npm`.
+  const custom = Object.fromEntries(
+    Object.entries(options.icons ?? {}).map(([key, icon]) => [
+      key.toLowerCase(),
+      icon
+    ])
+  );
+  // Yours first, then the built-in ones you didn't replace: the sort by length below is stable, so of two keywords of one length yours is tried first.
   const icons: Record<string, TabIcon> = {
+    ...custom,
     ...(builtin ? BUILTIN_TAB_ICONS : {}),
     ...custom
   };
@@ -91,10 +116,15 @@ export const createTabIconResolver = (
     return undefined;
   };
 
-  return (label) => {
+  return (label, lead = label) => {
     const marker = MARKER.exec(label);
     const keyword = marker?.[1]?.toLowerCase();
-    if (marker && keyword && (keyword === NONE || named.has(keyword))) {
+    if (
+      marker &&
+      keyword &&
+      (keyword === NONE || named.has(keyword)) &&
+      lead.startsWith(marker[0].trimEnd())
+    ) {
       const rest = label.slice(marker[0].length);
       return {
         icon: keyword === NONE ? undefined : named.get(keyword),

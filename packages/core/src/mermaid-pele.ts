@@ -57,11 +57,19 @@ export const mermaidSvg = (
   svg: string,
   attributes: readonly MermaidAttribute[]
 ): string => {
-  const open = /^<svg\b[^>]*>/.exec(svg)?.[0];
+  // Tab icons pass markup people wrote through here too, so the opening tag is read as HTML allows it, not only as Pele writes it: a value may be in single quotes, a `>` in a value doesn't end the tag, and the tag may close itself.
+  const open = /^<svg\b(?:[^>"']|"[^"]*"|'[^']*')*>/.exec(svg)?.[0];
   if (!open || attributes.length === 0) return svg;
-  const own = [...open.slice(4, -1).matchAll(/\s([^\s=]+)="([^"]*)"/g)].map(
-    ([, name = ``, value = ``]): MermaidAttribute => [name, value]
-  );
+  const selfClosing = open.endsWith(`/>`);
+  const own = [
+    ...open
+      .slice(4, selfClosing ? -2 : -1)
+      .matchAll(/\s([^\s=]+)=(?:"([^"]*)"|'([^']*)')/g)
+  ].map(([, name = ``, double, single = ``]): MermaidAttribute => [
+    name,
+    // A single-quoted value is written back in double quotes.
+    double ?? single.replace(/"/g, `&quot;`)
+  ]);
   const merged = new Map<string, string>(own);
   for (const [name, value] of attributes) {
     const escaped = escapeAttribute(value);
@@ -78,7 +86,7 @@ export const mermaidSvg = (
   const tag = [...merged]
     .map(([name, value]) => ` ${name}="${value}"`)
     .join(``);
-  return `<svg${tag}>${svg.slice(open.length)}`;
+  return `<svg${tag}>${selfClosing ? `</svg>` : ``}${svg.slice(open.length)}`;
 };
 
 /** A hast element's properties as attributes; `className` becomes `class`, and other names are kept as the attribute plugins write them. */

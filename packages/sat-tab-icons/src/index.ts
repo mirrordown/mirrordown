@@ -77,18 +77,25 @@ export const satteriTabIcons = (
           for (const [index, label] of labels.entries()) {
             const panel = panels[index];
             const plain = panel?.properties.ariaLabel;
+            const first =
+              label.children[0]?.type === `text`
+                ? label.children[0]
+                : undefined;
             const {
               icon,
               marker,
               label: text
-            } = resolve(typeof plain === `string` ? plain : ``);
-            if (marker) {
-              const first = label.children[0];
-              if (first?.type === `text`) {
-                const rest = first.value.slice(marker.length) || text;
-                if (rest === ``) ctx.removeNode(first);
-                else ctx.replaceNode(first, { type: `text`, value: rest });
-              }
+            } = resolve(
+              typeof plain === `string` ? plain : ``,
+              first?.value ?? ``
+            );
+            if (marker && first) {
+              // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
+              const rest =
+                first.value.slice(marker.length) ||
+                (label.children.length === 1 ? text : ``);
+              if (rest === ``) ctx.removeNode(first);
+              else ctx.replaceNode(first, { type: `text`, value: rest });
               if (panel) ctx.setProperty(panel, `ariaLabel`, text);
             }
             if (icon)
