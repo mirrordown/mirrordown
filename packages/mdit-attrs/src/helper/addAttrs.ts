@@ -12,7 +12,8 @@ export const addAttrs = (
     if (key === "class" || key === "css-module") {
       token.attrJoin(key, value);
     } else {
-      token.attrPush([key, value]);
+      // Replace a value the token already has, as remark and Sätteri do: pushing a second attribute of the same name is invalid HTML, of which browsers keep the first.
+      token.attrSet(key, value);
     }
   }
 };
