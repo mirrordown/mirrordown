@@ -15,13 +15,15 @@ import type { Properties } from "hast";
 import {
   blockquoteMarkers,
   endGroupsAtMarkers,
+  headerLineContent,
   INDENTED_BLOCKS,
-  MARKED_BLOCKS,
+  markerLevels,
   splitAtOpeningLine,
+  splitSourceLines,
   linesToParagraph,
-  markerCount,
   paragraphProperties,
   paraToLines,
+  paraToSourceLines,
   rebuildLazyLines,
   type MarkedLine
 } from "./lazy.js";
@@ -58,6 +60,8 @@ export interface TabsItemNode {
     attrsTitle?: PhrasingContent[];
     attrsItemTitle?: boolean;
     hProperties?: Properties;
+    /** Set on a tab written one level deeper than the tab before it (`%%`): it's nested in that tab, but its body is written with that tab's `>` markers, not one more (see `markerLevels`). */
+    sub?: boolean;
   };
 }
 
@@ -125,6 +129,8 @@ interface RawTab {
   after?: Array<BlockContent | DefinitionContent>;
   // Attributes the parser read off the end of the header's paragraph, when the header ended it (Sätteri).
   hProperties?: Properties | undefined;
+  // The header was written deeper than level one (`%%`), so the tab's body carries its parent tab's markers. A tab that is deeper only because its header is in an explicit `> %` body carries one more, and isn't one.
+  sub?: boolean;
 }
 
 // ── Paragraph line splitting ──────────────────────────────────────────────────
@@ -151,13 +157,16 @@ export const tabLabelText = (nodes: PhrasingContent[]): string =>
 const extractHeaderPara = (
   para: Paragraph,
   requireDepthOne = true,
-  prevDepth = 0
+  prevDepth = 0,
+  sourceLines?: readonly string[]
 ): { tabs: RawTab[]; rest: PhrasingContent[][]; restLine: number } | null => {
   const lines = paraToLines(para);
   const tabs: RawTab[] = [];
   let currentDepth = prevDepth;
 
-  for (const [index, lineSegs] of lines.entries()) {
+  for (const [index, line] of lines.entries()) {
+    // A header's line, without the hard break that can't follow it.
+    const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
     if (first?.type !== "text") return null;
 
@@ -188,6 +197,7 @@ const extractHeaderPara = (
       labelNodes,
       labelText: tabLabelText(labelNodes),
       body: [],
+      ...(depth > 1 ? { sub: true } : {}),
       ...(index === lines.length - 1
         ? { hProperties: paragraphProperties(para) }
         : {})
@@ -280,6 +290,15 @@ const isExplicitBQ = (bq: Blockquote): boolean =>
 // This handles cases where remark plugins (e.g. remarkDefinitionList) transform
 // absorbed paragraphs into custom nodes — the trailing "% Code" line ends up
 // inside a nested paragraph rather than at the blockquote's top level.
+// The `>` markers of each line of a paragraph, read from the source line the line is written on (not the paragraph's first line plus the line's index: inline content that spans lines keeps them together as one); `undefined` without the source, or when a line's place in it isn't known.
+const lineMarkers = (
+  para: Paragraph,
+  sourceLines?: readonly string[]
+): number[] | undefined =>
+  sourceLines
+    ? paraToSourceLines(para, sourceLines)?.map(({ markers }) => markers)
+    : undefined;
+
 const extractTrailingTabHeader = (
   node: BlockContent | DefinitionContent,
   sourceLines?: readonly string[]
@@ -288,7 +307,8 @@ const extractTrailingTabHeader = (
   truncatedPara: Paragraph | null;
   rest: PhrasingContent[][];
   path: Array<BlockContent | DefinitionContent>;
-  start: number | undefined;
+  // The `>` markers of each of the paragraph's lines, when the source places them.
+  markers: number[] | undefined;
   at: number;
   line: PhrasingContent[];
 } | null => {
@@ -308,7 +328,7 @@ const extractTrailingTabHeader = (
         (line) => line[0]?.type === "text" && parseTabHeader(line[0].value)
       );
       if (at === -1) return null;
-      const headerLine = lines[at] ?? [];
+      const headerLine = headerLineContent(lines[at] ?? [], sourceLines);
       const first = headerLine[0];
       const header =
         first?.type === "text" ? parseTabHeader(first.value) : null;
@@ -323,19 +343,20 @@ const extractTrailingTabHeader = (
         labelNodes,
         labelText: tabLabelText(labelNodes),
         body: [],
+        ...(header.depth > 1 ? { sub: true } : {}),
         ...(at === lines.length - 1
           ? { hProperties: paragraphProperties(last) }
           : {})
       };
-      const truncatedPara = linesToParagraph(lines.slice(0, at));
+      const truncatedPara = linesToParagraph(lines.slice(0, at), sourceLines);
       return {
         header: rawTab,
         truncatedPara,
         rest: lines.slice(at + 1),
         path,
-        start: last.position?.start.line,
+        markers: lineMarkers(last, sourceLines),
         at,
-        line: headerLine
+        line: lines[at] ?? []
       };
     }
     if (!("children" in last)) break;
@@ -371,7 +392,9 @@ const splitBlockquote = (
   ): void => {
     let bodyLines: PhrasingContent[][] = [];
 
-    for (const [index, lineSegs] of lines.entries()) {
+    for (const [index, line] of lines.entries()) {
+      // A header's line, without the hard break that can't follow it.
+      const lineSegs = headerLineContent(line, sourceLines);
       const first = lineSegs[0];
       const outsidePanel =
         !markersOf || base === undefined || markersOf(index) < base;
@@ -380,7 +403,7 @@ const splitBlockquote = (
         if (header) {
           // Flush accumulated body lines into current segment
           if (bodyLines.length > 0) {
-            const bodyPara = linesToParagraph(bodyLines);
+            const bodyPara = linesToParagraph(bodyLines, sourceLines);
             if (bodyPara) currentSegment.body.push(bodyPara);
             bodyLines = [];
           }
@@ -400,6 +423,7 @@ const splitBlockquote = (
               labelNodes,
               labelText: tabLabelText(labelNodes),
               body: [],
+              ...(header.depth > 1 ? { sub: true } : {}),
               ...(para && index === lines.length - 1
                 ? { hProperties: paragraphProperties(para) }
                 : {})
@@ -407,16 +431,16 @@ const splitBlockquote = (
             body: [],
             explicit,
             lines: [],
-            line: lineSegs,
+            line,
             ...(markersOf ? { markers: markersOf(index) } : {})
           };
           continue;
         }
       }
-      bodyLines.push(lineSegs);
+      bodyLines.push(line);
       if (markersOf) {
         currentSegment.lines.push({
-          segs: lineSegs,
+          segs: line,
           markers: markersOf(index)
         });
       }
@@ -462,12 +486,10 @@ const splitBlockquote = (
         currentSegment.body.push(cloned);
         // Start a new segment for the extracted tab header
         segments.push(currentSegment);
-        const { start, at } = extracted;
-        const markersOf =
-          sourceLines && start !== undefined
-            ? (index: number): number =>
-                markerCount(sourceLines[start - 1 + index] ?? "")
-            : undefined;
+        const { markers, at } = extracted;
+        const markersOf = markers
+          ? (index: number): number => markers[index] ?? 0
+          : undefined;
         currentSegment = {
           header: extracted.header,
           body: [],
@@ -487,12 +509,10 @@ const splitBlockquote = (
     }
 
     // Check if this paragraph contains tab headers mixed with body text
-    const start = child.position?.start.line;
+    const markers = lineMarkers(child, sourceLines);
     splitLines(
       paraToLines(child, sourceLines),
-      sourceLines && start !== undefined
-        ? (index): number => markerCount(sourceLines[start - 1 + index] ?? "")
-        : undefined,
+      markers ? (index): number => markers[index] ?? 0 : undefined,
       child
     );
   }
@@ -618,7 +638,8 @@ const buildTree = (
         attrsRole: "containerItem",
         attrsTitle: raw.labelNodes,
         attrsItemTitle: true,
-        hProperties: { ...raw.hProperties }
+        hProperties: { ...raw.hProperties },
+        ...(raw.sub ? { sub: true } : {})
       }
     });
 
@@ -675,7 +696,7 @@ export const processTabsInChildren = (
     }
 
     if (node.type === "paragraph") {
-      const headerPara = extractHeaderPara(node);
+      const headerPara = extractHeaderPara(node, true, 0, sourceLines);
 
       if (headerPara) {
         const rawTabs: RawTab[] = [...headerPara.tabs];
@@ -885,7 +906,12 @@ export const processTabsInChildren = (
             }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastTab().depth;
-            const contHeaders = extractHeaderPara(sibling, false, prevDepth);
+            const contHeaders = extractHeaderPara(
+              sibling,
+              false,
+              prevDepth,
+              sourceLines
+            );
             if (contHeaders) {
               rawTabs.push(...contHeaders.tabs);
               rest = contHeaders.rest;
@@ -930,10 +956,11 @@ export const processTabs = (
   containerClass: string,
   source?: string
 ): void => {
-  const sourceLines = source?.split(/\r?\n/);
+  const sourceLines =
+    source === undefined ? undefined : splitSourceLines(source);
   const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
-    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
+    const inner = quotes + markerLevels(node);
     processTabsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,

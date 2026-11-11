@@ -153,7 +153,7 @@ export const satteriTabs =
       const content = (item.children as unknown as MdastTarget[]).filter(
         (child) => child.type !== `tabsLabel`
       );
-      return element(
+      const panel = element(
         `tabsPanel`,
         `section`,
         // From the label as it is now, so plugins that ran after tabs count too.
@@ -163,6 +163,9 @@ export const satteriTabs =
         },
         content.map(back)
       );
+      // Plugins that run after this one count the `>` markers of a panel's lines from the tree, and a `%%` tab's panel adds none to its parent's.
+      if (item.data?.sub) panel.data = { ...panel.data, sub: true };
+      return panel;
     };
 
     // A node recognition created: tabs render as `hName` nodes, anything else (paragraphs split around a group) as it is.
