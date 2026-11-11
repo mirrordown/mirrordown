@@ -41,6 +41,12 @@ The content is inline markup, like emphasis: it can hold spaces, other formattin
 > e^x~0~^ and the ^*n*th power^
 > ````
 
+A backslash keeps a caret literal (`x\^2\^`). A caret right after `[` opens a superscript like any other, so a footnote-style reference with no definition (`[^1] x^2^`) pairs with the next closing caret. A few things differ between the engines:
+
+- Spans have to nest. When a superscript crosses another span or crosses emphasis (`^a *b^ c*`, `==a ^b== c^`), each engine resolves it its own way.
+- A run of two or more carets is plain text in markdown-it and remark. Sätteri pairs two runs of the same length, so `^^a^^` is a superscript there.
+- Sätteri's superscript takes no attribute block: `x^2^{.s} y` sets the class with the markdown-it and remark attrs plugins and keeps the braces as text on Sätteri, where a block at the end of a paragraph, heading or list item sets the class on that element instead.
+
 ## Usage
 
 % Remark
