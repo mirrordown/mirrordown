@@ -195,3 +195,22 @@ check(`steps: a tab after the body's marker is the marker's space`, [
     expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol>`
   }
 ]);
+
+// The stylesheet pads a step's body, so an empty body element is visible. markdown-it took the blank lines between two headers, or a lone `>`, for body lines and rendered an empty body for them; a step without content has no body element in any engine.
+check(`steps: a step without content has no body element`, [
+  {
+    name: `blank lines between title-only steps`,
+    input: `@1. A\n\n\n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p></li>${LI(2)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a lone marker`,
+    input: `@1. A\n>\n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p></li>${LI(2)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a blank line before a sub-step`,
+    input: `@1. A\n\n@@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p></li></ol></li></ol>`
+  }
+]);

@@ -260,7 +260,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         }
 
         // Step body â€” parse as nested block content
-        if (f.bodyLines.length > 0) {
+        // Blank lines alone (between two headers, or a lone `>`) are not a body.
+        if (f.bodyLines.some((line) => line !== null && line.trim() !== "")) {
           const bodyOpen = state.push("steps_body_open", "div", 1);
           bodyOpen.attrSet("class", `${containerClass}-body`);
           bodyOpen.block = true;
