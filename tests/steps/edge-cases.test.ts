@@ -214,3 +214,32 @@ check(`steps: a step without content has no body element`, [
     expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p></li></ol></li></ol>`
   }
 ]);
+
+// Steps in a list item end where the item ends. markdown-it's steps rule read on past it, taking a `>` line or a header written at the list's own indentation into the item's steps, where CommonMark (and so remark and Sätteri) had already closed the item.
+check(`steps: steps in a list item end with the item`, [
+  {
+    name: `a quote written outside the item, directly under the header, is a blockquote after the list`,
+    input: `- @1. Step\n> Body`,
+    expected: `<ul><li>${OL}${LI(1)}${T}Step</p></li></ol></li></ul><blockquote><p>Body</p></blockquote>`
+  },
+  {
+    name: `a quote written outside the item after a body line is one too`,
+    input: `- @1. Step\n  > a\n> b`,
+    expected: `<ul><li>${OL}${LI(1)}${T}Step</p>${B}<p>a</p></div></li></ol></li></ul><blockquote><p>b</p></blockquote>`
+  },
+  {
+    name: `a header written outside the item after a blank line starts new steps`,
+    input: `- @1. Step\n  > Body.\n\n@1. Outside`,
+    expected: `<ul><li>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>${OL}${LI(1)}${T}Outside</p></li></ol>`
+  },
+  {
+    name: `a header written outside the item without a blank line still continues its steps`,
+    input: `- @1. Step\n  > Body.\n@2. Two`,
+    expected: `<ul><li>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li>${LI(2)}${T}Two</p></li></ol></li></ul>`
+  },
+  {
+    name: `lines written in the item after blank lines stay in its steps`,
+    input: `- @1. Step\n  > a\n\n  > b\n\n  @1. Two`,
+    expected: `<ul><li>${OL}${LI(1)}${T}Step</p>${B}<p>a</p><p>b</p></div></li>${LI(2)}${T}Two</p></li></ol></li></ul>`
+  }
+]);

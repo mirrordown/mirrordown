@@ -142,10 +142,11 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekPos = state.bMarks[peek] + state.tShift[peek];
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
-          // An alert after a blank line is a block of its own, not more of the step's body.
+          // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
           const isContinuation =
-            (CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
-            parseStepHeader(peekLine) !== null;
+            state.sCount[peek] >= state.blkIndent &&
+            ((CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
+              parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
           // Blank line is part of the body
           currentFrame.bodyLines.push("");
@@ -153,7 +154,11 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           continue;
         }
 
-        if (CONTINUATION_RE.test(line)) {
+        // A `>` line written outside the block the steps are in (a list item) is a blockquote after that block, as CommonMark reads it, not more of the body. A header there still continues the steps: CommonMark continues the body's paragraph with it, which is how the other engines find it.
+        if (
+          CONTINUATION_RE.test(line) &&
+          state.sCount[nextLine] >= state.blkIndent
+        ) {
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
