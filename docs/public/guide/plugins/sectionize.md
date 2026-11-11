@@ -64,10 +64,13 @@ There is no special syntax — write ordinary headings and the plugin builds the
 > How to configure it.
 > ````
 
-Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>` nests as `data-depth="3"` inside the `<h1>`'s section, with no intervening `<h2>` section invented.
+Skipped heading levels are handled gracefully: an `<h3>` directly under an `<h1>` nests as `data-depth="3"` inside the `<h1>`'s section, with no intervening `<h2>` section invented. Heading order does not matter either: a heading that comes before a shallower one (an `<h4>` followed by an `<h2>`) still gets its own section, which ends where the shallower heading begins.
 
 > [!TIP]
-> `sectionize` only wraps — it never touches heading ids. Run it **before** `slug`/`autolink-headings` so those plugins still add ids to the (now nested) headings.
+> `sectionize` only wraps — it never touches heading ids, and `slug` finds the nested headings whichever of the two is listed first. List it **before** `autolink-headings`, though: with `behavior: "before"` or `"after"` (or `group`) that plugin adds an element next to the heading, and that element has to be created inside the heading's section. Listed after `autolink-headings`, the remark and Sätteri plugins leave it outside the section.
+
+> [!NOTE]
+> Raw HTML is opaque to `sectionize`: a heading written as an HTML tag is not sectioned, and a markdown heading between a raw opening tag and its closing tag (a `<div>` and `</div>` on their own lines, say) opens a section that runs past the closing tag.
 
 ## Usage
 
