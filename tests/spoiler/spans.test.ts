@@ -162,3 +162,45 @@ describe("spoiler (sätteri): smart punctuation before an escape does not lose i
     expect(sat(String.raw`"q" \||a||`, true)).toBe("<p>“q” ||a||</p>");
   });
 });
+
+describe("spoiler: a spoiler that crosses emphasis is malformed, and each engine resolves it its own way", () => {
+  // markdown-it pairs `||` and `*` from one delimiter list, so the pair that closes first wins. remark and Sätteri scan after the parser has made the emphasis node, which leaves the two `||` in different parents. The guide documents the difference; these pin both outcomes so a change to either is noticed.
+  const crossing = "||a *b|| c*";
+
+  it("markdown-it forms the spoiler and leaves the emphasis literal", () => {
+    expect(mdit(crossing)).toBe(`<p>${S("a *b")} c*</p>`);
+  });
+
+  it.each([
+    ["remark", remd],
+    ["sätteri", sat]
+  ] as const)(
+    "%s forms the emphasis and leaves the spoiler literal",
+    (_engine, render) => {
+      expect(render(crossing)).toBe("<p>||a <em>b|| c</em></p>");
+    }
+  );
+
+  it.each(engines)(
+    "%s agrees when the emphasis opens first: the emphasis wins",
+    (_engine, render) => {
+      expect(render("*a ||b* c||")).toBe("<p><em>a ||b</em> c||</p>");
+    }
+  );
+});
+
+describe("spoiler: a table-cell spoiler nested in emphasis after another span plugin's span", () => {
+  // Known difference. sat-del rebuilds the emphasis's text and, knowing only the direct parent, records the table's `\|` as escaped pipes, so sat-spoiler leaves them literal. Passing the enclosing cell to `withSource`, as sat-spoiler does, would fix it in the other Sätteri span plugins.
+  const input = table(String.raw`*--a-- \|\|x\|\|*`);
+
+  it.each([
+    ["markdown-it", mdit],
+    ["remark", remd]
+  ] as const)("%s forms the spoiler", (_engine, render) => {
+    expect(render(input)).toBe(cell(`<em><del>a</del> ${S("x")}</em>`));
+  });
+
+  it("sätteri leaves it literal", () => {
+    expect(sat(input)).toBe(cell("<em><del>a</del> ||x||</em>"));
+  });
+});
