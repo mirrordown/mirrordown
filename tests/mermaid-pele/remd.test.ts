@@ -91,7 +91,8 @@ describe("mermaid-pele/remd: diagrams in HTML", () => {
   const code = (className: string | string[], value: string): Element => ({
     type: `element`,
     tagName: `code`,
-    properties: { className },
+    // Trees from other tools can hold a class name as one string, which hast's types don't allow but the plugin still reads.
+    properties: { className } as Element["properties"],
     children: [{ type: `text`, value }]
   });
   const html = unified()

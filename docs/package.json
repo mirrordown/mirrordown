@@ -9,7 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "^0.4.3",
+    "@astrojs/markdown-satteri": "^0.4.7",
     "@fontsource-variable/mona-sans": "^5.3.0",
     "@fontsource/monaspace-argon": "^5.3.0",
     "@fontsource/monaspace-krypton": "^5.3.0",
@@ -22,7 +22,7 @@
     "@mirrordown/sat-inline-svg": "workspace:*",
     "@mirrordown/sat-prompt": "workspace:*",
     "@shikijs/themes": "^4.5.0",
-    "astro": "^7.3.8"
+    "astro": "^7.4.7"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
