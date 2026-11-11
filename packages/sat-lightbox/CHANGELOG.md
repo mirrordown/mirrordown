@@ -1,6 +1,13 @@
 # Changelog
 
 
+
+## 0.3.0
+<sub>2026-11-11</sub>
+
+- *(minor)*
+  Require Sätteri 0.11.3 or later, which Astro ships from 7.4.7 (`@astrojs/markdown-satteri` 0.4.7). The plugins now read the document's features from Sätteri itself, so in Astro `satteriRuby()` needs no `features` passed to it, and tabs and steps no longer allow for a Sätteri that passes none. On Astro 7.4.6 or earlier, update Astro first.
+
 ## 0.2.0
 <sub>2026-10-28</sub>
 
