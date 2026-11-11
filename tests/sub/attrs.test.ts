@@ -5,6 +5,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { sub } from "../../packages/mdit-sub/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkSub } from "../../packages/remd-sub/src";
@@ -53,4 +54,28 @@ describe("sub + attrs: sub and block attrs coexist", () => {
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
   it("remark", () => expect(remd(input)).toBe(expected));
+});
+
+// An engine limit: the markdown-it and remark attrs plugins put a block that follows a subscript on the `<sub>`, but Sätteri's built-in subscript node takes no attribute block, so there the braces stay text. Pinned so that a change in Sätteri is noticed.
+describe("sub + attrs: an attribute block right after a subscript", () => {
+  const input = "x~2~{.s} tail";
+  const expected = '<p>x<sub class="s">2</sub> tail</p>';
+
+  it("markdown-it", () =>
+    expect(normalizeHtml(md.render(input))).toBe(expected));
+  it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri leaves the block as text", () =>
+    expect(
+      normalizeHtml(
+        markdownToHtml(input, {
+          features: {
+            gfm: true,
+            subscript: true,
+            attributes: true,
+            frontmatter: false,
+            smartPunctuation: false
+          }
+        }).html
+      )
+    ).toBe("<p>x<sub>2</sub>{.s} tail</p>"));
 });

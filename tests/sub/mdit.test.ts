@@ -72,6 +72,17 @@ describe("sub/mdit", () => {
     );
   });
 
+  // Crossing spans are malformed, and each engine resolves them its own way: markdown-it pairs whichever closer comes first, while remark and Sätteri (see their tests) let the construct that appeared first in the paragraph win. Pinned so that a change in either is noticed.
+  it.each([
+    ["*x* ~a *b~ c*", "<p><em>x</em> <sub>a *b</sub> c*</p>"],
+    ["~x~ *a ~b* c~", "<p><sub>x</sub> <em>a ~b</em> c~</p>"]
+  ])(
+    "closes the first closer when a subscript crosses emphasis: %s",
+    (input, expected) => {
+      expect(normalizeHtml(md.render(input))).toBe(expected);
+    }
+  );
+
   describe.each(subSupOrders)("with sup (%s)", (_, mdBoth) => {
     it.each(subSupCases)(
       "sub (markdown-it) with sup: $name",

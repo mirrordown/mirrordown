@@ -56,6 +56,28 @@ describe("sub/sat", () => {
     expect(render("x*~i~*", false)).toBe("<p>x*<sub>i</sub>*</p>");
   });
 
+  // Crossing spans are malformed, and each engine resolves them its own way: here the construct that appeared first in the paragraph claims its pair, as in remark, while markdown-it (see its test) pairs whichever closer comes first. Pinned so that a change in either is noticed.
+  it.each([
+    ["*x* ~a *b~ c*", "<p><em>x</em> ~a <em>b~ c</em></p>"],
+    ["~x~ *a ~b* c~", "<p><sub>x</sub> *a <sub>b* c</sub></p>"]
+  ])(
+    "lets the construct seen first win when a subscript crosses emphasis: %s",
+    (input, expected) => {
+      expect(render(input, false)).toBe(expected);
+    }
+  );
+
+  // An engine limit: with GFM off, markdown-it and remark read a `~~` run as plain text and render `<p>~~H<sub>2</sub>O~~</p>`, but Sätteri keeps a matched `~~…~~` pair closed to subscripts. Pinned so that a change in Sätteri is noticed.
+  it.each([
+    ["~~H~2~O~~", "<p>~~H~2~O~~</p>"],
+    ["~~a ~b~ c~~", "<p>~~a ~b~ c~~</p>"]
+  ])(
+    "finds no subscript inside a `~~…~~` pair with GFM off: %s",
+    (input, expected) => {
+      expect(render(input, false)).toBe(expected);
+    }
+  );
+
   it.each(subSupCases)(
     "sub (sätteri) with sup: $name",
     ({ input, expected }) => {
