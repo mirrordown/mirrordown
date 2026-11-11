@@ -14,7 +14,10 @@ import { normalizeHtml } from "../utils/index.js";
 // The caption plugin alone in each engine, for inputs a fixture file can't hold (carriage returns, trailing backslashes) and for the places the engines' recognition once disagreed. Every case must render the same HTML in all three.
 const md = new MarkdownIt().use(caption);
 
-const engines = [
+const engines: Array<{
+  engine: string;
+  render: (input: string, gfm: boolean) => string;
+}> = [
   { engine: `markdown-it`, render: (input: string) => md.render(input) },
   {
     engine: `remark`,
@@ -43,8 +46,6 @@ interface Case {
   name: string;
   input: string;
   expected: string;
-  /** Parse with GFM, for syntax markdown-it doesn't have (task lists): those cases leave markdown-it out. */
-  gfm?: boolean;
 }
 
 const FIGURE = `<figure class="markdown-caption">`;
@@ -88,6 +89,12 @@ const cases: Case[] = [
     input: `![i](a.jpg) [foo\n~: bar](u)`,
     expected: `<p><img src="a.jpg" alt="i"> <a href="u">foo\n~: bar</a></p>`
   },
+  // A caption line indented to a list item's content is written inside the item, so it captions the item's block and not the whole list. Where the item's content starts is the marker's to say: the item's first block can start further right.
+  {
+    name: `list: a caption in an item whose content starts on its second line`,
+    input: `-\n    foo\n  ~: cap`,
+    expected: `<ul><li>${FIGURE}<p>foo</p><figcaption>cap</figcaption></figure></li></ul>`
+  },
   // The break has nothing to break before: the caption ends there, as a paragraph ends at the hard break before its caption. Kept, it rendered a `<br>` at the end of the `<figcaption>` in two engines of three.
   {
     name: `hard break: one ending an inner caption isn't part of it`,
@@ -100,10 +107,29 @@ const cases: Case[] = [
 const normalize = (html: string): string =>
   normalizeHtml(html).replace(/\r\n?/g, `\n`);
 
-describe.each(cases)(`caption parity: $name`, ({ input, expected, gfm }) => {
-  it.each(
-    engines.filter(({ engine }) => gfm !== true || engine !== `markdown-it`)
-  )(`$engine`, ({ render }) => {
-    expect(normalize(render(input, gfm === true))).toBe(expected);
+describe.each(cases)(`caption parity: $name`, ({ input, expected }) => {
+  it.each(engines)(`$engine`, ({ render }) => {
+    expect(normalize(render(input, false))).toBe(expected);
   });
+});
+
+// A task item's paragraph starts after its `[ ]`, right of the item's content column, so a caption line at that column was read as written outside the item and captioned the whole list. markdown-it has no task lists, and the two renderers space the checkbox before a block differently, so this reads the parts that matter.
+describe(`caption parity: a caption in a task item captions the task, as in any other item`, () => {
+  it.each(engines.filter(({ engine }) => engine !== `markdown-it`))(
+    `$engine`,
+    ({ render }) => {
+      const html = normalize(
+        render(
+          `- [ ] Task
+  ~: cap
+- [ ] Two`,
+          true
+        )
+      );
+      expect(html.startsWith(`<ul class="contains-task-list">`)).toBe(true);
+      expect(html).toContain(
+        `${FIGURE}<p>Task</p><figcaption>cap</figcaption></figure></li>`
+      );
+    }
+  );
 });

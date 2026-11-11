@@ -9,7 +9,11 @@ import {
   paraToSourceLines,
   splitSourceLines
 } from "./lazy.js";
-import { containersKept, type LineContainer } from "./line-containers.js";
+import {
+  containersKept,
+  itemColumns,
+  type LineContainer
+} from "./line-containers.js";
 
 /** The class of the `<figure>` a caption wraps its block in. */
 export const CAPTION_CLASS = "markdown-caption";
@@ -184,6 +188,7 @@ export const processCaptions = (root: Root, source: string): void => {
         .reverse()
         .find((a) => a.type === type);
     let quotes = 0;
+    const items: Node[] = [];
     for (const [index, ancestor] of ancestors.entries()) {
       const quote = (target: Node | undefined): void => {
         containers.push({
@@ -212,11 +217,25 @@ export const processCaptions = (root: Root, source: string): void => {
         case `listItem`:
         case `defListDescription`:
         case `descriptionDetails`: {
-          const column = ancestor.children?.[0]?.position?.start.column;
+          // A list item's content column is read from its marker's line, as markdown-it reads it. Its first child doesn't always start there: a task item's paragraph starts after its `[ ]`, and content after an item's empty first line can be indented further. Items opened on the same line, outside this one, come first there. A definition, or an item without a position, is measured by its first child.
+          const line =
+            ancestor.type === `listItem`
+              ? ancestor.position?.start.line
+              : undefined;
+          const sameLine = items.filter(
+            (item) => item.position?.start.line === line
+          ).length;
+          if (ancestor.type === `listItem`) items.push(ancestor);
+          const first = ancestor.children?.[0]?.position?.start.column;
+          const column =
+            (line === undefined
+              ? undefined
+              : itemColumns(sourceLines[line - 1] ?? ``).at(sameLine)) ??
+            (first === undefined ? undefined : first - 1);
           if (column === undefined) return undefined;
           containers.push({
             target: ancestors[index - 1] ?? ancestor,
-            line: { kind: `item`, column: column - 1 }
+            line: { kind: `item`, column }
           });
           break;
         }
