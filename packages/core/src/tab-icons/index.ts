@@ -42,11 +42,11 @@ export interface TabLabelIcon {
 }
 
 /**
- * A resolver for tab labels' icons under a plugin's options. Given a label's plain text, it returns the icon for its `[!keyword]` marker (an unknown keyword isn't a marker; `[!none]` gives no icon), or, without one, the icon its text matches: the longest keyword that is a whole word of the label (case-insensitive, also after splitting camelCase), else the longest file name or extension it ends with, else one in it. Your icons come before the built-in ones.
+ * A resolver for tab labels' icons under a plugin's options. Given a label's plain text, it returns the icon for its `[!keyword]` marker (an unknown keyword isn't a marker; `[!none]` gives no icon), or, without one, the icon its text matches: the longest keyword that is a whole word of the label (case-insensitive, also after splitting camelCase), else the longest file name or extension it ends with, else one in it. Your icons come before the built-in ones. `lead` is the text the label's markup starts with, `""` when it starts with an element: a marker counts only when that text starts with it, so one inside markup (`**[!npm]**`) or split by it (`[!n**p**m]`) stays as written, and an engine can always cut the marker off that first text node.
  */
 export const createTabIconResolver = (
   options: TabIconsOptions = {}
-): ((label: string) => TabLabelIcon) => {
+): ((label: string, lead?: string) => TabLabelIcon) => {
   const { builtin = true, match = true } = options;
   const custom = options.icons ?? {};
   const icons: Record<string, TabIcon> = {
@@ -91,10 +91,15 @@ export const createTabIconResolver = (
     return undefined;
   };
 
-  return (label) => {
+  return (label, lead = label) => {
     const marker = MARKER.exec(label);
     const keyword = marker?.[1]?.toLowerCase();
-    if (marker && keyword && (keyword === NONE || named.has(keyword))) {
+    if (
+      marker &&
+      keyword &&
+      (keyword === NONE || named.has(keyword)) &&
+      lead.startsWith(marker[0].trimEnd())
+    ) {
       const rest = label.slice(marker[0].length);
       return {
         icon: keyword === NONE ? undefined : named.get(keyword),

@@ -83,7 +83,7 @@ Start a label with `[!keyword]` to choose its icon, the way a [GitHub alert](/gu
 > ```
 ````
 
-`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written.
+`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written. Nor is a marker that isn't plain text at the very start of the label: inside markup (`**[!npm]** Install`), or with a piece of it taken by markup or another plugin (`[!n**p**m]`, or `[!npm]` where `npm` is a defined [abbreviation](/guide/plugins/abbr)), it stays as written and the label is matched by its text. Markup after a marker is fine: `[!npm] **Install**`.
 
 ## How a label is matched
 

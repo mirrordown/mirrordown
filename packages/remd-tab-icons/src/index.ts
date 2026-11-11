@@ -48,17 +48,19 @@ export const rehypeTabIcons: Plugin<[TabIconsOptions?], Root> = (
             ? `aria-label`
             : `ariaLabel`;
         const plain = panel?.properties[key];
+        const first =
+          label.children[0]?.type === `text` ? label.children[0] : undefined;
         const {
           icon,
           marker,
           label: text
-        } = resolve(typeof plain === `string` ? plain : ``);
-        if (marker) {
-          const first = label.children[0];
-          if (first?.type === `text`) {
-            first.value = first.value.slice(marker.length) || text;
-            if (first.value === ``) label.children.shift();
-          }
+        } = resolve(typeof plain === `string` ? plain : ``, first?.value ?? ``);
+        if (marker && first) {
+          // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
+          first.value =
+            first.value.slice(marker.length) ||
+            (label.children.length === 1 ? text : ``);
+          if (first.value === ``) label.children.shift();
           if (panel) panel.properties[key] = text;
         }
         if (icon) {

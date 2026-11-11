@@ -40,14 +40,16 @@ export const tabIcons: PluginWithOptions<TabIconsOptions> = (
       for (const [i, inline] of labels.entries()) {
         const panel = panels[i];
         const text = panel?.attrGet(`aria-label`) ?? inline.content;
-        const { icon, marker, label } = resolve(text);
-        const children = inline.children ?? [];
-        if (marker) {
-          const first = children[0];
-          if (first?.type === `text`) {
-            first.content = first.content.slice(marker.length);
-            if (first.content === `` && label) first.content = label;
-          }
+        // Without the empty text token markdown-it leaves before markup that starts a label, so the first child is the one the other engines see.
+        const children = (inline.children ?? []).filter(
+          (child) => child.type !== `text` || child.content !== ``
+        );
+        const first = children[0]?.type === `text` ? children[0] : undefined;
+        const { icon, marker, label } = resolve(text, first?.content ?? ``);
+        if (marker && first) {
+          first.content = first.content.slice(marker.length);
+          // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
+          if (children.length === 1) first.content ||= label;
           panel?.attrSet(`aria-label`, label);
         }
         if (icon) {

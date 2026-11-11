@@ -80,3 +80,23 @@
 > > yarn add
 % Rust
 > cargo add
+
+<!-- @case: marker: markup after the marker is written once -->
+
+% [!npm] **Install**
+> Body.
+% [!npm] `npm i`
+> Body.
+% [!npm] [Install](https://x.test)
+> Body.
+% [!none] **Next** steps
+> Body.
+
+<!-- @case: marker: only at the start of the label's own text, not inside markup -->
+
+% **[!npm]** Install
+> Body.
+% `[!npm]` Install
+> Body.
+% [!n**p**m] Install
+> Body.
