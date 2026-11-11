@@ -27,7 +27,7 @@ export const remarkDel: Plugin<[], Root> = () => {
   });
 
   const transformer: Transformer<Root> = (tree, file) => {
-    // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it.
+    // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it. They are recovered from the file's source: a tree run without its file has none to honour.
     const restoreEscapes = maskTreeEscapes(tree, String(file));
     const seen = new WeakSet<Parent>();
     visit(tree, `text`, (_node, _index, parent: Parent | undefined) => {

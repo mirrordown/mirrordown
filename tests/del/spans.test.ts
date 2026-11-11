@@ -219,3 +219,19 @@ describe("private-use characters the author typed survive the scans", () => {
     });
   });
 });
+
+describe("image alt text: a known difference between the engines", () => {
+  // markdown-it runs inline rules inside an image label and renders the alt from the result, so the markers are gone. In mdast the alt is a string the parser wrote, which no plugin scans. Pinned so that closing the gap, or widening it, is a deliberate change (the guide documents it).
+  const input = "![--a--](x.png)";
+
+  it("markdown-it drops the markers", () => {
+    expect(mdit(input)).toBe('<p><img src="x.png" alt="a"></p>');
+  });
+
+  it.each([
+    ["remark", remd],
+    ["sätteri", sat]
+  ] as const)("%s keeps the alt as written", (_engine, render) => {
+    expect(render(input)).toBe('<p><img src="x.png" alt="--a--"></p>');
+  });
+});
