@@ -186,3 +186,12 @@ check(`steps: a header line ends its title, whatever it ends with`, [
     expected: `${OL}${LI(1)}${T}A</p>${B}<p>line<br>\nmore</p></div></li>${LI(2)}${T}B</p></li></ol>`
   }
 ]);
+
+// CommonMark lets a tab stand in for the space after a blockquote's `>`. markdown-it's steps rule only knew the space, so the tab stayed in the body and made its line indented code.
+check(`steps: a tab after the body's marker is the marker's space`, [
+  {
+    name: `the line is a paragraph, not indented code`,
+    input: `@1. S\n>\tbody`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol>`
+  }
+]);

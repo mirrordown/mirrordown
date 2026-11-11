@@ -14,11 +14,15 @@ const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/;
 // Matches: > or ><space> continuation line
 const CONTINUATION_RE = /^> ?/;
 
+// A second `>` after the body's own: the line is a quote in the body.
+const NESTED_QUOTE_RE = /^>[ \t]*>/;
+
 interface StepFrame {
   depth: number;
   number: number;
   title: string;
-  bodyLines: string[];
+  // The body's lines without their `>` marker; `null` for a blank line written without one, which ends the blocks before it as it ends a blockquote.
+  bodyLines: Array<string | null>;
 }
 
 interface StepsBlock {
@@ -41,8 +45,15 @@ const parseStepHeader = (
   };
 };
 
+// The marker takes one column of a tab after it, as it takes a space; the tab's other two columns stay as indentation, so the line isn't read as indented code.
 const stripContinuation = (line: string): string =>
-  line.replace(CONTINUATION_RE, "");
+  line.startsWith(">\t")
+    ? `  ${line.slice(2)}`
+    : line.replace(CONTINUATION_RE, "");
+
+// An alert (`> [!NOTE]`) written with the body's own marker. Deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlertLine = (line: string): boolean =>
+  isAlertMarkerLine(line) && !NESTED_QUOTE_RE.test(line);
 
 /** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
