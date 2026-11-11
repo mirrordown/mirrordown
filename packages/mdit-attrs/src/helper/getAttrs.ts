@@ -101,8 +101,11 @@ export const getAttrs = (
 
   if (allowed.length === 0) return attrs;
   return attrs.filter(([attr]) =>
-    allowed.some((item) =>
-      item instanceof RegExp ? item.test(attr) : item === attr
-    )
+    allowed.some((item) => {
+      if (!(item instanceof RegExp)) return item === attr;
+      // A global or sticky pattern resumes from where its last match ended, which would refuse every second name: start each test from the top.
+      item.lastIndex = 0;
+      return item.test(attr);
+    })
   );
 };

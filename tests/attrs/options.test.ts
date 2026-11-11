@@ -1,10 +1,31 @@
 import { describe, expect, it } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
 import { attrs } from "../../packages/mdit-attrs/src";
+import { remarkAttrs, type AttrsOptions } from "../../packages/remd-attrs/src";
 import { normalizeHtml } from "../utils/index.js";
 
 const mdit = (options: Parameters<typeof attrs>[1], src: string) =>
   normalizeHtml(new MarkdownIt().use(attrs, options).render(src));
+
+/** One instance of each engine, so a test can render with it more than once. */
+const instances = (
+  options: AttrsOptions
+): Array<[string, (src: string) => string]> => {
+  const md = new MarkdownIt().use(attrs, options);
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkAttrs, options)
+    .use(remarkRehype)
+    .use(rehypeStringify);
+  return [
+    ["markdown-it", (src) => normalizeHtml(md.render(src))],
+    ["remark", (src) => normalizeHtml(String(processor.processSync(src)))]
+  ];
+};
 
 // â”€â”€ rule: false / rule: [] â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -164,4 +185,41 @@ describe("attrs/options", () => {
     expect(out).toContain('id="bar"');
     expect(out).toContain('data-x="baz"');
   });
+});
+
+// `allowed` is the only guard against attributes that carry script (`onclick`, `style`, a `javascript:` href) when the markdown isn't trusted, so it has to hold the same way on both engines that have it, and on every render.
+describe("attrs/options: allowed", () => {
+  it.each(instances({ allowed: ["class", "id"] }))(
+    "%s: names off the list are dropped, in any case, and the block is still removed",
+    (_engine, render) => {
+      expect(render("t {.a #b onclick=x ONCLICK=y style=z}")).toBe(
+        '<p class="a" id="b">t</p>'
+      );
+      expect(render("[x](/a){href=/b onmouseover=y}")).toBe(
+        '<p><a href="/a">x</a></p>'
+      );
+    }
+  );
+
+  it.each(instances({ allowed: [/^data-/, "class"] }))(
+    "%s: a pattern allows every name it matches",
+    (_engine, render) => {
+      expect(render("t {data-a=1 data-b=2 .c title=d}")).toBe(
+        '<p data-a="1" data-b="2" class="c">t</p>'
+      );
+    }
+  );
+
+  // A global or sticky RegExp remembers where its last match ended, so testing it again from there fails every second time.
+  it.each(instances({ allowed: [/^data-/g, /^aria-/y] }))(
+    "%s: a global or sticky pattern allows the same names on every attribute and every render",
+    (_engine, render) => {
+      const src = "t {data-a=1 data-b=2 aria-label=x aria-hidden=true}";
+      const html =
+        '<p data-a="1" data-b="2" aria-label="x" aria-hidden="true">t</p>';
+      expect(render(src)).toBe(html);
+      expect(render(src)).toBe(html);
+      expect(render(src)).toBe(html);
+    }
+  );
 });
