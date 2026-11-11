@@ -13,3 +13,38 @@
     </tr>
   </tbody>
 </table>
+
+<!-- @case: escaped pipe inside a superscript stays in the cell -->
+<table>
+  <thead>
+    <tr>
+      <th><sup>a|b</sup></th>
+      <th>x</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><sup>c|d</sup></td>
+      <td>y</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- @case: delimiters do not pair across table cells -->
+<table>
+  <thead>
+    <tr>
+      <th>a^b</th>
+      <th>c^d</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>e^f</td>
+      <td>g^h</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- @case: undefined footnote reference opens a superscript with footnotes on -->
+<p>[<sup>1] x</sup>2^</p>

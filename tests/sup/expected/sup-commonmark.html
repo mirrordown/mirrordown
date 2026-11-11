@@ -76,3 +76,72 @@
 
 <!-- @case: closes like emphasis: not after punctuation inside a word -->
 <p>a^(b)^c</p>
+
+<!-- @case: escaped caret before the opening delimiter stays literal -->
+<p>^<sup>a</sup></p>
+
+<!-- @case: escaped caret before the closing delimiter is content -->
+<p><sup>a^</sup></p>
+
+<!-- @case: escaped caret inside the content is content -->
+<p><sup>a^b</sup></p>
+
+<!-- @case: escaped backslash before the closing delimiter keeps it -->
+<p><sup>a\</sup></p>
+
+<!-- @case: character reference is not an opening delimiter -->
+<p>^a^</p>
+
+<!-- @case: character reference is not a closing delimiter -->
+<p>^a^</p>
+
+<!-- @case: character reference does not lengthen a run -->
+<p>^<sup>a</sup></p>
+
+<!-- @case: tab after opening prevents match -->
+<p>^	a^</p>
+
+<!-- @case: tab before closing prevents match -->
+<p>^a	^</p>
+
+<!-- @case: tab inside the content is allowed -->
+<p><sup>a	b</sup></p>
+
+<!-- @case: content spans a line ending -->
+<p>a <sup>b
+c</sup> d</p>
+
+<!-- @case: content holds a hard break -->
+<p><sup>a<br>
+b</sup></p>
+
+<!-- @case: does not span a blank line -->
+<p>^a</p>
+<p>b^</p>
+
+<!-- @case: link that crosses the closing delimiter wins -->
+<p>^a <a href="d">b^ c</a></p>
+
+<!-- @case: delimiter inside a link does not pair outside it -->
+<p><a href="c">a^b</a>^</p>
+
+<!-- @case: brackets that are not a link do not hold a delimiter -->
+<p><sup>a [b</sup> c] d</p>
+
+<!-- @case: caret in a code span is not a delimiter -->
+<p><sup>a <code>b^</code> c</sup></p>
+
+<!-- @case: carets in a link destination are not delimiters -->
+<p><a href="b%5Ec%5Ed">a</a></p>
+
+<!-- @case: image alt text drops the superscript markup -->
+<p><img src="d" alt="abc"></p>
+
+<!-- @case: undefined footnote reference opens a superscript -->
+<p>[<sup>1] x</sup>2^</p>
+
+<!-- @case: undefined footnote references with no closer stay literal -->
+<p>[^1] and [^2]</p>
+
+<!-- @case: undefined footnote reference after a superscript stays literal -->
+<p>x<sup>2</sup>[^1]</p>
