@@ -138,3 +138,13 @@ a--&#97;b--
 <!-- @case: an astral symbol beside a run counts as punctuation -->
 
 a--😀b--
+
+<!-- @case: a line of dashes under text is a setext underline, not a delimiter -->
+
+--foo
+--
+
+<!-- @case: a span on the line above a setext underline still forms -->
+
+--a--
+---

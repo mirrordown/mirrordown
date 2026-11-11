@@ -118,3 +118,9 @@
 
 <!-- @case: an astral symbol beside a run counts as punctuation -->
 <p>a--😀b--</p>
+
+<!-- @case: a line of dashes under text is a setext underline, not a delimiter -->
+<h2>--foo</h2>
+
+<!-- @case: a span on the line above a setext underline still forms -->
+<h2><del>a</del></h2>
