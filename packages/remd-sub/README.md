@@ -30,6 +30,12 @@ The content is inline markup, like emphasis: it can hold spaces, other formattin
 x~n^2^~ and the ~*base* index~
 ````
 
+A backslash keeps a tilde literal (`H\~2\~O`). Asterisks wrapped tightly around a subscript inside a word (`H**~2~**O`) are emphasis only with GFM, which lets emphasis sit against a `~`; in markdown-it that is the `strikethrough` rule, on by default. A few things differ between the engines:
+
+- Spans have to nest. When a subscript crosses another span or crosses emphasis (`~a *b~ c*`, `==a ~b== c~`), each engine resolves it its own way.
+- With GFM off, Sätteri still reads `~~…~~` as a pair and finds no subscript inside it (`~~H~2~O~~`). markdown-it and remark do.
+- Sätteri's subscript takes no attribute block: `x~2~{.s}` sets the class with the markdown-it and remark attrs plugins and keeps the braces as text on Sätteri.
+
 ## Install
 
 ```sh
@@ -47,7 +53,7 @@ import { remarkSub } from "@mirrordown/remd-sub";
 
 const processor = unified()
   .use(remarkParse)
-  // With GFM, turn off single-tilde strikethrough, which would take `~text~` first:
+  // With GFM, turn off single-tilde strikethrough. Left on, whichever of the two plugins is added later takes `~text~`:
   // .use(remarkGfm, { singleTilde: false })
   .use(remarkSub)
   .use(remarkRehype)
@@ -64,7 +70,7 @@ import { remarkSub } from "@mirrordown/remd-sub";
 
 export default defineConfig({
   markdown: {
-    // Astro's own GFM uses single-tilde strikethrough, which takes `~text~` first.
+    // Astro's own GFM keeps single-tilde strikethrough on. Replacing it means `~text~` doesn't depend on the order plugins are added in.
     gfm: false,
     remarkPlugins: [[remarkGfm, { singleTilde: false }], remarkSub],
   },
