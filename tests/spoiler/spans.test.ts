@@ -56,6 +56,74 @@ const table = (row: string): string => `| h |\n| - |\n| ${row} |`;
 const cell = (content: string): string =>
   `<table><thead><tr><th>h</th></tr></thead><tbody><tr><td>${content}</td></tr></tbody></table>`;
 
+describe("spoiler: a pipe the author wrote as literal never opens or closes a spoiler", () => {
+  const cases: Case[] = [
+    [
+      "a pipe written as a character reference is not a delimiter",
+      "&#124;|x||",
+      "<p>||x||</p>"
+    ],
+    [
+      "two referenced pipes do not open a spoiler",
+      "&vert;&vert;text||",
+      "<p>||text||</p>"
+    ],
+    [
+      "an escaped pipe after an astral character reference stays escaped",
+      String.raw`&#x1F600; \||a||`,
+      "<p>😀 ||a||</p>"
+    ],
+    [
+      "an escape still counts after another span plugin rebuilt the text",
+      String.raw`--a-- \||b||`,
+      "<p><del>a</del> ||b||</p>"
+    ],
+    [
+      "the text of an autolink is never scanned",
+      "<http://x/||b||>",
+      '<p><a href="http://x/%7C%7Cb%7C%7C">http://x/||b||</a></p>'
+    ],
+    [
+      "outside a table, backslashed pipes are escaped",
+      String.raw`\|\|x\|\|`,
+      "<p>||x||</p>"
+    ]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(cases)("%s", (_name, input, expected) => {
+      expect(render(input)).toBe(expected);
+    });
+  });
+});
+
+describe("spoiler: flanking reads an escaped or referenced neighbour as the character it is", () => {
+  // A closing `||` after punctuation and before a letter cannot close, and an opening one after a letter and before punctuation cannot open. An escaped `*` is still punctuation and a referenced `ä` is still a letter.
+  const cases: Case[] = [
+    [
+      "an escaped punctuation mark before the closer",
+      String.raw`||a \*||b`,
+      "<p>||a *||b</p>"
+    ],
+    [
+      "an escaped punctuation mark after the opener",
+      String.raw`a||\*b||`,
+      "<p>a||*b||</p>"
+    ],
+    [
+      "a referenced letter after the opener lets it open",
+      "a ||&auml;b||",
+      `<p>a ${S("äb")}</p>`
+    ]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(cases)("%s", (_name, input, expected) => {
+      expect(render(input)).toBe(expected);
+    });
+  });
+});
+
 describe("spoiler: in a table cell `\\|` is the table's pipe, so `\\|\\|x\\|\\|` is a spoiler", () => {
   // Unescaped pipes split the row, so this is the only way to write a spoiler in a cell. The table syntax consumes the backslash; it is not an inline escape.
   const cases: Case[] = [
@@ -85,5 +153,12 @@ describe("spoiler: in a table cell `\\|` is the table's pipe, so `\\|\\|x\\|\\|`
     it.each(cases)("%s", (_name, input, expected) => {
       expect(render(input)).toBe(expected);
     });
+  });
+});
+
+describe("spoiler (sätteri): smart punctuation before an escape does not lose it", () => {
+  // Smart punctuation puts characters in the text that the source does not have (`"` becomes a curly quote). Losing the alignment there read every later `\||` as a real delimiter and hid text the author escaped.
+  it("keeps an escaped opener literal after curly quotes", () => {
+    expect(sat(String.raw`"q" \||a||`, true)).toBe("<p>“q” ||a||</p>");
   });
 });
