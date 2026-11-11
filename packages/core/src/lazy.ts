@@ -47,28 +47,50 @@ export interface MarkedLine {
   markers: number;
 }
 
-/**
- * A paragraph's phrasing content split into its lines: text at each line ending, and after a hard break, which stays at the end of its line. With the source, the text on each line keeps its place in it, as remark would give it: from after the line's container prefix to its last non-space character.
- */
-export const paraToLines = (
+/** A marked line, with the number of the source line it starts on. */
+export interface SourceLine extends MarkedLine {
+  line: number;
+}
+
+// A paragraph's lines, each with the source line it starts on, where that's known: the line of the first content on it. A line here isn't always the one after the line before it, since inline content that spans lines (emphasis, a code span, a link) keeps them together as one.
+const numberedLines = (
   para: Paragraph,
   sourceLines?: readonly string[]
-): PhrasingContent[][] => {
-  const lines: PhrasingContent[][] = [[]];
+): Array<{ segs: PhrasingContent[]; line: number | undefined }> => {
+  let current: { segs: PhrasingContent[]; line: number | undefined } = {
+    segs: [],
+    line: para.position?.start.line
+  };
+  const lines = [current];
+  const open = (line: number | undefined): void => {
+    current = { segs: [], line };
+    lines.push(current);
+  };
   for (const child of para.children) {
     if (child.type === "break") {
-      lines.at(-1)?.push(child);
-      lines.push([]);
+      current.line ??= child.position?.start.line;
+      current.segs.push(child);
+      open(undefined);
     } else if (child.type === "text") {
       // A text value keeps the document's own line endings, so a carriage return ends a line too: left on its line, it would end a title or a rebuilt paragraph.
       const parts = child.value.split(LINE_ENDING);
+      const position = child.position;
+      // The line the text starts on. A parser's text that starts with a line ending starts at the end of the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`): the source tells the two apart.
+      const rebuilt =
+        position !== undefined &&
+        parts.length > 1 &&
+        parts[0] === "" &&
+        (sourceLines?.[position.start.line - 1] ?? "")
+          .slice(position.start.column - 1)
+          .trim() !== "";
+      const first = position && position.start.line - (rebuilt ? 1 : 0);
       for (const [p, part] of parts.entries()) {
-        if (p > 0) lines.push([]);
+        if (p > 0) open(first === undefined ? undefined : first + p);
+        else current.line ??= first;
         if (part === "") continue;
         const text: Text = { type: "text", value: part };
-        const position = child.position;
-        if (position) {
-          const line = position.start.line + p;
+        if (position && first !== undefined) {
+          const line = first + p;
           const source = sourceLines?.[line - 1];
           const start =
             p === 0
@@ -87,14 +109,52 @@ export const paraToLines = (
                 : { line, column: source.trimEnd().length + 1 };
           if (start && end) text.position = { start, end };
         }
-        lines.at(-1)?.push(text);
+        current.segs.push(text);
       }
     } else {
-      lines.at(-1)?.push(child);
+      current.line ??= child.position?.start.line;
+      current.segs.push(child);
     }
+  }
+  // Content without a position (a node another plugin made) is taken to start on the line after the one before it.
+  for (const [index, line] of lines.entries()) {
+    const before = lines[index - 1]?.line;
+    if (before !== undefined) line.line ??= before + 1;
   }
   return lines;
 };
+
+/**
+ * A paragraph's phrasing content split into its lines: text at each line ending, and after a hard break, which stays at the end of its line. With the source, the text on each line keeps its place in it, as remark would give it: from after the line's container prefix to its last non-space character.
+ */
+export const paraToLines = (
+  para: Paragraph,
+  sourceLines?: readonly string[]
+): PhrasingContent[][] =>
+  numberedLines(para, sourceLines).map(({ segs }) => segs);
+
+/**
+ * A paragraph's lines (as `paraToLines` splits them), each with the source line it starts on and that line's `>` markers; `null` when a line's place in the source isn't known. Read a line's markers from here rather than from the paragraph's first line plus the line's index: the two differ after inline content that spans lines.
+ */
+export const paraToSourceLines = (
+  para: Paragraph,
+  sourceLines: readonly string[]
+): SourceLine[] | null => {
+  const lines: SourceLine[] = [];
+  for (const { segs, line } of numberedLines(para, sourceLines)) {
+    if (line === undefined) return null;
+    lines.push({
+      segs,
+      line,
+      markers: markerCount(sourceLines[line - 1] ?? "")
+    });
+  }
+  return lines;
+};
+
+// The phrasing content of each line.
+const segsOf = (lines: readonly MarkedLine[]): PhrasingContent[][] =>
+  lines.map(({ segs }) => segs);
 
 /** The attributes a paragraph carries, which a parser that reads attribute blocks before recognition (Sätteri) read off its end: they belong to its last line. */
 export const paragraphProperties = (
@@ -196,21 +256,20 @@ export const splitAtOpeningLine = (
   quotes: number,
   opens: (text: string) => boolean
 ): Paragraph[] | null => {
-  const start = para.position?.start.line;
-  if (start === undefined) return null;
-  const lines = paraToLines(para, sourceLines);
-  const at = lines.findIndex((line, index) => {
-    const first = line[0];
+  const lines = paraToSourceLines(para, sourceLines);
+  if (!lines) return null;
+  const at = lines.findIndex(({ segs, markers }, index) => {
+    const first = segs[0];
     return (
       index > 0 &&
       first?.type === `text` &&
       opens(first.value) &&
-      markerCount(sourceLines[start - 1 + index] ?? ``) === quotes
+      markers === quotes
     );
   });
   if (at === -1) return null;
-  const head = linesToParagraph(lines.slice(0, at));
-  const tail = linesToParagraph(lines.slice(at));
+  const head = linesToParagraph(segsOf(lines.slice(0, at)));
+  const tail = linesToParagraph(segsOf(lines.slice(at)));
   if (!head || !tail) return null;
   if (para.data) tail.data = para.data;
   return [head, tail];
@@ -244,18 +303,15 @@ export const endGroupsAtMarkers = (
       visit(child, quotes + (MARKED_BLOCKS.has(child.type) ? 1 : 0));
       if (child.type !== listType) continue;
       const para = lastParagraph(child.children?.at(-1));
-      const start = para?.position?.start.line;
-      if (!para || start === undefined) continue;
-      const lines = paraToLines(para, sourceLines);
+      const lines = para && paraToSourceLines(para, sourceLines);
+      if (!para || !lines) continue;
       // The panel's lines carry one more marker than the blocks around the group.
       const outside = lines.findIndex(
-        (_, index) =>
-          index > 0 &&
-          markerCount(sourceLines[start - 1 + index] ?? ``) < quotes + 1
+        ({ markers }, index) => index > 0 && markers < quotes + 1
       );
       if (outside === -1) continue;
-      const kept = linesToParagraph(lines.slice(0, outside));
-      const moved = linesToParagraph(lines.slice(outside));
+      const kept = linesToParagraph(segsOf(lines.slice(0, outside)));
+      const moved = linesToParagraph(segsOf(lines.slice(outside)));
       if (!kept || !moved) continue;
       para.children = kept.children;
       const data: ParagraphAttributes | undefined = para.data;

@@ -18,9 +18,9 @@ import {
   MARKED_BLOCKS,
   splitAtOpeningLine,
   linesToParagraph,
-  markerCount,
   paragraphProperties,
   paraToLines,
+  paraToSourceLines,
   rebuildLazyLines,
   splitSourceLines,
   type MarkedLine
@@ -219,14 +219,8 @@ const takeLazyLines = (
     last = parent.children?.at(-1);
   }
   const para = last as unknown as Paragraph;
-  const start = para.position?.start.line;
-  if (start === undefined || !parent.children) return null;
-  const lines = paraToLines(para, sourceLines).map(
-    (segs, index): MarkedLine => ({
-      segs,
-      markers: markerCount(sourceLines[start - 1 + index] ?? "")
-    })
-  );
+  const lines = paraToSourceLines(para, sourceLines);
+  if (!lines || !parent.children) return null;
   const at = lines.findIndex(
     ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
   );
@@ -317,14 +311,13 @@ const splitBlockquote = (
     }
 
     let bodyLines: PhrasingContent[][] = [];
-    const lines = paraToLines(child, sourceLines);
-    const first = child.position?.start.line;
+    const marked = sourceLines ? paraToSourceLines(child, sourceLines) : null;
+    const lines = marked
+      ? marked.map(({ segs }) => segs)
+      : paraToLines(child, sourceLines);
     // A header written with the body's own `>` markers is the body's content (it can start a group of its own there), as markdown-it reads the body; only one written outside the body starts the next step.
     const outsideBody = (index: number): boolean =>
-      !sourceLines ||
-      base === undefined ||
-      first === undefined ||
-      markerCount(sourceLines[first - 1 + index] ?? "") < base;
+      !marked || base === undefined || (marked[index]?.markers ?? 0) < base;
     for (const [index, lineSegs] of lines.entries()) {
       const header = outsideBody(index) ? stepHeader(lineSegs) : null;
       if (header) {

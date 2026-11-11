@@ -75,3 +75,17 @@ check(`steps: a carriage return ends a line, and never reaches the output`, [
     expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li>${LI(2)}${T}B</p></li></ol>`
   }
 ]);
+
+// A line's `>` markers are read from the source line it's written on. Counting lines from the paragraph's first one goes wrong after inline content that spans lines, and the step header or the end of the group after it was then missed in remark and Sätteri.
+check(`steps: a line is placed by its own source line, after inline content that spans lines`, [
+  {
+    name: `a header after emphasis spanning two body lines starts the next step`,
+    input: `@1. A\n> *emph\n> more* text\n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p><em>emph\nmore</em> text</p></div></li>${LI(2)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a line without the body's marker after a code span spanning two lines ends the group`,
+    input: "@1. A\n> `a\n> b` text\nplain",
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p><code>a b</code> text</p></div></li></ol><p>plain</p>`
+  }
+]);
