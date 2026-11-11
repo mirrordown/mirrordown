@@ -1,0 +1,77 @@
+// Malformed and edge-case input, where markdown-it's line scanner and the tree recognition remark and Sätteri share used to disagree. Each case is written as a string, because the fixture file can't hold a carriage return, a tab or trailing spaces; every engine must render exactly the expected HTML.
+import { describe, expect, it } from "vite-plus/test";
+import MarkdownIt from "markdown-it";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
+import { steps } from "../../packages/mdit-steps/src";
+import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
+import { satteriSteps } from "../../packages/sat-steps/src";
+import { normalizeHtml } from "../utils/index.js";
+
+const md = new MarkdownIt().use(steps);
+const remark = unified()
+  .use(remarkParse)
+  .use(remarkSteps)
+  .use(remarkRehype, { handlers: stepsHastHandlers as never })
+  .use(rehypeStringify, { allowDangerousHtml: true });
+
+const engines = [
+  { engine: `markdown-it`, render: (input: string) => md.render(input) },
+  {
+    engine: `remark`,
+    render: (input: string) => String(remark.processSync(input))
+  },
+  {
+    engine: `sätteri`,
+    render: (input: string) =>
+      markdownToHtml(input, {
+        features: { gfm: false, frontmatter: false, smartPunctuation: false },
+        mdastPlugins: [satteriSteps()]
+      }).html
+  }
+];
+
+// The elements every case is made of, so the expected HTML reads as its structure.
+const OL = `<ol class="markdown-steps">`;
+const SUB = `<ol class="markdown-steps-list">`;
+const LI = (step: number): string =>
+  `<li class="markdown-steps-item" data-step="${step}">`;
+const T = `<p class="markdown-steps-title">`;
+const B = `<div class="markdown-steps-body">`;
+
+interface Case {
+  name: string;
+  input: string;
+  expected: string;
+}
+
+const check = (title: string, cases: Case[]): void => {
+  describe(title, () => {
+    describe.each(cases)(`$name`, ({ input, expected }) => {
+      it.each(engines)(`$engine`, ({ render }) => {
+        expect(normalizeHtml(render(input))).toBe(expected);
+      });
+    });
+  });
+};
+
+check(`steps: a carriage return ends a line, and never reaches the output`, [
+  {
+    name: `CRLF between headers leaves no carriage return in a title`,
+    input: `@1. A\r\n@1. B\r\n@1. C`,
+    expected: `${OL}${LI(1)}${T}A</p></li>${LI(2)}${T}B</p></li>${LI(3)}${T}C</p></li></ol>`
+  },
+  {
+    name: `CRLF between a body and the next header leaves none in either`,
+    input: `@1. A\r\n> body\r\n@1. B\r\n> b2\r\n`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li>${LI(2)}${T}B</p>${B}<p>b2</p></div></li></ol>`
+  },
+  {
+    name: `a lone carriage return separates steps as a line feed does`,
+    input: `@1. A\r> body\r@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li>${LI(2)}${T}B</p></li></ol>`
+  }
+]);

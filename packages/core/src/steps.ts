@@ -22,6 +22,7 @@ import {
   paragraphProperties,
   paraToLines,
   rebuildLazyLines,
+  splitSourceLines,
   type MarkedLine
 } from "./lazy.js";
 import { isAlertMarkerLine } from "./github-alerts/index.js";
@@ -549,7 +550,8 @@ export const processSteps = (
   containerClass: string,
   source?: string
 ): void => {
-  const sourceLines = source?.split(/\r?\n/);
+  const sourceLines =
+    source === undefined ? undefined : splitSourceLines(source);
   const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
     const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);

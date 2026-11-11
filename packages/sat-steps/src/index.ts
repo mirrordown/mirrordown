@@ -186,7 +186,7 @@ export const satteriSteps =
         if (attributes)
           placeCutAttributes(
             tree as unknown as Root,
-            source.split(/\r?\n/),
+            source.split(/\r\n|\r|\n/),
             readAttributes
           );
         writeBack(tree);

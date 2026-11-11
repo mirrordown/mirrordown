@@ -16,6 +16,13 @@ type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
   hProperties?: Properties | undefined;
 };
 
+/** A line ending as CommonMark reads one: a line feed, a carriage return, or both. */
+const LINE_ENDING = /\r\n|\r|\n/;
+
+/** A document's source split into its lines, so a line number counts the lines the parser's positions count, whichever line endings the document uses. */
+export const splitSourceLines = (source: string): string[] =>
+  source.split(LINE_ENDING);
+
 /** The `>` markers a source line starts with. */
 export const markerCount = (line: string): number =>
   (/^[ \t>]*/.exec(line)?.[0] ?? "").split(">").length - 1;
@@ -53,7 +60,8 @@ export const paraToLines = (
       lines.at(-1)?.push(child);
       lines.push([]);
     } else if (child.type === "text") {
-      const parts = child.value.split("\n");
+      // A text value keeps the document's own line endings, so a carriage return ends a line too: left on its line, it would end a title or a rebuilt paragraph.
+      const parts = child.value.split(LINE_ENDING);
       for (const [p, part] of parts.entries()) {
         if (p > 0) lines.push([]);
         if (part === "") continue;
