@@ -25,8 +25,12 @@ const SCRIPTS = {
 const tokenType = (type: string): TokenType => type as TokenType;
 const temporary = (type: string): TokenType =>
   tokenType(`${type}SequenceTemporary`);
+// Looked up for every event on every resolver call, so the names are built once.
+const TEMPORARY = new Map<string, (typeof SCRIPTS)[Marker]>(
+  Object.values(SCRIPTS).map((script) => [temporary(script.type), script])
+);
 const scriptOf = (tokenType: string): (typeof SCRIPTS)[Marker] | undefined =>
-  Object.values(SCRIPTS).find(({ type }) => temporary(type) === tokenType);
+  TEMPORARY.get(tokenType);
 
 // micromark-util-classify-character, inlined: 1 = whitespace, 2 = punctuation.
 const PUNCTUATION = /\p{P}|\p{S}/u;
