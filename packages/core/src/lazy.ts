@@ -121,6 +121,10 @@ const numberedLines = (
     const before = lines[index - 1]?.line;
     if (before !== undefined) line.line ??= before + 1;
   }
+  // A hard break can only end a paragraph that was cut after it (CommonMark has none at the end of a block), and no line follows it there.
+  if (lines.length > 1 && current.segs.length === 0) {
+    if (para.children.at(-1)?.type === "break") lines.pop();
+  }
   return lines;
 };
 
@@ -156,6 +160,22 @@ export const paraToSourceLines = (
 const segsOf = (lines: readonly MarkedLine[]): PhrasingContent[][] =>
   lines.map(({ segs }) => segs);
 
+/**
+ * A header line's content without the hard break that ends it. A header is one line, so nothing breaks after it: the spaces that made the break are trailing spaces, and a backslash is a literal one, as CommonMark reads a backslash that ends a block and as markdown-it reads the header's line. Without the source, which tells the two apart, the break is dropped.
+ */
+export const headerLineContent = (
+  segs: PhrasingContent[],
+  sourceLines?: readonly string[]
+): PhrasingContent[] => {
+  const last = segs.at(-1);
+  if (last?.type !== "break") return segs;
+  const content = segs.slice(0, -1);
+  const start = last.position?.start;
+  if (start && sourceLines?.[start.line - 1]?.[start.column - 1] === "\\")
+    pushPhrasing(content, { type: "text", value: "\\" });
+  return content;
+};
+
 /** The attributes a paragraph carries, which a parser that reads attribute blocks before recognition (Sätteri) read off its end: they belong to its last line. */
 export const paragraphProperties = (
   para: Paragraph
@@ -184,15 +204,20 @@ const pushPhrasing = (
   children[children.length - 1] = merged;
 };
 
-/** A paragraph from lines of phrasing content, or `null` for none. Lines join with a line ending, except after a hard break, which is one. */
+/** A paragraph from lines of phrasing content, or `null` for none. Lines join with a line ending, except after a hard break, which is one. Pass the source where the paragraph is cut before a line that was part of it: a hard break that would then end the paragraph is read as CommonMark reads one at the end of a block (see `headerLineContent`). */
 export const linesToParagraph = (
-  lines: PhrasingContent[][]
+  lines: PhrasingContent[][],
+  sourceLines?: readonly string[]
 ): Paragraph | null => {
   const children: PhrasingContent[] = [];
   for (const [i, line] of lines.entries()) {
     if (i > 0 && lines[i - 1]?.at(-1)?.type !== "break")
       pushPhrasing(children, { type: "text", value: "\n" });
-    for (const node of line) pushPhrasing(children, node);
+    const segs =
+      sourceLines && i === lines.length - 1
+        ? headerLineContent(line, sourceLines)
+        : line;
+    for (const node of segs) pushPhrasing(children, node);
   }
   if (children.length === 0) return null;
   const para: Paragraph = { type: "paragraph", children };
@@ -278,7 +303,7 @@ export const splitAtOpeningLine = (
     );
   });
   if (at === -1) return null;
-  const head = linesToParagraph(segsOf(lines.slice(0, at)));
+  const head = linesToParagraph(segsOf(lines.slice(0, at)), sourceLines);
   const tail = linesToParagraph(segsOf(lines.slice(at)));
   if (!head || !tail) return null;
   if (para.data) tail.data = para.data;
@@ -330,7 +355,10 @@ export const endGroupsAtMarkers = (
         ({ markers }, index) => index >= from && markers < panel
       );
       if (outside === -1) continue;
-      const kept = linesToParagraph(segsOf(lines.slice(0, outside)));
+      const kept = linesToParagraph(
+        segsOf(lines.slice(0, outside)),
+        sourceLines
+      );
       const after = lines.slice(outside);
       let moved: Array<BlockContent | DefinitionContent>;
       if ((after[0]?.markers ?? 0) < quotes) {

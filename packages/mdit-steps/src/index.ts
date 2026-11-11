@@ -33,7 +33,12 @@ const parseStepHeader = (
 ): { depth: number; number: number; title: string } | null => {
   const m = STEP_HEADER_RE.exec(line);
   if (!m) return null;
-  return { depth: m[1].length, number: parseInt(m[2], 10), title: m[3] };
+  // Spaces after the title are not part of it (two or more would be a hard break in a paragraph; a header is one line).
+  return {
+    depth: m[1].length,
+    number: parseInt(m[2], 10),
+    title: m[3].trimEnd()
+  };
 };
 
 const stripContinuation = (line: string): string =>

@@ -147,3 +147,42 @@ check(`steps: the lines that end a group are read as the blocks they are written
     expected: `<blockquote>${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol></blockquote><p>plain</p>`
   }
 ]);
+
+// A header is one line, so nothing can break after it. CommonMark still reads two trailing spaces or a backslash before the next line as a hard break, which remark and Sätteri kept: a `<br>` ended the title, and the group ended at the empty line the break left behind. markdown-it reads the line itself, where trailing spaces are just that and a backslash is literal (as CommonMark reads one that ends a block).
+check(`steps: a header line ends its title, whatever it ends with`, [
+  {
+    name: `trailing spaces are not part of the title`,
+    input: `@1. Title   \n> body`,
+    expected: `${OL}${LI(1)}${T}Title</p>${B}<p>body</p></div></li></ol>`
+  },
+  {
+    name: `two trailing spaces before the next header don't break the title or end the group`,
+    input: `@1. Title  \n@1. Two`,
+    expected: `${OL}${LI(1)}${T}Title</p></li>${LI(2)}${T}Two</p></li></ol>`
+  },
+  {
+    name: `a trailing backslash before the next header is a literal backslash`,
+    input: `@1. Title\\\n@1. Two`,
+    expected: `${OL}${LI(1)}${T}Title\\</p></li>${LI(2)}${T}Two</p></li></ol>`
+  },
+  {
+    name: `the same for headers after a body, and after other inline content`,
+    input: `@1. A\n> b\n@1. B  \n@1. C *x*\\\n> c`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>b</p></div></li>${LI(2)}${T}B</p></li>${LI(3)}${T}C <em>x</em>\\</p>${B}<p>c</p></div></li></ol>`
+  },
+  {
+    name: `a body line's trailing spaces before a header don't leave a break at the end of the body`,
+    input: `@1. A\n> body  \n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li>${LI(2)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a body line's trailing backslash before a header is a literal backslash`,
+    input: `@1. A\n> body\\\n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body\\</p></div></li>${LI(2)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a hard break between two lines of a body is still one`,
+    input: `@1. A\n> line\\\n> more\n@1. B`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>line<br>\nmore</p></div></li>${LI(2)}${T}B</p></li></ol>`
+  }
+]);

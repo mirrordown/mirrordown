@@ -14,6 +14,7 @@ import type { Properties } from "hast";
 import {
   blockquoteMarkers,
   endGroupsAtMarkers,
+  headerLineContent,
   INDENTED_BLOCKS,
   markerLevels,
   splitAtOpeningLine,
@@ -112,7 +113,8 @@ const extractHeaderPara = (
   para: Paragraph,
   counters: Map<number, number>,
   requireDepthOne = true,
-  prevDepth = 0
+  prevDepth = 0,
+  sourceLines?: readonly string[]
 ): HeaderPara | null => {
   const lines = paraToLines(para);
   const steps: RawStep[] = [];
@@ -126,7 +128,8 @@ const extractHeaderPara = (
         }
       : null;
 
-  for (const [index, lineSegs] of lines.entries()) {
+  for (const [index, line] of lines.entries()) {
+    const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
     if (first?.type !== "text") return stop(index);
 
@@ -227,7 +230,10 @@ const takeLazyLines = (
     ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
   );
   if (at === -1) return null;
-  const kept = linesToParagraph(lines.slice(0, at).map(({ segs }) => segs));
+  const kept = linesToParagraph(
+    lines.slice(0, at).map(({ segs }) => segs),
+    sourceLines
+  );
   parent.children.splice(
     -1,
     1,
@@ -300,10 +306,11 @@ const splitBlockquote = (
         pending = [];
       };
       for (const line of lazy) {
-        const header = line.markers < base ? stepHeader(line.segs) : null;
+        const content = headerLineContent(line.segs, sourceLines);
+        const header = line.markers < base ? stepHeader(content) : null;
         if (header) {
           flush();
-          startStep(header, line.segs);
+          startStep(header, content);
         } else {
           pending.push(line);
         }
@@ -321,15 +328,16 @@ const splitBlockquote = (
     const outsideBody = (index: number): boolean =>
       !marked || base === undefined || (marked[index]?.markers ?? 0) < base;
     for (const [index, lineSegs] of lines.entries()) {
-      const header = outsideBody(index) ? stepHeader(lineSegs) : null;
+      const content = headerLineContent(lineSegs, sourceLines);
+      const header = outsideBody(index) ? stepHeader(content) : null;
       if (header) {
         // Flush accumulated body lines
-        const bodyPara = linesToParagraph(bodyLines);
+        const bodyPara = linesToParagraph(bodyLines, sourceLines);
         if (bodyPara) currentSegment.body.push(bodyPara);
         bodyLines = [];
         startStep(
           header,
-          lineSegs,
+          content,
           index === lines.length - 1 ? paragraphProperties(child) : undefined
         );
         continue;
@@ -445,7 +453,13 @@ export const processStepsInChildren = (
 
     if (node.type === "paragraph") {
       const counters = new Map<number, number>();
-      const headerPara = extractHeaderPara(node, counters);
+      const headerPara = extractHeaderPara(
+        node,
+        counters,
+        true,
+        0,
+        sourceLines
+      );
 
       if (headerPara) {
         const rawSteps: RawStep[] = [...headerPara.steps];
@@ -499,7 +513,8 @@ export const processStepsInChildren = (
               sibling,
               counters,
               false,
-              prevDepth
+              prevDepth,
+              sourceLines
             );
             if (contHeaders) {
               rawSteps.push(...contHeaders.steps);
