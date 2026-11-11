@@ -285,57 +285,79 @@ export const splitAtOpeningLine = (
   return [head, tail];
 };
 
-// The paragraph a lazily continued line can end up in: the deepest last block, through lists, items and quotes.
+// The paragraph a lazily continued line can end up in, with the block it's in: the deepest last block, through lists, items and quotes.
 const lastParagraph = (
   node: GroupTreeNode | undefined
-): Paragraph | undefined => {
+): { para: Paragraph; parent: GroupTreeNode } | undefined => {
   const last = node?.children?.at(-1);
-  if (!last) return undefined;
+  if (!node || !last) return undefined;
   // A paragraph of the tree, which the loose node shape doesn't name.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  if (last.type === `paragraph`) return last as unknown as Paragraph;
+  if (last.type === `paragraph`)
+    return { para: last as unknown as Paragraph, parent: node };
   return lastParagraph(last);
 };
 
 /**
- * End each group of `listType` (tab groups or steps) where its last panel's `>` markers stop, as markdown-it reads a panel: a line CommonMark lazily continued into the panel's last paragraph, written with fewer markers than the panel's own lines, starts a paragraph after the group, with the lines after it. Groups nested in a panel are ended first, so a line that leaves an outer panel too moves on past its group. The paragraph's attributes (Sätteri reads them off its end) go with its last line.
+ * End each group of `listType` (tab groups or steps) where its last panel's `>` markers stop, as markdown-it reads a panel: a line CommonMark lazily continued into the panel's last paragraph, written with fewer markers than the panel's own lines, starts the content after the group, with the lines after it. That content is rebuilt from the lines' markers, as markdown-it parses it once the group has ended: a line with more markers than the group's surroundings opens a blockquote, so a `>` body after a header among them is still one. Groups nested in a panel are ended first; a line that leaves the outer panel too is kept as a line for the outer group to place. The paragraph's attributes (Sätteri reads them off its end) go with its last line.
  */
 export const endGroupsAtMarkers = (
   root: { children: unknown[] },
   sourceLines: readonly string[],
   listType: `tabsList` | `stepsList`
 ): void => {
+  // Paragraphs of lines that left a group nested in a panel and that panel too: unlike a parsed paragraph, their first line can be written outside the panel they're in.
+  const leaving = new WeakSet<Paragraph>();
   const visit = (node: GroupTreeNode, quotes: number): void => {
     const children = node.children;
     if (!children) return;
     for (let i = 0; i < children.length; i++) {
       const child = children[i]!;
       visit(child, quotes + markerLevels(child));
-      if (child.type !== listType) continue;
-      const item = child.children?.at(-1);
-      const para = lastParagraph(item);
-      const lines = para && paraToSourceLines(para, sourceLines);
-      if (!item || !para || !lines) continue;
+      // A group ends where its last panel's markers stop. A plain blockquote keeps the lines CommonMark continued into it, except lines that left a group in it: markdown-it ends the blockquote where that group ends.
+      const quote = child.type === `blockquote` || child.type === `alert`;
+      if (child.type !== listType && !quote) continue;
+      const item = quote ? child : child.children?.at(-1);
+      const found = lastParagraph(item);
+      if (quote && !(found && leaving.has(found.para))) continue;
+      const lines = found && paraToSourceLines(found.para, sourceLines);
+      if (!item || !found || !lines) continue;
+      const { para, parent } = found;
       // The panel's lines carry one more marker than the blocks around the group; a sub-item's, as many as its parent item's, which is the block around its group.
       const panel = quotes + markerLevels(item);
+      const from = leaving.has(para) ? 0 : 1;
       const outside = lines.findIndex(
-        ({ markers }, index) => index > 0 && markers < panel
+        ({ markers }, index) => index >= from && markers < panel
       );
       if (outside === -1) continue;
       const kept = linesToParagraph(segsOf(lines.slice(0, outside)));
-      const moved = linesToParagraph(segsOf(lines.slice(outside)));
-      if (!kept || !moved) continue;
-      para.children = kept.children;
+      const after = lines.slice(outside);
+      let moved: Array<BlockContent | DefinitionContent>;
+      if ((after[0]?.markers ?? 0) < quotes) {
+        const flat = linesToParagraph(segsOf(after));
+        if (flat) leaving.add(flat);
+        moved = flat ? [flat] : [];
+      } else {
+        moved = rebuildLazyLines(
+          after.map((line) => ({ ...line, markers: line.markers - quotes })),
+          0
+        );
+      }
+      if (moved.length === 0) continue;
+      // An mdast block, in the loose node shape the pass walks.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      const blocks = moved as unknown as GroupTreeNode[];
       const data: ParagraphAttributes | undefined = para.data;
       if (data?.hProperties) {
         const { hProperties, ...rest } = data;
         const movedData: ParagraphAttributes = { hProperties };
-        moved.data = movedData;
+        const last = lastParagraph({ type: `root`, children: blocks })?.para;
+        if (last) last.data = movedData;
         para.data = rest;
       }
-      // An mdast paragraph, in the loose node shape the pass walks.
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      children.splice(i + 1, 0, moved as unknown as GroupTreeNode);
+      if (kept) para.children = kept.children;
+      else parent.children?.pop();
+      children.splice(i + 1, 0, ...blocks);
     }
   };
   // The tree, in the loose node shape the pass walks.

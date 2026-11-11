@@ -412,3 +412,16 @@ describe("steps + tabs: a sub-step's body lines stay where they're written", () 
     expect(sat(input)).toBe(expected);
   });
 });
+
+// The lines that end a step group are rebuilt as the blocks they're written as, so the tab header among them and its `>` body are a paragraph and a blockquote again, which is what the tabs recognition (it runs after steps) looks for. Flattened into one paragraph, remark and Sätteri rendered the tab group as text.
+describe("steps + tabs: a tab group directly after a step group, without a blank line", () => {
+  const input = "@1. A\n> body\n% Tab\n> t";
+  it("is a tab group in every engine", () => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toMatch(
+      /^<ol class="markdown-steps">.*<\/ol><div class="markdown-tabs".*aria-label="Tab"><p>t<\/p><\/section>/s
+    );
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});

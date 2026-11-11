@@ -118,3 +118,32 @@ check(`steps: a sub-step's body keeps all of its lines`, [
     expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>text</p>${OL}${LI(1)}${T}Inner</p></li></ol></div></li></ol></li></ol>`
   }
 ]);
+
+// markdown-it ends a group at the first line that is neither a header nor a `>` line, and parses what follows as ordinary markdown. CommonMark had already continued those lines into the body's last paragraph, so remark and Sätteri have to rebuild them from their markers: flattened into one paragraph, a quote after the group lost its `>`.
+check(`steps: the lines that end a group are read as the blocks they are written as`, [
+  {
+    name: `a quote after the line that ends the group is a blockquote`,
+    input: `@1. A\n> body\nplain\n> quote`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
+  },
+  {
+    name: `a line that ends a group in a body ends the group around it too`,
+    input: `@1. A\n> @1. Inner\n> > one\nplain\n> quote`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote>`
+  },
+  {
+    name: `a line with the outer body's marker ends only the group written in that body`,
+    input: `@1. A\n> @1. Inner\n> > one\n> plain\n> > quote`,
+    expected: `${OL}${LI(1)}${T}A</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>one</p></div></li></ol><p>plain</p><blockquote><p>quote</p></blockquote></div></li></ol>`
+  },
+  {
+    name: `a line that ends a sub-step's body ends the whole group, not just the sub-steps`,
+    input: `@1. A\n@@1. B\n> one\nplain\nmore`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>one</p></div></li></ol></li></ol><p>plain\nmore</p>`
+  },
+  {
+    name: `a line without any marker ends a group in a blockquote and the blockquote`,
+    input: `> @1. A\n> > body\nplain`,
+    expected: `<blockquote>${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol></blockquote><p>plain</p>`
+  }
+]);
