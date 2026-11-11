@@ -4,7 +4,11 @@
 import type { PhrasingContent, Root } from "mdast";
 import type { Properties } from "hast";
 import { isAlertMarkerLine } from "./github-alerts/index.js";
-import { linesToParagraph, paraToLines } from "./lazy.js";
+import {
+  linesToParagraph,
+  paraToSourceLines,
+  splitSourceLines
+} from "./lazy.js";
 import { containersKept, type LineContainer } from "./line-containers.js";
 
 /** The class of the `<figure>` a caption wraps its block in. */
@@ -113,6 +117,10 @@ const captionContent = (lines: PhrasingContent[][]): PhrasingContent[] => {
       ? [{ ...first, value }, ...lines[0]!.slice(1)]
       : lines[0]!.slice(1);
   }
+  // A hard break ending a caption that another caption follows ends the caption instead, as one before a caption ends its paragraph.
+  const last = lines.at(-1);
+  if (last?.at(-1)?.type === `break`)
+    lines[lines.length - 1] = last.slice(0, -1);
   return linesToParagraph(lines)?.children ?? [];
 };
 
@@ -130,7 +138,7 @@ const takeProperties = (node: Node): Properties | undefined => {
  */
 export const processCaptions = (root: Root, source: string): void => {
   if (!source.includes(`~:`)) return;
-  const sourceLines = source.split(/\r?\n/);
+  const sourceLines = splitSourceLines(source);
   const parents = new Map<Node, Node>();
   const paragraphs: Node[] = [];
   const tables: Node[] = [];
@@ -250,11 +258,7 @@ export const processCaptions = (root: Root, source: string): void => {
   for (const para of paragraphs.reverse()) {
     const first = para.position?.start.line;
     if (first === undefined) continue;
-    const lines = paraToLines(
-      para as unknown as Parameters<typeof paraToLines>[0],
-      sourceLines
-    );
-    // Each line is one source line. An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its start there.
+    // An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its start there.
     const parent = parents.get(para);
     const alert =
       parent?.type === `alert` ||
@@ -263,17 +267,23 @@ export const processCaptions = (root: Root, source: string): void => {
       alert && isAlertMarkerLine(sourceLines[first - 1] ?? ``)
         ? first + 1
         : first;
-    const isCaptionAt = (index: number): boolean => {
+    const numbered = paraToSourceLines(
+      para as unknown as Parameters<typeof paraToSourceLines>[0],
+      sourceLines
+    );
+    if (!numbered) continue;
+    const lines = numbered.map(({ segs }) => segs);
+    // The source line a caption line is written on, `undefined` for a line that isn't one. A line's place comes from its content's position, since a line isn't always the one after the line before it: emphasis, a code span or a link that spans lines keeps them together as one. A plugin that edited the paragraph before this one (an alert taking its marker line, attributes taken off the end of a line) can leave that position stale, so the line's index in the paragraph is read too.
+    const captionLineAt = (index: number): string | undefined => {
       const text = lines[index]?.[0];
-      return (
-        isCaptionLine(sourceLines[start + index - 1] ?? ``) &&
-        text?.type === `text` &&
-        startsCaption(text.value)
-      );
+      if (text?.type !== `text` || !startsCaption(text.value)) return undefined;
+      return [numbered[index]!.line, start + index]
+        .map((line) => sourceLines[line - 1] ?? ``)
+        .find(isCaptionLine);
     };
 
     // A paragraph that is a caption: it captions the block right before it, on the line above.
-    if (isCaptionAt(0)) {
+    if (captionLineAt(0) !== undefined) {
       const parent = parents.get(para);
       const siblings = parent?.children ?? [];
       const before = siblings[siblings.indexOf(para) - 1];
@@ -295,11 +305,12 @@ export const processCaptions = (root: Root, source: string): void => {
     let containers: Array<{ target: Node; line: LineContainer }> | undefined;
     const segments: Array<{ index: number; kept: number; target: Node }> = [];
     for (let index = 1; index < lines.length; index++) {
-      if (!isCaptionAt(index)) continue;
+      const written = captionLineAt(index);
+      if (written === undefined) continue;
       containers ??= containersOf(ancestorsOf(para));
       if (!containers) break;
       const kept = containersKept(
-        sourceLines[start + index - 1] ?? ``,
+        written,
         containers.map((c) => c.line)
       );
       // A caption line at the same level or deeper continues the caption; one written outside more blocks starts the caption of the one it leaves.
