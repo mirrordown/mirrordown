@@ -12,7 +12,8 @@ export interface ParsedTabHeader {
 }
 
 export const parseTabHeader = (line: string): ParsedTabHeader | null => {
-  const m = TAB_HEADER_RE.exec(line);
+  // Spaces at the end of the line are not part of the header (two or more would be a hard break in a paragraph; a header is one line), so a marker followed only by spaces isn't one, as in the other engines, which never see them.
+  const m = TAB_HEADER_RE.exec(line.trimEnd());
   if (!m) return null;
   return { depth: m[1].length, open: m[2] === "+", label: m[3] };
 };
