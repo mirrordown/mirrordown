@@ -82,3 +82,21 @@
 
 <!-- @case: a run between spaces neither opens nor closes -->
 <p><del>a --- b</del></p>
+
+<!-- @case: a dash written as a character reference does not open a span -->
+<p>--a--</p>
+
+<!-- @case: a dash written as a character reference does not close a span -->
+<p>--a--</p>
+
+<!-- @case: referenced dashes are literal text -->
+<p>--a--</p>
+
+<!-- @case: a referenced dash between two runs is the span's content -->
+<p><del>-</del></p>
+
+<!-- @case: an escape after an astral character reference is honoured -->
+<p>😀 --a--</p>
+
+<!-- @case: autolink text is literal -->
+<p><a href="http://x.com/--a--">http://x.com/--a--</a></p>

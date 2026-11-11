@@ -90,3 +90,27 @@ foo --bar
 <!-- @case: a run between spaces neither opens nor closes -->
 
 --a --- b--
+
+<!-- @case: a dash written as a character reference does not open a span -->
+
+&#45;-a--
+
+<!-- @case: a dash written as a character reference does not close a span -->
+
+--a&#45;-
+
+<!-- @case: referenced dashes are literal text -->
+
+&#45;&#45;a&#45;&#45;
+
+<!-- @case: a referenced dash between two runs is the span's content -->
+
+--&#45;--
+
+<!-- @case: an escape after an astral character reference is honoured -->
+
+&#x1F600; \--a--
+
+<!-- @case: autolink text is literal -->
+
+<http://x.com/--a-->
