@@ -29,6 +29,10 @@ The killer was ||the butler|| all along, hidden in ||the conservatory||.
 
 In renderers without the plugin, `||…||` renders as plain text.
 
+A backslash keeps a delimiter literal (`\||not hidden||`). A table cell is the exception: a pipe there has to be written `\|`, so a spoiler in a cell is written `\|\|hidden\|\|`.
+
+Spans have to nest. When a spoiler crosses another span or crosses emphasis (`||a *b|| c*`), each engine resolves it its own way, and in remark and Sätteri the result depends on the order the plugins are listed in.
+
 ### Rich inline content
 
 A spoiler can wrap any inline markup — emphasis, code, links — and it stays obscured until revealed. A long spoiler wraps across lines with each line getting its own bar, just like Discord.
@@ -93,7 +97,7 @@ Text spoilers work everywhere (checkbox + sibling selector). Image spoilers use 
 
 ## Install
 
-Install `@mirrordown/remd-spoiler`. You must also pass `spoilerHastHandlers` to `remarkRehype` and import the stylesheet:
+Install `@mirrordown/remd-spoiler`. You must also pass `spoilerHastHandlers` to `remarkRehype` (without them a spoiler renders as a bar that cannot be revealed) and import the stylesheet:
 
 ```sh
 npm install @mirrordown/remd-spoiler
