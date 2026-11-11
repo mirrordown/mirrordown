@@ -155,3 +155,56 @@ check(`tabs: a header line ends at its last character`, [
     expected: group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])
   }
 ]);
+
+// markdown-it's rule never compared a line's indentation with the block it runs in, so in a list item it kept reading lines written outside the item. CommonMark has closed the item by then, which is what remark and Sätteri render.
+check(`tabs: a group in a list item ends where the item ends`, [
+  {
+    name: `a > line written outside the item is a blockquote after the list`,
+    input: `- % One\n> First.`,
+    expected: `<ul><li>${group([`One`])}</li></ul><blockquote><p>First.</p></blockquote>`
+  },
+  {
+    name: `a header outside the item right after a body line continues the group, but its > line doesn't`,
+    input: `- % One\n  > First.\n% Two\n> Second.`,
+    expected: `<ul><li>${group([`One`, `<p>First.</p>`], [`Two`])}</li></ul><blockquote><p>Second.</p></blockquote>`
+  },
+  {
+    name: `a header outside the item after a blank line starts a group of its own`,
+    input: `- % One\n  > a\n\n% Two\n> b`,
+    expected: `<ul><li>${group([`One`, `<p>a</p>`])}</li></ul>${group([`Two`, `<p>b</p>`])}`
+  },
+  {
+    name: `a > line outside the item after a blank line is a blockquote`,
+    input: `- % One\n  > a\n\n> b`,
+    expected: `<ul><li>${group([`One`, `<p>a</p>`])}</li></ul><blockquote><p>b</p></blockquote>`
+  }
+]);
+
+// markdown-it tokenizes a panel's body from its lines with the `>` taken off, and has to read them as CommonMark reads a blockquote's content, which is what the other engines get.
+check(`tabs: a panel's body is read as a blockquote's content`, [
+  {
+    name: `a fence the end of the panel closes keeps its last line's line ending`,
+    input: "% A\n> ```\n> code\n% B\n> b",
+    expected: group([`A`, `<pre><code>code\n</code></pre>`], [`B`, `<p>b</p>`])
+  },
+  {
+    name: `a tab after the marker is the marker's space, not indentation for code`,
+    input: `% A\n>\ttext`,
+    expected: group([`A`, `<p>text</p>`])
+  },
+  {
+    name: `a blank line without the panel's marker ends the list before it`,
+    input: `> % A\n> > - a\n>\n> > - b`,
+    expected: `<blockquote>${group([`A`, `<ul><li>a</li></ul><ul><li>b</li></ul>`])}</blockquote>`
+  },
+  {
+    name: `a blank line without the panel's marker ends the fence before it`,
+    input: "- % A\n  > ```\n  > code\n\n  > more\n  > ```",
+    expected: `<ul><li>${group([`A`, `<pre><code>code\n</code></pre><p>more</p><pre><code></code></pre>`])}</li></ul>`
+  },
+  {
+    name: `a blank line written with the panel's marker keeps a loose list together`,
+    input: `% A\n> - a\n>\n> - b`,
+    expected: group([`A`, `<ul><li><p>a</p></li><li><p>b</p></li></ul>`])
+  }
+]);

@@ -148,23 +148,24 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
                   state.eMarks[after]
                 )
               : "";
+          // A line written outside the block the tabs are in (a list item) ends that block after a blank line, and the tabs with it.
+          if (state.sCount[after] < state.blkIndent) break;
           if (parseTabHeader(following)) {
             nextLine = after;
             continue;
           }
           if (!CONTINUATION_RE.test(following)) break;
-          for (; nextLine < after; nextLine++) currentFrame.bodyLines.push("");
+          for (; nextLine < after; nextLine++)
+            currentFrame.bodyLines.push(null);
           continue;
         }
 
-        // Bare > is a blank continuation line within the panel body
-        if (line === ">") {
-          currentFrame.bodyLines.push("");
-          nextLine++;
-          continue;
-        }
-
-        if (CONTINUATION_RE.test(line)) {
+        // A `>` line written outside the block the tabs are in (a list item) is a blockquote after that block, as CommonMark reads it, not more of the panel. A header there still continues the tabs: CommonMark continues the paragraph before it with it, which is how the other engines find it.
+        if (
+          CONTINUATION_RE.test(line) &&
+          state.sCount[nextLine] >= state.blkIndent
+        ) {
+          // A bare `>` is a blank line within the panel body.
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
@@ -319,22 +320,32 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
 
         // Tokenize panel body
         if (f.bodyLines.length > 0) {
-          const bodyContent = f.bodyLines.join("\n");
+          const bodyContent = f.bodyLines.map((line) => line ?? "").join("\n");
           // Token maps inside the body index its lines, without the `>` markers.
           sectionOpen.meta = { attrsSource: bodyContent };
           const oldParentType = state.parentType;
           state.parentType = "blockquote" as typeof state.parentType;
           const oldLineMax = state.lineMax;
 
+          // The body's last line ends with a line ending, as every line of a blockquote's content does: a fence or indented code the end of the panel closes keeps its last line's.
           const childState = new (state.constructor as typeof StateBlock)(
-            bodyContent,
+            `${bodyContent}\n`,
             state.md,
             state.env,
             state.tokens
           );
           // Panel tokens nest inside the tabs tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
           childState.level = state.level;
-          childState.md.block.tokenize(childState, 0, childState.lineMax);
+          // A blank line written without the panel's `>` ends the blocks before it, as CommonMark ends a blockquote there (the other engines get two blockquotes). So each run of lines between such blank lines is tokenized on its own: a list or a fence doesn't continue across one.
+          let runStart = 0;
+          for (let l = 0; l <= f.bodyLines.length; l++) {
+            if (l < f.bodyLines.length && f.bodyLines[l] !== null) continue;
+            if (l > runStart) {
+              childState.lineMax = l;
+              childState.md.block.tokenize(childState, runStart, l);
+            }
+            runStart = l + 1;
+          }
 
           state.parentType = oldParentType;
           state.lineMax = oldLineMax;
