@@ -9,7 +9,7 @@ import type {
   Effects
 } from "micromark-util-types";
 
-// micromark syntax for `~subscript~` and `^superscript^`, shared by remd-sub and remd-sup. Each marker is a single-character delimiter run with emphasis-style flanking. One resolver pairs both markers: it takes closers left to right and pairs each with the nearest opener of the same marker, so crossing runs (`^a~b^c~`) resolve leftmost-first and the two nest, as in markdown-it and Sätteri. It runs once however many of the two constructs a document uses, because micromark calls each `resolveAll` function once.
+// micromark syntax for `~subscript~` and `^superscript^`, shared by remd-sub and remd-sup. Each marker is a single-character delimiter run with emphasis-style flanking. One resolver pairs both markers: it takes closers left to right and pairs each with the nearest opener of the same marker, so runs of the two markers that cross each other (`^a~b^c~`) resolve leftmost-first and the two nest, as in markdown-it and Sätteri. That holds between `~` and `^` only: emphasis and other constructs have resolvers of their own, micromark runs them in the order the constructs first occur in the text, and where a span crosses one of theirs markdown-it pairs differently. It runs once however many of the two constructs a document uses, because micromark calls each `resolveAll` function once.
 
 /** The marker characters. Spelled out rather than taken from `SCRIPTS`, which would bring the table into the public API through `scriptSyntax`, and JSR wants explicit types there. */
 type Marker = "~" | "^";
