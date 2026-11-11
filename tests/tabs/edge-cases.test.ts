@@ -257,3 +257,53 @@ check(`tabs: a line that is neither a header nor a > line ends the group`, [
     expected: `<ul><li>${group([`A`])}\ntext</li></ul>`
   }
 ]);
+
+// Known differences, pinned so a change to them is noticed. markdown-it's rule reads a header line before CommonMark's paragraph rules get to it; remark and Sätteri recognize tabs in the tree those rules built. Where the two orders give different blocks, the engines differ, and the guide says how to write the input so they don't.
+interface Difference {
+  name: string;
+  input: string;
+  mdit: string;
+  others: string;
+}
+
+describe.each<Difference>([
+  {
+    // In a list item, remark and Sätteri can't tell by indentation a header written in the item from one CommonMark lazily continued into it, so they leave a header after text alone.
+    name: `a header after text in a list item interrupts the paragraph only in markdown-it`,
+    input: `- text\n  % A\n  > a`,
+    mdit: `<ul><li>text\n${group([`A`, `<p>a</p>`])}</li></ul>`,
+    others: `<ul><li>text\n% A\n<blockquote><p>a</p></blockquote></li></ul>`
+  },
+  {
+    // CommonMark reads the header and its underline as a setext heading before recognition sees them.
+    name: `a header underlined with = is a heading in remark and Sätteri`,
+    input: `% A\n===\n> a`,
+    mdit: `${group([`A`])}<p>===</p><blockquote><p>a</p></blockquote>`,
+    others: `<h1>% A</h1><blockquote><p>a</p></blockquote>`
+  },
+  {
+    name: `a header underlined with - is a heading in remark and Sätteri`,
+    input: `% A\n---\n> a`,
+    mdit: `${group([`A`])}<hr><blockquote><p>a</p></blockquote>`,
+    others: `<h2>% A</h2><blockquote><p>a</p></blockquote>`
+  },
+  {
+    // CommonMark continues the header's paragraph with a line indented four columns, whatever it starts with; markdown-it's rule reads the line without its indentation.
+    name: `a > line indented four columns is the panel's body only in markdown-it`,
+    input: `% A\n    > Body.`,
+    mdit: group([`A`, `<p>Body.</p>`]),
+    others: `${group([`A`])}<p>> Body.</p>`
+  }
+])(`tabs: known difference: $name`, ({ input, mdit, others }) => {
+  it.each(engines)(`$engine`, ({ engine, render }) => {
+    expect(mask(render(input))).toBe(engine === `markdown-it` ? mdit : others);
+  });
+});
+
+check(`tabs: a header after text in a list item, after a blank line`, [
+  {
+    name: `starts tabs in every engine`,
+    input: `- text\n\n  % A\n  > a`,
+    expected: `<ul><li><p>text</p>${group([`A`, `<p>a</p>`])}</li></ul>`
+  }
+]);
