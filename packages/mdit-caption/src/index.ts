@@ -100,12 +100,19 @@ const isAlert = (token: Token | undefined): boolean => {
   );
 };
 
-// Inline children split into lines at each soft or hard break, which ends its line.
-const toLines = (children: readonly Token[]): Token[][] => {
-  const lines: Token[][] = [[]];
+// Inline children split into lines at each soft or hard break, which ends its line, each with the breaks before it: the source lines the paragraph has before the line. A break inside inline markup (emphasis, a link) doesn't end a line, as remark and Sätteri keep such content together: a `~:` after it is text, and no element is cut in two.
+const toLines = (
+  children: readonly Token[]
+): Array<{ tokens: Token[]; breaks: number }> => {
+  const lines = [{ tokens: [] as Token[], breaks: 0 }];
+  let depth = 0;
+  let breaks = 0;
   for (const child of children) {
-    lines.at(-1)!.push(child);
-    if (BREAKS.has(child.type)) lines.push([]);
+    lines.at(-1)!.tokens.push(child);
+    depth += child.nesting;
+    if (!BREAKS.has(child.type)) continue;
+    breaks++;
+    if (depth === 0) lines.push({ tokens: [], breaks });
   }
   return lines;
 };
@@ -298,25 +305,29 @@ export const caption: PluginSimple = (md) => {
       if (inline?.type !== `inline` || !inline.children || !close) continue;
       const context = contextOf(index);
       if (!context) continue;
-      const paraLines = toLines(inline.children);
-      // Each line is one source line. An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its map there.
+      const numbered = toLines(inline.children);
+      const paraLines = numbered.map((line) => line.tokens);
+      const breaks = inline.children.filter((c) => BREAKS.has(c.type)).length;
+      // An alert's first paragraph lost its marker line (`> [!NOTE]`) to the alert, which leaves its map there.
       const start =
         open.map[0] +
         Number(
           isAlert(tokens[parentOf(tokens, index)]) &&
             isAlertMarkerLine(context.lines[open.map[0]] ?? ``)
         );
-      const isCaptionAt = (i: number): boolean => {
+      // The source line a caption line is written on, `undefined` for a line that isn't one. A line's place is counted in breaks from the paragraph's start, then from its end: a code span that spans lines hides a line ending (it has no break token), and attributes on a line of their own are taken off the paragraph's end, so each count is right where the other can be wrong.
+      const captionLineAt = (i: number): string | undefined => {
         const text = paraLines[i]?.[0];
-        return (
-          isCaptionLine(context.lines[start + i] ?? ``) &&
-          text?.type === `text` &&
-          startsCaption(text.content)
-        );
+        if (text?.type !== `text` || !startsCaption(text.content))
+          return undefined;
+        const before = numbered[i]!.breaks;
+        return [start + before, open.map![1] - 1 - (breaks - before)]
+          .map((line) => context.lines[line] ?? ``)
+          .find(isCaptionLine);
       };
 
       // A paragraph that is a caption: it captions the block right before it, on the line above.
-      if (isCaptionAt(0)) {
+      if (captionLineAt(0) !== undefined) {
         const previous = tokens[index - 1];
         const above = context.lines[start - 1];
         if (
@@ -342,9 +353,10 @@ export const caption: PluginSimple = (md) => {
       const { containers } = context;
       const segments: Array<{ line: number; kept: number; target: Token }> = [];
       for (let i = 1; i < paraLines.length; i++) {
-        if (!isCaptionAt(i)) continue;
+        const written = captionLineAt(i);
+        if (written === undefined) continue;
         const kept = containersKept(
-          context.lines[start + i] ?? ``,
+          written,
           containers.map((c) => c.line)
         );
         const previous = segments.at(-1);

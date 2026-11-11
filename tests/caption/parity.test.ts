@@ -72,6 +72,22 @@ const cases: Case[] = [
     input: `*emph\nmore* text\n~: caption`,
     expected: `${FIGURE}<p><em>emph\nmore</em> text</p><figcaption>caption</figcaption></figure>`
   },
+  {
+    name: `spanning inline: a caption after a code span that spans lines`,
+    input: "`a\nb` text\n~: caption",
+    expected: `${FIGURE}<p><code>a b</code> text</p><figcaption>caption</figcaption></figure>`
+  },
+  // A line that starts inside emphasis or a link isn't a line of the paragraph to cut at: cutting there closed the paragraph inside the element and the element inside the caption, which is invalid HTML.
+  {
+    name: `spanning inline: a marker inside emphasis is text`,
+    input: `![i](a.jpg) *foo\n~: bar*`,
+    expected: `<p><img src="a.jpg" alt="i"> <em>foo\n~: bar</em></p>`
+  },
+  {
+    name: `spanning inline: a marker inside a link's text is text`,
+    input: `![i](a.jpg) [foo\n~: bar](u)`,
+    expected: `<p><img src="a.jpg" alt="i"> <a href="u">foo\n~: bar</a></p>`
+  },
   // The break has nothing to break before: the caption ends there, as a paragraph ends at the hard break before its caption. Kept, it rendered a `<br>` at the end of the `<figcaption>` in two engines of three.
   {
     name: `hard break: one ending an inner caption isn't part of it`,
