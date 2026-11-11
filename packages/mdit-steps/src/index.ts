@@ -120,10 +120,6 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         // No depth jumps â€” depth can only be currentDepth+1 or <=currentDepth
         if (depth > block.currentDepth + 1) break;
 
-        // Validate: going deeper is only +1
-        if (depth > block.currentDepth && depth !== block.currentDepth + 1)
-          break;
-
         // Reset counters for all depths deeper than this one
         for (const k of block.counters.keys()) {
           if (k > depth) block.counters.delete(k);
@@ -284,11 +280,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           bodyOpen.block = true;
 
           const bodyContent = f.bodyLines.map((line) => line ?? "").join("\n");
-          // Token maps inside the body index its lines, without the `>` markers.
+          // The `attrsSource` protocol: the body is tokenized from its own text, so the `map` of every token between this one and its close indexes the lines of `attrsSource` (the body without its `>` markers), not the document's. A rule that reads a body token's lines must take them from here, as attrs and caption do; `map` alone points at the wrong document lines.
           bodyOpen.meta = { attrsSource: bodyContent };
-          const oldBullet = state.parentType;
-          state.parentType = "blockquote" as typeof state.parentType;
-          const oldLineMax = state.lineMax;
 
           // Tokenize the body content by creating a child state
           const childState = new (state.constructor as typeof StateBlock)(
@@ -309,9 +302,6 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
             }
             runStart = l + 1;
           }
-
-          state.parentType = oldBullet;
-          state.lineMax = oldLineMax;
 
           state.push("steps_body_close", "div", -1);
         }
