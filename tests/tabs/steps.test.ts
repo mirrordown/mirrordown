@@ -377,3 +377,18 @@ describe("tabs + steps: tab groups after steps stay separate at a blank line", (
     expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
+
+// A `@@` sub-step is nested in the step before it, but its body is written with that step's single `>`. Counting the sub-step as one more level made a header in its body look as if it were written outside it, so it stayed paragraph text in remark and Sätteri.
+describe("tabs + steps: a tab header interrupts a paragraph in a sub-step's body", () => {
+  const input = `@1. A\n@@1. B\n> text\n> % Tab\n> > body`;
+
+  it.each([
+    ["markdown-it", (src: string) => normalizeHtml(md.render(src))],
+    ["remark", remd],
+    ["Sätteri", sat]
+  ])("%s", (_, render) => {
+    const html = render(input);
+    expect(html).toContain(`<p>text</p><div class="markdown-tabs"`);
+    expect(html).toContain(`aria-label="Tab"><p>body</p></section>`);
+  });
+});

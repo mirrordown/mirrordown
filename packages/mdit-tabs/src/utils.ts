@@ -12,13 +12,17 @@ export interface ParsedTabHeader {
 }
 
 export const parseTabHeader = (line: string): ParsedTabHeader | null => {
-  const m = TAB_HEADER_RE.exec(line);
+  // Spaces at the end of the line are not part of the header (two or more would be a hard break in a paragraph; a header is one line), so a marker followed only by spaces isn't one, as in the other engines, which never see them.
+  const m = TAB_HEADER_RE.exec(line.trimEnd());
   if (!m) return null;
   return { depth: m[1].length, open: m[2] === "+", label: m[3] };
 };
 
+// The marker takes one column of a tab after it, as it takes a space; the tab's other two columns stay as indentation, so the line isn't read as indented code.
 export const stripContinuation = (line: string): string =>
-  line.replace(CONTINUATION_RE, "");
+  line.startsWith(">\t")
+    ? `  ${line.slice(2)}`
+    : line.replace(CONTINUATION_RE, "");
 
 // djb2 hash — returns an unsigned 32-bit integer
 const djb2 = (str: string): number => {

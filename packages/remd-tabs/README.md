@@ -68,6 +68,16 @@ Use `%%` for a second level of nesting inside a tab:
 > Node.js or any server runtime.
 ````
 
+### Things to know
+
+- Every line of a panel starts with `>`. A line that is neither a header nor a `>` line ends the tabs, and so does a blank line at the top level of the document.
+- A blank line inside a panel needs the panel's `>`. Inside another block (a blockquote, a list item, a step), a blank line written without it ends the blocks before it (a list or a code fence does not continue across it), though the panel itself goes on with the next `>` line.
+- A header is one line. Spaces at its end are not part of the label and make no line break, and a backslash at its end is a literal backslash.
+- In a list item, write a blank line before the first header if text comes before it: without one, markdown-it starts the tabs there and remark and Sätteri leave the line as text. Don't underline a header with `===` or `---`, or indent a panel's `>` four columns or more: remark and Sätteri read those as CommonMark does (a heading, a paragraph), markdown-it as tabs.
+- A group's ids (the `name` and `id` of its inputs, the `for` of its labels) are unique per document, not per page. They are built from the group's labels and its place among the document's groups, so two documents rendered into one page repeat them where the same labels appear in the same place.
+- The stylesheet targets the default container class, `markdown-tabs`. With another `containerClass` the tabs are yours to style, and the tab-icons plugin needs the same value.
+- `remarkTabs` reads each line's `>` markers from the file's source, so it needs a tree parsed from that same file with positions, as `remark-parse` produces.
+
 ## Install
 
 Install `@mirrordown/remd-tabs`. You must also pass `tabsHastHandlers` to `remarkRehype` and import the stylesheet:

@@ -6,7 +6,6 @@ import {
   processTabs,
   stripAttrs,
   tabLabelText,
-  tabsBlockId,
   type TabsItemNode,
   type TabsLabelNode,
   type TabsListNode,
@@ -90,12 +89,10 @@ export const satteriTabs =
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
     type Back = (node: MdastTarget) => MdastTarget;
 
-    // This document's tab groups, counted as they render (in the order they open), for their block ids.
-    let groupsRendered = 0;
-
     const renderList = (list: TabsListNode, back: Back): Custom => {
       const cc = list.containerClass ?? containerClass;
-      const blockId = tabsBlockId(groupsRendered++, list.groupId);
+      // Set at recognition, in document order, as in the remark plugin.
+      const { blockId } = list;
       const labels: MdastTarget[] = [];
       const panels: MdastTarget[] = [];
       for (const [idx, item] of list.children.entries()) {
@@ -153,7 +150,7 @@ export const satteriTabs =
       const content = (item.children as unknown as MdastTarget[]).filter(
         (child) => child.type !== `tabsLabel`
       );
-      return element(
+      const panel = element(
         `tabsPanel`,
         `section`,
         // From the label as it is now, so plugins that ran after tabs count too.
@@ -163,6 +160,9 @@ export const satteriTabs =
         },
         content.map(back)
       );
+      // Plugins that run after this one count the `>` markers of a panel's lines from the tree, and a `%%` tab's panel adds none to its parent's.
+      if (item.data?.sub) panel.data = { ...panel.data, sub: true };
+      return panel;
     };
 
     // A node recognition created: tabs render as `hName` nodes, anything else (paragraphs split around a group) as it is.
@@ -175,7 +175,7 @@ export const satteriTabs =
 
     return defineMdastPlugin({
       name: `tabs`,
-      // Group ids hash a group's start line, and leftover paragraphs keep their source lines.
+      // Recognition places lines by their source positions, and leftover paragraphs keep their source lines.
       options: { position: true },
       before(root, ctx) {
         if (!MAYBE_TABS.test(source)) return;
