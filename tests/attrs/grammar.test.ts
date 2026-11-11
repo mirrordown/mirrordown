@@ -354,3 +354,14 @@ describe.each(engines)("attrs/grammar: fences (%s)", (_engine, render) => {
     expect(render(input)).toBe(expected);
   });
 });
+
+// `colspan` and `rowspan` are attributes like any other: no engine drops the cells a span would cover, so a row keeps the cells it was written with. (mdit-attrs once carried markdown-it-attrs' span calculator, which never ran; remark and Sätteri have nothing like it.)
+describe.each(engines)("attrs/grammar: tables (%s)", (_engine, render) => {
+  it("a spanning cell keeps its neighbours", () => {
+    expect(
+      render("| A | B |\n|---|---|\n| a {colspan=2} | b {rowspan=2} |")
+    ).toBe(
+      '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td colspan="2">a</td><td rowspan="2">b</td></tr></tbody></table>'
+    );
+  });
+});
