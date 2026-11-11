@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
+import type { Root } from "mdast";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -44,11 +45,12 @@ describe("tabs/remd: author classes join the element's own, however they are spe
         unified()
           .use(remarkParse)
           .use(remarkTabs)
-          .use(() => (tree) => {
+          .use(() => (tree: Root) => {
             const list = tree.children.find(
               (node) => (node.type as string) === "tabsList"
             );
-            if (list) list.data = { hProperties: properties } as never;
+            if (list)
+              Object.assign(list, { data: { hProperties: properties } });
           })
           .use(remarkRehype, { handlers: tabsHastHandlers as never })
           .use(rehypeStringify)
