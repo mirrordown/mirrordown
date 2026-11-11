@@ -22,10 +22,13 @@ export const squeezeParagraphs: PluginSimple = (md) => {
       const inline = state.tokens[i + 1];
       const close = state.tokens[i + 2];
 
+      // Matched by tag, not by the `paragraph_open` type: other plugins emit a `<p>` under their own token types (a step's title), and the rehype and Sätteri plugins remove any empty `<p>`.
       if (
-        open?.type !== "paragraph_open" ||
+        open?.tag !== "p" ||
+        open.nesting !== 1 ||
         inline?.type !== "inline" ||
-        close?.type !== "paragraph_close" ||
+        close?.tag !== "p" ||
+        close.nesting !== -1 ||
         !isEmpty(inline)
       ) {
         i++;
