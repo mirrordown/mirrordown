@@ -89,3 +89,32 @@ check(`steps: a line is placed by its own source line, after inline content that
     expected: `${OL}${LI(1)}${T}A</p>${B}<p><code>a b</code> text</p></div></li></ol><p>plain</p>`
   }
 ]);
+
+// A sub-step is nested in its parent step, but its body is written with the same single `>` as its parent's. Counting one marker per nesting level made remark and Sätteri read every body line after the first as written outside the sub-step, and move it into the parent step.
+check(`steps: a sub-step's body keeps all of its lines`, [
+  {
+    name: `a two-line paragraph stays whole in the sub-step`,
+    input: `@1. A\n@@1. B\n> line one\n> line two`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>line one\nline two</p></div></li></ol></li></ol>`
+  },
+  {
+    name: `at the third level too`,
+    input: `@1. A\n@@1. B\n@@@1. C\n> one\n> two`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${SUB}${LI(1)}${T}C</p>${B}<p>one\ntwo</p></div></li></ol></li></ol></li></ol>`
+  },
+  {
+    name: `in the last of several sub-steps`,
+    input: `@1. A\n@@1. B\n> b1\n> b2\n@@1. C\n> c1\n> c2`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>b1\nb2</p></div></li>${LI(2)}${T}C</p>${B}<p>c1\nc2</p></div></li></ol></li></ol>`
+  },
+  {
+    name: `inside a blockquote, where every line carries one more marker`,
+    input: `> @1. A\n> @@1. B\n> > one\n> > two`,
+    expected: `<blockquote>${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>one\ntwo</p></div></li></ol></li></ol></blockquote>`
+  },
+  {
+    name: `a header written in the sub-step's body starts a group there, not in the parent step`,
+    input: `@1. A\n@@1. B\n> text\n> @1. Inner`,
+    expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>text</p>${OL}${LI(1)}${T}Inner</p></li></ol></div></li></ol></li></ol>`
+  }
+]);

@@ -232,13 +232,23 @@ interface GroupTreeNode {
   data?: unknown;
 }
 
-/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. */
+/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
 export const MARKED_BLOCKS: ReadonlySet<string> = new Set([
   `blockquote`,
   `alert`,
   `tabsItem`,
   `stepsItem`
 ]);
+
+/**
+ * The `>` markers a block adds to its lines, over those of the block around it: one for a marked block, none for any other. A sub-item (a `@@` step, a `%%` tab) is a marked block that adds none: it's nested in its parent item, but its body is written with its parent's markers, so recognition sets `sub` in its data, which a renderer that rebuilds the node (Sätteri) keeps for the plugins after it.
+ */
+export const markerLevels = (node: { type?: string; data?: unknown }): number => {
+  // The data of a recognized item, in the loose node shape the passes walk.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const data = node.data as { sub?: boolean } | null | undefined;
+  return MARKED_BLOCKS.has(node.type ?? ``) && data?.sub !== true ? 1 : 0;
+};
 
 /** Blocks a line can lazily continue into by its indentation rather than its markers: a list item or a definition. */
 export const INDENTED_BLOCKS: ReadonlySet<string> = new Set([
@@ -300,14 +310,16 @@ export const endGroupsAtMarkers = (
     if (!children) return;
     for (let i = 0; i < children.length; i++) {
       const child = children[i]!;
-      visit(child, quotes + (MARKED_BLOCKS.has(child.type) ? 1 : 0));
+      visit(child, quotes + markerLevels(child));
       if (child.type !== listType) continue;
-      const para = lastParagraph(child.children?.at(-1));
+      const item = child.children?.at(-1);
+      const para = lastParagraph(item);
       const lines = para && paraToSourceLines(para, sourceLines);
-      if (!para || !lines) continue;
-      // The panel's lines carry one more marker than the blocks around the group.
+      if (!item || !para || !lines) continue;
+      // The panel's lines carry one more marker than the blocks around the group; a sub-item's, as many as its parent item's, which is the block around its group.
+      const panel = quotes + markerLevels(item);
       const outside = lines.findIndex(
-        ({ markers }, index) => index > 0 && markers < quotes + 1
+        ({ markers }, index) => index > 0 && markers < panel
       );
       if (outside === -1) continue;
       const kept = linesToParagraph(segsOf(lines.slice(0, outside)));

@@ -15,7 +15,7 @@ import {
   blockquoteMarkers,
   endGroupsAtMarkers,
   INDENTED_BLOCKS,
-  MARKED_BLOCKS,
+  markerLevels,
   splitAtOpeningLine,
   linesToParagraph,
   paragraphProperties,
@@ -61,6 +61,8 @@ export interface StepsItemNode {
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
     hProperties?: Properties;
+    /** A sub-step (`@@` and deeper): its body is written with its parent step's `>` markers, not with one more, which is how the lazy-line passes count its lines (see `markerLevels`). */
+    sub?: boolean;
   };
 }
 
@@ -389,6 +391,7 @@ const buildTree = (
       data: {
         attrsRole: "containerItem",
         attrsTitle: s.titleNodes,
+        ...(targetDepth > 1 ? { sub: true } : {}),
         ...(s.hProperties ? { hProperties: { ...s.hProperties } } : {})
       }
     });
@@ -547,7 +550,7 @@ export const processSteps = (
     source === undefined ? undefined : splitSourceLines(source);
   const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
-    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
+    const inner = quotes + markerLevels(node);
     processStepsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,

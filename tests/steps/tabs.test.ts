@@ -389,3 +389,26 @@ describe("steps + tabs: a blank `>` line between tab entries in a step body keep
     ]);
   });
 });
+
+// ── Sub-steps and tabs ────────────────────────────────────────────────────────
+
+// A sub-step's body carries its parent step's single `>`, not one per nesting level, so a panel's second line inside it is still the panel's: counted as deeper, remark and Sätteri moved it out of the tab group, or out of the sub-step.
+describe("steps + tabs: a sub-step's body lines stay where they're written", () => {
+  it.each([
+    [
+      "tabs in a sub-step's body",
+      "@1. A\n@@1. B\n> % T\n> > one\n> > two",
+      '<section class="markdown-tabs-panel" aria-label="T"><p>one\ntwo</p></section>'
+    ],
+    [
+      "a sub-step in a tab panel",
+      "% Tab\n> @1. Step\n> @@1. Sub\n> > line one\n> > line two",
+      '<p class="markdown-steps-title">Sub</p><div class="markdown-steps-body"><p>line one\nline two</p></div>'
+    ]
+  ])("%s", (_, input, fragment) => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toContain(fragment);
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});
