@@ -16,7 +16,7 @@ export interface RubyOptions {
   /** Fallback parenthesis characters emitted as `<rp>` for browsers without ruby support. */
   rp?: [string, string];
   /**
-   * The features to parse a ruby's base and reading with, over the document's. They're parsed on their own, with the document's features, which Sätteri 0.11.3 and later tell plugins; with an older Sätteri, pass the features you compile with (the preset does).
+   * The features to parse a ruby's base and reading with, over the document's. They're parsed on their own, with the document's features unless these change them.
    */
   features?: Features;
 }

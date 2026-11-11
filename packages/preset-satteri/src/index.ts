@@ -182,9 +182,7 @@ export const mirrordown = (
     // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
       ...(options.prompt === false ? [] : [satteriPromptPreview()]),
-      ...(options.ruby === false
-        ? []
-        : [satteriRuby({ ...settings(options.ruby), features })]),
+      ...(options.ruby === false ? [] : [satteriRuby(settings(options.ruby))]),
       ...(options.abbr === false ? [] : [satteriAbbr()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.githubAlerts === false

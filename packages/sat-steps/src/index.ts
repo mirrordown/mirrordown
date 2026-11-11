@@ -14,7 +14,6 @@ import {
   defineMdastPlugin,
   markdownToMdast,
   type Custom,
-  type Features,
   type MdastPluginInstance,
   type MdastTarget,
   type PluginFactoryContext
@@ -74,9 +73,8 @@ const withAuthorProperties = (
 export const satteriSteps =
   (options: StepsOptions = {}): ((ctx: PluginFactoryContext) => StepsPlugin) =>
   ({ source, features }) => {
-    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on. Sätteri before 0.11.3 passes no features (and reads no blocks).
-    const attributes =
-      (features as Partial<Features> | undefined)?.attributes === true;
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on.
+    const attributes = features.attributes === true;
     const { containerClass = `markdown-steps` } = options;
 
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
