@@ -30,6 +30,8 @@ const subSupCases = parseFixture(
 );
 
 const md = new MarkdownIt().use(sub);
+// markdown-it's counterpart of remark and Sätteri without GFM: with strikethrough off, the plugin's own rule sees the `~~` runs.
+const mdPlain = new MarkdownIt().disable("strikethrough").use(sub);
 // Both registration orders: which plugin is added first must not change how crossing runs pair.
 const subSupOrders = [
   ["sub, sup", new MarkdownIt().use(sub).use(sup)],
@@ -48,8 +50,26 @@ describe("sub/mdit", () => {
     expect(normalizeHtml(md.render(input))).toBe(expected);
   });
 
+  it.each(cmCases)(
+    "sub (markdown-it) without strikethrough: $name",
+    ({ input, expected }) => {
+      expect(normalizeHtml(mdPlain.render(input))).toBe(expected);
+    }
+  );
+
   it.each(gfmCases)("sub (markdown-it) gfm: $name", ({ input, expected }) => {
     expect(normalizeHtml(mdGfm.render(input))).toBe(expected);
+  });
+
+  // Letting a `*` run flank a tilde is GFM's rule, not CommonMark's: remark and Sätteri without GFM leave these asterisks literal, so markdown-it must too once strikethrough (its GFM) is off, whether that happened before or after the plugin was added.
+  it("leaves asterisks beside a subscript inside a word literal while strikethrough is off", () => {
+    expect(normalizeHtml(mdPlain.render("x*~i~*"))).toBe(
+      "<p>x*<sub>i</sub>*</p>"
+    );
+    const disabledLater = new MarkdownIt().use(sub).disable("strikethrough");
+    expect(normalizeHtml(disabledLater.render("H**~2~**O"))).toBe(
+      "<p>H**<sub>2</sub>**O</p>"
+    );
   });
 
   describe.each(subSupOrders)("with sup (%s)", (_, mdBoth) => {

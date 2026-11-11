@@ -51,6 +51,11 @@ describe("sub/sat", () => {
     expect(render(input, true)).toBe(expected);
   });
 
+  // Letting a `*` run flank a tilde is part of Sätteri's GFM; without it the asterisks are literal, and markdown-it follows that when its strikethrough is off.
+  it("leaves asterisks beside a subscript inside a word literal without GFM", () => {
+    expect(render("x*~i~*", false)).toBe("<p>x*<sub>i</sub>*</p>");
+  });
+
   it.each(subSupCases)(
     "sub (sätteri) with sup: $name",
     ({ input, expected }) => {

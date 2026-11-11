@@ -81,6 +81,13 @@ describe("sub/remd", () => {
     );
   });
 
+  // Letting a `*` run flank a tilde comes from remark-gfm, which registers `~` as an attention marker; without it the asterisks are literal, and markdown-it follows that when its strikethrough is off.
+  it("leaves asterisks beside a subscript inside a word literal without GFM", () => {
+    expect(normalizeHtml(String(cmProcessor.processSync("x*~i~*")))).toBe(
+      "<p>x*<sub>i</sub>*</p>"
+    );
+  });
+
   describe.each(subSupOrders)("with sup (%s)", (_, processor) => {
     it.each(subSupCases)(
       "sub (remark) with sup: $name",
