@@ -243,3 +243,27 @@ check(`steps: steps in a list item end with the item`, [
     expected: `<ul><li>${OL}${LI(1)}${T}Step</p>${B}<p>a</p><p>b</p></div></li>${LI(2)}${T}Two</p></li></ol></li></ul>`
   }
 ]);
+
+// A blank line inside a body needs the body's `>`. Written without it, CommonMark ends the blockquote there, so remark and Sätteri get two quotes and can't join what the blank line separated; markdown-it's steps rule joined the body's lines into one document, where a list or a fence carried on across the blank line. It now reads each run of lines on its own.
+check(`steps: a blank line without the body's marker ends the blocks before it`, [
+  {
+    name: `two lists, not one loose list`,
+    input: `@1. S\n> - a\n\n> - b`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li>a</li></ul><ul><li>b</li></ul></div></li></ol>`
+  },
+  {
+    name: `a fence ends at the blank line`,
+    input: "@1. S\n> ```js\n> a\n\n> b\n> ```",
+    expected: `${OL}${LI(1)}${T}S</p>${B}<pre><code class="language-js">a\n</code></pre><p>b</p><pre><code></code></pre></div></li></ol>`
+  },
+  {
+    name: `a blank line written with the marker keeps a list together`,
+    input: `@1. S\n> - a\n>\n> - b`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li><p>a</p></li><li><p>b</p></li></ul></div></li></ol>`
+  },
+  {
+    name: `paragraphs are the same either way`,
+    input: `@1. S\n> a\n>\n> b\n\n\n> c`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>a</p><p>b</p><p>c</p></div></li></ol>`
+  }
+]);

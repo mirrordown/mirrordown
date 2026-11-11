@@ -149,7 +149,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
               parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
           // Blank line is part of the body
-          currentFrame.bodyLines.push("");
+          currentFrame.bodyLines.push(null);
           nextLine++;
           continue;
         }
@@ -271,7 +271,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           bodyOpen.attrSet("class", `${containerClass}-body`);
           bodyOpen.block = true;
 
-          const bodyContent = f.bodyLines.join("\n");
+          const bodyContent = f.bodyLines.map((line) => line ?? "").join("\n");
           // Token maps inside the body index its lines, without the `>` markers.
           bodyOpen.meta = { attrsSource: bodyContent };
           const oldBullet = state.parentType;
@@ -287,7 +287,16 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           );
           // Body tokens nest inside the list, item and body tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
           childState.level = state.level;
-          childState.md.block.tokenize(childState, 0, childState.lineMax);
+          // A blank line written without the body's `>` ends the blocks before it, as CommonMark ends a blockquote there (the other engines get two blockquotes). So each run of lines between such blank lines is tokenized on its own: a list or a fence doesn't continue across one.
+          let runStart = 0;
+          for (let l = 0; l <= f.bodyLines.length; l++) {
+            if (l < f.bodyLines.length && f.bodyLines[l] !== null) continue;
+            if (l > runStart) {
+              childState.lineMax = l;
+              childState.md.block.tokenize(childState, runStart, l);
+            }
+            runStart = l + 1;
+          }
 
           state.parentType = oldBullet;
           state.lineMax = oldLineMax;
