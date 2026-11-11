@@ -119,11 +119,6 @@ const blocks: Case[] = [
   ["a key can't hold a slash", "text {a/b=c}", "<p>text {a/b=c}</p>"],
   ["a key can't open with a digit", "text {1=2}", "<p>text {1=2}</p>"],
   ["a value needs a key", "text {=x}", "<p>text {=x}</p>"],
-  [
-    "a second dot is part of the class name",
-    "text {..mod}",
-    '<p class=".mod">text</p>'
-  ],
   ["class is one name in any case", "text {CLASS=a}", '<p class="a">text</p>'],
   ["id is one name in any case", "text {ID=a}", '<p id="a">text</p>']
 ];
@@ -232,6 +227,12 @@ describe.each(engines)("attrs/grammar (%s)", (_engine, render) => {
 
 // Where Sätteri can't follow. Its reader works on one run of plain text, so a character that could start other inline syntax ends the block, and it reads a heading's block before the heading's closing sequence. The forms are documented ones (`.class`, `key=value`), so mdit-attrs and remd-attrs keep them; the guide lists the difference. A change on Sätteri's side shows up here.
 const limits: [why: string, input: string, ours: string, satteri: string][] = [
+  [
+    "the CSS-module shorthand, which Sätteri reads as a class that starts with a dot",
+    "text {..mod}",
+    '<p css-module="mod">text</p>',
+    '<p class=".mod">text</p>'
+  ],
   [
     "a square bracket in a class",
     "text {.w-[10px]}",

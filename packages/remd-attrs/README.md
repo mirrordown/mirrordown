@@ -142,6 +142,7 @@ For markdown you don't trust, set `allowed` to the names you need, such as `allo
 Sätteri reads attribute blocks itself, and the markdown-it and remark plugins follow its grammar. These are the places it can't follow them:
 
 - A class or a value can't hold `<`, `[`, `]` or a backtick. `{.w-[10px]}` and `{title="a<b"}` are read by the plugins and stay text on Sätteri.
+- The CSS-module shorthand `{..name}` sets `css-module="name"` with the plugins. Sätteri has no such form and reads it as the class `.name`.
 - A block ending a heading isn't read when the heading has a closing sequence, as in `# Title {.a} #`.
 - A backslash escape earlier in the same text keeps a block from being read, as in `\* text {.a}`. An escaped brace ending a heading is read anyway, and `# Title \{#x}` gets the id.
 - There are no options, so no custom delimiters, no `allowed` list and no way to turn single rules off.

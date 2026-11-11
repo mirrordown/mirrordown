@@ -169,6 +169,12 @@ describe("attrs/options", () => {
     expect(mdit({}, "# Hello {#my-id}")).toContain('id="my-id"');
   });
 
+  it("double dot: css-module class", () => {
+    expect(mdit({}, "# Hello {..my-module}")).toContain(
+      'css-module="my-module"'
+    );
+  });
+
   it("key=value: adds data attribute", () => {
     expect(mdit({}, "# Hello {data-x=42}")).toContain('data-x="42"');
   });

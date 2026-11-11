@@ -66,7 +66,10 @@ export const readAttrs = (
     if (quote) return null;
 
     const first = str.charCodeAt(i);
-    if (first === CLASS_MARKER || first === ID_MARKER) {
+    if (first === CLASS_MARKER && str.charCodeAt(i + 1) === CLASS_MARKER) {
+      // `..name` is markdown-it-attrs' CSS-module shorthand. Sätteri has no such form and reads it as the class `.name`.
+      if (j - i > 2) attrs.push(["css-module", str.slice(i + 2, j)]);
+    } else if (first === CLASS_MARKER || first === ID_MARKER) {
       if (j - i > 1) {
         attrs.push([
           first === CLASS_MARKER ? "class" : "id",
