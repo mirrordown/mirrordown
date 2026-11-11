@@ -12,7 +12,7 @@ import { normalizeHtml } from "../utils/index.js";
 
 // Sätteri reads attribute blocks itself (its built-in `attributes` feature), and that reader can't be changed from here. So it is the reference for what a block is: these cases pin mdit-attrs and remd-attrs to it, on input the fixtures don't reach.
 const md = new MarkdownIt().use(attrs);
-const engines: Array<[string, (src: string) => string]> = [
+const engines: [string, (src: string) => string][] = [
   ["markdown-it", (src) => normalizeHtml(md.render(src))],
   [
     "remark",
@@ -231,9 +231,7 @@ describe.each(engines)("attrs/grammar (%s)", (_engine, render) => {
 });
 
 // Where Sätteri can't follow. Its reader works on one run of plain text, so a character that could start other inline syntax ends the block, and it reads a heading's block before the heading's closing sequence. The forms are documented ones (`.class`, `key=value`), so mdit-attrs and remd-attrs keep them; the guide lists the difference. A change on Sätteri's side shows up here.
-const limits: Array<
-  [why: string, input: string, ours: string, satteri: string]
-> = [
+const limits: [why: string, input: string, ours: string, satteri: string][] = [
   [
     "a square bracket in a class",
     "text {.w-[10px]}",

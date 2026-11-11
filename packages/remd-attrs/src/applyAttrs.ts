@@ -42,12 +42,9 @@ export const applyAttrs = (
     if (key === "class") {
       const { className } = props;
       const generated = generatedClass(node);
-      if (className !== undefined && className !== null) {
+      if (className !== undefined) {
         // The node's classes are already under `className` (another plugin's, or the ones below): add to them, so the element keeps one `class` attribute.
-        props.className = [
-          ...(Array.isArray(className) ? className : [String(className)]),
-          value
-        ];
+        props.className = [className, value].flat();
       } else if (generated) {
         // The block's classes first, as Sätteri orders them.
         const existing = props.class as string | undefined;

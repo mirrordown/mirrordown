@@ -14,7 +14,7 @@ const mdit = (options: Parameters<typeof attrs>[1], src: string) =>
 /** One instance of each engine, so a test can render with it more than once. */
 const instances = (
   options: AttrsOptions
-): Array<[string, (src: string) => string]> => {
+): [string, (src: string) => string][] => {
   const md = new MarkdownIt().use(attrs, options);
   const processor = unified()
     .use(remarkParse)
