@@ -1,4 +1,5 @@
 import type { DelimiterRange } from "../types.js";
+import { readAttrs } from "./getAttrs.js";
 
 type DelimiterPosition = "start" | "end" | "only";
 
@@ -13,8 +14,10 @@ export type DelimiterChecker = (
  * [start, end] range of the content inside the delimiters, or null if no
  * match. The returned range is exclusive of the delimiter characters.
  *
- * A valid block must contain at least one character (i.e. `{}` is invalid),
- * and the outer delimiters must not be repeated (i.e. `{{}}` is invalid).
+ * A valid block must hold at least one attribute, as `readAttrs` reads them
+ * (i.e. `{}` and `{x}` are text), and the outer delimiters must not be
+ * repeated (i.e. `{{}}` is invalid). A delimiter inside a quoted value is part
+ * of the value.
  */
 export const getDelimiterChecker = (
   left: string,
@@ -39,24 +42,28 @@ export const getDelimiterChecker = (
       if (str.endsWith(doubleRight)) return null;
     }
 
-    if (pos === "only") {
-      const contentEnd = str.length - rl;
-      if (contentEnd <= ll) return null;
-      // `{.a} {#b}` is text followed by a block, as "end" reads it, not one block.
-      if (str.lastIndexOf(left, contentEnd - 1) !== 0) return null;
-      return [ll, contentEnd];
-    }
-
     if (pos === "start") {
-      const end = str.indexOf(right, ll + 1);
-      if (end === -1) return null;
-      return [ll, end];
+      const block = readAttrs(str, ll, str.length, left, right);
+      return block && str.startsWith(right, block.end) ? [ll, block.end] : null;
     }
 
-    // pos === "end"
-    const start = str.lastIndexOf(left, str.length - rl - 1);
-    if (start === -1) return null;
-    if (start >= ll && str.startsWith(left, start - ll)) return null;
-    return [start + ll, str.length - rl];
+    // "only" and "end": a block that closes exactly where the text does.
+    const contentEnd = str.length - rl;
+    const closes = (start: number): boolean =>
+      readAttrs(str, start, contentEnd, left, right)?.end === contentEnd;
+
+    // `{.a} {#b}` is text followed by a block, as "end" reads it, not one block.
+    if (pos === "only") return closes(ll) ? [ll, contentEnd] : null;
+
+    // pos === "end": the first opening delimiter a block can be read from.
+    for (
+      let at = str.indexOf(left);
+      at !== -1 && at < contentEnd;
+      at = str.indexOf(left, at + 1)
+    ) {
+      if (at >= ll && str.startsWith(left, at - ll)) continue;
+      if (closes(at + ll)) return [at + ll, contentEnd];
+    }
+    return null;
   };
 };

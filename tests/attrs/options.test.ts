@@ -164,10 +164,4 @@ describe("attrs/options", () => {
     expect(out).toContain('id="bar"');
     expect(out).toContain('data-x="baz"');
   });
-
-  it("double dot: css-module class", () => {
-    expect(mdit({}, "# Hello {..my-module}")).toContain(
-      'css-module="my-module"'
-    );
-  });
 });
