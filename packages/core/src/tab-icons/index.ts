@@ -51,11 +51,15 @@ export const createTabIconResolver = (
   // An icon's markup takes its class and `aria-hidden` on its `<svg>` root, so anything else (an `<img>`, an XML declaration or a comment before the `<svg>`) would render unsized and be announced. It is refused here, when the plugin is created, with the key at fault.
   const isSvg = (markup: unknown): boolean =>
     typeof markup === `string` && /^\s*<svg\b/.test(markup);
-  for (const [key, icon] of Object.entries<unknown>(options.icons ?? {})) {
+  // What a caller without the types may have passed.
+  const given: Record<
+    string,
+    string | { light?: unknown; dark?: unknown } | null | undefined
+  > = options.icons ?? {};
+  for (const [key, icon] of Object.entries(given)) {
     // `undefined` is left alone: it takes a built-in icon away.
     if (icon === undefined) continue;
-    const pair = icon as { light?: unknown; dark?: unknown } | null;
-    const parts = typeof icon === `object` ? [pair?.light, pair?.dark] : [icon];
+    const parts = typeof icon === `object` ? [icon?.light, icon?.dark] : [icon];
     if (!parts.every(isSvg))
       throw new TypeError(
         `tab-icons: the icon for "${key}" must be SVG markup that starts with <svg, or a { light, dark } pair of such markup`
