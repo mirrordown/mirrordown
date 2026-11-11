@@ -172,7 +172,7 @@ describe("core: masking", () => {
     expect(built).toEqual({
       type: "text",
       value: " ==b==",
-      data: { escaped: [1] }
+      data: { escaped: { length: 6, indices: [1] } }
     });
 
     const again = maskTreeEscapes(paragraph, source);
@@ -195,8 +195,16 @@ describe("core: masking", () => {
     carryEscapes(term, escaped, 0);
     carryEscapes(rest, escaped, 4);
     expect(term).toEqual({ type: "text", value: "HTML" });
-    expect(rest.data).toEqual({ escaped: [1] });
     expect([...textEscapes(rest, source)]).toEqual([1]);
+  });
+
+  it("ignores a record left on text that has changed length since", () => {
+    // A plugin that edits a rebuilt node's value, or copies the node with part of it, leaves the indices pointing at other characters. Masking those would make a real delimiter inert, so the record is dropped instead.
+    const node: TextNode = { type: "text", value: " ==b==" };
+    carryEscapes(node, new Set([1]), 0);
+    expect([...textEscapes(node, "")]).toEqual([1]);
+    node.value = "x ==b==";
+    expect([...textEscapes(node, "")]).toEqual([]);
   });
 
   it("cannot tell an escape without the source the tree was parsed from", () => {

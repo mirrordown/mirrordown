@@ -125,10 +125,33 @@ export interface TextLikeNode {
         end: { offset?: number | undefined };
       }
     | undefined;
-  /** A text node a span scan built keeps the indices of its literal characters in `data.escaped`. */
+  /** A text node a span scan built keeps a record of its literal characters in `data.escaped`. */
   data?: object | undefined;
   children?: readonly TextLikeNode[] | undefined;
 }
+
+// The record a rebuilt text node carries in `data.escaped`: the indices of its literal characters, and the length of the value they index. A record whose length no longer matches (a plugin edited or copied the text since) is ignored, which loses the escapes but never masks the wrong characters.
+const record = (node: TextLikeNode, value: string, indices: number[]): void => {
+  node.data = { ...node.data, escaped: { length: value.length, indices } };
+};
+const recorded = (
+  data: object | undefined,
+  value: string
+): Set<number> | undefined => {
+  const entry = data && `escaped` in data ? data.escaped : undefined;
+  if (
+    typeof entry !== `object` ||
+    entry === null ||
+    !(`length` in entry) ||
+    !(`indices` in entry) ||
+    entry.length !== value.length ||
+    !Array.isArray(entry.indices)
+  )
+    return undefined;
+  return new Set(
+    entry.indices.filter((index): index is number => typeof index === `number`)
+  );
+};
 
 /**
  * Indices of a text node's characters that are literal (see {@link escapedIndices}). A node rebuilt by a span scan has no source position, so it carries them in `data.escaped`; any other node is aligned with `source`. Pass the parent's type and whether the node is its `only` child to recognise the text of an autolink (`<https://example.com>`), which is literal throughout: markdown-it emits it as one token that no inline rule reads.
@@ -141,11 +164,8 @@ export const textEscapes = (
 ): Set<number> => {
   const { data, value } = node;
   if (typeof value !== `string`) return new Set();
-  if (data && `escaped` in data && Array.isArray(data.escaped)) {
-    return new Set(
-      data.escaped.filter((index): index is number => typeof index === `number`)
-    );
-  }
+  const carried = recorded(data, value);
+  if (carried) return carried;
   const start = node.position?.start.offset;
   const end = node.position?.end.offset;
   if (start === undefined || end === undefined) return new Set();
@@ -172,7 +192,7 @@ export const carryEscapes = (
   for (let i = 0; i < node.value.length; i++) {
     if (escaped.has(from + i)) kept.push(i);
   }
-  if (kept.length > 0) node.data = { ...node.data, escaped: kept };
+  if (kept.length > 0) record(node, node.value, kept);
 };
 
 /**
@@ -191,7 +211,7 @@ export const restoreText = (node: TextLikeNode): void => {
     }
   }
   node.value = value;
-  if (!node.position) node.data = { ...node.data, escaped };
+  if (!node.position) record(node, value, escaped);
 };
 
 /**
