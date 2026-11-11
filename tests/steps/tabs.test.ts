@@ -389,3 +389,39 @@ describe("steps + tabs: a blank `>` line between tab entries in a step body keep
     ]);
   });
 });
+
+// ── Sub-steps and tabs ────────────────────────────────────────────────────────
+
+// A sub-step's body carries its parent step's single `>`, not one per nesting level, so a panel's second line inside it is still the panel's: counted as deeper, remark and Sätteri moved it out of the tab group, or out of the sub-step.
+describe("steps + tabs: a sub-step's body lines stay where they're written", () => {
+  it.each([
+    [
+      "tabs in a sub-step's body",
+      "@1. A\n@@1. B\n> % T\n> > one\n> > two",
+      '<section class="markdown-tabs-panel" aria-label="T"><p>one\ntwo</p></section>'
+    ],
+    [
+      "a sub-step in a tab panel",
+      "% Tab\n> @1. Step\n> @@1. Sub\n> > line one\n> > line two",
+      '<p class="markdown-steps-title">Sub</p><div class="markdown-steps-body"><p>line one\nline two</p></div>'
+    ]
+  ])("%s", (_, input, fragment) => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toContain(fragment);
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});
+
+// The lines that end a step group are rebuilt as the blocks they're written as, so the tab header among them and its `>` body are a paragraph and a blockquote again, which is what the tabs recognition (it runs after steps) looks for. Flattened into one paragraph, remark and Sätteri rendered the tab group as text.
+describe("steps + tabs: a tab group directly after a step group, without a blank line", () => {
+  const input = "@1. A\n> body\n% Tab\n> t";
+  it("is a tab group in every engine", () => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toMatch(
+      /^<ol class="markdown-steps">.*<\/ol><div class="markdown-tabs".*aria-label="Tab"><p>t<\/p><\/section>/s
+    );
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});

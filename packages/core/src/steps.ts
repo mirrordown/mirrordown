@@ -6,6 +6,7 @@ import type {
   Root,
   Paragraph,
   Blockquote,
+  Text,
   PhrasingContent,
   BlockContent,
   DefinitionContent
@@ -14,14 +15,17 @@ import type { Properties } from "hast";
 import {
   blockquoteMarkers,
   endGroupsAtMarkers,
+  headerLineContent,
   INDENTED_BLOCKS,
-  MARKED_BLOCKS,
+  markerLevels,
   splitAtOpeningLine,
   linesToParagraph,
   markerCount,
   paragraphProperties,
   paraToLines,
+  paraToSourceLines,
   rebuildLazyLines,
+  splitSourceLines,
   type MarkedLine
 } from "./lazy.js";
 import { isAlertMarkerLine } from "./github-alerts/index.js";
@@ -60,6 +64,8 @@ export interface StepsItemNode {
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
     hProperties?: Properties;
+    /** A sub-step (`@@` and deeper): its body is written with its parent step's `>` markers, not with one more, which is how the lazy-line passes count its lines (see `markerLevels`). */
+    sub?: boolean;
   };
 }
 
@@ -76,6 +82,20 @@ const parseHeaderPrefix = (text: string): ParsedHeader | null => {
   if (!m) return null;
   const [, hashes = "", digits = "", rest = ""] = m;
   return { depth: hashes.length, number: parseInt(digits, 10), rest };
+};
+
+// A step header as written. Recognition reads text values, where an escape (`\@1.`) or a character reference (`&#64;1.`) has become the character it stands for; markdown-it reads the line, where those are not a header. So with the source, the text must start with a header there too.
+const SOURCE_HEADER_RE = /^@{1,6}\d+\./;
+
+const writtenHeader = (
+  text: Text,
+  sourceLines?: readonly string[]
+): ParsedHeader | null => {
+  const header = parseHeaderPrefix(text.value);
+  const start = text.position?.start;
+  if (!header || !sourceLines || !start) return header;
+  const source = (sourceLines[start.line - 1] ?? "").slice(start.column - 1);
+  return SOURCE_HEADER_RE.test(source) ? header : null;
 };
 
 // ── Raw step types ────────────────────────────────────────────────────────────
@@ -103,17 +123,24 @@ interface HeaderPara {
   steps: RawStep[];
   rest: PhrasingContent[][];
   restLine: number;
+  // Attributes the parser read off the end of the paragraph (Sätteri) from a block on a line of its own after the last header: written after the steps, they are the list's, as the attrs plugins of the other engines place them.
+  listProperties?: Properties | undefined;
 }
 
 const extractHeaderPara = (
   para: Paragraph,
   counters: Map<number, number>,
   requireDepthOne = true,
-  prevDepth = 0
+  prevDepth = 0,
+  sourceLines?: readonly string[]
 ): HeaderPara | null => {
-  const lines = paraToLines(para);
+  const lines = paraToLines(para, sourceLines);
   const steps: RawStep[] = [];
   let currentDepth = prevDepth;
+  // Whether the paragraph goes on past its last line's text: the parser took an attribute block from a line of its own.
+  const lastText = lines.at(-1)?.at(-1)?.position?.end.line;
+  const ownLine =
+    lastText !== undefined && (para.position?.end.line ?? lastText) > lastText;
   const stop = (index: number): HeaderPara | null =>
     steps.length > 0
       ? {
@@ -123,11 +150,12 @@ const extractHeaderPara = (
         }
       : null;
 
-  for (const [index, lineSegs] of lines.entries()) {
+  for (const [index, line] of lines.entries()) {
+    const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
     if (first?.type !== "text") return stop(index);
 
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     if (!header) return stop(index);
 
     const { depth } = header;
@@ -148,13 +176,16 @@ const extractHeaderPara = (
       number,
       titleNodes,
       body: [],
-      ...(index === lines.length - 1
+      ...(index === lines.length - 1 && !ownLine
         ? { hProperties: paragraphProperties(para) }
         : {})
     });
   }
 
-  return stop(lines.length);
+  const all = stop(lines.length);
+  return all && ownLine
+    ? { ...all, listProperties: paragraphProperties(para) }
+    : all;
 };
 
 // Lines left over after a group ends become ordinary paragraphs, split before
@@ -163,7 +194,8 @@ const extractHeaderPara = (
 // to source lines) because group ids hash the start line.
 const splitAtGroupStarts = (
   lines: PhrasingContent[][],
-  firstLine: number
+  firstLine: number,
+  sourceLines?: readonly string[]
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   let start = 0;
@@ -179,7 +211,7 @@ const splitAtGroupStarts = (
   lines.forEach((line, index) => {
     const first = line[0];
     const opens =
-      first?.type === "text" && parseHeaderPrefix(first.value)?.depth === 1;
+      first?.type === "text" && writtenHeader(first, sourceLines)?.depth === 1;
     if (opens && index > start) {
       flush(index);
       start = index;
@@ -218,19 +250,16 @@ const takeLazyLines = (
     last = parent.children?.at(-1);
   }
   const para = last as unknown as Paragraph;
-  const start = para.position?.start.line;
-  if (start === undefined || !parent.children) return null;
-  const lines = paraToLines(para, sourceLines).map(
-    (segs, index): MarkedLine => ({
-      segs,
-      markers: markerCount(sourceLines[start - 1 + index] ?? "")
-    })
-  );
+  const lines = paraToSourceLines(para, sourceLines);
+  if (!lines || !parent.children) return null;
   const at = lines.findIndex(
     ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
   );
   if (at === -1) return null;
-  const kept = linesToParagraph(lines.slice(0, at).map(({ segs }) => segs));
+  const kept = linesToParagraph(
+    lines.slice(0, at).map(({ segs }) => segs),
+    sourceLines
+  );
   parent.children.splice(
     -1,
     1,
@@ -254,7 +283,7 @@ const splitBlockquote = (
   const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {
     const first = lineSegs[0];
     if (first?.type !== "text") return null;
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     return header && header.depth <= currentDepth + 1 ? header : null;
   };
 
@@ -303,10 +332,11 @@ const splitBlockquote = (
         pending = [];
       };
       for (const line of lazy) {
-        const header = line.markers < base ? stepHeader(line.segs) : null;
+        const content = headerLineContent(line.segs, sourceLines);
+        const header = line.markers < base ? stepHeader(content) : null;
         if (header) {
           flush();
-          startStep(header, line.segs);
+          startStep(header, content);
         } else {
           pending.push(line);
         }
@@ -316,24 +346,24 @@ const splitBlockquote = (
     }
 
     let bodyLines: PhrasingContent[][] = [];
-    const lines = paraToLines(child, sourceLines);
-    const first = child.position?.start.line;
+    const marked = sourceLines ? paraToSourceLines(child, sourceLines) : null;
+    const lines = marked
+      ? marked.map(({ segs }) => segs)
+      : paraToLines(child, sourceLines);
     // A header written with the body's own `>` markers is the body's content (it can start a group of its own there), as markdown-it reads the body; only one written outside the body starts the next step.
     const outsideBody = (index: number): boolean =>
-      !sourceLines ||
-      base === undefined ||
-      first === undefined ||
-      markerCount(sourceLines[first - 1 + index] ?? "") < base;
+      !marked || base === undefined || (marked[index]?.markers ?? 0) < base;
     for (const [index, lineSegs] of lines.entries()) {
-      const header = outsideBody(index) ? stepHeader(lineSegs) : null;
+      const content = headerLineContent(lineSegs, sourceLines);
+      const header = outsideBody(index) ? stepHeader(content) : null;
       if (header) {
         // Flush accumulated body lines
-        const bodyPara = linesToParagraph(bodyLines);
+        const bodyPara = linesToParagraph(bodyLines, sourceLines);
         if (bodyPara) currentSegment.body.push(bodyPara);
         bodyLines = [];
         startStep(
           header,
-          lineSegs,
+          content,
           index === lines.length - 1 ? paragraphProperties(child) : undefined
         );
         continue;
@@ -350,6 +380,26 @@ const splitBlockquote = (
 
   segments.push(currentSegment);
   return segments;
+};
+
+// Whether a quote after a step is an alert (`> [!NOTE]`), a block of its own, rather than more of the step's body. After a blank line it is, as markdown-it reads it, whether or not the alerts plugin reads it. Directly under the step it is the body, unless the alerts plugin (it runs before steps) has already made it an alert, taking its marker: that can't be made a body again. Only a marker with the quote's own `>` count counts: written deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlert = (
+  bq: Blockquote,
+  before: Paragraph["position"],
+  sourceLines: readonly string[]
+): boolean => {
+  const line = bq.position?.start.line;
+  if (line === undefined) return false;
+  const source = sourceLines[line - 1] ?? "";
+  if (
+    !isAlertMarkerLine(source) ||
+    markerCount(source) !== blockquoteMarkers(bq, sourceLines)
+  )
+    return false;
+  if (before && line > before.end.line + 1) return true;
+  const text =
+    bq.children[0]?.type === "paragraph" && bq.children[0].children[0];
+  return !(text && text.type === "text" && isAlertMarkerLine(text.value));
 };
 
 // ── Tree builder ──────────────────────────────────────────────────────────────
@@ -395,6 +445,7 @@ const buildTree = (
       data: {
         attrsRole: "containerItem",
         attrsTitle: s.titleNodes,
+        ...(targetDepth > 1 ? { sub: true } : {}),
         ...(s.hProperties ? { hProperties: { ...s.hProperties } } : {})
       }
     });
@@ -438,7 +489,7 @@ export const processStepsInChildren = (
         node,
         sourceLines,
         quotes,
-        (text) => parseHeaderPrefix(text)?.depth === 1
+        (_, text) => writtenHeader(text, sourceLines)?.depth === 1
       );
       if (split) {
         children.splice(i, 1, ...split);
@@ -448,13 +499,20 @@ export const processStepsInChildren = (
 
     if (node.type === "paragraph") {
       const counters = new Map<number, number>();
-      const headerPara = extractHeaderPara(node, counters);
+      const headerPara = extractHeaderPara(
+        node,
+        counters,
+        true,
+        0,
+        sourceLines
+      );
 
       if (headerPara) {
         const rawSteps: RawStep[] = [...headerPara.steps];
         // Lines left over after a depth-skipping or non-header line end the group.
         let rest = headerPara.rest;
         let restLine = headerPara.restLine;
+        let listProperties = headerPara.listProperties;
         let j = i + 1;
         // A group always starts with at least one step.
         const lastStep = (): RawStep => rawSteps[rawSteps.length - 1]!;
@@ -466,12 +524,9 @@ export const processStepsInChildren = (
           if (!sibling) break;
 
           if (sibling.type === "blockquote") {
-            // An alert after a blank line is a block of its own, not more of the step's body.
-            const line = sibling.position?.start.line;
             if (
               sourceLines &&
-              line !== undefined &&
-              isAlertMarkerLine(sourceLines[line - 1] ?? "")
+              isOwnAlert(sibling, children[j - 1]?.position, sourceLines)
             )
               break;
             const segments = splitBlockquote(
@@ -485,6 +540,10 @@ export const processStepsInChildren = (
             if (firstSeg?.header === null) {
               rawSteps[currentStepIdx]?.body.push(...firstSeg.body);
             }
+            // Attributes on the quote itself (Sätteri) come from a block on a line of its own, written after the body without its `>`: that line ends the steps, and its attributes are the list's.
+            const quoteProperties = paragraphProperties(
+              sibling as unknown as Paragraph
+            );
 
             for (let s = 1; s < segments.length; s++) {
               const seg = segments[s];
@@ -496,18 +555,24 @@ export const processStepsInChildren = (
             }
 
             j++;
+            if (quoteProperties) {
+              listProperties = { ...listProperties, ...quoteProperties };
+              break;
+            }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastStep().depth;
             const contHeaders = extractHeaderPara(
               sibling,
               counters,
               false,
-              prevDepth
+              prevDepth,
+              sourceLines
             );
             if (contHeaders) {
               rawSteps.push(...contHeaders.steps);
               rest = contHeaders.rest;
               restLine = contHeaders.restLine;
+              listProperties = contHeaders.listProperties ?? listProperties;
               currentStepIdx = rawSteps.length - 1;
               currentDepth = lastStep().depth;
               j++;
@@ -522,8 +587,14 @@ export const processStepsInChildren = (
         const list = buildTree(rawSteps, 1, 0, rawSteps.length);
         list.containerClass = containerClass;
         if (parentType === "stepsItem") list.inBody = true;
+        if (listProperties)
+          list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as Root["children"][number]);
-        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
+        children.splice(
+          j,
+          0,
+          ...splitAtGroupStarts(rest, restLine, sourceLines)
+        );
         i = j;
         continue;
       }
@@ -549,10 +620,11 @@ export const processSteps = (
   containerClass: string,
   source?: string
 ): void => {
-  const sourceLines = source?.split(/\r?\n/);
+  const sourceLines =
+    source === undefined ? undefined : splitSourceLines(source);
   const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
-    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
+    const inner = quotes + markerLevels(node);
     processStepsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,

@@ -231,3 +231,98 @@ describe("steps + attrs: a block on a line of its own in a body", () => {
     expect(body(normalizeHtml(html))).toBe(expected);
   });
 });
+
+const satAttrs = (input: string): string =>
+  normalizeHtml(
+    markdownToHtml(input, {
+      features: { attributes: true },
+      mdastPlugins: [satteriSteps()]
+    }).html
+  );
+
+// An attribute block on a line of its own, written after the steps without the body's `>`, is the step list's. Sätteri reads attribute blocks before the plugin runs and puts this one on the header's paragraph or on the body's quote, both of which recognition dissolves: the block ended up on the last step, or was lost.
+describe("steps + attrs: a block on its own line after the steps goes on the list in every engine", () => {
+  const cases: [string, string, string][] = [
+    [
+      "after a title-only step",
+      "@1. A\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p></li></ol>'
+    ],
+    [
+      "after a body",
+      "@1. A\n> body\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><p>body</p></div></li></ol>'
+    ],
+    [
+      "after a sub-step, on the outer list",
+      "@1. A\n@@1. B\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">B</p></li></ol></li></ol>'
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toBe(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(satAttrs(input)).toBe(expected);
+  });
+});
+
+// A title that is only an attribute block is empty once the block is taken for the step. An empty title paragraph still takes up its line in the stylesheet, so it renders like a step written without a title: not at all.
+describe("steps + attrs: a title that is only an attribute block renders no title", () => {
+  const input = "@1. {.a}\n> body";
+  const expected =
+    '<ol class="markdown-steps"><li class="markdown-steps-item a" data-step="1"><div class="markdown-steps-body"><p>body</p></div></li></ol>';
+  it("markdown-it", () =>
+    expect(normalizeHtml(md.render(input))).toBe(expected));
+  it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(satAttrs(input)).toBe(expected));
+});
+
+// Known difference, pinned so a change to it is noticed: after a blank line, Sätteri's own attribute syntax makes the block an empty paragraph with the attributes, for any block and not only for steps, where the attrs plugins of the other engines put it on the block before it.
+describe("steps + attrs: a block after a blank line, in Sätteri", () => {
+  const input = "@1. A\n> body\n\n{.x}";
+  it("stays an empty paragraph after the list", () => {
+    expect(satAttrs(input)).toMatch(/<\/ol><p class="x"><\/p>$/);
+  });
+  it("is the list's in markdown-it and remark", () => {
+    expect(normalizeHtml(md.render(input))).toContain(
+      '<ol class="markdown-steps x">'
+    );
+    expect(remd(input)).toContain('<ol class="markdown-steps x">');
+  });
+});
+
+// hast names the class property `className`; remd-attrs sets `class`. A plugin that sets `className` on a step or its list must not leave the element with two class attributes.
+describe("steps (remark): an author class set as className joins the element's own", () => {
+  it("on the list and on a step", () => {
+    interface Classed {
+      data?: { hProperties?: Record<string, unknown> };
+      children: Classed[];
+    }
+    const withClassName = () => (tree: unknown) => {
+      const list = (tree as Classed).children[0];
+      const item = list?.children[0];
+      if (!list || !item) return;
+      list.data = { ...list.data, hProperties: { className: ["outer"] } };
+      item.data = {
+        ...item.data,
+        hProperties: { className: ["inner"], id: "first" }
+      };
+    };
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkSteps)
+        .use(withClassName)
+        .use(remarkRehype, { handlers: stepsHastHandlers as never })
+        .use(rehypeStringify)
+        .processSync("@1. One")
+    );
+    expect(normalizeHtml(html)).toBe(
+      '<ol class="markdown-steps outer"><li class="markdown-steps-item inner" data-step="1" id="first"><p class="markdown-steps-title">One</p></li></ol>'
+    );
+  });
+});

@@ -16,6 +16,13 @@ type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
   hProperties?: Properties | undefined;
 };
 
+/** A line ending as CommonMark reads one: a line feed, a carriage return, or both. */
+const LINE_ENDING = /\r\n|\r|\n/;
+
+/** A document's source split into its lines, so a line number counts the lines the parser's positions count, whichever line endings the document uses. */
+export const splitSourceLines = (source: string): string[] =>
+  source.split(LINE_ENDING);
+
 /** The `>` markers a source line starts with. */
 export const markerCount = (line: string): number =>
   (/^[ \t>]*/.exec(line)?.[0] ?? "").split(">").length - 1;
@@ -40,27 +47,53 @@ export interface MarkedLine {
   markers: number;
 }
 
-/**
- * A paragraph's phrasing content split into its lines: text at each line ending, and after a hard break, which stays at the end of its line. With the source, the text on each line keeps its place in it, as remark would give it: from after the line's container prefix to its last non-space character.
- */
-export const paraToLines = (
+/** A marked line, with the number of the source line it starts on. */
+export interface SourceLine extends MarkedLine {
+  line: number;
+}
+
+// A paragraph's lines, each with the source line it starts on, where that's known: the line of the first content on it. A line here isn't always the one after the line before it, since inline content that spans lines (emphasis, a code span, a link) keeps them together as one.
+const numberedLines = (
   para: Paragraph,
   sourceLines?: readonly string[]
-): PhrasingContent[][] => {
-  const lines: PhrasingContent[][] = [[]];
+): Array<{ segs: PhrasingContent[]; line: number | undefined }> => {
+  let current: { segs: PhrasingContent[]; line: number | undefined } = {
+    segs: [],
+    line: para.position?.start.line
+  };
+  const lines = [current];
+  const open = (line: number | undefined): void => {
+    current = { segs: [], line };
+    lines.push(current);
+  };
   for (const child of para.children) {
     if (child.type === "break") {
-      lines.at(-1)?.push(child);
-      lines.push([]);
+      current.line ??= child.position?.start.line;
+      current.segs.push(child);
+      open(undefined);
     } else if (child.type === "text") {
-      const parts = child.value.split("\n");
+      // A text value keeps the document's own line endings, so a carriage return ends a line too: left on its line, it would end a title or a rebuilt paragraph.
+      const parts = child.value.split(LINE_ENDING);
+      const position = child.position;
+      // The line the text starts on. A parser's text that starts with a line ending starts at the end of the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`): the source tells the two apart.
+      const rebuilt =
+        position !== undefined &&
+        parts.length > 1 &&
+        parts[0] === "" &&
+        (sourceLines?.[position.start.line - 1] ?? "")
+          .slice(position.start.column - 1)
+          .trim() !== "";
+      const first =
+        position === undefined
+          ? undefined
+          : position.start.line - (rebuilt ? 1 : 0);
       for (const [p, part] of parts.entries()) {
-        if (p > 0) lines.push([]);
+        if (p > 0) open(first === undefined ? undefined : first + p);
+        else current.line ??= first;
         if (part === "") continue;
         const text: Text = { type: "text", value: part };
-        const position = child.position;
-        if (position) {
-          const line = position.start.line + p;
+        if (position && first !== undefined) {
+          const line = first + p;
           const source = sourceLines?.[line - 1];
           const start =
             p === 0
@@ -79,13 +112,71 @@ export const paraToLines = (
                 : { line, column: source.trimEnd().length + 1 };
           if (start && end) text.position = { start, end };
         }
-        lines.at(-1)?.push(text);
+        current.segs.push(text);
       }
     } else {
-      lines.at(-1)?.push(child);
+      current.line ??= child.position?.start.line;
+      current.segs.push(child);
     }
   }
+  // Content without a position (a node another plugin made) is taken to start on the line after the one before it.
+  for (const [index, line] of lines.entries()) {
+    const before = lines[index - 1]?.line;
+    if (before !== undefined) line.line ??= before + 1;
+  }
+  // A hard break can only end a paragraph that was cut after it (CommonMark has none at the end of a block), and no line follows it there.
+  if (lines.length > 1 && current.segs.length === 0) {
+    if (para.children.at(-1)?.type === "break") lines.pop();
+  }
   return lines;
+};
+
+/**
+ * A paragraph's phrasing content split into its lines: text at each line ending, and after a hard break, which stays at the end of its line. With the source, the text on each line keeps its place in it, as remark would give it: from after the line's container prefix to its last non-space character.
+ */
+export const paraToLines = (
+  para: Paragraph,
+  sourceLines?: readonly string[]
+): PhrasingContent[][] =>
+  numberedLines(para, sourceLines).map(({ segs }) => segs);
+
+/**
+ * A paragraph's lines (as `paraToLines` splits them), each with the source line it starts on and that line's `>` markers; `null` when a line's place in the source isn't known. Read a line's markers from here rather than from the paragraph's first line plus the line's index: the two differ after inline content that spans lines.
+ */
+export const paraToSourceLines = (
+  para: Paragraph,
+  sourceLines: readonly string[]
+): SourceLine[] | null => {
+  const lines: SourceLine[] = [];
+  for (const { segs, line } of numberedLines(para, sourceLines)) {
+    if (line === undefined) return null;
+    lines.push({
+      segs,
+      line,
+      markers: markerCount(sourceLines[line - 1] ?? "")
+    });
+  }
+  return lines;
+};
+
+// The phrasing content of each line.
+const segsOf = (lines: readonly MarkedLine[]): PhrasingContent[][] =>
+  lines.map(({ segs }) => segs);
+
+/**
+ * A header line's content without the hard break that ends it. A header is one line, so nothing breaks after it: the spaces that made the break are trailing spaces, and a backslash is a literal one, as CommonMark reads a backslash that ends a block and as markdown-it reads the header's line. Without the source, which tells the two apart, the break is dropped.
+ */
+export const headerLineContent = (
+  segs: PhrasingContent[],
+  sourceLines?: readonly string[]
+): PhrasingContent[] => {
+  const last = segs.at(-1);
+  if (last?.type !== "break") return segs;
+  const content = segs.slice(0, -1);
+  const start = last.position?.start;
+  if (start && sourceLines?.[start.line - 1]?.[start.column - 1] === "\\")
+    pushPhrasing(content, { type: "text", value: "\\" });
+  return content;
 };
 
 /** The attributes a paragraph carries, which a parser that reads attribute blocks before recognition (Sätteri) read off its end: they belong to its last line. */
@@ -116,15 +207,20 @@ const pushPhrasing = (
   children[children.length - 1] = merged;
 };
 
-/** A paragraph from lines of phrasing content, or `null` for none. Lines join with a line ending, except after a hard break, which is one. */
+/** A paragraph from lines of phrasing content, or `null` for none. Lines join with a line ending, except after a hard break, which is one. Pass the source where the paragraph is cut before a line that was part of it: a hard break that would then end the paragraph is read as CommonMark reads one at the end of a block (see `headerLineContent`). */
 export const linesToParagraph = (
-  lines: PhrasingContent[][]
+  lines: PhrasingContent[][],
+  sourceLines?: readonly string[]
 ): Paragraph | null => {
   const children: PhrasingContent[] = [];
   for (const [i, line] of lines.entries()) {
     if (i > 0 && lines[i - 1]?.at(-1)?.type !== "break")
       pushPhrasing(children, { type: "text", value: "\n" });
-    for (const node of line) pushPhrasing(children, node);
+    const segs =
+      sourceLines && i === lines.length - 1
+        ? headerLineContent(line, sourceLines)
+        : line;
+    for (const node of segs) pushPhrasing(children, node);
   }
   if (children.length === 0) return null;
   const para: Paragraph = { type: "paragraph", children };
@@ -164,13 +260,26 @@ interface GroupTreeNode {
   data?: unknown;
 }
 
-/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. */
+/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
 export const MARKED_BLOCKS: ReadonlySet<string> = new Set([
   `blockquote`,
   `alert`,
   `tabsItem`,
   `stepsItem`
 ]);
+
+/**
+ * The `>` markers a block adds to its lines, over those of the block around it: one for a marked block, none for any other. A sub-item (a `@@` step, a `%%` tab) is a marked block that adds none: it's nested in its parent item, but its body is written with its parent's markers, so recognition sets `sub` in its data, which a renderer that rebuilds the node (Sätteri) keeps for the plugins after it.
+ */
+export const markerLevels = (node: {
+  type?: string;
+  data?: unknown;
+}): number => {
+  // The data of a recognized item, in the loose node shape the passes walk.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const data = node.data as { sub?: boolean } | null | undefined;
+  return MARKED_BLOCKS.has(node.type ?? ``) && data?.sub !== true ? 1 : 0;
+};
 
 /** Blocks a line can lazily continue into by its indentation rather than its markers: a list item or a definition. */
 export const INDENTED_BLOCKS: ReadonlySet<string> = new Set([
@@ -180,86 +289,109 @@ export const INDENTED_BLOCKS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * A paragraph split before its first line (after its first) that `opens` a group, written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. Attributes ending the paragraph go with the part they end.
+ * A paragraph split before its first line (after its first) that `opens` a group (given the line's first text, and its node for where it's written), written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. Attributes ending the paragraph go with the part they end.
  */
 export const splitAtOpeningLine = (
   para: Paragraph,
   sourceLines: readonly string[],
   quotes: number,
-  opens: (text: string) => boolean
+  opens: (text: string, node: Text) => boolean
 ): Paragraph[] | null => {
-  const start = para.position?.start.line;
-  if (start === undefined) return null;
-  const lines = paraToLines(para, sourceLines);
-  const at = lines.findIndex((line, index) => {
-    const first = line[0];
+  const lines = paraToSourceLines(para, sourceLines);
+  if (!lines) return null;
+  const at = lines.findIndex(({ segs, markers }, index) => {
+    const first = segs[0];
     return (
       index > 0 &&
       first?.type === `text` &&
-      opens(first.value) &&
-      markerCount(sourceLines[start - 1 + index] ?? ``) === quotes
+      opens(first.value, first) &&
+      markers === quotes
     );
   });
   if (at === -1) return null;
-  const head = linesToParagraph(lines.slice(0, at));
-  const tail = linesToParagraph(lines.slice(at));
+  const head = linesToParagraph(segsOf(lines.slice(0, at)), sourceLines);
+  const tail = linesToParagraph(segsOf(lines.slice(at)));
   if (!head || !tail) return null;
   if (para.data) tail.data = para.data;
   return [head, tail];
 };
 
-// The paragraph a lazily continued line can end up in: the deepest last block, through lists, items and quotes.
+// The paragraph a lazily continued line can end up in, with the block it's in: the deepest last block, through lists, items and quotes.
 const lastParagraph = (
   node: GroupTreeNode | undefined
-): Paragraph | undefined => {
+): { para: Paragraph; parent: GroupTreeNode } | undefined => {
   const last = node?.children?.at(-1);
-  if (!last) return undefined;
+  if (!node || !last) return undefined;
+  if (last.type !== `paragraph`) return lastParagraph(last);
   // A paragraph of the tree, which the loose node shape doesn't name.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  if (last.type === `paragraph`) return last as unknown as Paragraph;
-  return lastParagraph(last);
+  const para = last as unknown as Paragraph;
+  return { para, parent: node };
 };
 
 /**
- * End each group of `listType` (tab groups or steps) where its last panel's `>` markers stop, as markdown-it reads a panel: a line CommonMark lazily continued into the panel's last paragraph, written with fewer markers than the panel's own lines, starts a paragraph after the group, with the lines after it. Groups nested in a panel are ended first, so a line that leaves an outer panel too moves on past its group. The paragraph's attributes (Sätteri reads them off its end) go with its last line.
+ * End each group of `listType` (tab groups or steps) where its last panel's `>` markers stop, as markdown-it reads a panel: a line CommonMark lazily continued into the panel's last paragraph, written with fewer markers than the panel's own lines, starts the content after the group, with the lines after it. That content is rebuilt from the lines' markers, as markdown-it parses it once the group has ended: a line with more markers than the group's surroundings opens a blockquote, so a `>` body after a header among them is still one. Groups nested in a panel are ended first; a line that leaves the outer panel too is kept as a line for the outer group to place. The paragraph's attributes (Sätteri reads them off its end) go with its last line.
  */
 export const endGroupsAtMarkers = (
   root: { children: unknown[] },
   sourceLines: readonly string[],
   listType: `tabsList` | `stepsList`
 ): void => {
+  // Paragraphs of lines that left a group nested in a panel and that panel too: unlike a parsed paragraph, their first line can be written outside the panel they're in.
+  const leaving = new WeakSet<Paragraph>();
   const visit = (node: GroupTreeNode, quotes: number): void => {
     const children = node.children;
     if (!children) return;
     for (let i = 0; i < children.length; i++) {
       const child = children[i]!;
-      visit(child, quotes + (MARKED_BLOCKS.has(child.type) ? 1 : 0));
-      if (child.type !== listType) continue;
-      const para = lastParagraph(child.children?.at(-1));
-      const start = para?.position?.start.line;
-      if (!para || start === undefined) continue;
-      const lines = paraToLines(para, sourceLines);
-      // The panel's lines carry one more marker than the blocks around the group.
+      visit(child, quotes + markerLevels(child));
+      // A group ends where its last panel's markers stop. A plain blockquote keeps the lines CommonMark continued into it, except lines that left a group in it: markdown-it ends the blockquote where that group ends.
+      const quote = child.type === `blockquote` || child.type === `alert`;
+      if (child.type !== listType && !quote) continue;
+      const item = quote ? child : child.children?.at(-1);
+      const found = lastParagraph(item);
+      if (quote && !(found && leaving.has(found.para))) continue;
+      const lines = found && paraToSourceLines(found.para, sourceLines);
+      if (!item || !found || !lines) continue;
+      const { para, parent } = found;
+      // The panel's lines carry one more marker than the blocks around the group; a sub-item's, as many as its parent item's, which is the block around its group.
+      const panel = quotes + markerLevels(item);
+      const from = leaving.has(para) ? 0 : 1;
       const outside = lines.findIndex(
-        (_, index) =>
-          index > 0 &&
-          markerCount(sourceLines[start - 1 + index] ?? ``) < quotes + 1
+        ({ markers }, index) => index >= from && markers < panel
       );
       if (outside === -1) continue;
-      const kept = linesToParagraph(lines.slice(0, outside));
-      const moved = linesToParagraph(lines.slice(outside));
-      if (!kept || !moved) continue;
-      para.children = kept.children;
+      const kept = linesToParagraph(
+        segsOf(lines.slice(0, outside)),
+        sourceLines
+      );
+      const after = lines.slice(outside);
+      let moved: Array<BlockContent | DefinitionContent>;
+      if ((after[0]?.markers ?? 0) < quotes) {
+        const flat = linesToParagraph(segsOf(after));
+        if (flat) leaving.add(flat);
+        moved = flat ? [flat] : [];
+      } else {
+        moved = rebuildLazyLines(
+          after.map((line) => ({ ...line, markers: line.markers - quotes })),
+          0
+        );
+      }
+      if (moved.length === 0) continue;
+      // An mdast block, in the loose node shape the pass walks.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+      const blocks = moved as unknown as GroupTreeNode[];
       const data: ParagraphAttributes | undefined = para.data;
       if (data?.hProperties) {
         const { hProperties, ...rest } = data;
         const movedData: ParagraphAttributes = { hProperties };
-        moved.data = movedData;
+        const last = lastParagraph({ type: `root`, children: blocks })?.para;
+        if (last) last.data = movedData;
         para.data = rest;
       }
-      // An mdast paragraph, in the loose node shape the pass walks.
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-      children.splice(i + 1, 0, moved as unknown as GroupTreeNode);
+      if (kept) para.children = kept.children;
+      else parent.children?.pop();
+      children.splice(i + 1, 0, ...blocks);
     }
   };
   // The tree, in the loose node shape the pass walks.

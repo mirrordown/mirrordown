@@ -2,6 +2,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 import { isAlertMarkerLine } from "@mirrordown/core";
 import type { StepsOptions } from "./types.js";
 
@@ -14,11 +15,15 @@ const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/;
 // Matches: > or ><space> continuation line
 const CONTINUATION_RE = /^> ?/;
 
+// A second `>` after the body's own: the line is a quote in the body.
+const NESTED_QUOTE_RE = /^>[ \t]*>/;
+
 interface StepFrame {
   depth: number;
   number: number;
   title: string;
-  bodyLines: string[];
+  // The body's lines without their `>` marker; `null` for a blank line written without one, which ends the blocks before it as it ends a blockquote.
+  bodyLines: Array<string | null>;
 }
 
 interface StepsBlock {
@@ -33,11 +38,23 @@ const parseStepHeader = (
 ): { depth: number; number: number; title: string } | null => {
   const m = STEP_HEADER_RE.exec(line);
   if (!m) return null;
-  return { depth: m[1].length, number: parseInt(m[2], 10), title: m[3] };
+  // Spaces after the title are not part of it (two or more would be a hard break in a paragraph; a header is one line).
+  return {
+    depth: m[1].length,
+    number: parseInt(m[2], 10),
+    title: m[3].trimEnd()
+  };
 };
 
+// The marker takes one column of a tab after it, as it takes a space; the tab's other two columns stay as indentation, so the line isn't read as indented code.
 const stripContinuation = (line: string): string =>
-  line.replace(CONTINUATION_RE, "");
+  line.startsWith(">\t")
+    ? `  ${line.slice(2)}`
+    : line.replace(CONTINUATION_RE, "");
+
+// An alert (`> [!NOTE]`) written with the body's own marker. Deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlertLine = (line: string): boolean =>
+  isAlertMarkerLine(line) && !NESTED_QUOTE_RE.test(line);
 
 /** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
@@ -46,6 +63,29 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   md.block.ruler.before("blockquote", "steps", stepsRule, {
     alt: ["paragraph", "reference"]
   });
+
+  // A title that held only an attribute block is empty once attrs has taken the block for the step: it renders nothing, like a step written without a title. The check is made when rendering because attrs runs after this rule, whichever plugin is installed first.
+  const isEmptied = (inline: Token | undefined): boolean =>
+    inline?.type === "inline" &&
+    (inline.children ?? []).every(
+      (child) => child.type === "text" && child.content === ""
+    );
+  md.renderer.rules.steps_title_open = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
+    isEmptied(tokens[idx + 1]) ? "" : self.renderToken(tokens, idx, opts);
+  md.renderer.rules.steps_title_close = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
+    isEmptied(tokens[idx - 1]) ? "" : self.renderToken(tokens, idx, opts);
 
   function stepsRule(
     state: StateBlock,
@@ -92,10 +132,6 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         // No depth jumps â€” depth can only be currentDepth+1 or <=currentDepth
         if (depth > block.currentDepth + 1) break;
 
-        // Validate: going deeper is only +1
-        if (depth > block.currentDepth && depth !== block.currentDepth + 1)
-          break;
-
         // Reset counters for all depths deeper than this one
         for (const k of block.counters.keys()) {
           if (k > depth) block.counters.delete(k);
@@ -126,18 +162,23 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekPos = state.bMarks[peek] + state.tShift[peek];
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
-          // An alert after a blank line is a block of its own, not more of the step's body.
+          // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
           const isContinuation =
-            (CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
-            parseStepHeader(peekLine) !== null;
+            state.sCount[peek] >= state.blkIndent &&
+            ((CONTINUATION_RE.test(peekLine) && !isOwnAlertLine(peekLine)) ||
+              parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
           // Blank line is part of the body
-          currentFrame.bodyLines.push("");
+          currentFrame.bodyLines.push(null);
           nextLine++;
           continue;
         }
 
-        if (CONTINUATION_RE.test(line)) {
+        // A `>` line written outside the block the steps are in (a list item) is a blockquote after that block, as CommonMark reads it, not more of the body. A header there still continues the steps: CommonMark continues the body's paragraph with it, which is how the other engines find it.
+        if (
+          CONTINUATION_RE.test(line) &&
+          state.sCount[nextLine] >= state.blkIndent
+        ) {
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
@@ -244,17 +285,15 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         }
 
         // Step body â€” parse as nested block content
-        if (f.bodyLines.length > 0) {
+        // Blank lines alone (between two headers, or a lone `>`) are not a body.
+        if (f.bodyLines.some((line) => line !== null && line.trim() !== "")) {
           const bodyOpen = state.push("steps_body_open", "div", 1);
           bodyOpen.attrSet("class", `${containerClass}-body`);
           bodyOpen.block = true;
 
-          const bodyContent = f.bodyLines.join("\n");
-          // Token maps inside the body index its lines, without the `>` markers.
+          const bodyContent = f.bodyLines.map((line) => line ?? "").join("\n");
+          // The `attrsSource` protocol: the body is tokenized from its own text, so the `map` of every token between this one and its close indexes the lines of `attrsSource` (the body without its `>` markers), not the document's. A rule that reads a body token's lines must take them from here, as attrs and caption do; `map` alone points at the wrong document lines.
           bodyOpen.meta = { attrsSource: bodyContent };
-          const oldBullet = state.parentType;
-          state.parentType = "blockquote" as typeof state.parentType;
-          const oldLineMax = state.lineMax;
 
           // Tokenize the body content by creating a child state
           const childState = new (state.constructor as typeof StateBlock)(
@@ -265,10 +304,16 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           );
           // Body tokens nest inside the list, item and body tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
           childState.level = state.level;
-          childState.md.block.tokenize(childState, 0, childState.lineMax);
-
-          state.parentType = oldBullet;
-          state.lineMax = oldLineMax;
+          // A blank line written without the body's `>` ends the blocks before it, as CommonMark ends a blockquote there (the other engines get two blockquotes). So each run of lines between such blank lines is tokenized on its own: a list or a fence doesn't continue across one.
+          let runStart = 0;
+          for (let l = 0; l <= f.bodyLines.length; l++) {
+            if (l < f.bodyLines.length && f.bodyLines[l] !== null) continue;
+            if (l > runStart) {
+              childState.lineMax = l;
+              childState.md.block.tokenize(childState, runStart, l);
+            }
+            runStart = l + 1;
+          }
 
           state.push("steps_body_close", "div", -1);
         }

@@ -97,6 +97,8 @@ export const satteriSteps =
         type: `stepsItem`,
         data: {
           hName: `li`,
+          // Plugins that run after this one (tabs) count the `>` markers of a body's lines from the tree, and a sub-step's body adds none to its parent's.
+          ...(item.data?.sub ? { sub: true } : {}),
           hProperties: withAuthorProperties(
             {
               className: [`${containerClass}-item`],
@@ -186,7 +188,7 @@ export const satteriSteps =
         if (attributes)
           placeCutAttributes(
             tree as unknown as Root,
-            source.split(/\r?\n/),
+            source.split(/\r\n|\r|\n/),
             readAttributes
           );
         writeBack(tree);
