@@ -42,7 +42,7 @@ describe("spoiler/mdit: the replaced text rule stops where markdown-it's own doe
       return false;
     });
     instance.parseInline(src, {});
-    return [...seen].toSorted((a, b) => a - b);
+    return [...seen].sort((a, b) => a - b);
   };
   // Every ASCII character, each between two letters, plus a line ending.
   const ascii = Array.from({ length: 0x7f }, (_, code) =>

@@ -48,7 +48,7 @@ describe("core: escapedIndices", () => {
     expect(escapedIn(String.raw`&lt;\==x==`, "<==x==")).toEqual([0, 1]);
   });
 
-  it("reads a table cell's `\|` as the table's pipe, not as an escaped one", () => {
+  it("reads a table cell's `\\|` as the table's pipe, not as an escaped one", () => {
     // GFM writes a pipe inside a cell as `\|`, and markdown-it's table rule removes that backslash before inline parsing. So `||` written that way is a real delimiter there, and it is the only way to write one in a cell.
     const source = String.raw`\|\|x\|\|`;
     expect([
@@ -174,7 +174,7 @@ describe("core: masking", () => {
     expect(text.value).toBe("http://x.y/==a==");
   });
 
-  it("leaves a table cell's `\|` unmasked however deep the text is in the cell", () => {
+  it("leaves a table cell's `\\|` unmasked however deep the text is in the cell", () => {
     // The cell is the text's parent in `| \|\|a\|\| |` and its grandparent in `| *\|\|b\|\|* |`; markdown-it forms a span in both, so neither may be masked.
     const source = String.raw`| \|\|a\|\| *\|\|b\|\|* |`;
     const open = source.indexOf("*");
