@@ -22,7 +22,7 @@ export interface SqueezeParagraphsPlugin {
 }
 
 /**
- * Sätteri plugin that removes empty (whitespace-only) paragraphs, such as the residue other plugins leave. The rule is shared with the markdown-it and rehype plugins through `@mirrordown/core`. List it last among your hast plugins so it sees that residue.
+ * Sätteri plugin that removes empty (whitespace-only) paragraphs, such as the residue other plugins leave. The rule is shared with the rehype plugin through `@mirrordown/core`, and the markdown-it plugin applies the same one to its tokens. List it last among your hast plugins so it sees that residue.
  */
 export const satteriSqueezeParagraphs =
   (): ((ctx: PluginFactoryContext) => SqueezeParagraphsPlugin) => () =>

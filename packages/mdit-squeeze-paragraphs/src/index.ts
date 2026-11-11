@@ -1,11 +1,15 @@
 import type Token from "markdown-it/lib/token.mjs";
 import type { PluginSimple } from "markdown-it";
 
-// A paragraph is "empty" when every rendered child is whitespace-only text (a soft break renders as a newline), as in rehype-squeeze-paragraphs. The inline token's raw `content` is not consulted: it still holds source another plugin has consumed, such as an attribute block.
+// HTML's inter-element whitespace, the same set as `isEmptyParagraph` in `@mirrordown/core` (which the rehype and Sätteri plugins use), so the engines agree on what is empty. Not `trim()`: that also strips no-break and other Unicode spaces, which are content.
+const WHITESPACE = /^[ \t\n\f\r]*$/;
+
+// A paragraph is "empty" when every rendered child is whitespace-only text (a soft break counts, as the newline it renders by default). The inline token's raw `content` is not consulted: it still holds source another plugin has consumed, such as an attribute block.
 const isEmpty = (inline: Token): boolean =>
   (inline.children ?? []).every(
     (c) =>
-      c.type === "softbreak" || (c.type === "text" && c.content.trim() === "")
+      c.type === "softbreak" ||
+      (c.type === "text" && WHITESPACE.test(c.content))
   );
 
 /** markdown-it plugin that removes empty (whitespace-only) paragraphs. */
