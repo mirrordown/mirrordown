@@ -251,6 +251,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         "class",
         targetDepth === 1 ? containerClass : `${containerClass}-list`
       );
+      // The map ends at the last line of the steps (inclusive: the rule passes `nextLine - 1`), where markdown-it's own tokens end at the line after their last (exclusive). Rules and editors that read the map (scroll sync in a preview) depend on it as it is, so it stays; a reader that needs the exclusive end adds one.
       if (mapStart !== undefined && mapEnd !== undefined)
         olOpen.map = [mapStart, mapEnd];
       olOpen.block = true;
@@ -295,9 +296,9 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           // The `attrsSource` protocol: the body is tokenized from its own text, so the `map` of every token between this one and its close indexes the lines of `attrsSource` (the body without its `>` markers), not the document's. A rule that reads a body token's lines must take them from here, as attrs and caption do; `map` alone points at the wrong document lines.
           bodyOpen.meta = { attrsSource: bodyContent };
 
-          // Tokenize the body content by creating a child state
+          // Tokenize the body content by creating a child state. The body's last line ends with a line ending, as every line of a blockquote's content does: a fence the end of the body closes keeps its last line's.
           const childState = new (state.constructor as typeof StateBlock)(
-            bodyContent,
+            `${bodyContent}\n`,
             state.md,
             state.env,
             state.tokens

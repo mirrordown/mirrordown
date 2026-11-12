@@ -152,6 +152,53 @@ check(
   ]
 );
 
+// The same line ends a group wherever it is written, not only at the end of the last step's last paragraph. CommonMark continues the paragraph before it with such a line, so remark and Sätteri kept it in a step's body and went on with the group: the steps on either side of the line were numbered as one list, where markdown-it renders two.
+check(
+  `steps: a line that is neither a header nor a body line ends the group wherever it is written`,
+  [
+    {
+      name: `between a body and the next header: that header starts a new list at 1`,
+      input: `@1. A\n> a\ntext\n@1. B\n> b`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol><p>text</p>${OL}${LI(1)}${T}B</p>${B}<p>b</p></div></li></ol>`
+    },
+    {
+      name: `directly after a header that follows a body: it is not that step's body`,
+      input: `@1. One\n> a\n@1. Two\ntext`,
+      expected: `${OL}${LI(1)}${T}One</p>${B}<p>a</p></div></li>${LI(2)}${T}Two</p></li></ol><p>text</p>`
+    },
+    {
+      name: `directly after a header that follows a list in a body`,
+      input: `@1. A\n> - item\n@1. B\nplain`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<ul><li>item</li></ul></div></li>${LI(2)}${T}B</p></li></ol><p>plain</p>`
+    },
+    {
+      name: `after a list in a body, before the next header`,
+      input: `@1. A\n> - item\nplain\n@1. B`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<ul><li>item</li></ul></div></li></ol><p>plain</p>${OL}${LI(1)}${T}B</p></li></ol>`
+    },
+    {
+      name: `before a block of the body: what follows is a quote after the list, not more of the body`,
+      input: `@1. A\n> body\nplain\n> > deep\n> back`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p>body</p></div></li></ol><p>plain</p><blockquote><blockquote><p>deep\nback</p></blockquote></blockquote>`
+    },
+    {
+      name: `before a blank line and a header: the header starts a new list`,
+      input: `@1. A\n> a\ntext\n\n@1. B`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol><p>text</p>${OL}${LI(1)}${T}B</p></li></ol>`
+    },
+    {
+      name: `in a sub-step's body: the header after it starts a new list, not the next step`,
+      input: `@1. A\n@@1. B\n> one\nplain\n@1. C`,
+      expected: `${OL}${LI(1)}${T}A</p>${SUB}${LI(1)}${T}B</p>${B}<p>one</p></div></li></ol></li></ol><p>plain</p>${OL}${LI(1)}${T}C</p></li></ol>`
+    },
+    {
+      name: `the body of the list after it is read by its markers: a header in it starts steps in that body`,
+      input: `@1. A\n> a\ntext\n@1. B\n> @1. Inner\n> > in`,
+      expected: `${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol><p>text</p>${OL}${LI(1)}${T}B</p>${B}${OL}${LI(1)}${T}Inner</p>${B}<p>in</p></div></li></ol></div></li></ol>`
+    }
+  ]
+);
+
 // A header is one line, so nothing can break after it. CommonMark still reads two trailing spaces or a backslash before the next line as a hard break, which remark and Sätteri kept: a `<br>` ended the title, and the group ended at the empty line the break left behind. markdown-it reads the line itself, where trailing spaces are just that and a backslash is literal (as CommonMark reads one that ends a block).
 check(`steps: a header line ends its title, whatever it ends with`, [
   {
@@ -197,6 +244,15 @@ check(`steps: a tab after the body's marker is the marker's space`, [
     name: `the line is a paragraph, not indented code`,
     input: `@1. S\n>\tbody`,
     expected: `${OL}${LI(1)}${T}S</p>${B}<p>body</p></div></li></ol>`
+  }
+]);
+
+// markdown-it tokenizes a step's body from its lines with the `>` taken off, joined without a line ending after the last one. A fence that the end of the body closes then lost its last line's line ending, which every line of a blockquote's content has in CommonMark, and so in the other engines.
+check(`steps: a body is read as a blockquote's content`, [
+  {
+    name: `a fence the end of the body closes keeps its last line's line ending`,
+    input: "@1. A\n> ```\n> code\n@1. B",
+    expected: `${OL}${LI(1)}${T}A</p>${B}<pre><code>code\n</code></pre></div></li>${LI(2)}${T}B</p></li></ol>`
   }
 ]);
 

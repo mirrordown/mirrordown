@@ -75,14 +75,11 @@ const numberedLines = (
       // A text value keeps the document's own line endings, so a carriage return ends a line too: left on its line, it would end a title or a rebuilt paragraph.
       const parts = child.value.split(LINE_ENDING);
       const position = child.position;
-      // The line the text starts on. A parser's text that starts with a line ending starts at the end of the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`): the source tells the two apart.
+      // The line the text starts on. A parser's text that starts with a line ending starts on the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`), so it spans one line fewer than it has line endings: that tells the two apart. What is written at its start doesn't: a parser's text another plugin shortened (an attribute block taken off its start) still starts where the block was.
       const rebuilt =
         position !== undefined &&
-        parts.length > 1 &&
         parts[0] === "" &&
-        (sourceLines?.[position.start.line - 1] ?? "")
-          .slice(position.start.column - 1)
-          .trim() !== "";
+        position.end.line - position.start.line < parts.length - 1;
       const first =
         position === undefined
           ? undefined
@@ -231,12 +228,30 @@ export const linesToParagraph = (
   return para;
 };
 
+/** The position of a blockquote written from source line `first` to `last` whose own `>` is the `nth` marker of its first line, as a parser would place it: `blockquoteMarkers` then counts `nth` for it. `undefined` when that line has no such marker. */
+export const quotePosition = (
+  sourceLines: readonly string[],
+  first: number,
+  last: number,
+  nth: number
+): Blockquote["position"] => {
+  const source = sourceLines[first - 1] ?? "";
+  const prefix = /^[ \t>]*/.exec(source)?.[0] ?? "";
+  const at = prefix.split(">", nth).join(">").length;
+  if (nth < 1 || at >= prefix.length) return undefined;
+  return {
+    start: { line: first, column: at + 1 },
+    end: { line: last, column: (sourceLines[last - 1] ?? "").length + 1 }
+  };
+};
+
 /**
- * The blocks lazily continued lines stand for, from their markers relative to the body they belong to (`level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows.
+ * The blocks lazily continued lines stand for, from their markers relative to the body they belong to (`level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows. With `place` (the source, and the markers the lines' own were counted over), a blockquote among them gets its position, for recognition that reads a quote's markers after this; without it, a rebuilt blockquote has none.
  */
 export const rebuildLazyLines = (
-  lines: MarkedLine[],
-  level: number
+  lines: Array<MarkedLine & { line?: number }>,
+  level: number,
+  place?: { sourceLines: readonly string[]; over: number }
 ): Array<BlockContent | DefinitionContent> => {
   const deeper = lines.findIndex(({ markers }) => markers > level);
   const own = deeper === -1 ? lines : lines.slice(0, deeper);
@@ -245,8 +260,15 @@ export const rebuildLazyLines = (
   if (deeper !== -1) {
     const quote: Blockquote = {
       type: "blockquote",
-      children: rebuildLazyLines(lines.slice(deeper), level + 1)
+      children: rebuildLazyLines(lines.slice(deeper), level + 1, place)
     };
+    const first = lines[deeper]?.line;
+    const last = lines.at(-1)?.line;
+    const position =
+      place && first !== undefined && last !== undefined
+        ? quotePosition(place.sourceLines, first, last, place.over + level + 1)
+        : undefined;
+    if (position) quote.position = position;
     blocks.push(quote);
   }
   return blocks;
@@ -260,11 +282,12 @@ interface GroupTreeNode {
   data?: unknown;
 }
 
-/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
+/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel (`tabsPanel` once sat-tabs has rendered it, for a Sätteri plugin registered after tabs) or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
 export const MARKED_BLOCKS: ReadonlySet<string> = new Set([
   `blockquote`,
   `alert`,
   `tabsItem`,
+  `tabsPanel`,
   `stepsItem`
 ]);
 

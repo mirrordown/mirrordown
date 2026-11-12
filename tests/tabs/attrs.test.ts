@@ -240,3 +240,36 @@ describe("tabs + attrs: a block on a line of its own in a panel", () => {
     expect(panel(normalizeHtml(html))).toBe(expected);
   });
 });
+
+// With remarkAttrs registered before remarkTabs, an attribute block is already gone from the text when tabs read it, and that text still starts where the block was written. The line after it was then placed one source line too high, on the panel's `>` line, so a header written under the panel was taken for one written in it and opened a nested group.
+describe("tabs + attrs (remark, attrs first): a line after an attribute block is placed on its own source line", () => {
+  const attrsFirst = (src: string) =>
+    normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkAttrs)
+          .use(remarkTabs)
+          .use(remarkRehype, { handlers: tabsHastHandlers as never })
+          .use(rehypeStringify, { allowDangerousHtml: true })
+          .processSync(src)
+      )
+    );
+  const cases: [string, string][] = [
+    [
+      "a header after an image with attributes is the group's next tab",
+      "% A\n> ![a](x.png){.photo}\n% B"
+    ],
+    [
+      "the same after another body line",
+      "% A\n> ![a](x.png){.photo}\n> more\n% B\n> b"
+    ],
+    [
+      "a plain line after it ends the group",
+      "% A\n> ![a](x.png){.photo}\nplain"
+    ]
+  ];
+  it.each(cases)("%s", (_, input) => {
+    expect(attrsFirst(input)).toBe(normalizeHtml(md.render(input)));
+  });
+});
