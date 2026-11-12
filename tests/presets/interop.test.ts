@@ -151,4 +151,105 @@ describe("presets: the plugins together", () => {
       );
     });
   });
+
+  // A plugin that splits a text node hands the pieces on without their source positions, so it must also hand on which characters were escaped, or the next plugin reads `\==` as a delimiter.
+  describe("an escaped delimiter is text, whichever plugin ran before the one that reads it", () => {
+    it.each([
+      ["--a-- \\==b==", "<p><del>a</del> ==b==</p>"],
+      ["--\\++a++--", "<p><del>++a++</del></p>"],
+      ["[[k]] \\||a||", "<p><kbd>k</kbd> ||a||</p>"],
+      [
+        "*[HTML]: Hyper Text\n\nHTML \\==a==",
+        '<p><abbr title="Hyper Text">HTML</abbr> ==a==</p>'
+      ]
+    ])("%s", (input, expected) => {
+      expect(rendered(input)).toBe(expected);
+    });
+  });
+
+  // remark and Sätteri read a definition from a paragraph that is one plain line of text, so abbr has to run before the plugins that would format that line. It is why abbr cannot move after alerts and attrs, which would settle two of the cases pinned below.
+  describe("an abbreviation's definition is read before the other plugins format it", () => {
+    it("keeps another plugin's delimiters in the title as written", () => {
+      expect(rendered("*[a]: Hyper ==Text== [[K]] --x--\n\na z")).toBe(
+        '<p><abbr title="Hyper ==Text== [[K]] --x--">a</abbr> z</p>'
+      );
+    });
+  });
+
+  // Known differences no order of plugins removes. Each is pinned so a change in any engine shows up here; when one is fixed in its plugin, move the case to the groups above.
+  describe("pinned: where the engines still differ", () => {
+    // markdown-it reads a definition as a block and replaces terms after inline parsing. remark and Sätteri do both in one pass, which has to run before the plugins that would format a definition's own text, and so before alerts and attrs.
+    it("an abbreviation equal to an alert's keyword stops the alert in remark and Sätteri", () => {
+      const input = "*[NOTE]: A note abbr\n\n> [!NOTE]\n> body NOTE";
+      const term = '<abbr title="A note abbr">NOTE</abbr>';
+      expect(md(input)).toBe(
+        alert("note", "Note", "Note", `<p>body ${term}</p>`)
+      );
+      const blockquote = `<blockquote><p>[!${term}]\nbody ${term}</p></blockquote>`;
+      expect(rm(input)).toBe(blockquote);
+      expect(sat(input)).toBe(blockquote);
+    });
+
+    it("a term inside an attribute block keeps the block from being read in remark", () => {
+      const definition = "*[HTML]: Hyper Text\n\n";
+      const term = '<abbr title="Hyper Text">HTML</abbr>';
+      const paragraph = `${definition}Text HTML {.HTML}`;
+      expect(md(paragraph)).toBe(`<p class="HTML">Text ${term}</p>`);
+      expect(sat(paragraph)).toBe(md(paragraph));
+      expect(rm(paragraph)).toBe(`<p>Text ${term} {.${term}}</p>`);
+
+      const value = `${definition}Text {data-x="HTML"}`;
+      expect(md(value)).toBe('<p data-x="HTML">Text</p>');
+      expect(sat(value)).toBe(md(value));
+      expect(rm(value)).toBe(`<p>Text {data-x="${term}"}</p>`);
+    });
+
+    // remark parses a ruby with the document and Sätteri's ruby plugin has to run first, so in both the definition is no longer one plain line of text by the time abbr reads it.
+    it("a definition whose title holds a ruby is not a definition in remark and Sätteri", () => {
+      const input = "*[a]: Hyper {x|y}\n\na z";
+      expect(md(input)).toBe('<p><abbr title="Hyper {x|y}">a</abbr> z</p>');
+      const paragraphs =
+        "<p>*[a]: Hyper <ruby>x<rt>y</rt></ruby></p><p>a z</p>";
+      expect(rm(input)).toBe(paragraphs);
+      expect(sat(input)).toBe(paragraphs);
+    });
+
+    // markdown-it has no footnotes of its own and the preset adds no dependency for them: `[^1]: Note.` is a link reference definition there.
+    it("footnotes are GFM's, which the markdown-it preset does not have", () => {
+      const input = "Text[^1] and x^2^.\n\n[^1]: Note.";
+      expect(md(input)).toBe(
+        '<p>Text<a href="Note.">^1</a> and x<sup>2</sup>.</p>'
+      );
+      const footnotes = rm(input);
+      expect(footnotes).toContain(
+        '<p>Text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup> and x<sup>2</sup>.</p><section data-footnotes class="footnotes">'
+      );
+      expect(sat(input)).toBe(footnotes);
+    });
+
+    // The rest of GFM that markdown-it does not read by default. The preset leaves markdown-it's parser configuration alone.
+    it("task lists and bare URLs are GFM's too", () => {
+      const tasks = "- [ ] todo\n- [x] done";
+      expect(md(tasks)).toBe("<ul><li>[ ] todo</li><li>[x] done</li></ul>");
+      expect(rm(tasks)).toContain(
+        '<li class="task-list-item"><input type="checkbox" disabled> todo</li>'
+      );
+      expect(sat(tasks)).toBe(rm(tasks));
+
+      const url = "see www.example.com now";
+      expect(md(url)).toBe(`<p>${url}</p>`);
+      expect(rm(url)).toBe(
+        '<p>see <a href="http://www.example.com">www.example.com</a> now</p>'
+      );
+      expect(sat(url)).toBe(rm(url));
+    });
+
+    // Each engine writes a column's alignment its own way; none is a plugin's doing.
+    it("an aligned table column is written three ways", () => {
+      const input = "| a |\n| :-: |\n| 1 |";
+      expect(md(input)).toContain('<th style="text-align:center">a</th>');
+      expect(rm(input)).toContain('<th align="center">a</th>');
+      expect(sat(input)).toContain('<th style="text-align: center">a</th>');
+    });
+  });
 });

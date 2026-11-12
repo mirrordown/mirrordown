@@ -83,6 +83,7 @@ md.use(mirrordown, {
 ## Notes
 
 - **GFM is markdown-it's own.** markdown-it reads tables and `~~strikethrough~~` out of the box; `~text~` is subscript either way. The preset leaves markdown-it's configuration alone, with one exception: strikethrough renders as `<del>`, as remark-gfm and Sätteri render it, where markdown-it alone renders `<s>`.
+- **The rest of GFM is not included.** markdown-it has no footnotes, task lists or bare-URL links of its own, and the preset adds no dependency for them, so a document that uses them renders differently here than with the remark and Sätteri presets: `[^1]: Note.` is read as a link reference definition, `- [ ] task` keeps its brackets and `www.example.com` stays text. Add a markdown-it plugin for each you need (and `linkify: true` for URLs). Aligned table columns are written as `style="text-align:left"`, where remark writes `align="left"`.
 - **`inline-svg` is not included.** It reads SVG files from disk; add [`@mirrordown/mdit-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/mdit-inline-svg) yourself where that fits.
 - **Braces at the end of a block are attributes.** With `attrs` on, `{…}` at the end of a paragraph, heading or list item is always read as attributes, even escaped; turn `attrs` off if your content ends blocks with literal braces.
 
