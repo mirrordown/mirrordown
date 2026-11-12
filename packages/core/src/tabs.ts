@@ -572,6 +572,27 @@ const splitBlockquote = (
   return segments;
 };
 
+// Whether a plain panel's last paragraph (the deepest one a line can lazily continue) holds a line that is neither a header nor written with the panel's markers. `splitBlockquote` leaves such a line in the body for the pass that ends groups at their markers to move, but the group has ended there all the same, as it does in markdown-it: nothing after the blockquote continues it. Steps report the same from their `splitBlockquote` (`ended`).
+const endsAtUnmarkedLine = (
+  bq: Blockquote,
+  sourceLines: readonly string[]
+): boolean => {
+  const base = blockquoteMarkers(bq, sourceLines);
+  let last: { type: string; children?: unknown[] } | undefined = bq;
+  while (last && last.type !== "paragraph")
+    last = last.children?.at(-1) as typeof last;
+  const lines = last && paraToSourceLines(last as Paragraph, sourceLines);
+  if (base === undefined || !lines) return false;
+  return lines.some(({ segs, markers }, index) => {
+    const first = headerLineContent(segs, sourceLines)[0];
+    return (
+      index > 0 &&
+      markers < base &&
+      !(first?.type === "text" && parseTabHeader(first.value))
+    );
+  });
+};
+
 // The content that a header which skips a level, and what follows it, stand for
 // once they are not tabs: the header line and the lines and blocks after it, as
 // markdown-it reads them. CommonMark lazily continued them into a paragraph; with
@@ -974,6 +995,9 @@ export const processTabsInChildren = (
               children.splice(j, 0, ...ending);
               break;
             }
+            // A line left in the panel for the end-of-group pass ended the group too: a header after a blank line starts a new one.
+            if (!explicit && sourceLines && endsAtUnmarkedLine(bq, sourceLines))
+              break;
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastTab().depth;
             const contHeaders = extractHeaderPara(

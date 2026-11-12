@@ -332,6 +332,38 @@ check(`tabs: a > indented four columns or more is not the panel's marker`, [
   }
 ]);
 
+// Inside another block a blank line doesn't end a group, so a header after one continues it. But a line that is neither a header nor a `>` line has ended the group before the blank line, as it does in markdown-it: the header after it starts a new group. remark and Sätteri left that line in the panel until a later pass and joined the header's tab to the group it had ended.
+check(
+  `tabs: in a nested block, a group an unmarked line ended is not continued after a blank line`,
+  [
+    {
+      name: `in a list item`,
+      input: `- % A\n  > a\n  text\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</li></ul>`
+    },
+    {
+      name: `in a blockquote`,
+      input: `> % A\n> > a\n> text\n>\n> % B\n> > b`,
+      expected: `<blockquote>${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</blockquote>`
+    },
+    {
+      name: `when the line continues a paragraph nested in the panel`,
+      input: `- % A\n  > - x\n  text\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<ul><li>x</li></ul>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</li></ul>`
+    },
+    {
+      name: `after the group's second tab`,
+      input: `- % A\n  > a\n  % B\n  > b\n  text\n\n  % C\n  > c`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])}<p>text</p>${group([`C`, `<p>c</p>`])}</li></ul>`
+    },
+    {
+      name: `without such a line, the header after the blank line is the group's next tab`,
+      input: `- % A\n  > a\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])}</li></ul>`
+    }
+  ]
+);
+
 check(`tabs: a header after text in a list item, after a blank line`, [
   {
     name: `starts tabs in every engine`,
