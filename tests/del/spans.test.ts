@@ -220,6 +220,52 @@ describe("private-use characters the author typed survive the scans", () => {
   });
 });
 
+describe("nesting stops at 100 spans, so one deep run can't make Sätteri reject the whole document", () => {
+  // Sätteri throws on content nested deeper than 128 levels, where markdown-it and remark would render any depth. All three stop at markdown-it's own nesting limit instead, as keys do, and leave the markers of deeper pairs as text: the outer 100 pairs still form.
+  const nested = (marker: string, depth: number): string =>
+    `${marker.repeat(depth)}a${marker.repeat(depth)}`;
+  const spans: [marker: string, tag: string][] = [
+    ["--", "del"],
+    ["++", "ins"],
+    ["==", "mark"]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(spans)("%s: 100 nested spans all form", (marker, tag) => {
+      expect(render(nested(marker, 100))).toBe(
+        `<p>${`<${tag}>`.repeat(100)}a${`</${tag}>`.repeat(100)}</p>`
+      );
+    });
+
+    it.each(spans)(
+      "%s: the pairs past the 100th stay markers",
+      (marker, tag) => {
+        expect(render(nested(marker, 150))).toBe(
+          `<p>${`<${tag}>`.repeat(100)}${marker.repeat(50)}a${marker.repeat(50)}${`</${tag}>`.repeat(100)}</p>`
+        );
+      }
+    );
+
+    it.each(spans)(
+      "%s: spans side by side are not nested, however many",
+      (marker, tag) => {
+        expect(render(Array(150).fill(`${marker}a${marker}`).join(" "))).toBe(
+          `<p>${Array(150).fill(`<${tag}>a</${tag}>`).join(" ")}</p>`
+        );
+      }
+    );
+
+    it.each(spans)(
+      "%s: a span after a run that hit the limit still forms",
+      (marker, tag) => {
+        expect(render(`${nested(marker, 101)} ${marker}b${marker}`)).toBe(
+          `<p>${`<${tag}>`.repeat(100)}${marker}a${marker}${`</${tag}>`.repeat(100)} <${tag}>b</${tag}></p>`
+        );
+      }
+    );
+  });
+});
+
 describe("image alt text: a known difference between the engines", () => {
   // markdown-it runs inline rules inside an image label and renders the alt from the result, so the markers are gone. In mdast the alt is a string the parser wrote, which no plugin scans. Pinned so that closing the gap, or widening it, is a deliberate change (the guide documents it).
   const input = "![--a--](x.png)";

@@ -5,6 +5,9 @@ import type {
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 import type Token from "markdown-it/lib/token.mjs";
 
+// A pair nested deeper than this stays text, as in the remark and Sätteri plugins (the scan in `@mirrordown/core`): Sätteri rejects a document whose content nests deeper than 128 levels, and markdown-it's own `maxNesting` is 100.
+const MAX_DEPTH = 100;
+
 /** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. */
 export function mark(md: MDit): void {
   md.inline.ruler.before(`emphasis`, `mark`, (state, silent) => {
@@ -61,6 +64,8 @@ export function mark(md: MDit): void {
     let token: Token;
     const loneMarkers: number[] = [];
     const max = delimiters.length;
+    // The closers of the pairs around the current delimiter, innermost last.
+    const around: number[] = [];
 
     for (let i = 0; i < max; i++) {
       const startDelim = delimiters[i];
@@ -72,6 +77,16 @@ export function mark(md: MDit): void {
       if (startDelim.end === -1) {
         continue;
       }
+
+      while (around.length && around[around.length - 1] < i) {
+        around.pop();
+      }
+
+      if (around.length >= MAX_DEPTH) {
+        continue;
+      }
+
+      around.push(startDelim.end);
 
       const endDelim = delimiters[startDelim.end];
 

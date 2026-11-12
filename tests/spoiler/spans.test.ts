@@ -197,3 +197,32 @@ describe("spoiler: a table-cell spoiler nested in emphasis after another span pl
     expect(render(input)).toBe(cell(`<em><del>a</del> ${S("x")}</em>`));
   });
 });
+
+describe("spoiler: nesting stops at 50 spoilers, so one deep run can't make Sätteri reject the whole document", () => {
+  // Sätteri throws on content nested deeper than 128 levels, and a spoiler is two levels there (the label and the content span). All three engines stop at 50 and leave the pipes of deeper pairs as text: the outer 50 still hide what they hold.
+  const nested = (depth: number): string =>
+    `${"||".repeat(depth)}a${"||".repeat(depth)}`;
+  const rendered = (depth: number, content: string): string => {
+    let html = content;
+    for (let i = 0; i < depth; i++) html = S(html);
+    return `<p>${html}</p>`;
+  };
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it("50 nested spoilers all form", () => {
+      expect(render(nested(50))).toBe(rendered(50, "a"));
+    });
+
+    it("the pairs past the 50th stay pipes, inside the spoilers that formed", () => {
+      expect(render(nested(80))).toBe(
+        rendered(50, `${"||".repeat(30)}a${"||".repeat(30)}`)
+      );
+    });
+
+    it("spoilers side by side are not nested, however many", () => {
+      expect(render(Array(80).fill("||a||").join(" "))).toBe(
+        `<p>${Array(80).fill(S("a")).join(" ")}</p>`
+      );
+    });
+  });
+});

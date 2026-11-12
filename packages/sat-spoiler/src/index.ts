@@ -22,6 +22,9 @@ export interface SpoilerPlugin {
   text: (...args: Parameters<TextVisitor>) => void;
 }
 
+// A spoiler nested deeper than this stays text, as in the markdown-it and remark plugins: Sätteri rejects a document whose content nests deeper than 128 levels, and a spoiler is two levels here (the label and the content span).
+const MAX_DEPTH = 50;
+
 /**
  * Sätteri plugin for Discord-style spoiler syntax (`||text||`), rendering a JavaScript-free click-to-reveal spoiler: a `<label>` wrapping a visually-hidden checkbox and the content `<span>`, which CSS reveals when the box is checked. The scan is shared with the remark plugin and markdown-it's pairing rules through `@mirrordown/core`, and the output is byte-identical to `@mirrordown/mdit-spoiler`.
  */
@@ -33,40 +36,44 @@ export const satteriSpoiler =
       features.attributes === true
         ? createAttributeReader(markdownToMdast)
         : undefined;
-    const transform = createDelimitedTransform<MdastTarget>(`|`, {
-      text: (value) => ({ type: `text`, value }),
-      // Sätteri has no hast handler hook, so the label, checkbox and span are custom nodes rendering through `hName`. The checkbox precedes the span so CSS's `:checked ~ .content` combinator reaches it.
-      // A block written right after a spoiler is read and dropped, as in the other engines, whose renderers build the label without the attributes their attrs plugins leave on the spoiler.
-      attributes: () => {},
-      wrap: (children) => ({
-        type: `spoiler`,
-        data: {
-          hName: `label`,
-          hProperties: { className: [`markdown-spoiler`] }
-        },
-        children: [
-          {
-            type: `spoilerToggle`,
-            data: {
-              hName: `input`,
-              hProperties: {
-                type: `checkbox`,
-                className: [`markdown-spoiler-toggle`],
-                ariaLabel: `spoiler`
-              }
-            }
+    const transform = createDelimitedTransform<MdastTarget>(
+      `|`,
+      {
+        text: (value) => ({ type: `text`, value }),
+        // Sätteri has no hast handler hook, so the label, checkbox and span are custom nodes rendering through `hName`. The checkbox precedes the span so CSS's `:checked ~ .content` combinator reaches it.
+        // A block written right after a spoiler is read and dropped, as in the other engines, whose renderers build the label without the attributes their attrs plugins leave on the spoiler.
+        attributes: () => {},
+        wrap: (children) => ({
+          type: `spoiler`,
+          data: {
+            hName: `label`,
+            hProperties: { className: [`markdown-spoiler`] }
           },
-          {
-            type: `spoilerContent`,
-            data: {
-              hName: `span`,
-              hProperties: { className: [`markdown-spoiler-content`] }
+          children: [
+            {
+              type: `spoilerToggle`,
+              data: {
+                hName: `input`,
+                hProperties: {
+                  type: `checkbox`,
+                  className: [`markdown-spoiler-toggle`],
+                  ariaLabel: `spoiler`
+                }
+              }
             },
-            children
-          }
-        ]
-      })
-    });
+            {
+              type: `spoilerContent`,
+              data: {
+                hName: `span`,
+                hProperties: { className: [`markdown-spoiler-content`] }
+              },
+              children
+            }
+          ]
+        })
+      },
+      MAX_DEPTH
+    );
     const seen = new WeakSet<object>();
     return defineMdastPlugin({
       name: `spoiler`,

@@ -4,6 +4,9 @@ import type {
   Delimiter
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 
+// A pair nested deeper than this stays text, as in the remark and Sätteri plugins: Sätteri rejects a document whose content nests deeper than 128 levels, and a spoiler is two levels there (the label and the content span).
+const MAX_DEPTH = 50;
+
 // The revealed content is a following sibling of the checkbox so CSS's
 // `:checked ~ .content` combinator can reach it. Order matters: <input> must
 // precede the <span>, or the reveal never fires.
@@ -115,8 +118,10 @@ export function spoiler(md: MDit): void {
 
   const postProcess = (state: StateInline, delimiters: Delimiter[]): void => {
     const loneMarkers: number[] = [];
+    // The closers of the pairs around the current delimiter, innermost last.
+    const around: number[] = [];
 
-    for (const startDelim of delimiters) {
+    for (const [i, startDelim] of delimiters.entries()) {
       if (startDelim.marker !== 0x7c /* | */) {
         continue;
       }
@@ -131,6 +136,16 @@ export function spoiler(md: MDit): void {
       if (!endDelim || !openToken || !closeToken) {
         continue;
       }
+
+      while ((around.at(-1) ?? Infinity) < i) {
+        around.pop();
+      }
+
+      if (around.length >= MAX_DEPTH) {
+        continue;
+      }
+
+      around.push(startDelim.end);
 
       openToken.type = `spoiler_open`;
       openToken.tag = `span`;

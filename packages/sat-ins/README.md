@@ -22,7 +22,7 @@ Wrap text in double plus signs to mark it as inserted:
 You can use it inline: the price is now ++$35++ (was $50).
 ````
 
-A backslash keeps a delimiter literal (`\++not inserted++`), and so does writing a plus as a character reference (`&#43;`). A few things differ between the engines:
+A backslash keeps a delimiter literal (`\++not inserted++`), and so does writing a plus as a character reference (`&#43;`). Insertions nest up to 100 deep; the markers of deeper ones stay text. A few things differ between the engines:
 
 - Spans have to nest. When a span crosses another one or crosses emphasis (`++a *b++ c*`, `++a --b++ c--`), each engine resolves it its own way, and in remark and Sätteri the result depends on the order the plugins are listed in.
 - In image alt text (`![++a++](x.png)`), markdown-it drops the plus signs and remark and Sätteri keep the text as written.

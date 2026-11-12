@@ -4,6 +4,9 @@ import type { Data, Parent, PhrasingContent, Root } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
 
+// A spoiler nested deeper than this stays text, as in the markdown-it and Sätteri plugins: Sätteri rejects a document whose content nests deeper than 128 levels, and a spoiler is two levels there (the label and the content span).
+const MAX_DEPTH = 50;
+
 /** Optional data carried by a {@link Spoiler} node. */
 export interface SpoilerData extends Data {}
 
@@ -69,18 +72,22 @@ export const spoilerHastHandlers: Record<string, SpoilerHandler> = {
  * remark plugin for Discord-style spoiler syntax (`||text||`), wrapping each match in a {@link Spoiler} node. Pair with {@link spoilerHastHandlers} via `remarkRehype({ handlers: spoilerHastHandlers })` so the node renders as a click-to-reveal spoiler. The scan is shared with markdown-it's pairing rules and the Sätteri plugin through `@mirrordown/core`, and the output is byte-identical to `@mirrordown/mdit-spoiler`.
  */
 export const remarkSpoiler: Plugin<[], Root> = () => {
-  const transform = createDelimitedTransform<PhrasingContent>(`|`, {
-    text: (value) => ({ type: `text`, value }),
-    // `spoilerHastHandlers` builds the element and never reads this data. It is what renders when the handlers were not passed to `remark-rehype`: the content span alone, which the stylesheet covers and nothing can reveal, where the default for an unknown node is a `<div>` with the content in the clear.
-    wrap: (children): Spoiler => ({
-      type: `spoiler`,
-      children,
-      data: {
-        hName: `span`,
-        hProperties: { className: [`markdown-spoiler-content`] }
-      }
-    })
-  });
+  const transform = createDelimitedTransform<PhrasingContent>(
+    `|`,
+    {
+      text: (value) => ({ type: `text`, value }),
+      // `spoilerHastHandlers` builds the element and never reads this data. It is what renders when the handlers were not passed to `remark-rehype`: the content span alone, which the stylesheet covers and nothing can reveal, where the default for an unknown node is a `<div>` with the content in the clear.
+      wrap: (children): Spoiler => ({
+        type: `spoiler`,
+        children,
+        data: {
+          hName: `span`,
+          hProperties: { className: [`markdown-spoiler-content`] }
+        }
+      })
+    },
+    MAX_DEPTH
+  );
 
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it.

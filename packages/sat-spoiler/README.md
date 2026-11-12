@@ -31,7 +31,7 @@ In renderers without the plugin, `||…||` renders as plain text.
 
 A backslash keeps a delimiter literal (`\||not hidden||`). A table cell is the exception: a pipe there has to be written `\|`, so a spoiler in a cell is written `\|\|hidden\|\|`.
 
-Spans have to nest. When a spoiler crosses another span or crosses emphasis (`||a *b|| c*`), each engine resolves it its own way, and in remark and Sätteri the result depends on the order the plugins are listed in.
+Spans have to nest. When a spoiler crosses another span or crosses emphasis (`||a *b|| c*`), each engine resolves it its own way, and in remark and Sätteri the result depends on the order the plugins are listed in. Spoilers nest up to 50 deep; the pipes of deeper ones stay text.
 
 ### Rich inline content
 
