@@ -210,3 +210,25 @@ describe("github-alerts: remark without the hast handlers", () => {
     );
   });
 });
+
+describe("github-alerts: a title for a custom type", () => {
+  // The guide's own example. `titles` is keyed by canonical type, and `types` adds canonical types, so the option's type has to take a name that is not built in: written as below, without a cast, this test is also what keeps the example compiling.
+  it("gives each keyword of the custom type its title, in every engine", () => {
+    const options: AlertOptions = {
+      types: { release: "release", changelog: "release" },
+      titles: { release: "Release notes", tip: "Pro tip" }
+    };
+    const html = (type: string, title: string): string =>
+      `<div class="markdown-alert" data-alert="${type}"><p class="markdown-alert-title" aria-label="${title}">${title}</p><p>body</p></div>`;
+    expect(renderAll("> [!RELEASE]\n> body", options)).toStrictEqual(
+      inAll(html("release", "Release notes"))
+    );
+    expect(renderAll("> [!CHANGELOG]\n> body", options)).toStrictEqual(
+      inAll(html("release", "Release notes"))
+    );
+    // A built-in type's title is still taken from the same map.
+    expect(renderAll("> [!TIP]\n> body", options)).toStrictEqual(
+      inAll(html("tip", "Pro tip"))
+    );
+  });
+});
