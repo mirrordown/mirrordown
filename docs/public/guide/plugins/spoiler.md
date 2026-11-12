@@ -20,7 +20,7 @@ The entire interaction is built from HTML and CSS only — a `<label>` wrapping 
 </label>
 ```
 
-The checkbox is the only interactive control, so it stays keyboard-operable and is announced by screen readers as a spoiler control — the hidden text is not read aloud until the reader chooses to reveal it.
+The checkbox is the only interactive control, so it stays keyboard-operable and is announced by screen readers as a spoiler control. The stylesheet hides text by making it transparent on the bar, and hides elements inside the spoiler (emphasis, links, code) with `visibility: hidden`: plain text stays in the page, so it is hidden from sight and not necessarily from a screen reader.
 
 ## Syntax
 
@@ -36,13 +36,21 @@ Wrap any inline content in `||…||`. Click a bar below to reveal it; click agai
 
 In renderers without the plugin, `||…||` renders as plain text.
 
-A backslash keeps a delimiter literal (`\||not hidden||`). A table cell is the exception: a pipe there has to be written `\|`, so a spoiler in a cell is written `\|\|hidden\|\|`.
+A backslash keeps a delimiter literal (`\||not hidden||`), and so does writing a pipe as a character reference (`&#124;`). A table cell is the exception: a pipe there has to be written `\|`, so a spoiler in a cell is written `\|\|hidden\|\|`.
 
 Spans have to nest. When a spoiler crosses another span or crosses emphasis (`||a *b|| c*`), each engine resolves it its own way, and in remark and Sätteri the result depends on the order the plugins are listed in. Spoilers nest up to 50 deep; the pipes of deeper ones stay text.
 
+A spoiler takes no attributes: with the [`attrs`](/guide/plugins/attrs) plugin or Sätteri's `attributes` feature on, an attribute block written right after one (`||text||{.name}`) is read and dropped in every engine.
+
+A few things differ between the engines:
+
+- In image alt text (`![||a||](x.png)`), markdown-it drops the pipes and remark and Sätteri keep the text as written.
+- The remark plugin reads escapes from the source, so it needs the file: `processor.runSync(tree)` on a tree alone treats `\||` as `||`.
+- In a table cell, two backslashes before a pipe (`\\|`) are a backslash and an escaped pipe to markdown-it, and an escaped backslash and a cell separator to remark and Sätteri, so a row holding them splits into cells differently before any plugin runs.
+
 ### Rich inline content
 
-A spoiler can wrap any inline markup — emphasis, code, links — and it stays obscured until revealed. A long spoiler wraps across lines with each line getting its own bar, just like Discord.
+A spoiler can wrap any inline markup — emphasis, code, links — and it stays obscured until revealed. One exception today: with the [`ruby`](/guide/plugins/ruby) plugin on, braces around text that holds a spoiler are read as a ruby, whose first `|` is its separator, so `{note: ||secret||}` renders `note:` with `|secret||` printed above it. A long spoiler wraps across lines with each line getting its own bar, just like Discord.
 
 % Demo
 > The recipe needs ||**two** cups of `flour` and a [secret ingredient](https://example.com) that nobody expects, wrapped across as many lines as it takes||.
@@ -67,7 +75,7 @@ Wrap an image to hide it behind a blur and a **SPOILER** label — Discord's tre
 
 ### Spoilered, zoomable images
 
-Combine with the [`lightbox`](/guide/plugins/lightbox) plugin (`||!![…]()||`) for a spoilered image that is also click-to-zoom once revealed.
+Combine with the [`lightbox`](/guide/plugins/lightbox) plugin (`||!![…]()||`) for a spoilered image that is also click-to-zoom once revealed. The zoom button sits inside the spoiler and can take keyboard focus of its own, so today <kbd>Tab</kbd> then <kbd>Enter</kbd> opens the image without revealing it first.
 
 % Demo
 > The reveal: ||!![Mount Fuji at dawn](./assets/fuji.jpg "Mount Fuji")||
@@ -79,7 +87,7 @@ Combine with the [`lightbox`](/guide/plugins/lightbox) plugin (`||!![…]()||`) 
 
 ### Inside links
 
-A spoiler works inside a link — the whole revealed content remains the link target.
+A spoiler works inside a link — the whole revealed content remains the link target. The markup puts the spoiler's `<label>` and checkbox inside the `<a>`.
 
 % Demo
 > Read [the ||shocking twist||](https://example.com) at your own risk.
@@ -91,7 +99,7 @@ A spoiler works inside a link — the whole revealed content remains the link ta
 
 ## Accessibility
 
-The spoiler is a real checkbox with `aria-label="spoiler"`, so assistive technology announces it as a control the user can operate rather than reading the hidden text aloud. Keyboard users <kbd>Tab</kbd> to the spoiler and press <kbd>Space</kbd> to reveal it; a focus ring marks the current spoiler. Revealing is reversible (unlike Discord, which locks open) — a superset of the expected behavior.
+The spoiler is a real checkbox with `aria-label="spoiler"`, so assistive technology announces it as a control the user can operate. Keyboard users <kbd>Tab</kbd> to the spoiler and press <kbd>Space</kbd> to reveal it; a focus ring marks the current spoiler. Revealing is reversible (unlike Discord, which locks open) — a superset of the expected behavior.
 
 ## Customization
 
@@ -100,6 +108,7 @@ The stylesheet keeps its rules in `@layer markdown-spoiler`, so any unlayered CS
 | Property                            | Default                                     | Description                             |
 | ----------------------------------- | ------------------------------------------- | --------------------------------------- |
 | `--markdown-spoiler-bar`            | `#202225`                                   | Obscured bar color (text spoilers).     |
+| `--markdown-spoiler-bar-hover`      | `--markdown-spoiler-bar` mixed 15% white    | Bar color under the pointer.            |
 | `--markdown-spoiler-radius`         | `0.25rem`                                   | Bar corner radius.                      |
 | `--markdown-spoiler-duration`       | `0.15s`                                     | Reveal transition duration.             |
 | `--markdown-spoiler-revealed`       | `color-mix(in srgb, currentColor 8%, …)`    | Background behind revealed text.        |
