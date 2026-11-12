@@ -84,3 +84,41 @@ describe("abbr definitions end at any line ending", () => {
     }
   );
 });
+
+const engines = [
+  [`markdown-it`, mdit],
+  [`remark`, remd],
+  [`sätteri`, sat]
+] as const;
+
+// Where a term may stand is markdown-it-abbr's rule, which the markdown-it plugin keeps: between the edges of the text, punctuation, spaces and a few ASCII symbols. remark and Sätteri once used `\b`, which never matched a term edged with a symbol or a non-ASCII letter and took any non-ASCII letter for a boundary. The shared fixture holds the everyday cases; these are the ones a looser rule gets wrong.
+describe("abbr: a term stands between the same boundaries in every engine", () => {
+  const cases: [name: string, input: string, expected: string][] = [
+    [
+      `a tab is not a boundary`,
+      `*[HTML]: Hyper\n\nHTML\tfoo and\tHTML`,
+      `<p>HTML\tfoo and\tHTML</p>`
+    ],
+    [
+      `a term can't start where the last one ended, even if that one ends with a boundary character`,
+      `*[a+]: one\n*[+]: two\n\na++ and + here`,
+      `<p><abbr title="one">a+</abbr>+ and <abbr title="two">+</abbr> here</p>`
+    ],
+    [
+      `a shorter term matches where the longer one runs into a word`,
+      `*[HT]: one\n*[HTML]: two\n\nHT HTML HT-ML HTMLx`,
+      `<p><abbr title="one">HT</abbr> <abbr title="two">HTML</abbr> <abbr title="one">HT</abbr>-ML HTMLx</p>`
+    ],
+    [
+      `a character outside the BMP is one character, in a term and next to one`,
+      `*[𝔸]: double-struck\n\n𝔸 x𝔸 𝔸𝔸 (𝔸)`,
+      `<p><abbr title="double-struck">𝔸</abbr> x𝔸 𝔸𝔸 (<abbr title="double-struck">𝔸</abbr>)</p>`
+    ]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(cases)("%s", (_name, input, expected) => {
+      expect(render(input)).toBe(expected);
+    });
+  });
+});

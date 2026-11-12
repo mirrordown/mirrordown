@@ -40,3 +40,18 @@
 
 <!-- @case: no abbreviations defined -->
 <p>No abbreviation here.</p>
+
+<!-- @case: term that starts or ends with a symbol -->
+<p>Use <abbr title="C plus plus">C++</abbr> and <abbr title="dot net">.NET</abbr> and <abbr title="C sharp">C#</abbr> daily.</p>
+
+<!-- @case: term in another script -->
+<p><abbr title="Japan">日本</abbr> is here, a <abbr title="coffee">café</abbr> there.</p>
+
+<!-- @case: no match next to a letter of any script -->
+<p>HTMLé éHTML これはHTMLです</p>
+
+<!-- @case: punctuation and underscore end a word -->
+<p>foo_<abbr title="Hyper Text">HTML</abbr> <abbr title="Hyper Text">HTML</abbr>_bar (<abbr title="Hyper Text">HTML</abbr>) <abbr title="Hyper Text">HTML</abbr>-5 「<abbr title="Hyper Text">HTML</abbr>」</p>
+
+<!-- @case: no match next to a symbol that is not punctuation -->
+<p>HTML™ HTML° ©HTML</p>
