@@ -15,12 +15,13 @@ import type {
   FlowToken
 } from "./types.js";
 
+// Each node names its element in `data.hName`. `defListHastHandlers` take precedence and are still what the host should pass (they unwrap the paragraph of a tight definition), but a host that forgets them now gets `<dl>`, `<dt>` and `<dd>` from mdast-util-to-hast's fallback for unknown nodes, where it used to get three nested `<div>`s.
 function enterDefList(this: CompileContext, token: Token): void {
   this.enter(
     {
       type: "defList",
       children: [],
-      data: { attrsRole: "container" }
+      data: { attrsRole: "container", hName: "dl" }
     } as unknown as DefinitionList,
     token
   );
@@ -41,6 +42,7 @@ function enterDefListTerm(this: CompileContext, token: Token): void {
 function exitDefListTerm(this: CompileContext, token: Token): void {
   const node = this.stack[this.stack.length - 1] as unknown as DefinitionTerm;
   node.data = {
+    hName: "dt",
     attrsRole: "containerItem",
     attrsTitle: node.children as PhrasingContent[]
   };
@@ -52,7 +54,8 @@ function enterDefListDescription(this: CompileContext, token: Token): void {
     {
       type: "defListDescription",
       spread: Boolean((token as FlowToken)._loose),
-      children: []
+      children: [],
+      data: { hName: "dd" }
     } as unknown as DefinitionDescription,
     token
   );

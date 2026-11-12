@@ -82,4 +82,16 @@ describe("definition-list/remd", () => {
       "<dl><dt>Term</dt><dd>para\n<pre><code>a\n\nb\n</code></pre></dd></dl>"
     );
   });
+
+  // Passing `defListHastHandlers` is easy to forget, and mdast-util-to-hast turns a node it has no handler for into a `<div>`. The nodes name their own elements so that the forgotten case is still a definition list; only the unwrapping of a tight definition's paragraph needs the handlers.
+  it("still renders dl, dt and dd when the host passes no hast handlers", () => {
+    const bare = unified()
+      .use(remarkParse)
+      .use(remarkDefinitionList)
+      .use(remarkRehype)
+      .use(rehypeStringify);
+    expect(normalizeHtml(String(bare.processSync("Term\n: Def")))).toBe(
+      "<dl><dt>Term</dt><dd><p>Def</p></dd></dl>"
+    );
+  });
 });

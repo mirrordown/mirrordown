@@ -17,13 +17,14 @@ export type TokenType = (typeof tokenTypes)[keyof typeof tokenTypes];
 export interface DefinitionList extends Parent {
   type: "defList";
   children: Array<DefinitionTerm | DefinitionDescription>;
-  data?: { attrsRole?: string; hProperties?: Properties };
+  data?: { attrsRole?: string; hName?: string; hProperties?: Properties };
 }
 
 /** An mdast node for a definition term, rendered as a `<dt>` element. */
 export interface DefinitionTerm extends Parent {
   type: "defListTerm";
   data?: {
+    hName?: string;
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
     hProperties?: Properties;
@@ -34,7 +35,7 @@ export interface DefinitionTerm extends Parent {
 export interface DefinitionDescription extends Parent {
   type: "defListDescription";
   spread: boolean;
-  data?: { hProperties?: Properties };
+  data?: { hName?: string; hProperties?: Properties };
 }
 
 export const clonePoint = <T extends object>(p: T): T => ({ ...p });
