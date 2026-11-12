@@ -3,56 +3,20 @@ import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import type { UnifiedProcessorOptions } from "@astrojs/markdown-remark";
 import type { SatteriProcessorOptions } from "@astrojs/markdown-satteri";
-import MarkdownIt from "markdown-it";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
-import {
-  mirrordown as markdownItPreset,
-  type MirrordownOptions as MarkdownItOptions
-} from "../../packages/preset-markdown-it/src";
-import {
-  mirrordown as satteriPreset,
-  type MirrordownOptions as SatteriOptions
-} from "../../packages/preset-satteri/src";
-import {
-  mirrordown as remarkPreset,
-  type MirrordownOptions as RemarkOptions
-} from "../../packages/preset-remark/src";
-import { normalizeHtml, parseFixture } from "../utils/index.js";
+import { mirrordown as satteriPreset } from "../../packages/preset-satteri/src";
+import { mirrordown as remarkPreset } from "../../packages/preset-remark/src";
+import { parseFixture } from "../utils/index.js";
 import { options as mermaidPele } from "../mermaid-pele/options.js";
-
-const markdownIt = (options: MarkdownItOptions = {}) => {
-  const md = new MarkdownIt().use(markdownItPreset, options);
-  return (input: string): string => normalizeHtml(md.render(input));
-};
-
-const remark = (options: RemarkOptions = {}) => {
-  const preset = remarkPreset(options);
-  const processor = unified()
-    .use(remarkParse)
-    .use(preset.remarkPlugins)
-    .use(remarkRehype, preset.remarkRehype)
-    .use(preset.rehypePlugins)
-    // Diagrams are raw nodes, so their <svg> reaches the HTML as Pele wrote it.
-    .use(rehypeStringify, { allowDangerousHtml: true });
-  return (input: string): string =>
-    normalizeHtml(String(processor.processSync(input)));
-};
-
-const satteri = (options: SatteriOptions = {}) => {
-  const preset = satteriPreset(options);
-  return (input: string): string =>
-    normalizeHtml(markdownToHtml(input, preset).html);
-};
-
-const engines = [
-  ["markdown-it", markdownIt],
-  ["remark", remark],
-  ["sätteri", satteri]
-] as const;
+import {
+  engines,
+  markdownIt,
+  remark,
+  satteri,
+  type MarkdownItOptions,
+  type RemarkOptions,
+  type SatteriOptions
+} from "./engines.js";
 
 // Every feature's shared fixtures, minus inline-svg (not in the presets), engine-specific files, and the GFM and raw-HTML variants whose baselines differ between the engines themselves.
 const testsDir = join(import.meta.dirname, "..");
@@ -219,6 +183,30 @@ describe("presets", () => {
         'id="doc-sub-title"'
       );
     });
+  });
+
+  // tab-icons finds the tabs plugin's groups by class. A preset that renamed the groups without telling tab-icons would drop every icon and leave the `[!keyword]` markers in the labels.
+  it("tab-icons follows the tabs plugin's `containerClass`", () => {
+    const options = { tabs: { containerClass: "my-tabs" } };
+    const input = "% npm\n> Body.\n% [!yarn] Y\n> Body.";
+    const html = remark(options)(input);
+    expect(html.match(/markdown-tab-icon/g)).toHaveLength(2);
+    expect(html).toContain('aria-label="Y"');
+    expect(markdownIt(options)(input)).toBe(html);
+    expect(satteri(options)(input)).toBe(html);
+  });
+
+  // An explicit tab-icons class still wins: with a different one it looks for groups that are not there.
+  it("tab-icons keeps a `containerClass` of its own", () => {
+    const options = {
+      tabs: { containerClass: "my-tabs" },
+      tabIcons: { containerClass: "other" }
+    };
+    for (const [, render] of engines) {
+      expect(render(options)("% npm\n> Body.")).not.toContain(
+        "markdown-tab-icon"
+      );
+    }
   });
 
   describe("preset-remark", () => {

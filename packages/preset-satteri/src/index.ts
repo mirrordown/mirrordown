@@ -177,6 +177,17 @@ export const mirrordown = (
     ...options.features
   };
 
+  // tab-icons finds the tabs plugin's groups by class, so it takes the tabs plugin's `containerClass` unless given its own.
+  const tabsClass =
+    typeof options.tabs === `object` ? options.tabs.containerClass : undefined;
+  const tabIconsSetting =
+    options.tabIcons === false || tabsClass === undefined
+      ? options.tabIcons
+      : {
+          containerClass: tabsClass,
+          ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
+        };
+
   return {
     features,
     // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
@@ -213,9 +224,9 @@ export const mirrordown = (
       ...(options.copyCode === false
         ? []
         : [satteriCopyCode(settings(options.copyCode))]),
-      ...(options.tabIcons === false
+      ...(tabIconsSetting === false
         ? []
-        : [satteriTabIcons(settings(options.tabIcons))]),
+        : [satteriTabIcons(settings(tabIconsSetting))]),
       ...(options.sectionize === false ? [] : [satteriSectionize()]),
       ...(options.slug === false ? [] : [satteriSlug(settings(options.slug))]),
       ...(options.autolinkHeadings === false

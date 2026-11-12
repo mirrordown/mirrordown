@@ -146,6 +146,17 @@ export const mirrordown = (
   const gfm: Array<PluginEntry<MdastRoot>> =
     options.gfm === false ? [] : [[remarkGfm, { singleTilde: false }]];
 
+  // tab-icons finds the tabs plugin's groups by class, so it takes the tabs plugin's `containerClass` unless given its own.
+  const tabsClass =
+    typeof options.tabs === `object` ? options.tabs.containerClass : undefined;
+  const tabIconsSetting =
+    options.tabIcons === false || tabsClass === undefined
+      ? options.tabIcons
+      : {
+          containerClass: tabsClass,
+          ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
+        };
+
   return {
     remarkPlugins: [
       ...gfm,
@@ -176,7 +187,7 @@ export const mirrordown = (
       ...configured(options.prompt, rehypePrompt),
       // After mermaid-pele, file-tree and prompt: a diagram, a tree or a prompt is no longer a code block.
       ...configured(options.copyCode, rehypeCopyCode),
-      ...configured(options.tabIcons, rehypeTabIcons),
+      ...configured(tabIconsSetting, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),
       ...configured(options.autolinkHeadings, rehypeAutolinkHeadings),
