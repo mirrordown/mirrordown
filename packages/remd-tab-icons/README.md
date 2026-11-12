@@ -9,9 +9,9 @@ A remark/rehype (unified) plugin for the `tab-icons` syntax extension.
 The `tab-icons` plugin adds an icon to the labels of [tab groups](/guide/plugins/tabs). A label gets the icon its text matches (`npm`, `pnpm`, `vite.config.ts`), or the one a `[!keyword]` marker at its start names. The icon is an inline `<svg>` before the label's text:
 
 ```html
-<label class="markdown-tabs-label">
-  <input type="radio" name="..." checked>
-  <svg class="markdown-tab-icon" aria-hidden="true" viewBox="0 0 32 32">...</svg>
+<input type="radio" name="..." id="..." hidden checked>
+<label class="markdown-tabs-label" for="...">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="markdown-tab-icon" aria-hidden="true">...</svg>
   npm
 </label>
 ```
@@ -122,6 +122,8 @@ Matching works on words, not meaning, so a label can match by accident: `Next st
 | Tools | `esbuild` `eslint` `gradle` `oxc` `oxfmt` `oxlint` `prisma` `rolldown` `rollup` `tailwind` `tailwindcss` `unocss` `vite` `vitest` `vscode` `webpack` |
 | Files | `editorconfig` `gitattributes` `gitignore` `tsconfig` `package.json` `uno.config.ts` `.env` |
 | Extensions | `.c` `.cjs` `.cpp` `.cs` `.css` `.cts` `.dart` `.gjs` `.go` `.groovy` `.gts` `.html` `.ico` `.ini` `.java` `.js` `.json` `.jsp` `.jsx` `.kt` `.less` `.lua` `.md` `.mjs` `.mts` `.php` `.py` `.r` `.rb` `.rs` `.sass` `.scala` `.scss` `.sln` `.swift` `.toml` `.ts` `.tsx` `.wasm` `.yaml` `.yml` |
+
+Some built-in icons define a gradient or a clip path with an id of its own, namespaced `markdown-tab-icon-…`. An icon that appears more than once in a document is written out each time, so those ids repeat, each time on the same definition.
 
 ## Configuration
 
