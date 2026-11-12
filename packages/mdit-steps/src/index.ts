@@ -251,6 +251,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         "class",
         targetDepth === 1 ? containerClass : `${containerClass}-list`
       );
+      // The map ends at the last line of the steps (inclusive: the rule passes `nextLine - 1`), where markdown-it's own tokens end at the line after their last (exclusive). Rules and editors that read the map (scroll sync in a preview) depend on it as it is, so it stays; a reader that needs the exclusive end adds one.
       if (mapStart !== undefined && mapEnd !== undefined)
         olOpen.map = [mapStart, mapEnd];
       olOpen.block = true;

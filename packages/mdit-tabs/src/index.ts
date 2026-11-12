@@ -239,6 +239,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       const divOpen = state.push("tabs_open", "div", 1);
       divOpen.attrSet("class", containerClass);
       divOpen.attrSet("data-tabs-group", "");
+      // The map ends at the last line of the tabs (inclusive: the rule passes `nextLine - 1`), where markdown-it's own tokens end at the line after their last (exclusive). Rules and editors that read the map (scroll sync in a preview) depend on it as it is, so it stays; a reader that needs the exclusive end adds one.
       if (mapStart !== undefined && mapEnd !== undefined)
         divOpen.map = [mapStart, mapEnd];
       divOpen.block = true;
