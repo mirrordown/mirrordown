@@ -11,6 +11,18 @@ const ESCAPE = /\\(.)/g;
 // What the source of a paragraph holds before the content of a line: indentation and block quote markers.
 const LINE_PREFIX = /^[\t >]+/;
 const REGEX_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+// What smart punctuation writes, and the characters it writes them for.
+const SMART: Record<string, string> = {
+  "‘": `'`,
+  "’": `'`,
+  "“": `"`,
+  "”": `"`,
+  "–": `--`,
+  "—": `---`,
+  "…": `...`
+};
+const plain = (term: string): string =>
+  term.replace(/[‘’“”–—…]/g, (char) => SMART[char] ?? char);
 
 const readLines = (
   lines: string,
@@ -49,10 +61,15 @@ export const parseAbbreviations = (
   if (source === undefined) return parsed;
   const definitions = readLines(source, readSource);
   if (!definitions || parsed?.length !== definitions.length) return definitions;
-  // The same term as the parser left it. Smart punctuation rewrites the quotes and dashes of the whole document before a plugin runs, so `Int'l` stands in the text as `Int’l`, and markdown-it, which looks for terms before its typographer runs, finds it.
+  // The same term as the parser left it. Smart punctuation rewrites the quotes and dashes of the whole document before a plugin runs, so `Int'l` stands in the text as `Int’l`, and markdown-it, which looks for terms before its typographer runs, finds it. A term the parser changed in any other way (a character reference it decoded) is not looked for: markdown-it keeps `A&amp;B` as written, which the text `A&B` does not match.
   for (const [index, [term]] of parsed.entries()) {
     const [written, title] = definitions[index] ?? [];
-    if (title !== undefined && term !== written)
+    if (
+      title !== undefined &&
+      written !== undefined &&
+      term !== written &&
+      plain(term) === plain(written)
+    )
       definitions.push([term, title]);
   }
   return definitions;
