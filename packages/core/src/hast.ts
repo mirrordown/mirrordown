@@ -136,8 +136,8 @@ export const lightboxTrigger = <C>(
   children: [image]
 });
 
-/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. */
-export const lightboxDialog = <C>(
+/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. A caption that is empty or only whitespace text shows nothing, so it gets no `<p>`, as in the markdown-it plugin. */
+export const lightboxDialog = <C extends HastLike>(
   id: string,
   image: C,
   caption?: C[]
@@ -158,7 +158,7 @@ export const lightboxDialog = <C>(
       },
       children: [image]
     },
-    ...(caption
+    ...(caption?.some((node) => !isWhitespaceText(node))
       ? [
           {
             type: `element` as const,

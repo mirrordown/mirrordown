@@ -186,9 +186,11 @@ export const lightbox: PluginWithOptions<LightboxOptions> = (
       .map(({ image, caption }) => {
         const id = (image.meta as Required<ImageMeta>).lightboxId;
         const img = renderImage([image], 0, opts, env, self);
-        const text = caption
-          ? `<p class="markdown-lightbox-caption">${self.renderInline(caption, opts, env)}</p>`
-          : "";
+        // A caption that renders only HTML whitespace shows nothing, so it gets no `<p>`: this string is written at render time, where squeeze-paragraphs cannot remove an empty one. `lightboxDialog` in `@mirrordown/core` applies the same rule for the other engines.
+        const rendered = caption ? self.renderInline(caption, opts, env) : "";
+        const text = /^[ \t\n\f\r]*$/.test(rendered)
+          ? ""
+          : `<p class="markdown-lightbox-caption">${rendered}</p>`;
         return `<dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image">${img}</button>${text}</dialog>`;
       })
       .join("\n");

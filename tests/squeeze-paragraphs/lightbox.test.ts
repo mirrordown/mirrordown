@@ -54,8 +54,9 @@ describe("squeeze-paragraphs + lightbox: an empty dialog caption", () => {
     expect(render(input)).not.toMatch(emptyCaption);
   });
 
-  // KNOWN ENGINE DIFFERENCE, pinned so it cannot change unnoticed. markdown-it's lightbox writes the caption `<p>` as a string inside its `lightbox_dialogs` renderer rule, so it never exists as tokens and no core rule can remove it. The fix belongs to the lightbox set (emit no caption `<p>` when the caption renders nothing); when it lands this expectation flips to match the other two engines.
-  it("markdown-it keeps it: the <p> is written at render time, out of squeeze's reach", () => {
-    expect(markdownIt(input)).toMatch(emptyCaption);
+  // markdown-it's lightbox writes the caption `<p>` as a string in its `lightbox_dialogs` renderer rule, after every core rule has run, so squeeze-paragraphs can never remove it: the lightbox plugin itself writes no `<p>` for a caption that renders only whitespace.
+  it("markdown-it never writes it: the lightbox plugin skips a caption that renders nothing", () => {
+    expect(markdownIt(input)).toContain(`<dialog`);
+    expect(markdownIt(input)).not.toMatch(emptyCaption);
   });
 });
