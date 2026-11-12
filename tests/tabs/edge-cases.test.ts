@@ -439,3 +439,42 @@ check(`tabs: a header after text in a list item, after a blank line`, [
     expected: `<ul><li><p>text</p>${group([`A`, `<p>a</p>`])}</li></ul>`
   }
 ]);
+
+// A backslash is the only way to write a line that starts with `% ` and isn't a tab. remark and Sätteri read text after escapes and character references are resolved, so they saw a header where markdown-it, reading the line itself, sees none.
+check(`tabs: an escaped header is text`, [
+  {
+    name: `an escaped % starts no tabs`,
+    input: `\\% A\n> b`,
+    expected: `<p>% A</p><blockquote><p>b</p></blockquote>`
+  },
+  {
+    name: `an escaped % after a header ends the tabs`,
+    input: `% A\n\\% B`,
+    expected: `${group([`A`])}<p>% B</p>`
+  },
+  {
+    name: `an escaped % in a body starts no tabs there`,
+    input: `% A\n> \\% not`,
+    expected: group([`A`, `<p>% not</p>`])
+  },
+  {
+    name: `an escaped % after a body, written without its marker, ends the tabs`,
+    input: `% A\n> x\n\\% B`,
+    expected: `${group([`A`, `<p>x</p>`])}<p>% B</p>`
+  },
+  {
+    name: `an escaped % after text does not interrupt it`,
+    input: `text\n\\% A`,
+    expected: `<p>text\n% A</p>`
+  },
+  {
+    name: `a character reference for % starts no tabs`,
+    input: `&#37; A`,
+    expected: `<p>% A</p>`
+  },
+  {
+    name: `an escaped plus makes no header`,
+    input: `%\\+ A`,
+    expected: `<p>%+ A</p>`
+  }
+]);
