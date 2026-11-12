@@ -66,7 +66,15 @@ const resolveRules = (rule: AttrsOptions["rule"]): RuleSet => {
   if (rule === false || (Array.isArray(rule) && rule.length === 0))
     return new Set();
   if (rule === "all" || rule === true || rule === undefined) return ALL_RULES;
-  return new Set((rule as string[]).filter((r) => ALL_RULES.has(r)));
+  // A name that is no rule used to be dropped, so a typo read no block at all without a word.
+  const names: readonly string[] = Array.isArray(rule) ? rule : [rule];
+  const unknown = names.find((name) => !ALL_RULES.has(name));
+  if (unknown !== undefined) {
+    throw new TypeError(
+      `attrs: unknown rule "${unknown}". Use one of: ${[...ALL_RULES].join(", ")}.`
+    );
+  }
+  return new Set(names);
 };
 
 /** Reads a block closing `content`, the text of `node` or its last line, unless the source escapes it. */
@@ -473,7 +481,9 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // belongs to an inline element, a list, a table or a rule is claimed by
     // those rules first.
     if (rules.has("block")) {
-      visit(tree, "paragraph", (node: Paragraph) => {
+      visit(tree, "paragraph", (node: Paragraph, index, parent) => {
+        // The end of a list item's first paragraph is the list rule's, so that `block` means the same with or without it. Read here, the block would go on the paragraph a tight list never renders, where it is lost.
+        if (parent?.type === "listItem" && index === 0) return;
         const last = node.children[node.children.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();

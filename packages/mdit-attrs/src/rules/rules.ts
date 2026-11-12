@@ -35,7 +35,15 @@ export const createRules = (
   } else if (!rule || (Array.isArray(rule) && rule.length === 0)) {
     return [];
   } else {
-    enabled = new Set(rule.filter((r) => ALL_RULE_SET.has(r)));
+    // A name that is no rule used to be dropped, so a typo read no block at all without a word.
+    const names: readonly string[] = Array.isArray(rule) ? rule : [rule];
+    const unknown = names.find((name) => !ALL_RULE_SET.has(name));
+    if (unknown !== undefined) {
+      throw new TypeError(
+        `attrs: unknown rule "${unknown}". Use one of: ${ALL_RULE_NAMES.join(", ")}.`
+      );
+    }
+    enabled = new Set(names);
   }
 
   const rules: AttrRule[] = [];
