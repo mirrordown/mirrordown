@@ -190,17 +190,10 @@ describe("spoiler: a spoiler that crosses emphasis is malformed, and each engine
 });
 
 describe("spoiler: a table-cell spoiler nested in emphasis after another span plugin's span", () => {
-  // Known difference. sat-del rebuilds the emphasis's text and, knowing only the direct parent, records the table's `\|` as escaped pipes, so sat-spoiler leaves them literal. Passing the enclosing cell to `withSource`, as sat-spoiler does, would fix it in the other Sätteri span plugins.
+  // sat-del rebuilds the emphasis's text and records which of its characters were escaped. In a table cell `\|` is the table's pipe and not an escape, however far up the cell is: a span plugin that looked only at the direct parent (the emphasis) recorded the pipes as escaped, and sat-spoiler, which runs after it, left the spoiler literal.
   const input = table(String.raw`*--a-- \|\|x\|\|*`);
 
-  it.each([
-    ["markdown-it", mdit],
-    ["remark", remd]
-  ] as const)("%s forms the spoiler", (_engine, render) => {
+  it.each(engines)("%s forms the spoiler", (_engine, render) => {
     expect(render(input)).toBe(cell(`<em><del>a</del> ${S("x")}</em>`));
-  });
-
-  it("sätteri leaves it literal", () => {
-    expect(sat(input)).toBe(cell("<em><del>a</del> ||x||</em>"));
   });
 });

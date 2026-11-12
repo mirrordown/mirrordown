@@ -1,6 +1,11 @@
-import { createDelimitedTransform } from "@mirrordown/core";
+import {
+  createAttributeReader,
+  createDelimitedTransform,
+  scanSpans
+} from "@mirrordown/core";
 import {
   defineMdastPlugin,
+  markdownToMdast,
   type MdastPluginInstance,
   type MdastTarget,
   type PluginFactoryContext
@@ -22,10 +27,17 @@ export interface SpoilerPlugin {
  */
 export const satteriSpoiler =
   (): ((ctx: PluginFactoryContext) => SpoilerPlugin) =>
-  ({ source }) => {
+  ({ source, features }) => {
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on: a block written right after a span is then the span's to take.
+    const read =
+      features.attributes === true
+        ? createAttributeReader(markdownToMdast)
+        : undefined;
     const transform = createDelimitedTransform<MdastTarget>(`|`, {
       text: (value) => ({ type: `text`, value }),
       // Sätteri has no hast handler hook, so the label, checkbox and span are custom nodes rendering through `hName`. The checkbox precedes the span so CSS's `:checked ~ .content` combinator reaches it.
+      // A block written right after a spoiler is read and dropped, as in the other engines, whose renderers build the label without the attributes their attrs plugins leave on the spoiler.
+      attributes: () => {},
       wrap: (children) => ({
         type: `spoiler`,
         data: {
@@ -65,22 +77,18 @@ export const satteriSpoiler =
         const parent = ctx.parent(node);
         if (seen.has(parent)) return;
         seen.add(parent);
-        // In a table cell `\|` is the table's way to write a pipe, the only way to write a spoiler there, and not an escape. The cell may be a distant ancestor (`| *\|\|x\|\|* |`).
-        let inTableCell = false;
-        for (
-          let ancestor: ReturnType<typeof ctx.parent> = parent;
-          ancestor && !inTableCell;
-          ancestor = ctx.parent(ancestor)
-        ) {
-          inTableCell = ancestor.type === `tableCell`;
-        }
-        const children = transform.withSource(
-          parent.children,
-          parent.type,
+        // In a table cell `\|` is the table's way to write a pipe, the only way to write a spoiler there, and not an escape: `scanSpans` looks for the cell however far up it is (`| *\|\|x\|\|* |`).
+        scanSpans(transform, parent, {
           source,
-          inTableCell
-        );
-        if (children) ctx.setProperty(parent, `children`, children);
+          read,
+          parent: (of) => ctx.parent(of),
+          setChildren: (of, children) => {
+            ctx.setProperty(of, `children`, children);
+          },
+          setData: (of, data) => {
+            ctx.setProperty(of, `data`, data);
+          }
+        });
       }
     });
   };

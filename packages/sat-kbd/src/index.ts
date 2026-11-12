@@ -1,6 +1,11 @@
-import { createKbdTransform } from "@mirrordown/core";
+import {
+  createAttributeReader,
+  createKbdTransform,
+  scanSpans
+} from "@mirrordown/core";
 import {
   defineMdastPlugin,
+  markdownToMdast,
   type MdastPluginInstance,
   type MdastTarget,
   type PluginFactoryContext
@@ -26,7 +31,12 @@ export interface KbdPlugin {
  */
 export const satteriKbd =
   (): ((ctx: PluginFactoryContext) => KbdPlugin) =>
-  ({ source }) => {
+  ({ source, features }) => {
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on: a block written right after a span is then the span's to take.
+    const read =
+      features.attributes === true
+        ? createAttributeReader(markdownToMdast)
+        : undefined;
     const transform = createKbdTransform<MdastTarget>(
       {
         text: (value) => ({ type: `text`, value }),
@@ -40,12 +50,17 @@ export const satteriKbd =
       const parent = ctx.parent(node);
       if (!parent || seen.has(parent)) return;
       seen.add(parent);
-      const children = transform.withSource(
-        parent.children,
-        parent.type,
-        source
-      );
-      if (children) ctx.setProperty(parent, `children`, children);
+      scanSpans(transform, parent, {
+        source,
+        read,
+        parent: (of) => ctx.parent(of),
+        setChildren: (of, children) => {
+          ctx.setProperty(of, `children`, children);
+        },
+        setData: (of, data) => {
+          ctx.setProperty(of, `data`, data);
+        }
+      });
     };
     // A link's brackets can be a key's (`[[a]](b)`, or `[[a]]` beside a definition of `a`): its parent is scanned when the link's opening bracket is half of a `[[`.
     const scanLink = (
