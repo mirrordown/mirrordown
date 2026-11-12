@@ -87,6 +87,32 @@ const markTightParagraphs = (state: StateBlock, index: number): void => {
   }
 };
 
+// The first term is a paragraph start for free: every rule registered ahead of this one has already declined its line. A later term is read inside the loop, so the same rules are asked here, in validation mode, whether the line starts a block of theirs (a heading, fence, list item, thematic break, ...). A rule that ignores validation mode (`code` does) may push tokens or move the line, so both are put back.
+const startsAnotherBlock = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  const tokenCount = state.tokens.length;
+  const savedLine = state.line;
+  const savedLevel = state.level;
+  let found = false;
+
+  for (const rule of state.md.block.ruler.getRules("")) {
+    if (rule === dlRule) break;
+    if (rule(state, line, endLine, true)) {
+      found = true;
+      break;
+    }
+  }
+
+  state.tokens.length = tokenCount;
+  state.line = savedLine;
+  state.level = savedLevel;
+
+  return found;
+};
+
 const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   if (silent) {
     // validation mode validates a dd block only, not a whole definition list
@@ -244,6 +270,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
     contentStart = checkAndSkipMarker(state, ddLine);
 
     if (contentStart < 0) break;
+
+    if (startsAnotherBlock(state, dtLine, endLine)) break;
 
     // go to the next loop iteration:
     // insert DT and DD tags and repeat checking
