@@ -101,3 +101,36 @@ HTML&#65; and &#65;HTML
 *[AT&T]: telco
 
 AT&T, AT&amp;T, AT\&T
+
+<!-- @case: a title is the rest of its line as written -->
+*[HTML]: Hyper *Text* Markup
+*[RD]: Research &amp; Development \* 2
+
+HTML and RD
+
+<!-- @case: a term can hold inline syntax -->
+*[a*b]: product
+
+The a*b term.
+
+<!-- @case: an escaped bracket in a term -->
+*[a\]b]: bracket
+
+The a]b term.
+
+<!-- @case: a line that would otherwise be emphasis -->
+*[foo]: bar*
+
+The foo term.
+
+<!-- @case: a term that is also a link reference -->
+[HTML]: http://example.com
+
+*[HTML]: Hyper Text
+
+HTML and [HTML]
+
+<!-- @case: an escaped asterisk makes the line text -->
+\*[HTML]: Hyper Text
+
+HTML

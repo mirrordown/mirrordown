@@ -1,22 +1,58 @@
 // Abbreviation rules shared by the remark and Sätteri plugins: which paragraphs define abbreviations, and how a text value splits around the defined terms.
 
-const DEFINITION = /^\*\[([^[\]]+)\]:\s*(.+)$/;
+type Definitions = Array<[term: string, title: string]>;
+
+// A definition line as the parser left it, in a text node.
+const DEFINITION = /^\*\[([^[\]]+)\]:(.+)$/;
+// A definition line as written, by the rule markdown-it reads it with: a backslash takes the next character into the term, so the term can hold a bracket.
+const SOURCE_DEFINITION = /^\*\[((?:\\.|[^[\]\\])*)\]:(.+)$/;
+const ESCAPE = /\\(.)/g;
+// What the source of a paragraph holds before the content of a line: indentation and block quote markers.
+const LINE_PREFIX = /^[\t >]+/;
 const REGEX_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 
-/**
- * The `[term, title]` pairs a paragraph's text defines, when every line of it is a `*[term]: title` definition; otherwise `undefined` (the paragraph is ordinary text).
- */
-export const parseAbbreviations = (
-  text: string
-): Array<[string, string]> | undefined => {
-  const definitions: Array<[string, string]> = [];
-  for (const line of text.split(/\r\n|\r|\n/)) {
-    const match = DEFINITION.exec(line);
-    const term = match?.[1]?.trim();
-    const title = match?.[2]?.trim();
+const readLines = (
+  lines: string,
+  read: (line: string) => [term?: string, title?: string]
+): Definitions | undefined => {
+  const definitions: Definitions = [];
+  for (const line of lines.split(/\r\n|\r|\n/)) {
+    const [term, title] = read(line);
     // A line with a blank term or a blank title is not a definition.
     if (!term || !title) return undefined;
     definitions.push([term, title]);
+  }
+  return definitions;
+};
+
+const readText = (line: string): [term?: string, title?: string] => {
+  const match = DEFINITION.exec(line);
+  return [match?.[1]?.trim(), match?.[2]?.trim()];
+};
+
+const readSource = (line: string): [term?: string, title?: string] => {
+  const match = SOURCE_DEFINITION.exec(line.replace(LINE_PREFIX, ``));
+  return [match?.[1]?.replace(ESCAPE, `$1`).trim(), match?.[2]?.trim()];
+};
+
+/**
+ * The `[term, title]` pairs a paragraph defines, when every line of it is a `*[term]: title` definition; otherwise `undefined` (the paragraph is ordinary text). `text` is the value of the paragraph's only child, when that is a text node, and `source` is the source the paragraph was parsed from, when its position is known.
+ *
+ * The source decides where there is one, because that is what markdown-it reads: a title is the rest of the line as written, whatever inline syntax it holds, and a line whose `*` is escaped is not a definition. Without a source (a paragraph another plugin built) the text does.
+ */
+export const parseAbbreviations = (
+  text: string | undefined,
+  source?: string
+): Definitions | undefined => {
+  const parsed = text === undefined ? undefined : readLines(text, readText);
+  if (source === undefined) return parsed;
+  const definitions = readLines(source, readSource);
+  if (!definitions || parsed?.length !== definitions.length) return definitions;
+  // The same term as the parser left it. Smart punctuation rewrites the quotes and dashes of the whole document before a plugin runs, so `Int'l` stands in the text as `Int’l`, and markdown-it, which looks for terms before its typographer runs, finds it.
+  for (const [index, [term]] of parsed.entries()) {
+    const [written, title] = definitions[index] ?? [];
+    if (title !== undefined && term !== written)
+      definitions.push([term, title]);
   }
   return definitions;
 };

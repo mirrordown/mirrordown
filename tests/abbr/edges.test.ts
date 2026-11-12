@@ -4,6 +4,8 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { visit } from "unist-util-visit";
+import type { Root } from "mdast";
 import { markdownToHtml } from "satteri";
 import {
   createAbbreviationScan,
@@ -233,5 +235,89 @@ describe("abbr: a definition needs a term and a title, without the space around 
     expect(parseAbbreviations(`*[ ]: x`)).toBeUndefined();
     expect(parseAbbreviations(`*[A]: one\n*[B]: \u00a0`)).toBeUndefined();
     expect(parseAbbreviations(`*[ A ]:  one `)).toEqual([[`A`, `one`]]);
+  });
+});
+
+// markdown-it reads a definition from its source line, before any inline parsing. remark and Sätteri see the parsed paragraph, and once took it as definitions only when it was a single text node: a title or a term holding anything the parser turns into a node (emphasis, a link, a hard break) left the definition printed on the page and its term unmarked. They now read the paragraph's source too. The shared fixture has the everyday cases; these are about where that source comes from.
+describe("abbr: a definition is read from its source line", () => {
+  describe.each(engines)("%s", (_engine, render) => {
+    it("reads each line of a paragraph the parser split at a hard break", () => {
+      expect(render(`*[A]: first  \n*[B]: second\n\nA B`)).toBe(
+        `<p><abbr title="first">A</abbr> <abbr title="second">B</abbr></p>`
+      );
+    });
+
+    it("reads past the markers of the block a later line is in", () => {
+      expect(render(`> - *[A]: *one*\n>   *[B]: two\n\nA B`)).toBe(
+        `<blockquote><ul><li></li></ul></blockquote><p><abbr title="*one*">A</abbr> <abbr title="two">B</abbr></p>`
+      );
+    });
+  });
+
+  it("remark: reads the paragraph's text when the tree is transformed without its file", () => {
+    const processor = unified()
+      .use(remarkParse)
+      .use(remarkAbbr)
+      .use(remarkRehype)
+      .use(rehypeStringify);
+    const tree = processor.parse(`*[HTML]: Hyper Text\n\nHTML`);
+    expect(processor.stringify(processor.runSync(tree))).toBe(
+      `<p><abbr title="Hyper Text">HTML</abbr></p>`
+    );
+  });
+
+  it("takes the source over the text, and the text where there is no source", () => {
+    // The parser resolved the escape, so the text alone looks like a definition.
+    expect(parseAbbreviations(`*[X]: t`, `\\*[X]: t`)).toBeUndefined();
+    expect(parseAbbreviations(undefined, `*[X]: *t*`)).toEqual([[`X`, `*t*`]]);
+    expect(parseAbbreviations(`*[X]: t`)).toEqual([[`X`, `t`]]);
+    expect(parseAbbreviations(undefined)).toBeUndefined();
+  });
+});
+
+// Smart punctuation rewrites quotes and dashes: in markdown-it after abbreviations are found, in remark (Astro adds `remark-smartypants` before a site's own plugins) and in Sätteri before any plugin runs. A term written with an apostrophe has to be found either way, so remark and Sätteri also look for the term as the parser left it. The title stays as written, as in markdown-it.
+describe("abbr: a term holding a quote is found with smart punctuation on", () => {
+  const input = `*[Int'l]: Int'l Business\n\nAn Int'l call`;
+  const expected = `<p>An <abbr title="Int'l Business">Int’l</abbr> call</p>`;
+
+  it("markdown-it", () => {
+    expect(
+      normalizeHtml(
+        new MarkdownIt({ typographer: true }).use(abbr).render(input)
+      )
+    ).toBe(expected);
+  });
+
+  it("remark", () => {
+    // What `remark-smartypants` does to an apostrophe, without depending on it here.
+    const curlApostrophes = () => (tree: Root) => {
+      visit(tree, "text", (node) => {
+        node.value = node.value.replaceAll(`'`, `’`);
+      });
+    };
+    expect(
+      normalizeHtml(
+        String(
+          unified()
+            .use(remarkParse)
+            .use(curlApostrophes)
+            .use(remarkAbbr)
+            .use(remarkRehype)
+            .use(rehypeStringify)
+            .processSync(input)
+        )
+      )
+    ).toBe(expected);
+  });
+
+  it("sätteri", () => {
+    expect(
+      normalizeHtml(
+        markdownToHtml(input, {
+          features: { gfm: false, frontmatter: false, smartPunctuation: true },
+          mdastPlugins: [satteriAbbr()]
+        }).html
+      )
+    ).toBe(expected);
   });
 });
