@@ -2,7 +2,7 @@
 
 > Part of [Mirrordown](https://github.com/mirrordown/mirrordown) — a suite of markdown syntax extensions for the unified and markdown-it ecosystems.
 
-The whole Mirrordown suite for markdown-it as one plugin. Every feature is on by default and renders the same HTML as [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark). If you only want some features, install the individual `@mirrordown/mdit-*` packages instead.
+The whole Mirrordown suite for markdown-it as one plugin. Every feature is on by default and renders the same HTML as [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark) and [`@mirrordown/preset-satteri`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-satteri), apart from the differences listed in the notes below and in each plugin's guide. If you only want some features, install the individual `@mirrordown/mdit-*` packages instead.
 
 ## Install
 
@@ -37,7 +37,7 @@ export default defineConfig({
 
 ### Styles
 
-Tabs, steps, alerts, spoilers, the lightbox, heading anchors, captions and diagrams ship stylesheets. Import them all at once:
+Import the stylesheets of every plugin that has one:
 
 ```ts
 import "@mirrordown/preset-markdown-it/styles";
@@ -90,7 +90,8 @@ md.use(mirrordown, {
 - **The rest of GFM is not included.** markdown-it has no footnotes, task lists or bare-URL links of its own, and the preset adds no dependency for them, so a document that uses them renders differently here than with the remark and Sätteri presets: `[^1]: Note.` is read as a link reference definition, `- [ ] task` keeps its brackets and `www.example.com` stays text. Add a markdown-it plugin for each you need (and `linkify: true` for URLs). Aligned table columns are written as `style="text-align:left"`, where remark writes `align="left"`.
 - **`tabIcons` follows `tabs`.** With `tabs: { containerClass }` set, tab-icons looks for groups of that class, unless you give it a `containerClass` of its own.
 - **`inline-svg` is not included.** It reads SVG files from disk; add [`@mirrordown/mdit-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/mdit-inline-svg) yourself where that fits.
-- **Braces at the end of a block are attributes.** With `attrs` on, `{…}` at the end of a paragraph, heading or list item is always read as attributes, even escaped; turn `attrs` off if your content ends blocks with literal braces.
+- **Raw HTML is the host's.** The preset doesn't change markdown-it's `html` option. markdown-it escapes raw HTML unless it is created with `html: true`, remark-rehype drops it by default, and Sätteri keeps it, so a document that holds raw HTML renders differently across the presets until the hosts are set alike.
+- **Braces at the end of a block are attributes.** With `attrs` on, `{…}` at the end of a paragraph, heading or list item is read as attributes. Escape the opening brace (`{`) to keep one as text, or turn `attrs` off if your content ends blocks with literal braces.
 
 ## License
 
