@@ -204,7 +204,9 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
 
   // By transformation time all plugins have pushed into data, so forwarding these
   // arrays to fromMarkdown gives parseInline access to GFM strikethrough etc.
-  function parseInline(text: string): PhrasingContent[] {
+  function parseInline(raw: string): PhrasingContent[] {
+    // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
+    const text = raw.replace(/^[ \t]+|[ \t]+$/g, "") || raw;
     if (!text) return [];
     const tree = fromMarkdown(text, {
       extensions: data.micromarkExtensions,
@@ -229,14 +231,25 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
   });
 
   const transformer: Transformer<Root> = (tree) => {
+    const inTableCell = new Set<Ruby>();
+    visit(tree, "tableCell", (cell) => {
+      visit(cell, "ruby", (node: Ruby) => {
+        inTableCell.add(node);
+      });
+    });
     visit(tree, "ruby", (node: Ruby) => {
       // oxlint-disable-next-line typescript/no-explicit-any
       const raw = node.data as any;
+      // A node the transformer has already filled in has no raw fields left: running over the same tree again changes nothing.
+      if (typeof raw.rawBase !== "string") return;
       // Strip a trailing backslash from rawBase: when {word\|reading} appears in a GFM
       // table cell, the table tokenizer preserves the raw \| in the cell content. Our
       // micromark state machine consumes \ as base data and | as the separator, leaving
       // rawBase with a trailing \. Removing it lets parseInline see the correct text.
-      const rawBase = (raw.rawBase as string).replace(/\\$/, "");
+      // Outside a table the backslash is the author's and stays, as in mdit.
+      const rawBase = inTableCell.has(node)
+        ? (raw.rawBase as string).replace(/\\$/, "")
+        : (raw.rawBase as string);
       const baseChildren = parseInline(rawBase);
       const readingChildren = parseInline(raw.rawReading as string);
 
