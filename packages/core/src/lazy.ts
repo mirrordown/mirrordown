@@ -8,7 +8,7 @@ import type {
   Text
 } from "mdast";
 import type { Properties } from "hast";
-import { rebuiltParagraphs } from "./cut-attributes.js";
+import { mergeProperties, rebuiltParagraphs } from "./cut-attributes.js";
 
 /** A paragraph's data, with the attributes mdast-util-to-hast reads. Its type augmentation adds `hProperties` to mdast's data where it's loaded, but core doesn't load it; the intersection types the property either way. */
 type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
@@ -311,25 +311,53 @@ export const INDENTED_BLOCKS: ReadonlySet<string> = new Set([
   `descriptionDetails`
 ]);
 
+/** The column a list item's content starts at (counted from 0, a tab as one column, as `containersKept` counts), from where its first block is written; `undefined` for any other block, or when that isn't known. */
+export const itemContentColumn = (node: {
+  type?: string;
+  children?: unknown[];
+}): number | undefined => {
+  if (node.type !== `listItem`) return undefined;
+  // The item's first block, in the loose node shape the passes walk.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const first = node.children?.[0] as GroupTreeNode | undefined;
+  const column = first?.position?.start.column;
+  return column === undefined ? undefined : column - 1;
+};
+
+// How far a source line is indented past the block it's written in: past its `quotes`-th `>` marker and the space after it, or past the `column` a list item's content starts at, whichever is further in. Negative for a line written outside that item.
+const indentPast = (source: string, quotes: number, column = 0): number => {
+  const prefix = /^[ \t>]*/.exec(source)?.[0] ?? ``;
+  let quoted = 0;
+  if (quotes > 0) {
+    const marker = prefix.split(`>`, quotes).join(`>`).length;
+    quoted = marker + (prefix[marker + 1] === ` ` ? 2 : 1);
+  }
+  return prefix.length - Math.max(quoted, column);
+};
+
 /**
- * A paragraph split before its first line (after its first) that `opens` a group (given the line's first text, and its node for where it's written), written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. Attributes ending the paragraph go with the part they end.
+ * A paragraph split before its first line (after its first) that `opens` a group (given the line's first text, and its node for where it's written), written at the paragraph's level (`quotes` `>` markers), as markdown-it's block rules interrupt a paragraph; `null` when there's none. A line indented four columns or more past the paragraph's block opens nothing: it continues the paragraph, as it does in CommonMark and in markdown-it. In a list item (`column`, where its content starts), neither does a line written short of that column: CommonMark lazily continued it, and markdown-it ends the item there. Attributes ending the paragraph go with the part they end.
  */
 export const splitAtOpeningLine = (
   para: Paragraph,
   sourceLines: readonly string[],
   quotes: number,
-  opens: (text: string, node: Text) => boolean
+  opens: (text: string, node: Text) => boolean,
+  column?: number
 ): Paragraph[] | null => {
   const lines = paraToSourceLines(para, sourceLines);
   if (!lines) return null;
-  const at = lines.findIndex(({ segs, markers }, index) => {
+  const at = lines.findIndex(({ segs, markers, line }, index) => {
     const first = segs[0];
-    return (
-      index > 0 &&
-      first?.type === `text` &&
-      opens(first.value, first) &&
-      markers === quotes
-    );
+    if (
+      index === 0 ||
+      first?.type !== `text` ||
+      !opens(first.value, first) ||
+      markers !== quotes
+    )
+      return false;
+    const indent = indentPast(sourceLines[line - 1] ?? ``, quotes, column);
+    return indent >= 0 && indent < 4;
   });
   if (at === -1) return null;
   const head = linesToParagraph(segsOf(lines.slice(0, at)), sourceLines);
@@ -350,6 +378,21 @@ const lastParagraph = (
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const para = last as unknown as Paragraph;
   return { para, parent: node };
+};
+
+// The attributes a parser that reads attribute blocks before recognition (Sätteri) put on a body's blockquote, kept by the body's last paragraph when a line in it has already ended the group: the block they came from was written on a line of its own after the lines that ended the group, so they belong to the last of the blocks those lines are rebuilt as.
+const quoteAttributes = new WeakMap<Paragraph, Properties>();
+
+/** Keeps `properties`, read off the blockquote `blocks` were the content of, for the last block `endGroupsAtMarkers` rebuilds from the lines that left that content's last paragraph. */
+export const keepQuoteAttributes = (
+  blocks: ReadonlyArray<BlockContent | DefinitionContent>,
+  properties: Properties
+): void => {
+  // mdast blocks, in the loose node shape `lastParagraph` walks.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const children = blocks as unknown as GroupTreeNode[];
+  const para = lastParagraph({ type: `root`, children })?.para;
+  if (para) quoteAttributes.set(para, properties);
 };
 
 /**
@@ -390,14 +433,21 @@ export const endGroupsAtMarkers = (
       );
       const after = lines.slice(outside);
       let moved: Array<BlockContent | DefinitionContent>;
+      // The attributes of a block written on a line of its own after these lines (see `keepQuoteAttributes`).
+      let quoted = quoteAttributes.get(para);
       if ((after[0]?.markers ?? 0) < quotes) {
         const flat = linesToParagraph(segsOf(after));
         if (flat) leaving.add(flat);
+        // They stay with the lines until the outer group places them.
+        if (flat && quoted) quoteAttributes.set(flat, quoted);
+        quoted = undefined;
         moved = flat ? [flat] : [];
       } else {
         moved = rebuildLazyLines(
           after.map((line) => ({ ...line, markers: line.markers - quotes })),
-          0
+          0,
+          // A blockquote among them is placed, so what reads a block's source lines after this (an attribute block written on a line of its own) finds it.
+          { sourceLines, over: quotes }
         );
       }
       if (moved.length === 0) continue;
@@ -411,6 +461,17 @@ export const endGroupsAtMarkers = (
         const last = lastParagraph({ type: `root`, children: blocks })?.para;
         if (last) last.data = movedData;
         para.data = rest;
+      }
+      // Those attributes are the last block's: a blockquote's when the lines end in one, as the attrs plugins of the other engines place them.
+      const lastBlock = blocks.at(-1);
+      if (quoted && lastBlock) {
+        const own: ParagraphAttributes | undefined =
+          lastBlock.data ?? undefined;
+        const blockData: ParagraphAttributes = {
+          ...own,
+          hProperties: mergeProperties(quoted, own?.hProperties ?? {})
+        };
+        lastBlock.data = blockData;
       }
       if (kept) para.children = kept.children;
       else parent.children?.pop();

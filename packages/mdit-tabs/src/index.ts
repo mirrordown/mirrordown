@@ -10,6 +10,9 @@ import {
   stripAttrs,
   groupId,
   blockId,
+  isLazyLine,
+  lazyParagraph,
+  paragraphOpen,
   CONTINUATION_RE
 } from "./utils.js";
 
@@ -100,11 +103,17 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
     if (!firstHeader) return false;
     if (firstHeader.depth !== 1) return false;
 
-    if (silent) return true;
+    // As a line that would interrupt a paragraph, a header written outside the block the paragraph is in (short of a list item's content) doesn't: CommonMark continues the paragraph with it, which is all the other engines can read there.
+    if (silent) return state.sCount[startLine] >= state.blkIndent;
 
     const block: TabsBlock = { frames: [], currentDepth: 0 };
     let currentFrame: TabFrame | null = null;
     let nextLine = startLine;
+    // Whether the group ended at a line that continues the last header's paragraph.
+    let lazyEnd = false;
+    // A line indented four columns or more past the block the tabs are in: CommonMark reads no `>` marker there, as markdown-it's own block rules read none.
+    const indented = (line: number): boolean =>
+      state.sCount[line] - state.blkIndent >= 4;
 
     const flushFrame = (): void => {
       if (currentFrame) block.frames.push(currentFrame);
@@ -150,6 +159,8 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
               : "";
           // A line written outside the block the tabs are in (a list item) ends that block after a blank line, and the tabs with it.
           if (state.sCount[after] < state.blkIndent) break;
+          // Indented four columns or more, it is indented code.
+          if (after < endLine && indented(after)) break;
           if (parseTabHeader(following)) {
             nextLine = after;
             continue;
@@ -165,6 +176,14 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
           CONTINUATION_RE.test(line) &&
           state.sCount[nextLine] >= state.blkIndent
         ) {
+          if (indented(nextLine)) {
+            // CommonMark continues a paragraph with such a line: the header's, which ends the tabs since a label is one line, or the panel's last, where it stays as text (its `>` escaped, so the panel's own rules read it as text wherever that paragraph is nested). After a blank line there is no paragraph to continue, and the line is indented code after the tabs.
+            if (currentFrame.bodyLines.length === 0) lazyEnd = true;
+            if (lazyEnd || !paragraphOpen(state, currentFrame.bodyLines)) break;
+            currentFrame.bodyLines.push(`\\${line}`);
+            nextLine++;
+            continue;
+          }
           // A bare `>` is a blank line within the panel body.
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
@@ -173,6 +192,13 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       }
 
       // Line is neither a header nor a continuation â€” block ends
+      // A line CommonMark lazily continues the panel's last paragraph with stays in the list item the tabs are in, as a paragraph after the tabs; any other ends the item too.
+      if (
+        currentFrame !== null &&
+        isLazyLine(state, nextLine, endLine) &&
+        paragraphOpen(state, currentFrame.bodyLines)
+      )
+        lazyEnd = true;
       break;
     }
 
@@ -189,6 +215,7 @@ export const tabs: PluginWithOptions<TabsOptions> = (md, options = {}) => {
       nextLine - 1,
       containerClass
     );
+    if (lazyEnd) lazyParagraph(state, nextLine, endLine);
 
     return true;
   }

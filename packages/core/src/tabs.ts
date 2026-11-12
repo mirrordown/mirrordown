@@ -17,6 +17,8 @@ import {
   endGroupsAtMarkers,
   headerLineContent,
   INDENTED_BLOCKS,
+  itemContentColumn,
+  keepQuoteAttributes,
   markerLevels,
   splitAtOpeningLine,
   splitSourceLines,
@@ -314,6 +316,8 @@ const extractTrailingTabHeader = (
   markers: number[] | undefined;
   at: number;
   line: PhrasingContent[];
+  // The paragraph the header was found in: its data (attributes a parser read off its end) belongs to its last line.
+  para: Paragraph;
 } | null => {
   // Walk to the deepest last child that is a paragraph
   const path: Array<BlockContent | DefinitionContent> = [];
@@ -359,7 +363,8 @@ const extractTrailingTabHeader = (
         path,
         markers: lineMarkers(last, sourceLines),
         at,
-        line: lines[at] ?? []
+        line: lines[at] ?? [],
+        para: last
       };
     }
     if (!("children" in last)) break;
@@ -549,7 +554,7 @@ const splitBlockquote = (
         splitLines(
           extracted.rest,
           markersOf ? (index): number => markersOf(at + 1 + index) : undefined,
-          undefined,
+          extracted.para,
           last
         );
       } else {
@@ -570,6 +575,27 @@ const splitBlockquote = (
 
   segments.push(currentSegment);
   return segments;
+};
+
+// Whether a plain panel's last paragraph (the deepest one a line can lazily continue) holds a line that is neither a header nor written with the panel's markers. `splitBlockquote` leaves such a line in the body for the pass that ends groups at their markers to move, but the group has ended there all the same, as it does in markdown-it: nothing after the blockquote continues it. Steps report the same from their `splitBlockquote` (`ended`).
+const endsAtUnmarkedLine = (
+  bq: Blockquote,
+  sourceLines: readonly string[]
+): boolean => {
+  const base = blockquoteMarkers(bq, sourceLines);
+  let last: { type: string; children?: unknown[] } | undefined = bq;
+  while (last && last.type !== "paragraph")
+    last = last.children?.at(-1) as typeof last;
+  const lines = last && paraToSourceLines(last as Paragraph, sourceLines);
+  if (base === undefined || !lines) return false;
+  return lines.some(({ segs, markers }, index) => {
+    const first = headerLineContent(segs, sourceLines)[0];
+    return (
+      index > 0 &&
+      markers < base &&
+      !(first?.type === "text" && parseTabHeader(first.value))
+    );
+  });
 };
 
 // The content that a header which skips a level, and what follows it, stand for
@@ -720,7 +746,9 @@ export const processTabsInChildren = (
   checkBlankLines = true,
   sourceLines?: readonly string[],
   quotes = 0,
-  parentType = "root"
+  parentType = "root",
+  // Where the content of the list item the children are in starts (see `itemContentColumn`).
+  column?: number
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -729,17 +757,18 @@ export const processTabsInChildren = (
     const node = children[i];
     if (!node) break;
 
-    // A tab header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item or definition, a header line may instead be one CommonMark lazily continued, so those are left as they are.
+    // A tab header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item, a header line may instead be one CommonMark lazily continued, written short of the item's content: only one written in the item interrupts. In a definition, where the content's column isn't known, they are left as they are.
     if (
       node.type === "paragraph" &&
       sourceLines &&
-      !INDENTED_BLOCKS.has(parentType)
+      (column !== undefined || !INDENTED_BLOCKS.has(parentType))
     ) {
       const split = splitAtOpeningLine(
         node,
         sourceLines,
         quotes,
-        (text) => parseTabHeader(text)?.depth === 1
+        (text) => parseTabHeader(text)?.depth === 1,
+        column
       );
       if (split) {
         children.splice(i, 1, ...split);
@@ -760,6 +789,8 @@ export const processTabsInChildren = (
         let j = i + 1;
         let currentTabIdx = rawTabs.length - 1;
         let prevEndLine = node.position?.end.line ?? 0;
+        // Attributes for the group itself (see where a blockquote's are read).
+        let listProperties: Properties | undefined;
 
         while (rest.length === 0 && j < children.length) {
           const sibling = children[j];
@@ -970,8 +1001,32 @@ export const processTabsInChildren = (
 
             prevEndLine = sibling.position?.end.line ?? prevEndLine;
             j++;
+            // Attributes on the blockquote itself (Sätteri) come from a block on a line of its own, written after the panel without its `>`. That line ends the tabs, and its attributes are the group's, as the attrs plugins of the other engines place them, unless a line in the blockquote had already ended the group: then they are written after that line, and are the last block's after the group.
+            const quoteProperties = paragraphProperties(
+              bq as unknown as Paragraph
+            );
             if (ending) {
+              const lastBlock = ending.at(-1);
+              if (quoteProperties && lastBlock)
+                lastBlock.data = {
+                  ...lastBlock.data,
+                  hProperties: { ...quoteProperties }
+                } as typeof lastBlock.data;
               children.splice(j, 0, ...ending);
+              break;
+            }
+            // A line left in the panel for the end-of-group pass ended the group too (a header after a blank line starts a new one): the attributes go where that pass puts the line's blocks.
+            if (
+              !explicit &&
+              sourceLines &&
+              endsAtUnmarkedLine(bq, sourceLines)
+            ) {
+              if (quoteProperties)
+                keepQuoteAttributes(lastTab().body, quoteProperties);
+              break;
+            }
+            if (quoteProperties) {
+              listProperties = quoteProperties;
               break;
             }
           } else if (sibling.type === "paragraph") {
@@ -999,6 +1054,8 @@ export const processTabsInChildren = (
 
         const list = buildTree(rawTabs, 1, 0, rawTabs.length, containerClass);
         list.containerClass = containerClass;
+        if (listProperties)
+          list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as RootContent);
         children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
         i = j;
@@ -1037,7 +1094,8 @@ export const processTabs = (
       false,
       sourceLines,
       inner,
-      node.type
+      node.type,
+      itemContentColumn(node)
     );
     for (const child of node.children) walk(child as Container, inner);
   };

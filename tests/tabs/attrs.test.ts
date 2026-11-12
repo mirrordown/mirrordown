@@ -241,6 +241,96 @@ describe("tabs + attrs: a block on a line of its own in a panel", () => {
   });
 });
 
+// A block on a line of its own after the tabs, written without the panel's `>`, is the group's, as the attrs plugins of markdown-it and remark place it. Sätteri reads attribute blocks before the plugin runs and puts this one on the panel's blockquote, which recognition dissolves: the block was lost. Once a line that is neither a header nor a `>` line has ended the tabs, the block goes on the block it is written after instead; a blockquote rebuilt there had no position, so remd-attrs put the block on its paragraph.
+describe("tabs + attrs: a block on its own line after the tabs", () => {
+  const sat = (input: string): string =>
+    normalizeHtml(
+      markdownToHtml(input, {
+        features: { attributes: true },
+        mdastPlugins: [satteriTabs()]
+      }).html
+    );
+  // The group's own attributes, and what follows the group.
+  const shape = (html: string): [string, string] => [
+    /^<div class="[^"]*"/.exec(html)?.[0] ?? "",
+    html.slice(html.lastIndexOf("</section></div></div>") + 22)
+  ];
+  const cases: [string, string, [string, string]][] = [
+    [
+      "goes on the group",
+      "% A\n> a\n{.x}",
+      ['<div class="markdown-tabs x"', ""]
+    ],
+    [
+      "goes on the group after its last tab",
+      "% A\n> a\n% B\n> b\n{.x}",
+      ['<div class="markdown-tabs x"', ""]
+    ],
+    [
+      "goes on a blockquote written after a line that ended the tabs",
+      "% A\n> a\ntext\n> q\n{.x}",
+      [
+        '<div class="markdown-tabs"',
+        '<p>text</p><blockquote class="x"><p>q</p></blockquote>'
+      ]
+    ],
+    [
+      "goes on the paragraph of a line that ended the tabs",
+      "% A\n> a\ntext\n{.x}",
+      ['<div class="markdown-tabs"', '<p class="x">text</p>']
+    ],
+    [
+      "goes on the blockquote when the tabs end in a nested tab",
+      "% A\n%% B\n> a\ntext\n> q\n{.x}",
+      [
+        '<div class="markdown-tabs"',
+        '<p>text</p><blockquote class="x"><p>q</p></blockquote>'
+      ]
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(shape(normalizeHtml(md.render(input)))).toEqual(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(shape(remd(input))).toEqual(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(shape(sat(input))).toEqual(expected);
+  });
+});
+
+// CommonMark continues a paragraph nested in a panel (in a quote there) with the lines written after it, so Sätteri reads an attribute block that ends those lines off that nested paragraph. Recognition cuts the paragraph at the header among them; the attributes of a body line after the header were lost. They belong to the paragraph's last line.
+describe("tabs + attrs: attributes ending lines that continue a paragraph nested in a panel go with the last line", () => {
+  const sat = (input: string): string =>
+    normalizeHtml(
+      markdownToHtml(input, {
+        features: { attributes: true },
+        mdastPlugins: [satteriTabs()]
+      }).html
+    );
+  const cases: [string, string, string][] = [
+    [
+      "on the label, when the last line is a header",
+      "% A\n> > x\n% B {.y}",
+      '<label class="markdown-tabs-label y"'
+    ],
+    [
+      "on the last paragraph of that tab's panel",
+      "% A\n> > x\n% B\n> b {.y}",
+      '<p class="y">b</p></section>'
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toContain(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toContain(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(sat(input)).toContain(expected);
+  });
+});
+
 // With remarkAttrs registered before remarkTabs, an attribute block is already gone from the text when tabs read it, and that text still starts where the block was written. The line after it was then placed one source line too high, on the panel's `>` line, so a header written under the panel was taken for one written in it and opened a nested group.
 describe("tabs + attrs (remark, attrs first): a line after an attribute block is placed on its own source line", () => {
   const attrsFirst = (src: string) =>

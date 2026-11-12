@@ -56,6 +56,71 @@ const stripContinuation = (line: string): string =>
 const isOwnAlertLine = (line: string): boolean =>
   isAlertMarkerLine(line) && !NESTED_QUOTE_RE.test(line);
 
+// The paragraph that starts at `startLine`, as markdown-it's paragraph rule reads one. For a line CommonMark continues the header's paragraph with (a `>` indented four columns or more), which ends the group: left to the block rules, a line indented that far after it would be indented code.
+const lazyParagraph = (
+  state: StateBlock,
+  startLine: number,
+  endLine: number
+): void => {
+  const terminators = state.md.block.ruler.getRules("paragraph");
+  const parentType = state.parentType;
+  state.parentType = "paragraph";
+  let nextLine = startLine + 1;
+  for (; nextLine < endLine && !state.isEmpty(nextLine); nextLine++) {
+    // An indented line, or one a list item's negative indent marks, continues the paragraph.
+    const indent = state.sCount[nextLine] - state.blkIndent;
+    if (indent > 3 || state.sCount[nextLine] < 0) continue;
+    const line = nextLine;
+    if (terminators.some((rule) => rule(state, line, endLine, true))) break;
+  }
+  const content = state
+    .getLines(startLine, nextLine, state.blkIndent, false)
+    .trim();
+  state.line = nextLine;
+  const open = state.push("paragraph_open", "p", 1);
+  open.map = [startLine, nextLine];
+  const inline = state.push("inline", "", 0);
+  inline.content = content;
+  inline.map = [startLine, nextLine];
+  inline.children = [];
+  state.push("paragraph_close", "p", -1);
+  state.parentType = parentType;
+};
+
+// Whether a paragraph is open at the end of the lines read for an item so far, for a line CommonMark would continue it with: the header's own when the item has no body yet, else the last block of the body, through the lists and quotes it is nested in. The body's last run of lines is tokenized to tell (only when such a line is met).
+const paragraphOpen = (
+  state: StateBlock,
+  bodyLines: ReadonlyArray<string | null>
+): boolean => {
+  if (bodyLines.length === 0) return true;
+  if (!bodyLines.at(-1)?.trim()) return false;
+  const run = bodyLines.slice(bodyLines.lastIndexOf(null) + 1).join("\n");
+  const tokens: Token[] = [];
+  state.md.block.parse(run, state.md, {}, tokens);
+  let last = tokens.length - 1;
+  while (
+    last >= 0 &&
+    tokens[last].nesting === -1 &&
+    tokens[last].type !== "paragraph_close"
+  )
+    last--;
+  return tokens[last]?.type === "paragraph_close";
+};
+
+// Whether a line that is neither a header nor a `>` line is one CommonMark lazily continues a paragraph with: written short of the content of the list item the group is in, and no block that interrupts a paragraph.
+const isLazyLine = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  // A line written without a blockquote's marker (markdown-it marks it with a negative indent) is not one: it leaves the blockquote, which the other engines' recognition reproduces.
+  if (state.isEmpty(line) || state.sCount[line] < 0) return false;
+  if (state.sCount[line] >= state.blkIndent) return false;
+  return !state.md.block.ruler
+    .getRules("paragraph")
+    .some((rule) => rule(state, line, endLine, true));
+};
+
 /** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-steps" } = options;
@@ -103,7 +168,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
     // First line must be depth 1
     if (firstHeader.depth !== 1) return false;
 
-    if (silent) return true;
+    // As a line that would interrupt a paragraph, a header written outside the block the paragraph is in (short of a list item's content) doesn't: CommonMark continues the paragraph with it, which is all the other engines can read there.
+    if (silent) return state.sCount[startLine] >= state.blkIndent;
 
     // Collect all lines belonging to this steps block
     const block: StepsBlock = {
@@ -114,6 +180,11 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
 
     let currentFrame: StepFrame | null = null;
     let nextLine = startLine;
+    // Whether the group ended at a line that continues the last header's paragraph.
+    let lazyEnd = false;
+    // A line indented four columns or more past the block the steps are in: CommonMark reads no `>` marker there, as markdown-it's own block rules read none.
+    const indented = (line: number): boolean =>
+      state.sCount[line] - state.blkIndent >= 4;
 
     const flushFrame = (): void => {
       if (currentFrame) block.frames.push(currentFrame);
@@ -163,8 +234,10 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
           // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
+          // Indented four columns or more, it is indented code.
           const isContinuation =
             state.sCount[peek] >= state.blkIndent &&
+            !indented(peek) &&
             ((CONTINUATION_RE.test(peekLine) && !isOwnAlertLine(peekLine)) ||
               parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
@@ -179,6 +252,14 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           CONTINUATION_RE.test(line) &&
           state.sCount[nextLine] >= state.blkIndent
         ) {
+          if (indented(nextLine)) {
+            // CommonMark continues a paragraph with such a line: the header's, which ends the steps since a title is one line, or the body's last, where it stays as text (its `>` escaped, so the body's own rules read it as text wherever that paragraph is nested). After a blank line there is no paragraph to continue, and the line is indented code after the steps.
+            if (currentFrame.bodyLines.length === 0) lazyEnd = true;
+            if (lazyEnd || !paragraphOpen(state, currentFrame.bodyLines)) break;
+            currentFrame.bodyLines.push(`\\${line}`);
+            nextLine++;
+            continue;
+          }
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
@@ -186,6 +267,13 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       }
 
       // Line is neither a header nor a continuation â€” block ends
+      // A line CommonMark lazily continues the body's last paragraph with stays in the list item the steps are in, as a paragraph after the steps; any other ends the item too.
+      if (
+        currentFrame !== null &&
+        isLazyLine(state, nextLine, endLine) &&
+        paragraphOpen(state, currentFrame.bodyLines)
+      )
+        lazyEnd = true;
       break;
     }
 
@@ -203,6 +291,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       nextLine - 1,
       containerClass
     );
+    if (lazyEnd) lazyParagraph(state, nextLine, endLine);
 
     return true;
   }

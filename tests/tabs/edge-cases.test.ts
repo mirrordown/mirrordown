@@ -268,13 +268,6 @@ interface Difference {
 
 describe.each<Difference>([
   {
-    // In a list item, remark and Sätteri can't tell by indentation a header written in the item from one CommonMark lazily continued into it, so they leave a header after text alone.
-    name: `a header after text in a list item interrupts the paragraph only in markdown-it`,
-    input: `- text\n  % A\n  > a`,
-    mdit: `<ul><li>text\n${group([`A`, `<p>a</p>`])}</li></ul>`,
-    others: `<ul><li>text\n% A\n<blockquote><p>a</p></blockquote></li></ul>`
-  },
-  {
     // CommonMark reads the header and its underline as a setext heading before recognition sees them.
     name: `a header underlined with = is a heading in remark and Sätteri`,
     input: `% A\n===\n> a`,
@@ -286,17 +279,156 @@ describe.each<Difference>([
     input: `% A\n---\n> a`,
     mdit: `${group([`A`])}<hr><blockquote><p>a</p></blockquote>`,
     others: `<h2>% A</h2><blockquote><p>a</p></blockquote>`
-  },
-  {
-    // CommonMark continues the header's paragraph with a line indented four columns, whatever it starts with; markdown-it's rule reads the line without its indentation.
-    name: `a > line indented four columns is the panel's body only in markdown-it`,
-    input: `% A\n    > Body.`,
-    mdit: group([`A`, `<p>Body.</p>`]),
-    others: `${group([`A`])}<p>> Body.</p>`
   }
 ])(`tabs: known difference: $name`, ({ input, mdit, others }) => {
   it.each(engines)(`$engine`, ({ engine, render }) => {
     expect(mask(render(input))).toBe(engine === `markdown-it` ? mdit : others);
+  });
+});
+
+// Indented four columns or more, a `>` is no blockquote marker in CommonMark: the line continues the paragraph before it, or is indented code after a blank line. remark and Sätteri have parsed it that way before recognition runs, so markdown-it's rule, which read the line without its indentation and took it for the panel, reads it the same way.
+check(`tabs: a > indented four columns or more is not the panel's marker`, [
+  {
+    name: `directly after a header it continues the header's paragraph, so it ends the tabs as text`,
+    input: `% A\n    > Body.`,
+    expected: `${group([`A`])}<p>> Body.</p>`
+  },
+  {
+    name: `the paragraph it starts goes on until a block interrupts it`,
+    input: `% A\n    > Body.\nmore\n% B\n> b`,
+    expected: `${group([`A`])}<p>> Body.\nmore</p>${group([`B`, `<p>b</p>`])}`
+  },
+  {
+    name: `after a panel line it continues the panel's paragraph as text`,
+    input: `% A\n> a\n    > b\n> c`,
+    expected: group([`A`, `<p>a\n> b\nc</p>`])
+  },
+  {
+    name: `after a panel's list item it continues the item's paragraph`,
+    input: `% A\n> - a\n    > b`,
+    expected: group([`A`, `<ul><li>a\n> b</li></ul>`])
+  },
+  {
+    name: `after a panel's blank line it is indented code after the tabs`,
+    input: `% A\n> a\n>\n    > b`,
+    expected: `${group([`A`, `<p>a</p>`])}<pre><code>> b\n</code></pre>`
+  },
+  {
+    name: `in a list item the four columns count from the item's content`,
+    input: `- % A\n      > body\n\n  more`,
+    expected: `<ul><li>${group([`A`])}<p>> body</p><p>more</p></li></ul>`
+  },
+  {
+    name: `a header indented that far after a blank line is indented code`,
+    input: `> % A\n> > a\n>\n>     % B`,
+    expected: `<blockquote>${group([`A`, `<p>a</p>`])}<pre><code>% B\n</code></pre></blockquote>`
+  }
+]);
+
+// Inside another block a blank line doesn't end a group, so a header after one continues it. But a line that is neither a header nor a `>` line has ended the group before the blank line, as it does in markdown-it: the header after it starts a new group. remark and Sätteri left that line in the panel until a later pass and joined the header's tab to the group it had ended.
+check(
+  `tabs: in a nested block, a group an unmarked line ended is not continued after a blank line`,
+  [
+    {
+      name: `in a list item`,
+      input: `- % A\n  > a\n  text\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</li></ul>`
+    },
+    {
+      name: `in a blockquote`,
+      input: `> % A\n> > a\n> text\n>\n> % B\n> > b`,
+      expected: `<blockquote>${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</blockquote>`
+    },
+    {
+      name: `when the line continues a paragraph nested in the panel`,
+      input: `- % A\n  > - x\n  text\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<ul><li>x</li></ul>`])}<p>text</p>${group([`B`, `<p>b</p>`])}</li></ul>`
+    },
+    {
+      name: `after the group's second tab`,
+      input: `- % A\n  > a\n  % B\n  > b\n  text\n\n  % C\n  > c`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])}<p>text</p>${group([`C`, `<p>c</p>`])}</li></ul>`
+    },
+    {
+      name: `without such a line, the header after the blank line is the group's next tab`,
+      input: `- % A\n  > a\n\n  % B\n  > b`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])}</li></ul>`
+    }
+  ]
+);
+
+// A header interrupts the paragraph before it, as markdown-it's block rule does. In a list item, remark and Sätteri left every header after text alone, because CommonMark may have lazily continued it from outside the item; the column the item's content starts at tells the two apart, so a header written in the item starts tabs in every engine.
+check(
+  `tabs: a header after text in a list item starts tabs when it is written in the item`,
+  [
+    {
+      name: `at the item's content column`,
+      input: `- text\n  % A\n  > a`,
+      expected: `<ul><li>text\n${group([`A`, `<p>a</p>`])}</li></ul>`
+    },
+    {
+      name: `in an ordered item, whose content starts further in`,
+      input: `1. text\n   % A\n   > a\n   % B\n   > b`,
+      expected: `<ol><li>text\n${group([`A`, `<p>a</p>`], [`B`, `<p>b</p>`])}</li></ol>`
+    },
+    {
+      name: `after a line that ended the item's earlier tabs`,
+      input: `- % A\n  > a\n  text\n  % B`,
+      expected: `<ul><li>${group([`A`, `<p>a</p>`])}\ntext\n${group([`B`])}</li></ul>`
+    }
+  ]
+);
+
+// A header indented four columns or more past the paragraph before it continues that paragraph, in CommonMark and in markdown-it, whose block rules don't run on such a line. remark and Sätteri started tabs there.
+check(
+  `tabs: a header indented four columns or more after text continues the paragraph`,
+  [
+    {
+      name: `at the top level`,
+      input: `text\n    % A`,
+      expected: `<p>text\n% A</p>`
+    },
+    {
+      name: `in a blockquote`,
+      input: `> text\n>     % A`,
+      expected: `<blockquote><p>text\n% A</p></blockquote>`
+    }
+  ]
+);
+
+// A line written short of a list item's content, with nothing that interrupts a paragraph on it, continues the paragraph before it in CommonMark, so remark and Sätteri find it inside the item and cannot move it out. markdown-it's rule ended the item at such a line (a header there even started tabs after the list); it now reads the line as the others do: it ends the tabs and stays in the item, and a header written there is text.
+check(`tabs: a line written short of a list item's content stays in the item`, [
+  {
+    name: `a header after the item's text is text`,
+    input: `- item\n% A`,
+    expected: `<ul><li>item\n% A</li></ul>`
+  },
+  {
+    name: `a plain line after a panel ends the tabs and follows them in the item`,
+    input: `- % A\n  > a\npara`,
+    expected: `<ul><li>${group([`A`, `<p>a</p>`])}\npara</li></ul>`
+  },
+  {
+    name: `with no paragraph to continue (the panel ends in a fence), the line ends the item`,
+    input: "- % A\n  > ```\n  > code\n  > ```\npara",
+    expected: `<ul><li>${group([`A`, `<pre><code>code\n</code></pre>`])}</li></ul><p>para</p>`
+  },
+  {
+    name: `a block that interrupts a paragraph ends the item`,
+    input: `- % A\n  > a\n# H`,
+    expected: `<ul><li>${group([`A`, `<p>a</p>`])}</li></ul><h1>H</h1>`
+  }
+]);
+
+// Known difference, pinned so a change to it is noticed. A line without any `>` leaves the blockquote the tabs are in. Where it ends the group's last panel, remark and Sätteri split the blockquote there as markdown-it does; where a header follows it, they keep the line and the tabs after it in the blockquote.
+describe(`tabs: a line that leaves the blockquote between two tabs (known difference)`, () => {
+  const input = `> % A\n> > a\ntext\n> % B`;
+  it.each(engines)(`$engine`, ({ engine, render }) => {
+    expect(mask(render(input))).toBe(
+      engine === `markdown-it`
+        ? `<blockquote>${group([`A`, `<p>a</p>`])}</blockquote><p>text</p><blockquote>${group([`B`])}</blockquote>`
+        : `<blockquote>${group([`A`, `<p>a</p>`])}<p>text</p>${group([`B`])}</blockquote>`
+    );
   });
 });
 
