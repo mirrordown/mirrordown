@@ -42,7 +42,7 @@ yarn add @mirrordown/remd-ruby @mirrordown/remd-sub @mirrordown/remd-sup
 yarn add @mirrordown/remd-unwrap-images
 ```
 
-To use the whole suite, install a preset instead: [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark) or [`@mirrordown/preset-markdown-it`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-markdown-it) turns every feature on, and any of them off with `false`:
+To use the whole suite, install a preset instead: [`@mirrordown/preset-remark`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-remark), [`@mirrordown/preset-markdown-it`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-markdown-it) or [`@mirrordown/preset-satteri`](https://github.com/mirrordown/mirrordown/tree/main/packages/preset-satteri) turns every feature on, and any of them off with `false`:
 
 ```ts
 // astro.config.ts
