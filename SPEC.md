@@ -18,39 +18,50 @@ accessed through `vp` — do not invoke vitest, oxlint, oxfmt, tsdown, or yarn d
 └── tests/                 # shared cross-implementation test suite
 ```
 
-**Root `package.json` workspaces:** `docs/*`, `extensions/*`, `packages/*`, `tests`
+**Root `package.json` workspaces:** `docs`, `extensions/*`, `packages/*`
 
-> **Note:** `tests` is a single workspace package at the `tests/` path — it is NOT a glob
-> (`tests/*`). Using `tests/*` causes Yarn to look for sub-packages inside `tests/`, which
-> don't exist.
+> **Note:** `tests/` is not a workspace: it has no `package.json`. Its tests import each plugin's source by relative path and take their other dependencies from the root `package.json`.
 
 ---
 
 ## 2. Plugin inventory
 
-Each feature is represented by up to three artifacts: a `remd-*` package (Remark/Rehype),
-an `mdit-*` package (Markdown-It), and a VSCode extension. Not every feature has all three.
+Each feature is represented by up to four artifacts: a `remd-*` package (Remark/Rehype),
+an `mdit-*` package (Markdown-It), a `sat-*` package (Sätteri), and a VSCode extension. Not every feature has all four: where Sätteri parses a syntax itself, the table names its built-in feature instead of a package.
 
-| Feature         | `@mirrordown/remd-*`   | `@mirrordown/mdit-*`   | Extension                  | Source          |
-| --------------- | ---------------------- | ---------------------- | -------------------------- | --------------- |
-| del             | `remd-del`             | `mdit-del`             | `markdown-del` ¹           | Own — migrate   |
-| inline-svg      | `remd-inline-svg`      | `mdit-inline-svg`      | `markdown-inline-svg`      | Own — migrate   |
-| ins             | `remd-ins`             | `mdit-ins`             | `markdown-ins`             | Fork            |
-| mark            | `remd-mark`            | `mdit-mark`            | `markdown-mark`            | Fork            |
-| kbd             | `remd-kbd`             | `mdit-kbd`             | `markdown-kbd`             | Fork            |
-| abbr            | `remd-abbr`            | `mdit-abbr`            | `markdown-abbr`            | Fork            |
-| sub             | `remd-sub`             | `mdit-sub`             | `markdown-subscript`       | Fork            |
-| sup             | `remd-sup`             | `mdit-sup`             | `markdown-superscript` ¹   | Fork            |
-| definition-list | `remd-definition-list` | `mdit-definition-list` | `markdown-definition-list` | Fork            |
-| github-alerts   | `remd-github-alerts`   | `mdit-github-alerts`   | `markdown-github-alerts`   | Fork            |
-| attrs           | `remd-attrs`           | `mdit-attrs`           | `markdown-attributes`      | Fork            |
-| ruby            | `remd-ruby`            | `mdit-ruby`            | `markdown-denden-furigana` | Fork            |
-| unwrap-images   | `remd-unwrap-images`   | `mdit-unwrap-images`   | `markdown-unwrap-images`   | Fork            |
-| header-sections | `remd-header-sections` | `mdit-header-sections` | —                          | Fork (npm-only) |
+| Feature            | `@mirrordown/remd-*`      | `@mirrordown/mdit-*`      | `@mirrordown/sat-*`       | Extension                     | Source        |
+| ------------------ | ------------------------- | ------------------------- | ------------------------- | ----------------------------- | ------------- |
+| del                | `remd-del`                | `mdit-del`                | `sat-del`                 | `markdown-del`                | Own — migrate |
+| inline-svg         | `remd-inline-svg`         | `mdit-inline-svg`         | `sat-inline-svg`          | `markdown-inline-svg`         | Own — migrate |
+| ins                | `remd-ins`                | `mdit-ins`                | `sat-ins`                 | `markdown-ins`                | Fork          |
+| mark               | `remd-mark`               | `mdit-mark`               | `sat-mark`                | `markdown-mark`               | Fork          |
+| kbd                | `remd-kbd`                | `mdit-kbd`                | `sat-kbd`                 | `markdown-kbd`                | Fork          |
+| abbr               | `remd-abbr`               | `mdit-abbr`               | `sat-abbr`                | `markdown-abbr`               | Fork          |
+| sub                | `remd-sub`                | `mdit-sub`                | built-in `subscript`      | `markdown-sub`                | Fork          |
+| sup                | `remd-sup`                | `mdit-sup`                | built-in `superscript`    | `markdown-sup`                | Fork          |
+| definition-list    | `remd-definition-list`    | `mdit-definition-list`    | built-in `definitionList` | `markdown-definition-list`    | Fork          |
+| github-alerts      | `remd-github-alerts`      | `mdit-github-alerts`      | `sat-github-alerts`       | `markdown-github-alerts`      | Fork          |
+| attrs              | `remd-attrs`              | `mdit-attrs`              | built-in `attributes`     | `markdown-attrs`              | Fork          |
+| ruby               | `remd-ruby`               | `mdit-ruby`               | `sat-ruby`                | `markdown-denden-furigana`    | Fork          |
+| unwrap-images      | `remd-unwrap-images`      | `mdit-unwrap-images`      | `sat-unwrap-images`       | `markdown-unwrap-images`      | Fork          |
+| sectionize         | `remd-sectionize`         | `mdit-sectionize`         | `sat-sectionize`          | `markdown-sectionize`         | Fork          |
+| slug               | `remd-slug`               | `mdit-slug`               | `sat-slug`                | —                             | ²             |
+| autolink-headings  | `remd-autolink-headings`  | `mdit-autolink-headings`  | `sat-autolink-headings`   | `markdown-autolink-headings`  | ²             |
+| squeeze-paragraphs | `remd-squeeze-paragraphs` | `mdit-squeeze-paragraphs` | `sat-squeeze-paragraphs`  | `markdown-squeeze-paragraphs` | ²             |
+| spoiler            | `remd-spoiler`            | `mdit-spoiler`            | `sat-spoiler`             | `markdown-spoiler`            | ²             |
+| steps              | `remd-steps`              | `mdit-steps`              | `sat-steps`               | `markdown-steps`              | ²             |
+| tabs               | `remd-tabs`               | `mdit-tabs`               | `sat-tabs`                | `markdown-tabs`               | ²             |
+| tab-icons          | `remd-tab-icons`          | `mdit-tab-icons`          | `sat-tab-icons`           | `markdown-tab-icons`          | ²             |
+| caption            | `remd-caption`            | `mdit-caption`            | `sat-caption`             | `markdown-caption`            | ²             |
+| lightbox           | `remd-lightbox`           | `mdit-lightbox`           | `sat-lightbox`            | `markdown-lightbox`           | ²             |
+| mermaid-pele       | `remd-mermaid-pele`       | `mdit-mermaid-pele`       | `sat-mermaid-pele`        | `markdown-mermaid-pele`       | ²             |
+| copy-code          | `remd-copy-code`          | `mdit-copy-code`          | `sat-copy-code`           | —                             | ²             |
+| file-tree          | `remd-file-tree`          | `mdit-file-tree`          | `sat-file-tree`           | `markdown-file-tree`          | ²             |
+| prompt             | `remd-prompt`             | `mdit-prompt`             | `sat-prompt`              | `markdown-prompt`             | ²             |
 
 **Pack:** `markdown-preview-extended-syntax` — metadata-only, migrated from standalone repo.
 
-¹ Check the VSCode Marketplace for name conflicts before publishing; rename if necessary.
+² Added after the original migration; this document does not record a source for it.
 
 ### Fork sources
 
@@ -77,8 +88,8 @@ an `mdit-*` package (Markdown-It), and a VSCode extension. Not every feature has
 | `mdit-attrs`            | @mdit/plugin-attrs                        |
 | `mdit-ruby`             | markdown-it-ruby                          |
 | `mdit-unwrap-images`    | markdown-it-block-image                   |
-| `remd-header-sections`  | remark-sectionize                         |
-| `mdit-header-sections`  | markdown-it-header-sections               |
+| `remd-sectionize`       | remark-sectionize                         |
+| `mdit-sectionize`       | markdown-it-header-sections               |
 
 All forks are full ownership transfers — not upstream-synced. Code is expected to diverge
 significantly. Do not use git subtree or submodules.
@@ -298,9 +309,9 @@ export default defineConfig({
 });
 ```
 
-### 4.4 `tests/` workspace
+### 4.4 `tests/` directory
 
-A single private workspace package at `tests/package.json`:
+Planned as a single private workspace package at `tests/package.json`, as below. It is not one today: `tests/` has no `package.json` or `vite.config.ts` of its own, the root `vite.config.ts` discovers `tests/**/*.test.ts`, and the tests import plugin source by relative path.
 
 ```json
 {
@@ -419,7 +430,7 @@ export default defineConfig({
 
 ### 4.5 `packages/sat-*/`
 
-Sätteri plugins, scaffolded from `templates/sat`. A feature Sätteri already parses (`sub`, `sup`) gets no package: its guide documents the Sätteri feature flag, and `tests/<name>/sat.test.ts` runs the shared fixtures through that flag instead.
+Sätteri plugins, scaffolded from `templates/sat`. A feature Sätteri already parses (`sub`, `sup`, `attrs`, `definition-list`) gets no package: its guide documents the Sätteri feature flag, and `tests/<name>/sat.test.ts` runs the shared fixtures through that flag instead.
 
 - The export is a **factory**, `satteri<Name>(options) => (ctx: PluginFactoryContext) => plugin`, so per-document state starts fresh and the plugin can read `ctx.source`.
 - The plugin's type is a **minimal interface listing only its own keys**, with synchronous visitors. Sätteri infers whether `markdownToHtml` returns a Promise from every key of a plugin's type, so typing a plugin as `MdastPluginDefinition` (whose optional visitors may be async) makes every caller's result `Result | Promise<Result>`.
