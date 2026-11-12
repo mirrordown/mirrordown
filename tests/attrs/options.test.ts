@@ -298,7 +298,6 @@ describe("attrs/options: an unknown rule name is refused", () => {
 
   it("markdown-it", () => {
     expect(() =>
-      // @ts-expect-error intentionally invalid rule name
       new MarkdownIt().use(attrs, { rule: ["heading", "bogus"] })
     ).toThrow(new TypeError(message));
   });
