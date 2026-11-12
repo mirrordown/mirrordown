@@ -141,11 +141,14 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const titleOpen = new state.Token(`${titleTag}_open`, titleTag, 1);
       titleOpen.attrSet("class", `${containerClass}-title`);
       titleOpen.attrSet("aria-label", title);
+      // The label rule below finds the title by this, and falls back on the type's own title.
+      titleOpen.meta = { githubAlertTitle: titleFor(type) };
 
       // SVG emitted as html_inline renders verbatim without requiring html:true
       const iconSvg = iconFor(type);
       const iconToken = new state.Token("html_inline", "", 0);
       iconToken.content = iconSvg;
+      iconToken.meta = { githubAlertIcon: true };
       const defaultTitle = new state.Token("text", "", 0);
       defaultTitle.content = title;
       const titleInline = new state.Token("inline", "", 0);
@@ -169,7 +172,12 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       if (foldMarker === "+") containerOpen.attrSet("open", "");
       containerOpen.map = tokens[i].map;
       containerOpen.block = true;
-      containerOpen.meta = { attrsRole: "container", githubAlert: true };
+      // `attrsQuote` tells mdit-attrs the container's lines still carry a blockquote's `>`, so an attribute line written after the alert without one is the alert's.
+      containerOpen.meta = {
+        attrsRole: "container",
+        attrsQuote: true,
+        githubAlert: true
+      };
 
       const containerClose = new state.Token(
         `${containerTag}_close`,
@@ -188,6 +196,29 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       tokens.splice(i, 1, containerOpen, titleOpen, titleInline, titleClose);
       closeIdx += 3; // 3 tokens inserted before closeIdx
       tokens.splice(closeIdx, 1, containerClose);
+    }
+  });
+
+  // The label is the title's plain text, and the title can change after it is built: mdit-attrs takes an attribute block off it (`*Title*{.x}`), which a screen reader must not read out, and can leave it empty, where the type's own title goes back in. mdit-attrs runs right before `linkify` whichever plugin is added first, so this runs right after it.
+  md.core.ruler.after("linkify", "github_alerts_label", (state) => {
+    for (const [index, token] of state.tokens.entries()) {
+      const fallback: unknown = token.meta?.githubAlertTitle;
+      const inline = state.tokens[index + 1];
+      if (typeof fallback !== "string" || !inline?.children) continue;
+      const icon = inline.children.filter((t) => t.meta?.githubAlertIcon);
+      const content = inline.children.filter(
+        (t) =>
+          !t.meta?.githubAlertIcon && (t.type !== "text" || t.content !== "")
+      );
+      if (content.length === 0) {
+        const text = new state.Token("text", "", 0);
+        text.content = fallback;
+        inline.children = [...icon, text];
+      }
+      token.attrSet(
+        "aria-label",
+        plainText(inline.children).trim() || fallback
+      );
     }
   });
 };

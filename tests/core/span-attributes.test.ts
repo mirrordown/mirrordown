@@ -166,7 +166,7 @@ describe("span attributes: the paragraph keeps its own block when the span takes
   });
 });
 
-// An escaped `{` is a brace the author wants printed, and markdown-it reads no block that holds an escaped character. remark is left out for the delimiter spans: remd-attrs reads the block there (`<del class="c">`), which is its to fix.
+// An escaped `{` is a brace the author wants printed, and markdown-it reads no block that holds an escaped character. In remark the text after a span is a node the span plugin built, with no source position to check: remd-attrs reads the escapes the plugin recorded on it, or it would print `<del class="c">` here.
 describe("span attributes: an escaped block stays text", () => {
   const cases: Case[] = [
     [
@@ -183,14 +183,26 @@ describe("span attributes: an escaped block stays text", () => {
       "an escaped block after one that is not",
       String.raw`--a--{.b}{.c\_d} tail`,
       '<p><del class="b">a</del>{.c_d} tail</p>'
+    ],
+    [
+      "an escaped opening brace that ends the paragraph",
+      String.raw`--a--\{.c}`,
+      "<p><del>a</del>{.c}</p>"
+    ],
+    [
+      "an escaped closing brace that ends the paragraph",
+      String.raw`b --a-- {.c\}`,
+      "<p>b <del>a</del> {.c}</p>"
+    ],
+    [
+      "an escaped block on a line of its own after the span",
+      "--a--\n\\{.c}",
+      "<p><del>a</del>\n{.c}</p>"
     ]
   ];
 
   describe.each(cases)("after a del: %s", (_name, input, expected) => {
-    it.each([
-      ["markdown-it", mdit],
-      ["sätteri", sat]
-    ] as const)("%s", (_engine, render) => {
+    it.each(engines)("%s", (_engine, render) => {
       expect(render(input)).toBe(expected);
     });
   });

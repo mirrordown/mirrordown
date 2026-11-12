@@ -73,14 +73,29 @@ export const satteriGithubAlerts =
             ? [{ ...first, children: alert.bodyNodes }, ...rest]
             : rest;
 
+        // Sätteri reads attribute blocks while it parses, and has put one written for the blockquote (on a line after it, without its `>`) on the node this one replaces: the alert keeps them, as it does in the other engines.
+        const data: unknown = node.data;
+        const written: Record<string, unknown> =
+          typeof data === "object" &&
+          data !== null &&
+          "hProperties" in data &&
+          typeof data.hProperties === "object" &&
+          data.hProperties !== null
+            ? { ...data.hProperties }
+            : {};
+        const { className, ...attributes } = written;
         ctx.replaceNode(node, {
           type: "alert",
           data: {
             hName: alert.fold ? "details" : "div",
             hProperties: {
-              className: [containerClass],
+              className: [
+                containerClass,
+                ...(Array.isArray(className) ? className : [])
+              ],
               dataAlert: type,
-              ...(alert.fold === "+" ? { open: true } : {})
+              ...(alert.fold === "+" ? { open: true } : {}),
+              ...attributes
             }
           },
           children: [titleNode, ...body]

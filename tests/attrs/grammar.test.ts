@@ -198,6 +198,40 @@ const escaped: Case[] = [
     "a character reference before the block doesn't stop it",
     "a &amp; *b*{.c} d {.e}",
     '<p class="e">a &amp; <em class="c">b</em> d</p>'
+  ],
+  [
+    "an escape next to a backslash that escapes nothing",
+    String.raw`text {data-path="C:\dir" .a\_b}`,
+    String.raw`<p>text {data-path="C:\dir" .a_b}</p>`
+  ]
+];
+
+// Only ASCII punctuation can be escaped, so a backslash before anything else is a backslash the author wants in the value (a Windows path, a regular expression). markdown-it still splits the text there, and mdit-attrs once read no block across the split.
+const backslashes: Case[] = [
+  [
+    "in a quoted value",
+    String.raw`text {data-path="C:\dir"}`,
+    String.raw`<p data-path="C:\dir">text</p>`
+  ],
+  [
+    "in a bare value",
+    String.raw`text {data-re=\d+ .a}`,
+    String.raw`<p data-re="\d+" class="a">text</p>`
+  ],
+  [
+    "after an inline element",
+    String.raw`*a*{data-path="C:\dir"} t`,
+    String.raw`<p><em data-path="C:\dir">a</em> t</p>`
+  ],
+  [
+    "on a line of its own",
+    "text\n" + String.raw`{data-path="C:\dir"}`,
+    String.raw`<p data-path="C:\dir">text</p>`
+  ],
+  [
+    "in the text before the block",
+    String.raw`C:\dir {.a}`,
+    String.raw`<p class="a">C:\dir</p>`
   ]
 ];
 
@@ -208,6 +242,13 @@ describe.each(engines)("attrs/grammar (%s)", (_engine, render) => {
 
   it.each(escaped)(
     "an escaped delimiter is text: %s",
+    (_why, input, expected) => {
+      expect(render(input)).toBe(expected);
+    }
+  );
+
+  it.each(backslashes)(
+    "a backslash that escapes nothing is part of the block: %s",
     (_why, input, expected) => {
       expect(render(input)).toBe(expected);
     }
@@ -258,6 +299,12 @@ const limits: [why: string, input: string, ours: string, satteri: string][] = [
     '<h1 class="x">H \\</h1>'
   ],
   [
+    "a backslash that escapes nothing, in a block ending a heading",
+    String.raw`# H {data-path="C:\dir"}`,
+    String.raw`<h1 data-path="C:\dir">H</h1>`,
+    String.raw`<h1>H {data-path="C:\dir"}</h1>`
+  ],
+  [
     "a backslash escape earlier in the text",
     "\\* text {.a}",
     '<p class="a">* text</p>',
@@ -277,6 +324,22 @@ describe("attrs/grammar: Sätteri's limits", () => {
     expect(mdit(input)).toBe(ours);
     expect(remd(input)).toBe(ours);
     expect(sat(input)).toBe(satteri);
+  });
+});
+
+// remark and Sätteri build a hast tree, which spells a name HTML defines the way HTML does (`Title` becomes `title`, `ariaLabel` becomes `aria-label`) and leaves any other name alone. markdown-it writes the name as typed, and following hast would take its table of every HTML attribute. An HTML parser lowercases attribute names, so the page is the same; the guide lists the difference. `class` and `id` are the exception, since the shorthand has to merge with them.
+describe("attrs/grammar: the case of an attribute's name", () => {
+  const [[, mdit], [, remd], [, sat]] = engines;
+
+  it("is kept by markdown-it and normalised by the others for a name HTML defines", () => {
+    expect(mdit("p {Title=x}")).toBe('<p Title="x">p</p>');
+    expect(remd("p {Title=x}")).toBe('<p title="x">p</p>');
+    expect(sat("p {Title=x}")).toBe('<p title="x">p</p>');
+  });
+
+  it("is kept by every engine for a name HTML doesn't define", () => {
+    for (const render of [mdit, remd, sat])
+      expect(render("p {DATA-Foo=y}")).toBe('<p DATA-Foo="y">p</p>');
   });
 });
 
@@ -348,8 +411,84 @@ describe.each(engines)("attrs/grammar: fences (%s)", (_engine, render) => {
       "words between the language and the block",
       "```js x {.a .b}\ncode\n```",
       '<pre><code class="a b language-js">code\n</code></pre>'
+    ],
+    [
+      "the spaces inside a quoted value are kept, wherever remark split the info string",
+      '``` {title="a   b"}\ncode\n```',
+      '<pre><code title="a   b">code\n</code></pre>'
+    ],
+    [
+      "the same in a fence inside a blockquote",
+      '> ~~~ {title="a   b"}\n> code\n> ~~~',
+      '<blockquote><pre><code title="a   b">code\n</code></pre></blockquote>'
     ]
   ])("%s", (_why, input, expected) => {
+    expect(render(input)).toBe(expected);
+  });
+
+  // An info string's escapes and character references are resolved before it is used, as its language is: markdown-it hands the plugin the string as written, where remark and Sätteri have resolved it. A brace written as one is not a delimiter, as in a paragraph.
+  it.each<Case>([
+    [
+      "a character reference in a value is resolved once",
+      '```js {data-x="a&amp;b"}\ncode\n```',
+      '<pre><code class="language-js" data-x="a&amp;b">code\n</code></pre>'
+    ],
+    [
+      "an escaped character in a class",
+      "```js {.a\\_b}\ncode\n```",
+      '<pre><code class="a_b language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped character in a key",
+      "```js {a\\_b=c}\ncode\n```",
+      '<pre><code class="language-js" a_b="c">code\n</code></pre>'
+    ],
+    [
+      "a space written as a reference separates words",
+      "```js {title=a&#32;b}\ncode\n```",
+      '<pre><code class="language-js" title="a">code\n</code></pre>'
+    ],
+    [
+      "a backslash that escapes nothing stays",
+      '```js {data-x="C:\\dir"}\ncode\n```',
+      '<pre><code class="language-js" data-x="C:\\dir">code\n</code></pre>'
+    ],
+    [
+      "an escaped brace inside a quoted value is the value's",
+      '```js {title="a\\}b"}\ncode\n```',
+      '<pre><code class="language-js" title="a}b">code\n</code></pre>'
+    ],
+    [
+      "an escaped opening brace opens no block",
+      "```js \\{.a}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped closing brace closes no block",
+      "```js {.a\\}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped brace outside a quoted value ends the block early",
+      "```js {title=a\\}b}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "a brace written as a reference opens no block, and the word is the language",
+      "``` &#123;.a}\ncode\n```",
+      '<pre><code class="language-{.a}">code\n</code></pre>'
+    ],
+    [
+      "an escaped block after one that is not leaves both unread",
+      "```js {.a} \\{.b}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "the language keeps its own reference when a block follows it",
+      "```j&amp;s {.a}\ncode\n```",
+      '<pre><code class="a language-j&amp;s">code\n</code></pre>'
+    ]
+  ])("escapes and references: %s", (_why, input, expected) => {
     expect(render(input)).toBe(expected);
   });
 });

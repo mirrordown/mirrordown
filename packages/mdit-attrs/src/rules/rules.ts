@@ -23,7 +23,9 @@ const ALL_RULE_NAMES: AttrRuleName[] = [
 const ALL_RULE_SET = new Set<string>(ALL_RULE_NAMES);
 
 export const createRules = (
-  options: DelimiterConfig & Pick<AttrsOptions, "rule">
+  options: DelimiterConfig & Pick<AttrsOptions, "rule">,
+  /** markdown-it's `utils.unescapeAll`, which resolves a fence's info string. */
+  unescapeAll: (str: string) => string
 ): AttrRule[] => {
   const { rule = "all" } = options;
 
@@ -38,7 +40,7 @@ export const createRules = (
 
   const rules: AttrRule[] = [];
 
-  if (enabled.has("fence")) rules.push(createFenceRule(options));
+  if (enabled.has("fence")) rules.push(createFenceRule(options, unescapeAll));
   if (enabled.has("inline")) rules.push(...createInlineRules(options));
   // Before the list rules, so a list item's line of its own is placed before
   // the item reads a block ending its first line.
