@@ -30,8 +30,8 @@ export type Positioned = Pick<TextLikeNode, `position` | `data`>;
 
 /** A scan over one parent's children, and the nodes it created. */
 export interface SpanTransform<N extends PhrasingLike> {
-  /** Scan `children`, the children of a node of type `parentType`. Returns `children` itself when no span forms. */
-  (children: readonly N[], parentType?: string): readonly N[];
+  /** Scan `children`, the children of a node of type `parentType`. Returns `children` itself when no span forms. Pass the document as `source` when the nodes' positions refer to it: a scan reads there what the tree does not keep, such as how a hard break was written. */
+  (children: readonly N[], parentType?: string, source?: string): readonly N[];
   /** Whether `node` was built by this transform (a wrapper or a text node). */
   built: (node: object) => boolean;
   /** Gives a wrapper this transform built the attributes of a block written right after it. */
@@ -121,7 +121,8 @@ export const scanSpans = <N extends PhrasingLike, P extends SpanParent<N>>(
 export type SpanScan<N extends PhrasingLike> = (
   children: readonly N[],
   parentType: string,
-  nodes: SpanNodes<N>
+  nodes: SpanNodes<N>,
+  source?: string
 ) => readonly N[];
 
 /** Wrap a scan with built-node tracking and source-based escape masking. */
@@ -147,8 +148,11 @@ export const createSpanTransform = <N extends PhrasingLike>(
     }
   };
 
-  const transform = (children: readonly N[], parentType = ``): readonly N[] =>
-    scan(children, parentType, tracked);
+  const transform = (
+    children: readonly N[],
+    parentType = ``,
+    source?: string
+  ): readonly N[] => scan(children, parentType, tracked, source);
 
   const restore = (list: readonly N[]): void => {
     for (const node of list) {
@@ -200,7 +204,7 @@ export const createSpanTransform = <N extends PhrasingLike>(
       );
       return value === node.value ? node : tracked.text(value);
     });
-    const next = transform(masked, parentType);
+    const next = transform(masked, parentType, source);
     if (next === masked) return undefined;
     const result = [...next];
     if (read) takeAttributes(result, read);

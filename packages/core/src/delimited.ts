@@ -113,9 +113,9 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
   nodes: SpanNodes<N>,
   maxDepth = MAX_DEPTH
 ): SpanTransform<N> =>
-  createSpanTransform(nodes, (children, parentType, { text, wrap }) => {
+  createSpanTransform(nodes, (children, parentType, { text, wrap }, source) => {
     const edge: CharClass = INLINE_PARENTS.has(parentType) ? `punct` : `space`;
-    // The character class beside a text node, from its sibling: a break is a line ending; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
+    // The character class beside a text node, from its sibling: a break is a line ending, unless it follows the run and was written as a backslash, which is then the character markdown-it reads there; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
     const beside = (
       sibling: N | undefined,
       side: `before` | `after`
@@ -132,7 +132,14 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
             : charAt(node.value, 0)
         );
       }
-      return sibling.type === `break` ? `space` : `punct`;
+      if (sibling.type !== `break`) return `punct`;
+      // Only the source tells a backslash break from one written as trailing spaces.
+      const start = sibling.position?.start.offset;
+      return side === `after` &&
+        start !== undefined &&
+        source?.charAt(start) === `\\`
+        ? `punct`
+        : `space`;
     };
 
     // markdown-it-mark's tokenizer: text between runs is one item, as markdown-it's pending text becomes one token.

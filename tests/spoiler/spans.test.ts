@@ -198,6 +198,19 @@ describe("spoiler: a table-cell spoiler nested in emphasis after another span pl
   });
 });
 
+describe("spoiler: a hard break after the opening pipes is read as it was written", () => {
+  // markdown-it reads the source character after a run: the backslash of a backslash break is punctuation, so pipes after punctuation still open; the spaces of a two-space break are not. A spoiler that forms in one engine only hides text in that engine only.
+  describe.each(engines)("%s", (_engine, render) => {
+    it("a backslash break lets pipes after punctuation open", () => {
+      expect(render("(||\\\na||")).toBe(`<p>(${S("<br>\na")}</p>`);
+    });
+
+    it("a two-space break does not", () => {
+      expect(render("(||  \na||")).toBe("<p>(||<br>\na||</p>");
+    });
+  });
+});
+
 describe("spoiler: nesting stops at 50 spoilers, so one deep run can't make Sätteri reject the whole document", () => {
   // Sätteri throws on content nested deeper than 128 levels, and a spoiler is two levels there (the label and the content span). All three engines stop at 50 and leave the pipes of deeper pairs as text: the outer 50 still hide what they hold.
   const nested = (depth: number): string =>
