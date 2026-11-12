@@ -35,7 +35,21 @@ export const autolinkHeadings: PluginWithOptions<AutolinkHeadingsOptions> = (
   options
 ) => {
   const behavior = options?.behavior ?? "prepend";
-  const cls = options?.class ?? "anchor";
+  // A value that names no behaviour used to give no link here and an attribute-less one in the other engines.
+  const behaviors: readonly string[] = [
+    "prepend",
+    "append",
+    "wrap",
+    "before",
+    "after"
+  ];
+  if (!behaviors.includes(behavior)) {
+    throw new TypeError(
+      `autolink-headings: unknown behavior "${behavior}". Use one of: ${behaviors.join(", ")}.`
+    );
+  }
+  // The link is written as a string, so what goes into its attributes is escaped here: an id comes from the document (`{id='a"b'}`) and must not end the attribute it is in.
+  const cls = md.utils.escapeHtml(options?.class ?? "anchor");
   const inject = behavior === "prepend" || behavior === "append";
 
   type RenderRule = NonNullable<typeof md.renderer.rules.heading_open>;
@@ -46,10 +60,12 @@ export const autolinkHeadings: PluginWithOptions<AutolinkHeadingsOptions> = (
 
   // The inject behaviors set aria-hidden + tabindex, since the link sits beside
   // the visible heading text rather than wrapping it.
-  const linkAttrs = (id: string): string =>
-    inject
-      ? `class="${cls}" aria-hidden="true" tabindex="-1" href="#${id}"`
-      : `class="${cls}" href="#${id}"`;
+  const linkAttrs = (id: string): string => {
+    const href = md.utils.escapeHtml(`#${id}`);
+    return inject
+      ? `class="${cls}" aria-hidden="true" tabindex="-1" href="${href}"`
+      : `class="${cls}" href="${href}"`;
+  };
   const emptyLink = (id: string): string => `<a ${linkAttrs(id)}></a>`;
 
   md.renderer.rules.heading_open = (tokens, idx, opts, env, self): string => {

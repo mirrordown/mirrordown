@@ -62,6 +62,15 @@ const build = <T>(value: Build<T>, element: Element): T =>
       (value as (element: Element) => T)(element)
     : structuredClone(value);
 
+// A value that names no behaviour used to place the link like `append` but without its attributes, and differently in each engine.
+const BEHAVIORS: readonly string[] = [
+  "prepend",
+  "append",
+  "wrap",
+  "before",
+  "after"
+];
+
 /**
  * Sätteri plugin that adds a self-referential link to every heading that has an `id` (list it after `@mirrordown/sat-slug`). By default the link is prepended, empty, and carries `class="anchor"`; the shipped stylesheet draws a `#` marker on hover. Options and output match `@mirrordown/remd-autolink-headings`; the option values are hast nodes, as Sätteri's own hast plugins use.
  */
@@ -70,13 +79,14 @@ export const satteriAutolinkHeadings =
     options: AutolinkHeadingsOptions = {}
   ): ((ctx: PluginFactoryContext) => AutolinkHeadingsPlugin) =>
   () => {
-    const {
-      behavior = "prepend",
-      content,
-      group,
-      headingProperties,
-      test
-    } = options;
+    const { content, group, headingProperties, test } = options;
+    // `??`, as the markdown-it and rehype plugins read it: `null` is the default too.
+    const behavior = options.behavior ?? "prepend";
+    if (!BEHAVIORS.includes(behavior)) {
+      throw new TypeError(
+        `autolink-headings: unknown behavior "${behavior}". Use one of: ${BEHAVIORS.join(`, `)}.`
+      );
+    }
     const inject = behavior === "prepend" || behavior === "append";
     // Default link properties: always the `anchor` class (the CSS hook). The inject behaviors also get aria-hidden + tabindex, since the link sits beside the visible heading text rather than wrapping it.
     const properties: Build<Properties> =
@@ -119,24 +129,26 @@ export const satteriAutolinkHeadings =
           // An empty id (a heading with no text) has nothing to link to.
           if (!node.properties.id) return;
           if (!is(node, ctx.indexOf(node), ctx.parent(node))) return;
+          // `setProperty` changes the document's heading, not the object this visitor holds. The link and the option callbacks must see the heading with its new properties, as the rehype plugin's do (an `id` set here is the one the link points at), so they are given a copy that has them.
+          let element: Element = node;
           if (headingProperties) {
-            for (const [key, value] of Object.entries(
-              build(headingProperties, node)
-            )) {
+            const added = build(headingProperties, node);
+            for (const [key, value] of Object.entries(added)) {
               ctx.setProperty(node, key, value);
             }
+            element = { ...node, properties: { ...node.properties, ...added } };
           }
           if (behavior === "wrap") {
             const before = typeof content === "function" ? [] : node.children;
             ctx.setProperty(node, "children", [
-              link(node, [...before, ...contentOf(node)])
+              link(element, [...before, ...contentOf(element)])
             ]);
           } else if (behavior === "before" || behavior === "after") {
-            const anchor = link(node, contentOf(node));
+            const anchor = link(element, contentOf(element));
             const nodes =
               behavior === "before" ? [anchor, node] : [node, anchor];
             const grouping =
-              group === undefined ? undefined : build(group, node);
+              group === undefined ? undefined : build(group, element);
             ctx.replaceNode(
               node,
               grouping?.type === "element"
@@ -144,9 +156,9 @@ export const satteriAutolinkHeadings =
                 : nodes
             );
           } else if (behavior === "prepend") {
-            ctx.prependChild(node, link(node, contentOf(node)));
+            ctx.prependChild(node, link(element, contentOf(element)));
           } else {
-            ctx.appendChild(node, link(node, contentOf(node)));
+            ctx.appendChild(node, link(element, contentOf(element)));
           }
         }
       }

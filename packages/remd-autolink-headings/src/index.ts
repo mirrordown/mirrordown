@@ -107,6 +107,19 @@ export const rehypeAutolinkHeadings: Plugin<
 > = (options) => {
   const settings = options ?? {};
   const behavior = settings.behavior ?? "prepend";
+  // A value that names no behaviour used to place the link like `append` but without its attributes, and differently in each engine.
+  const behaviors: readonly string[] = [
+    "prepend",
+    "append",
+    "wrap",
+    "before",
+    "after"
+  ];
+  if (!behaviors.includes(behavior)) {
+    throw new TypeError(
+      `autolink-headings: unknown behavior "${behavior}". Use one of: ${behaviors.join(", ")}.`
+    );
+  }
   const content = settings.content;
   const group = settings.group;
   const headingProperties = settings.headingProperties;
