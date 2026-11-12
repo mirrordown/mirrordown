@@ -327,6 +327,22 @@ describe("attrs/grammar: Sätteri's limits", () => {
   });
 });
 
+// remark and Sätteri build a hast tree, which spells a name HTML defines the way HTML does (`Title` becomes `title`, `ariaLabel` becomes `aria-label`) and leaves any other name alone. markdown-it writes the name as typed, and following hast would take its table of every HTML attribute. An HTML parser lowercases attribute names, so the page is the same; the guide lists the difference. `class` and `id` are the exception, since the shorthand has to merge with them.
+describe("attrs/grammar: the case of an attribute's name", () => {
+  const [[, mdit], [, remd], [, sat]] = engines;
+
+  it("is kept by markdown-it and normalised by the others for a name HTML defines", () => {
+    expect(mdit("p {Title=x}")).toBe('<p Title="x">p</p>');
+    expect(remd("p {Title=x}")).toBe('<p title="x">p</p>');
+    expect(sat("p {Title=x}")).toBe('<p title="x">p</p>');
+  });
+
+  it("is kept by every engine for a name HTML doesn't define", () => {
+    for (const render of [mdit, remd, sat])
+      expect(render("p {DATA-Foo=y}")).toBe('<p DATA-Foo="y">p</p>');
+  });
+});
+
 // GFM constructs markdown-it doesn't have without further plugins, so remark is pinned to Sätteri alone.
 describe("attrs/grammar: remark and Sätteri", () => {
   const [, [, remd], [, sat]] = engines;
