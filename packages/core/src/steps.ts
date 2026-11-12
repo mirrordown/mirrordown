@@ -24,9 +24,10 @@ import {
   paragraphProperties,
   paraToLines,
   paraToSourceLines,
+  quotePosition,
   rebuildLazyLines,
   splitSourceLines,
-  type MarkedLine
+  type SourceLine
 } from "./lazy.js";
 import { isAlertMarkerLine } from "./github-alerts/index.js";
 
@@ -235,13 +236,13 @@ interface ParentLike {
   children?: ParentLike[];
 }
 
-// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `isHeader` accepts; the paragraph is cut before it, in place.
+// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `leaves` accepts (given the paragraph's lines and the line's index); the paragraph is cut before it, in place.
 const takeLazyLines = (
   node: BlockContent | DefinitionContent,
   sourceLines: readonly string[],
   base: number,
-  isHeader: (segs: PhrasingContent[]) => boolean
-): MarkedLine[] | null => {
+  leaves: (lines: readonly SourceLine[], index: number) => boolean
+): SourceLine[] | null => {
   let parent = node as unknown as ParentLike;
   let last = parent.children?.at(-1);
   while (last?.type !== "paragraph") {
@@ -253,7 +254,7 @@ const takeLazyLines = (
   const lines = paraToSourceLines(para, sourceLines);
   if (!lines || !parent.children) return null;
   const at = lines.findIndex(
-    ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
+    ({ markers }, index) => index > 0 && markers < base && leaves(lines, index)
   );
   if (at === -1) return null;
   const kept = linesToParagraph(
@@ -268,16 +269,33 @@ const takeLazyLines = (
   return lines.slice(at);
 };
 
+interface SplitQuote {
+  segments: BQSegment[];
+  // The blocks after the group, when a line in the quote ended it: that line and what follows it, as markdown-it parses them once the group has ended.
+  after: Array<BlockContent | DefinitionContent> | null;
+  // Whether such a line was left in the last body, for the pass that ends groups at their markers to move: the group has ended there all the same, so nothing after the quote continues it.
+  ended: boolean;
+}
+
 const splitBlockquote = (
   bq: Blockquote,
   counters: Map<number, number>,
   currentDepth: number,
   sourceLines?: readonly string[]
-): BQSegment[] => {
+): SplitQuote => {
   const segments: BQSegment[] = [];
   let currentSegment: BQSegment = { header: null, body: [] };
   // The `>` markers of the step body's own lines.
   const base = sourceLines ? blockquoteMarkers(bq, sourceLines) : undefined;
+  // The lines that ended the group, and the quote's blocks after their paragraph.
+  let ending: SourceLine[] | null = null;
+  const quoted: Array<BlockContent | DefinitionContent> = [];
+  // The data of the paragraph the group ended in: attributes the parser read from its end (Sätteri's run before steps), which belong to its last line.
+  let endingData: Paragraph["data"];
+  // Whether a line that ends the group was left in a body (see `endsGroup`).
+  let ended = false;
+  const outside = (line: SourceLine | undefined): boolean =>
+    base !== undefined && line !== undefined && line.markers < base;
 
   // A line's step header, if it has one that fits the group's depth.
   const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {
@@ -310,19 +328,44 @@ const splitBlockquote = (
     };
   };
 
-  for (const child of bq.children) {
+  // A line that is neither a header nor written with the body's markers ends the group, as it does in markdown-it. Here, that's one the pass that ends groups at their markers (`endGroupsAtMarkers`) doesn't reach: the `first` line after a header (that pass reads a paragraph from its second line), a line with a header after it (it isn't in the group's last step then), or a line with a block after its paragraph (it isn't in the body's last paragraph: not the quote's `last`). The other such lines are left to that pass. Tabs end a group the same way (`splitBlockquote` in tabs.ts).
+  const endsGroup = (
+    lines: readonly SourceLine[],
+    index: number,
+    first: boolean,
+    last: boolean
+  ): boolean =>
+    base !== undefined &&
+    (lines[index]?.markers ?? base) < base &&
+    (first ||
+      !last ||
+      lines.some(
+        (line, later) =>
+          later > index &&
+          line.markers < base &&
+          stepHeader(headerLineContent(line.segs, sourceLines)) !== null
+      ));
+
+  for (const [childIndex, child] of bq.children.entries()) {
+    // After the group has ended, the quote's other blocks follow it as they are.
+    if (ending) {
+      quoted.push(child);
+      continue;
+    }
+    const last = childIndex === bq.children.length - 1;
     if (child.type !== "paragraph") {
       currentSegment.body.push(child);
       if (!sourceLines || base === undefined) continue;
-      const lazy = takeLazyLines(
-        child,
-        sourceLines,
-        base,
-        (segs) => stepHeader(segs) !== null
-      );
+      const lazy = takeLazyLines(child, sourceLines, base, (lines, index) => {
+        const leaves =
+          stepHeader(lines[index]?.segs ?? []) !== null ||
+          endsGroup(lines, index, false, last);
+        if (!leaves) ended = true;
+        return leaves;
+      });
       if (!lazy) continue;
       // The header and the lines after it: the steps they start, and those steps' bodies.
-      let pending: MarkedLine[] = [];
+      let pending: SourceLine[] = [];
       const flush = (): void => {
         const relative = pending.map((line) => ({
           ...line,
@@ -331,13 +374,17 @@ const splitBlockquote = (
         currentSegment.body.push(...rebuildLazyLines(relative, 0));
         pending = [];
       };
-      for (const line of lazy) {
+      for (const [index, line] of lazy.entries()) {
         const content = headerLineContent(line.segs, sourceLines);
         const header = line.markers < base ? stepHeader(content) : null;
         if (header) {
           flush();
           startStep(header, content);
+        } else if (endsGroup(lazy, index, pending.length === 0, last)) {
+          ending = lazy.slice(index);
+          break;
         } else {
+          if (outside(line)) ended = true;
           pending.push(line);
         }
       }
@@ -368,18 +415,59 @@ const splitBlockquote = (
         );
         continue;
       }
+      if (marked && endsGroup(marked, index, bodyLines.length === 0, last)) {
+        ending = marked.slice(index);
+        break;
+      }
+      if (outside(marked?.[index])) ended = true;
       bodyLines.push(lineSegs);
     }
 
     // These lines end the paragraph, so they keep its data: attributes the
-    // parser read from its end (Sätteri's run before steps).
-    const bodyPara = linesToParagraph(bodyLines);
-    if (bodyPara && child.data) bodyPara.data = child.data;
+    // parser read from its end (Sätteri's run before steps). When the group ended in the paragraph, the lines that ended it do.
+    const bodyPara = linesToParagraph(
+      bodyLines,
+      ending ? sourceLines : undefined
+    );
+    if (bodyPara && child.data && !ending) bodyPara.data = child.data;
     if (bodyPara) currentSegment.body.push(bodyPara);
+    if (ending) endingData = child.data;
   }
 
   segments.push(currentSegment);
-  return segments;
+  if (!ending || !sourceLines || base === undefined)
+    return { segments, after: null, ended };
+
+  // The lines that ended the group, rebuilt from their markers over those of the content around the group (one fewer than the body's), with the quote's later blocks still quoted.
+  const over = base - 1;
+  const after = rebuildLazyLines(
+    ending.map((line) => ({ ...line, markers: line.markers - over })),
+    0,
+    { sourceLines, over }
+  );
+  if (endingData) {
+    let block = after.at(-1);
+    while (block?.type === "blockquote") block = block.children.at(-1);
+    if (block?.type === "paragraph") block.data = endingData;
+  }
+  const firstQuoted = quoted[0];
+  if (firstQuoted) {
+    const lastRebuilt = after.at(-1);
+    if (lastRebuilt?.type === "blockquote")
+      lastRebuilt.children.push(...quoted);
+    else {
+      const quote: Blockquote = { type: "blockquote", children: quoted };
+      const from = firstQuoted.position?.start.line;
+      const to = quoted.at(-1)?.position?.end.line;
+      const position =
+        from !== undefined && to !== undefined
+          ? quotePosition(sourceLines, from, to, base)
+          : undefined;
+      if (position) quote.position = position;
+      after.push(quote);
+    }
+  }
+  return { segments, after, ended: true };
 };
 
 // Whether a quote after a step is an alert (`> [!NOTE]`), a block of its own, rather than more of the step's body. After a blank line it is, as markdown-it reads it, whether or not the alerts plugin reads it. Directly under the step it is the body, unless the alerts plugin (it runs before steps) has already made it an alert, taking its marker: that can't be made a body again. Only a marker with the quote's own `>` count counts: written deeper (`> > [!NOTE]`), it's an alert in the body.
@@ -529,7 +617,7 @@ export const processStepsInChildren = (
               isOwnAlert(sibling, children[j - 1]?.position, sourceLines)
             )
               break;
-            const segments = splitBlockquote(
+            const { segments, after, ended } = splitBlockquote(
               sibling,
               counters,
               currentDepth,
@@ -555,10 +643,23 @@ export const processStepsInChildren = (
             }
 
             j++;
+            // A line in the quote ended the group: it and what follows it come after the list, where the loop reads them as it reads any block (a header among them starts a new group).
+            if (after) {
+              // The quote's attributes were written after its last line, which is now in the last of these blocks.
+              const lastBlock = after.at(-1);
+              if (quoteProperties && lastBlock)
+                lastBlock.data = {
+                  ...lastBlock.data,
+                  hProperties: { ...quoteProperties }
+                } as typeof lastBlock.data;
+              children.splice(j, 0, ...after);
+              break;
+            }
             if (quoteProperties) {
               listProperties = { ...listProperties, ...quoteProperties };
               break;
             }
+            if (ended) break;
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastStep().depth;
             const contHeaders = extractHeaderPara(

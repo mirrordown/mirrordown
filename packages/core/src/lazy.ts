@@ -231,12 +231,30 @@ export const linesToParagraph = (
   return para;
 };
 
+/** The position of a blockquote written from source line `first` to `last` whose own `>` is the `nth` marker of its first line, as a parser would place it: `blockquoteMarkers` then counts `nth` for it. `undefined` when that line has no such marker. */
+export const quotePosition = (
+  sourceLines: readonly string[],
+  first: number,
+  last: number,
+  nth: number
+): Blockquote["position"] => {
+  const source = sourceLines[first - 1] ?? "";
+  const prefix = /^[ \t>]*/.exec(source)?.[0] ?? "";
+  const at = prefix.split(">", nth).join(">").length;
+  if (nth < 1 || at >= prefix.length) return undefined;
+  return {
+    start: { line: first, column: at + 1 },
+    end: { line: last, column: (sourceLines[last - 1] ?? "").length + 1 }
+  };
+};
+
 /**
- * The blocks lazily continued lines stand for, from their markers relative to the body they belong to (`level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows.
+ * The blocks lazily continued lines stand for, from their markers relative to the body they belong to (`level` deep): as such lines go on CommonMark only nests deeper, so a line with more markers opens blockquotes and a new paragraph, and a line with fewer continues the paragraph it follows. With `place` (the source, and the markers the lines' own were counted over), a blockquote among them gets its position, for recognition that reads a quote's markers after this; without it, a rebuilt blockquote has none.
  */
 export const rebuildLazyLines = (
-  lines: MarkedLine[],
-  level: number
+  lines: Array<MarkedLine & { line?: number }>,
+  level: number,
+  place?: { sourceLines: readonly string[]; over: number }
 ): Array<BlockContent | DefinitionContent> => {
   const deeper = lines.findIndex(({ markers }) => markers > level);
   const own = deeper === -1 ? lines : lines.slice(0, deeper);
@@ -245,8 +263,15 @@ export const rebuildLazyLines = (
   if (deeper !== -1) {
     const quote: Blockquote = {
       type: "blockquote",
-      children: rebuildLazyLines(lines.slice(deeper), level + 1)
+      children: rebuildLazyLines(lines.slice(deeper), level + 1, place)
     };
+    const first = lines[deeper]?.line;
+    const last = lines.at(-1)?.line;
+    const position =
+      place && first !== undefined && last !== undefined
+        ? quotePosition(place.sourceLines, first, last, place.over + level + 1)
+        : undefined;
+    if (position) quote.position = position;
     blocks.push(quote);
   }
   return blocks;
