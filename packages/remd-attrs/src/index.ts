@@ -20,6 +20,7 @@ import type { Node, Parent } from "unist";
 import {
   containersKept,
   itemColumns,
+  textEscapes,
   type LineContainer
 } from "@mirrordown/core";
 import { applyAttrs } from "./applyAttrs.js";
@@ -98,7 +99,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
   const check = getDelimiterChecker(left, right);
 
   const transformer: Transformer<Root> = (tree, file) => {
-    // remark resolves `\{` and `&#123;` before any plugin runs, so a text node's value can't tell an escaped delimiter from a real one. markdown-it and Sätteri keep a block as text when a delimiter, or anything inside it, is escaped or written as a character reference; here the source the node was read from tells the same: the block must be written there as it reads. A node with no position (one another plugin built) is taken at its word.
+    // remark resolves `\{` and `&#123;` before any plugin runs, so a text node's value can't tell an escaped delimiter from a real one. markdown-it and Sätteri keep a block as text when a delimiter, or anything inside it, is escaped or written as a character reference; here the source the node was read from tells the same: the block must be written there as it reads. A node with no position is one another plugin built: a span plugin records which characters of the text it rebuilt were escaped (`data.escaped`, read by `textEscapes`), and a block holding one of them stays text. Without a record the node is taken at its word.
     const source = String(file.value);
     const written = (
       node: Node,
@@ -108,7 +109,15 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     ): boolean => {
       const from = node.position?.start.offset;
       const to = node.position?.end.offset;
-      if (from === undefined || to === undefined) return true;
+      if (from === undefined || to === undefined) {
+        const value = (node as { value?: unknown }).value;
+        if (typeof value !== "string") return true;
+        const begin =
+          at === "start" ? skip : value.trimEnd().length - block.length;
+        for (const index of textEscapes(node, source))
+          if (index >= begin && index < begin + block.length) return false;
+        return true;
+      }
       const raw = source.slice(from, to);
       // Nothing is escaped without a backslash, nor referenced without an ampersand.
       if (!raw.includes("\\") && !raw.includes("&")) return true;
