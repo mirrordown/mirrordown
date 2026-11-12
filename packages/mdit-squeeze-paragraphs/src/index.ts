@@ -4,17 +4,19 @@ import type { PluginSimple } from "markdown-it";
 // HTML's inter-element whitespace, the same set as `isEmptyParagraph` in `@mirrordown/core` (which the rehype and Sätteri plugins use), so the engines agree on what is empty. Not `trim()`: that also strips no-break and other Unicode spaces, which are content.
 const WHITESPACE = /^[ \t\n\f\r]*$/;
 
-// A paragraph is "empty" when every rendered child is whitespace-only text (a soft break counts, as the newline it renders by default). The inline token's raw `content` is not consulted: it still holds source another plugin has consumed, such as an attribute block.
-const isEmpty = (inline: Token): boolean =>
+// A paragraph is "empty" when every rendered child is whitespace-only text. A soft break counts while it renders as a newline; with markdown-it's `breaks` option it renders as a `<br>`, which is content, as a hard break always is. The inline token's raw `content` is not consulted: it still holds source another plugin has consumed, such as an attribute block.
+const isEmpty = (inline: Token, breaks: boolean): boolean =>
   (inline.children ?? []).every(
     (c) =>
-      c.type === "softbreak" ||
+      (c.type === "softbreak" && !breaks) ||
       (c.type === "text" && WHITESPACE.test(c.content))
   );
 
 /** markdown-it plugin that removes empty (whitespace-only) paragraphs. */
 export const squeezeParagraphs: PluginSimple = (md) => {
   md.core.ruler.push("squeeze_paragraphs", (state) => {
+    // Read per render: the option can be set after the plugin is added.
+    const breaks = state.md.options.breaks === true;
     let i = 0;
 
     while (i < state.tokens.length) {
@@ -29,7 +31,7 @@ export const squeezeParagraphs: PluginSimple = (md) => {
         inline?.type !== "inline" ||
         close?.tag !== "p" ||
         close.nesting !== -1 ||
-        !isEmpty(inline)
+        !isEmpty(inline, breaks)
       ) {
         i++;
         continue;

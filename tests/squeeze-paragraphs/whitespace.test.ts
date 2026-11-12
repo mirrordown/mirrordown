@@ -70,3 +70,34 @@ describe.each(engines)(
     );
   }
 );
+
+// A line break the page shows is content, not whitespace: a paragraph that renders a `<br>` takes up a line, so removing it changes what the reader sees. The rehype and Sätteri plugins see the `<br>` element itself; the markdown-it plugin works on tokens, before rendering, and has to ask what each will render as.
+describe("squeeze-paragraphs: a paragraph that renders a line break is kept", () => {
+  it.each(engines)(
+    "$engine keeps a paragraph whose only content is a hard break",
+    ({ render }) => {
+      const html = render(`a\n\n&#32;\\\n&#32;\n\nb`);
+      expect(html).toContain(`<br>`);
+      expect(html.match(/<p>/g)).toHaveLength(3);
+    }
+  );
+
+  // markdown-it's `breaks: true` renders a soft break as `<br>` too, so the same paragraph must survive there, exactly as markdown-it renders it without the plugin.
+  it("markdown-it with `breaks: true` keeps a paragraph whose only content is a soft break", () => {
+    const source = `a\n\n&#32;\n&#32;\n\nb`;
+    const plain = new MarkdownIt({ breaks: true }).render(source);
+    expect(plain).toContain(`<br>`);
+    expect(
+      new MarkdownIt({ breaks: true }).use(squeezeParagraphs).render(source)
+    ).toBe(plain);
+  });
+
+  // The option can be set after the plugin is added, so it is read at render time.
+  it("markdown-it follows `breaks` as it is set when rendering", () => {
+    const md = new MarkdownIt().use(squeezeParagraphs);
+    const source = `a\n\n&#32;\n&#32;\n\nb`;
+    expect(normalizeHtml(md.render(source))).toBe(`<p>a</p><p>b</p>`);
+    md.set({ breaks: true });
+    expect(md.render(source)).toContain(`<br>`);
+  });
+});
