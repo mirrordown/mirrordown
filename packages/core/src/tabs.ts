@@ -316,6 +316,8 @@ const extractTrailingTabHeader = (
   markers: number[] | undefined;
   at: number;
   line: PhrasingContent[];
+  // The paragraph the header was found in: its data (attributes a parser read off its end) belongs to its last line.
+  para: Paragraph;
 } | null => {
   // Walk to the deepest last child that is a paragraph
   const path: Array<BlockContent | DefinitionContent> = [];
@@ -361,7 +363,8 @@ const extractTrailingTabHeader = (
         path,
         markers: lineMarkers(last, sourceLines),
         at,
-        line: lines[at] ?? []
+        line: lines[at] ?? [],
+        para: last
       };
     }
     if (!("children" in last)) break;
@@ -551,7 +554,7 @@ const splitBlockquote = (
         splitLines(
           extracted.rest,
           markersOf ? (index): number => markersOf(at + 1 + index) : undefined,
-          undefined,
+          extracted.para,
           last
         );
       } else {

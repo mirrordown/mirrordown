@@ -238,13 +238,13 @@ interface ParentLike {
   children?: ParentLike[];
 }
 
-// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `leaves` accepts (given the paragraph's lines and the line's index); the paragraph is cut before it, in place.
+// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `leaves` accepts (given the paragraph's lines and the line's index); the paragraph is cut before it, in place. The paragraph's `data` (attributes a parser read off its end) is returned with the lines: it belongs to the last of them.
 const takeLazyLines = (
   node: BlockContent | DefinitionContent,
   sourceLines: readonly string[],
   base: number,
   leaves: (lines: readonly SourceLine[], index: number) => boolean
-): SourceLine[] | null => {
+): { lines: SourceLine[]; data: Paragraph["data"] } | null => {
   let parent = node as unknown as ParentLike;
   let last = parent.children?.at(-1);
   while (last?.type !== "paragraph") {
@@ -268,7 +268,7 @@ const takeLazyLines = (
     1,
     ...(kept ? [kept as unknown as ParentLike] : [])
   );
-  return lines.slice(at);
+  return { lines: lines.slice(at), data: para.data };
 };
 
 interface SplitQuote {
@@ -366,31 +366,48 @@ const splitBlockquote = (
         return leaves;
       });
       if (!lazy) continue;
-      // The header and the lines after it: the steps they start, and those steps' bodies.
+      const { lines: lazyLines, data: lazyData } = lazy;
+      // Typed as in lazy.ts: core doesn't load the augmentation that adds `hProperties` to a paragraph's data.
+      const lazyAttributes:
+        | (NonNullable<Paragraph["data"]> & {
+            hProperties?: Properties | undefined;
+          })
+        | undefined = lazyData;
+      const lazyProperties = lazyAttributes?.hProperties;
+      // The header and the lines after it: the steps they start, and those steps' bodies. The cut paragraph's data goes with its last line: on the step, when that line is a header, else on the paragraph the line ends up in.
       let pending: SourceLine[] = [];
-      const flush = (): void => {
+      const flush = (data?: Paragraph["data"]): void => {
         const relative = pending.map((line) => ({
           ...line,
           markers: line.markers - base
         }));
-        currentSegment.body.push(...rebuildLazyLines(relative, 0));
+        const blocks = rebuildLazyLines(relative, 0);
+        let block = blocks.at(-1);
+        while (block?.type === "blockquote") block = block.children.at(-1);
+        if (data && block?.type === "paragraph") block.data = data;
+        currentSegment.body.push(...blocks);
         pending = [];
       };
-      for (const [index, line] of lazy.entries()) {
+      for (const [index, line] of lazyLines.entries()) {
         const content = headerLineContent(line.segs, sourceLines);
         const header = line.markers < base ? stepHeader(content) : null;
         if (header) {
           flush();
-          startStep(header, content);
-        } else if (endsGroup(lazy, index, pending.length === 0, last)) {
-          ending = lazy.slice(index);
+          startStep(
+            header,
+            content,
+            index === lazyLines.length - 1 ? lazyProperties : undefined
+          );
+        } else if (endsGroup(lazyLines, index, pending.length === 0, last)) {
+          ending = lazyLines.slice(index);
+          endingData = lazyData;
           break;
         } else {
           if (outside(line)) ended = true;
           pending.push(line);
         }
       }
-      flush();
+      flush(ending ? undefined : lazyData);
       continue;
     }
 
