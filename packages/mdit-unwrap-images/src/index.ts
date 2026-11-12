@@ -1,9 +1,23 @@
 import type Token from "markdown-it/lib/token.mjs";
 import type { PluginSimple } from "markdown-it";
 
-const isImageOnly = (children: Token[]): boolean =>
-  children.some((c) => c.type === "image") &&
-  children.every((c) => c.type === "image" || c.type === "softbreak");
+// HTML's inter-element whitespace, as `isImageParagraph` in `@mirrordown/core` counts it for the rehype and Sätteri plugins.
+const WHITESPACE = /^[ \t\n\f\r]*$/;
+
+// The token form of `isImageParagraph`: only images, each possibly inside a link, and whitespace between them. Keep the two in step, or the engines unwrap different paragraphs.
+const isImageOnly = (children: Token[]): boolean => {
+  let image = false;
+  let inLink = false;
+  for (const child of children) {
+    if (child.type === "image") image = true;
+    else if (child.type === "link_open" && !inLink) inLink = true;
+    else if (child.type === "link_close" && inLink) inLink = false;
+    else if (child.type === "softbreak") continue;
+    else if (child.type === "text" && WHITESPACE.test(child.content)) continue;
+    else return false;
+  }
+  return image;
+};
 
 /** markdown-it plugin that unwraps block-level images out of their paragraph. */
 export const unwrapImages: PluginSimple = (md) => {
@@ -33,9 +47,9 @@ export const unwrapImages: PluginSimple = (md) => {
         continue;
       }
 
-      const images = children.filter((c) => c.type !== "softbreak");
-      state.tokens.splice(i, 3, ...images);
-      i += images.length;
+      // Everything the paragraph held takes its place, the whitespace between images included: remark and Sätteri keep it, and two inline images with a gap are not two that touch.
+      state.tokens.splice(i, 3, ...children);
+      i += children.length;
     }
   });
 };

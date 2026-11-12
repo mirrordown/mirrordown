@@ -98,9 +98,9 @@ describe("lightbox + unwrap-images: lightbox images separated by a space on one 
     expect(remd(input)).toMatch(/^<button[^]*<\/button> <button/);
   });
 
-  // KNOWN ENGINE DIFFERENCE, pinned so it cannot change unnoticed. mdit-unwrap-images counts a paragraph as image-only when it holds just `image` and `softbreak` tokens, so the whitespace text between two images on one line keeps the `<p>`; the shared hast rule (`isImageParagraph`) accepts whitespace text. Lightbox output is the same in both; the fix belongs to mdit-unwrap-images (also for `![a](x.jpg) ![b](y.jpg)` without lightbox), and when it lands this expectation flips to match remark.
-  it("markdown-it keeps the paragraph: mdit-unwrap-images does not accept whitespace text between images", () => {
-    expect(mdit(input)).toMatch(/^<p><button[^]*<\/button> <button/);
-    expect(mdit(input).replace(/^<p>(.*?)<\/p>/, "$1")).toBe(remd(input));
+  // mdit-unwrap-images once counted only `image` and `softbreak` tokens, so the space between two images on one line kept the `<p>` in markdown-it alone. It now reads whitespace as the shared hast rule (`isImageParagraph`) does.
+  it("markdown-it unwraps the paragraph too, and emits what remark does", () => {
+    expect(mdit(input)).toMatch(/^<button[^]*<\/button> <button/);
+    expect(mdit(input)).toBe(remd(input));
   });
 });
