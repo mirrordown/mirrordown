@@ -8,8 +8,9 @@ const SPACE = 32;
 const TAB = 9;
 const TAB_SIZE = 4;
 
-const expandTabStop = (offset: number): number =>
-  offset + TAB_SIZE - (offset % TAB_SIZE);
+// Tab stops are absolute columns, so the columns a container prefix (`> `) took from the line count too
+const expandTabStop = (offset: number, containerColumns: number): number =>
+  offset + TAB_SIZE - ((offset + containerColumns) % TAB_SIZE);
 
 // Search `[:~][\n ]`, returns next pos after marker on success or -1 on fail.
 const checkAndSkipMarker = (state: StateBlock, line: number): number => {
@@ -201,7 +202,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
       while (pos < max) {
         const ch = state.src.charCodeAt(pos);
 
-        if (ch === TAB) offset = expandTabStop(offset);
+        if (ch === TAB) offset = expandTabStop(offset, state.bsCount[ddLine]);
         else if (ch === SPACE) offset++;
         else break;
 

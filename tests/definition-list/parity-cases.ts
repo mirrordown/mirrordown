@@ -114,5 +114,18 @@ export const parityCases: ParityCase[] = [
     name: "a marker two columns past a definition's content column nests a list",
     input: "T\n: D\n    : D2",
     expected: "<dl><dt>T</dt><dd><dl><dt>D</dt><dd>D2</dd></dl></dd></dl>"
+  },
+
+  // Tab stops are absolute columns. Inside a blockquote the `> ` prefix shifts them, so a tab after the marker reaches column 4 of the line, which is content column 2 of the quote.
+  {
+    name: "a tab after the marker in a blockquote stops at the line's tab stop, not the quote's",
+    input: "> T\n> :\tD\n>\n>   more",
+    expected:
+      "<blockquote><dl><dt>T</dt><dd><p>D</p><p>more</p></dd></dl></blockquote>"
+  },
+  {
+    name: "a tab after the marker at the top level sets the content column to the tab stop",
+    input: "T\n:\tD\n\n  more",
+    expected: "<dl><dt>T</dt><dd>D</dd></dl><p>more</p>"
   }
 ];
