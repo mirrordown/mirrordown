@@ -101,19 +101,19 @@ dd {
 %% Standalone
 > ```ts
 > import MarkdownIt from "markdown-it";
-> import { definitionList } from "@mirrordown/mdit-definition-list";
+> import { dl } from "@mirrordown/mdit-definition-list";
 >
-> const md = new MarkdownIt().use(definitionList);
+> const md = new MarkdownIt().use(dl);
 > ```
 %% VitePress
 > ```ts
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
-> import { definitionList } from "@mirrordown/mdit-definition-list";
+> import { dl } from "@mirrordown/mdit-definition-list";
 >
 > export default defineConfig({
 >   markdown: {
->     config: (md) => md.use(definitionList),
+>     config: (md) => md.use(dl),
 >   },
 > });
 > ```
