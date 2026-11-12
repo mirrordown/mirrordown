@@ -95,10 +95,10 @@ describe("presets", () => {
         const shared = render({ mermaidPele });
         const inputs = fixtureCases.map(({ input }) => input);
         const forwards = inputs.map((input) => shared(input));
-        const backwards = inputs
-          .toReversed()
+        const backwards = [...inputs]
+          .reverse()
           .map((input) => shared(input))
-          .toReversed();
+          .reverse();
         expect(backwards).toEqual(forwards);
       });
 
