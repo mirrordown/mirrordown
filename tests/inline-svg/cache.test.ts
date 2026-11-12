@@ -18,11 +18,6 @@ import { satteriInlineSvg } from "../../packages/sat-inline-svg/src";
 
 // A plugin keeps each SVG it has read, so a build reads a file once however many pages show it. A dev server keeps the same plugin for hours while the files are edited: a cache that never looks at the file again serves the icon as it was when the server started, until a restart.
 
-const directory = mkdtempSync(join(tmpdir(), `inline-svg-cache-`));
-afterAll(() => {
-  rmSync(directory, { recursive: true, force: true });
-});
-
 const svg = (fill: string): string =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect width="1" height="1" fill="${fill}"/></svg>`;
 
@@ -38,8 +33,8 @@ const engines = [
       const env = { currentDocument: pathToFileURL(document).href };
       return {
         counts,
-        render: (): Promise<string> =>
-          Promise.resolve(md.render(`![icon](./icon.svg)`, env))
+        render: async (): Promise<string> =>
+          md.render(`![icon](./icon.svg)`, env)
       };
     }
   },
@@ -75,20 +70,21 @@ const engines = [
       });
       return {
         counts,
-        render: (): Promise<string> =>
-          Promise.resolve(
-            markdownToHtml(`![icon](./icon.svg)`, {
-              hastPlugins: [plugin],
-              fileURL: pathToFileURL(document)
-            }).html
-          )
+        render: async (): Promise<string> =>
+          markdownToHtml(`![icon](./icon.svg)`, {
+            hastPlugins: [plugin],
+            fileURL: pathToFileURL(document)
+          }).html
       };
     }
   }
 ];
 
 describe.each(engines)("inline-svg cache ($engine)", ({ engine, create }) => {
-  const folder = mkdtempSync(join(directory, `${engine}-`));
+  const folder = mkdtempSync(join(tmpdir(), `inline-svg-cache-${engine}-`));
+  afterAll(() => {
+    rmSync(folder, { recursive: true, force: true });
+  });
   const icon = join(folder, `icon.svg`);
   const document = join(folder, `page.md`);
   // The modification time is set by hand, a minute apart, so the test doesn't depend on the clock's or the file system's resolution.
@@ -101,7 +97,7 @@ describe.each(engines)("inline-svg cache ($engine)", ({ engine, create }) => {
   it("renders a file as it is now, not as it was when the plugin first read it", async () => {
     const { render } = create(document);
     write(`red`, 0);
-    expect(await render()).toContain(`fill="red"`);
+    await expect(render()).resolves.toContain(`fill="red"`);
     write(`green`, 1);
     const edited = await render();
     expect(edited).toContain(`fill="green"`);
@@ -124,8 +120,8 @@ describe.each(engines)("inline-svg cache ($engine)", ({ engine, create }) => {
   it("notices a file whose length changed though its time didn't", async () => {
     const { render } = create(document);
     write(`red`, 4);
-    expect(await render()).toContain(`fill="red"`);
+    await expect(render()).resolves.toContain(`fill="red"`);
     write(`green`, 4);
-    expect(await render()).toContain(`fill="green"`);
+    await expect(render()).resolves.toContain(`fill="green"`);
   });
 });

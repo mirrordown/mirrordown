@@ -19,6 +19,24 @@ const optimizeSvg = (content: string, path: string, config: Config): string =>
     ...config
   }).data;
 
+// A file's content, optimized; `null` when it can't be read or parsed.
+const load = async (
+  path: string,
+  optimize: boolean | Config
+): Promise<string | null> => {
+  try {
+    const content = await readFile(path, `utf-8`);
+    if (!optimize) return content;
+    return optimizeSvg(
+      content,
+      path,
+      typeof optimize === `boolean` ? {} : optimize
+    );
+  } catch {
+    return null;
+  }
+};
+
 // An SVG's (optimized) content by absolute path, kept for the life of the plugin, with the modification time and size it was read at: a dev server keeps the plugin while files are edited, so a file is read again once either changes. The entry is the read itself, so documents processed concurrently share one read of a file and each waits for it. A file that can't be read or parsed resolves to `null` and isn't kept, as in the markdown-it and Sätteri plugins: the failure touches only the images that name it, and a later document tries again.
 export class SvgCache {
   #hits = 0;
@@ -50,7 +68,7 @@ export class SvgCache {
     }
     const entry = this.#reads.get(path);
     const cached = entry?.version === version ? entry.content : undefined;
-    const pending = cached ?? this.#load(path, optimize);
+    const pending = cached ?? load(path, optimize);
     if (!cached) this.#reads.set(path, { version, content: pending });
     const content = await pending;
     if (content === null) {
@@ -65,22 +83,5 @@ export class SvgCache {
       this.#hits += occurrences - 1;
     }
     return content;
-  };
-
-  #load = async (
-    path: string,
-    optimize: boolean | Config
-  ): Promise<string | null> => {
-    try {
-      const content = await readFile(path, `utf-8`);
-      if (!optimize) return content;
-      return optimizeSvg(
-        content,
-        path,
-        typeof optimize === `boolean` ? {} : optimize
-      );
-    } catch {
-      return null;
-    }
   };
 }
