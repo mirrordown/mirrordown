@@ -36,6 +36,8 @@ Add a second `!` in front of any image. Click a thumbnail below to zoom; click i
 
 In renderers without the plugin, the extra `!` renders as plain text and the image still shows.
 
+The marker is read at the start of a line, after a space, or directly after other markup. After text it is not: `Look!![…](…)` and `(!![…](…))` are a `!` and a plain image. A backslash does not turn the marker off: `\!![…](…)` is still a lightbox image.
+
 The alt text is the engine's own, in the thumbnail and the dialog alike. Markers from other plugins in it (`!![--a--](x.png)`) differ as they do for any image: markdown-it drops them, and remark and Sätteri keep the text as written.
 
 ### Repeated images share one dialog
@@ -61,7 +63,7 @@ A name belongs to one image. An id that is already taken, by another element suc
 
 ### Images inside links
 
-An image wrapped in a link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal.
+An image wrapped in a Markdown link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal. A link written as raw HTML (`<a href="…">!![…](…)</a>`) is not seen as one: the image inside it still becomes a trigger.
 
 ````markdown
 [!![Swan boats on the lake](./assets/swan-boats.jpg "Swan boats")](https://example.com)
