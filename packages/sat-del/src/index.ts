@@ -1,6 +1,11 @@
-import { createDelimitedTransform } from "@mirrordown/core";
+import {
+  createAttributeReader,
+  createDelimitedTransform,
+  scanSpans
+} from "@mirrordown/core";
 import {
   defineMdastPlugin,
+  markdownToMdast,
   type MdastPluginInstance,
   type MdastTarget,
   type PluginFactoryContext
@@ -22,7 +27,12 @@ export interface DelPlugin {
  */
 export const satteriDel =
   (): ((ctx: PluginFactoryContext) => DelPlugin) =>
-  ({ source }) => {
+  ({ source, features }) => {
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on: a block written right after a span is then the span's to take.
+    const read =
+      features.attributes === true
+        ? createAttributeReader(markdownToMdast)
+        : undefined;
     const transform = createDelimitedTransform<MdastTarget>(`-`, {
       text: (value) => ({ type: `text`, value }),
       wrap: (children) => ({ type: `delete`, data: { hName: `del` }, children })
@@ -37,12 +47,17 @@ export const satteriDel =
         const parent = ctx.parent(node);
         if (seen.has(parent)) return;
         seen.add(parent);
-        const children = transform.withSource(
-          parent.children,
-          parent.type,
-          source
-        );
-        if (children) ctx.setProperty(parent, `children`, children);
+        scanSpans(transform, parent, {
+          source,
+          read,
+          parent: (of) => ctx.parent(of),
+          setChildren: (of, children) => {
+            ctx.setProperty(of, `children`, children);
+          },
+          setData: (of, data) => {
+            ctx.setProperty(of, `data`, data);
+          }
+        });
       }
     });
   };

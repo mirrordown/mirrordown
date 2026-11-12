@@ -7,7 +7,15 @@ import {
   type MdastTarget,
   type PluginFactoryContext
 } from "satteri";
-import { carryEscapes, textEscapes } from "@mirrordown/core";
+import {
+  addProperties,
+  carryEscapes,
+  claimTrailingAttributes,
+  createAttributeReader,
+  leadingAttributes,
+  maskEscaped,
+  textEscapes
+} from "@mirrordown/core";
 
 type TextVisitor = NonNullable<MdastPluginInstance["text"]>;
 type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
@@ -57,6 +65,8 @@ const MAYBE_RUBY = /\{[^|{}\r\n]+\|[^}\r\n]+\}/;
 const OPEN = `⸨${String.fromCharCode(0xe000)}`;
 const CLOSE = `${String.fromCharCode(0xe001)}⸩`;
 const PLACEHOLDER = new RegExp(`${OPEN}(\\d+)${CLOSE}`, `g`);
+// What a slice that ends in an attribute block is given to end with while it is re-parsed, so the block stays the text it is in the document.
+const END = String.fromCharCode(0xe002);
 // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
 const tidy = (text: string): string =>
   text.replace(/^[ \t]+|[ \t]+$/g, ``) || text;
@@ -99,6 +109,11 @@ export const satteriRuby =
   (options: RubyOptions = {}): ((ctx: PluginFactoryContext) => RubyPlugin) =>
   ({ source, features }) => {
     const { rp } = options;
+    // Sätteri reads attribute blocks before plugins run, when the document's features turn them on: a block written right after a ruby is then the ruby's to take.
+    const read =
+      features.attributes === true
+        ? createAttributeReader(markdownToMdast)
+        : undefined;
     const parse = {
       features: { ...features, ...options.features, frontmatter: false }
     };
@@ -112,7 +127,7 @@ export const satteriRuby =
       // Some node types declare `position?: Position | undefined`, which `Custom`'s exact optional `position` rejects though the value is the same; listing fields instead would drop node-specific ones such as a link's `url`.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       ({ ...node, children }) as Custom;
-    // The text nodes of a re-parsed fragment hold offsets into that fragment (`parsed`), which a plugin that runs later would read as offsets into the document. Each is rebuilt without a position, in pieces around the `pattern` matches that `swap` turns into nodes, and every piece keeps a record of its escaped characters instead, so a span scan that runs later still tells `\==` from `==`. A match `swap` declines stays text.
+    // The text nodes of a re-parsed fragment hold offsets into that fragment (`parsed`), which a plugin that runs later would read as offsets into the document. Each is rebuilt without a position, in pieces around the `pattern` matches that `swap` turns into nodes, and every piece keeps a record of its escaped characters instead, so a span scan that runs later still tells `\==` from `==`. A match `swap` declines stays text. A node `swap` built takes the attribute blocks the text goes on with, unless their `{` is escaped.
     const rebuild = (
       nodes: readonly MdastTarget[],
       parsed: string,
@@ -152,6 +167,15 @@ export const satteriRuby =
             piece(match.index);
             out.push(swapped);
             last = match.index + match[0].length;
+            // Escaped characters are masked for the read: an escaped `{` opens no block, and a block holding one is text.
+            const rest = maskEscaped(
+              value.slice(last),
+              new Set([...escaped].map((at) => at - last))
+            );
+            const taken = read && leadingAttributes(rest, read);
+            if (!taken) continue;
+            addProperties(swapped, taken.properties);
+            last += rest.length - taken.rest.length;
           }
           piece(value.length);
           return out;
@@ -353,8 +377,22 @@ export const satteriRuby =
           const lead = /^[ \t\r\n]*/.exec(slice)?.[0] ?? ``;
           const body = slice.slice(lead.length).replace(/[ \t\r\n]+$/, ``);
           const trail = slice.slice(lead.length + body.length);
-          const parsed = body + definitions;
-          const reparsed = parseChildren(parsed)[0];
+          let parsed = body + definitions;
+          let reparsed = parseChildren(parsed)[0];
+          // A slice that ends in an attribute block loses it to the paragraph it is re-parsed as, though in the document, where the content goes on or the block isn't the last, it is text: parsed again with a character after it, which is then dropped, it stays text.
+          if (reparsed?.data && `hProperties` in reparsed.data) {
+            const again = parseChildren(body + END + definitions)[0];
+            const kept = again && `children` in again ? again.children : [];
+            const end = kept.at(-1);
+            const value = end?.type === `text` ? end.value : undefined;
+            if (again && end && value?.endsWith(END)) {
+              parsed = body + END + definitions;
+              reparsed = withChildren(again, [
+                ...kept.slice(0, -1),
+                { ...end, value: value.slice(0, -END.length) }
+              ]);
+            }
+          }
           if (lead) next.push({ type: `text`, value: lead });
           next.push(
             ...withRubies(
@@ -373,6 +411,26 @@ export const satteriRuby =
           cursor = group.last + 1;
         }
         next.push(...children.slice(cursor));
+        // A block that ends the content went on the block, or on the one that holds it (a list item), before the ruby existed: it is the ruby's when the content ends with a ruby built here and the block was written touching it.
+        const ruby = next.at(-1);
+        const written = range(block);
+        if (
+          read &&
+          written &&
+          ruby?.type === `ruby` &&
+          !children.includes(ruby)
+        ) {
+          const claimed = claimTrailingAttributes(
+            source.slice(...written),
+            block.type,
+            [block, ctx.parent(block)],
+            read
+          );
+          if (claimed) {
+            ctx.setProperty(claimed.holder, `data`, claimed.data);
+            addProperties(ruby, claimed.properties);
+          }
+        }
         ctx.setProperty(block, `children`, next);
       }
     });

@@ -22,7 +22,7 @@ interface TitledItem {
 }
 
 /** Joins `added` into `properties`: classes accumulate, other attributes replace. */
-const mergeProperties = (
+export const mergeProperties = (
   properties: Properties | undefined,
   added: Properties
 ): Properties => {

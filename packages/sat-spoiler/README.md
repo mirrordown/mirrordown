@@ -101,6 +101,8 @@ Text spoilers work everywhere (checkbox + sibling selector). Image spoilers use 
 npm install @mirrordown/sat-spoiler
 ```
 
+With Sätteri's `attributes` feature on, a table cell that holds a spoiler takes no attribute block of its own: the parser reads none in a cell with an escaped pipe, so `| \|\|hidden\|\| {.name} |` keeps ` {.name}` as text.
+
 ### Standalone
 
 ```ts
