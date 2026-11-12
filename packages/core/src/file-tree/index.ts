@@ -96,19 +96,20 @@ export interface FileTreeIconOptions {
 const PREFIX = /^(?:[├└┣┗╰`+|][─━-]+ ?|[│┃|]|[-*+] |\s)*/u;
 // The line `tree` ends with.
 const SUMMARY = /^\d+ (?:director(?:y|ies)|files?)(?:, \d+ files?)?$/;
-// A comment: `#` or `//` after a space, followed by a space or nothing.
-const COMMENT = /\s+(?:#|\/\/)(?=\s|$)/;
-const STATUS = /\s+\[([AMDRUI])\]$/;
+// A comment: `#` or `//` after a space, followed by a space or nothing. Both patterns look at one space before their marker, not at the run of them: a `\s+` is tried again from every space of a long run, which takes the square of its length.
+const COMMENT = /(?<=\s)(?:#|\/\/)(?=\s|$)/;
+const STATUS = /\s\[([AMDRUI])\]$/;
 const HIGHLIGHT = /^\*\*(.+)\*\*$/;
 const PLACEHOLDER = /^(?:\.{3}|…)$/;
 const COLLAPSED = /\/(?:\.{3}|…)$/;
 
 // Tabs, as columns: each moves to the next multiple of 4.
-const expandTabs = (line: string): string =>
-  line.replace(/[^\t]*\t/g, (run) => {
-    const text = run.slice(0, -1);
-    return text + ` `.repeat(4 - (text.length % 4));
-  });
+const expandTabs = (line: string): string => {
+  const [first = ``, ...rest] = line.split(`\t`);
+  let out = first;
+  for (const text of rest) out += ` `.repeat(4 - (out.length % 4)) + text;
+  return out;
+};
 
 // A row as it's read: the column its name starts at, and whether it ended in `/`, settle where it goes and what it is.
 interface Row extends Omit<FileTreeEntry, `children`> {
@@ -128,14 +129,14 @@ const parseRow = (line: string): Row | undefined => {
       .slice(commentAt.index + commentAt[0].length)
       .replace(/^(?:#|\/\/)/, ``)
       .trim();
-    rest = rest.slice(0, commentAt.index);
+    rest = rest.slice(0, commentAt.index).trimEnd();
     if (comment === ``) comment = undefined;
   }
   let status: FileTreeStatus | undefined;
   const statusAt = STATUS.exec(rest);
   if (statusAt) {
     status = STATUSES.get(statusAt[1] ?? ``);
-    rest = rest.slice(0, statusAt.index);
+    rest = rest.slice(0, statusAt.index).trimEnd();
   }
   const highlighted = HIGHLIGHT.exec(rest);
   let name = (highlighted?.[1] ?? rest).trim();
@@ -238,16 +239,22 @@ export const fileTreeIcon = (
   });
   // A row may be a path, such as `components/Button.tsx`: its last part names it.
   const base = name.slice(name.lastIndexOf(`/`) + 1);
-  const custom = icons.names?.[base];
+  // The tables are plain objects, and a file can be named after what every object inherits (`constructor`, `toString`): only a table's own keys are icons.
+  const own = <T>(
+    table: Record<string, T> | undefined,
+    key: string
+  ): T | undefined =>
+    table && Object.hasOwn(table, key) ? table[key] : undefined;
+  const custom = own(icons.names, base);
   if (custom) return { svg: custom, color: undefined };
-  const named = SETI_NAMES[base];
+  const named = own(SETI_NAMES, base);
   if (named) return seti(named);
   // Everything after the first dot, then after each later one: `d.ts`, then `ts`.
   for (let at = base.indexOf(`.`); at !== -1; at = base.indexOf(`.`, at + 1)) {
     const extension = base.slice(at + 1).toLowerCase();
-    const customExtension = icons.extensions?.[extension];
+    const customExtension = own(icons.extensions, extension);
     if (customExtension) return { svg: customExtension, color: undefined };
-    const byExtension = SETI_EXTENSIONS[extension];
+    const byExtension = own(SETI_EXTENSIONS, extension);
     if (byExtension) return seti(byExtension);
   }
   for (const [part, entry] of Object.entries(SETI_PARTIALS))
