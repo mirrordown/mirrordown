@@ -148,3 +148,51 @@ describe("mdit-abbr: abbreviations are found before the typographer runs", () =>
     );
   });
 });
+
+// markdown-it asks the definition rule, in silent mode, whether a line ends the paragraph above it. It used to say yes before checking that the line had a term and a title, so a line that is not a definition still split the paragraph.
+describe("abbr: a line that is not a definition does not end a paragraph", () => {
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each([
+      [`no title`, `*[X]:`],
+      [`no term`, `*[]: t`]
+    ])("a line with %s stays in the paragraph around it", (_name, line) => {
+      expect(render(`foo\n${line}\nbar`)).toBe(`<p>foo\n${line}\nbar</p>`);
+    });
+  });
+});
+
+// A KNOWN DIFFERENCE, pinned so it can't drift unnoticed, not a contract. markdown-it reads a definition a line at a time, as markdown-it-abbr does, so a definition line can sit directly against other text. remark and Sätteri see finished paragraphs, and take one as definitions only when every line of it is a definition. The guide tells authors to keep definitions in a paragraph of their own, where all three agree. Which way to settle this is the owner's decision: if it changes, these expectations change with it.
+describe("abbr: a definition line directly against other text (engines differ)", () => {
+  const HTML = `<abbr title="Hyper Text">HTML</abbr>`;
+  const cases: [
+    name: string,
+    input: string,
+    lineBased: string,
+    paragraphBased: string
+  ][] = [
+    [
+      `after a line of text`,
+      `The HTML spec.\n*[HTML]: Hyper Text`,
+      `<p>The ${HTML} spec.</p>`,
+      `<p>The HTML spec.\n*[HTML]: Hyper Text</p>`
+    ],
+    [
+      `before a line of text`,
+      `*[HTML]: Hyper Text\nThe HTML spec.`,
+      `<p>The ${HTML} spec.</p>`,
+      `<p>*[HTML]: Hyper Text\nThe HTML spec.</p>`
+    ],
+    [
+      `above a setext underline`,
+      `*[HTML]: Hyper Text\n===\n\nHTML`,
+      `<p>===</p><p>${HTML}</p>`,
+      `<h1>*[HTML]: Hyper Text</h1><p>HTML</p>`
+    ]
+  ];
+
+  it.each(cases)("%s", (_name, input, lineBased, paragraphBased) => {
+    expect(mdit(input)).toBe(lineBased);
+    expect(remd(input)).toBe(paragraphBased);
+    expect(sat(input)).toBe(paragraphBased);
+  });
+});

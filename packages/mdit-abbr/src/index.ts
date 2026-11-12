@@ -54,7 +54,6 @@ const abbrDefinition: RuleBlock = (
 
   if (labelEnd < 0 || state.src.charCodeAt(labelEnd + 1) !== 58 /* : */)
     return false;
-  if (silent) return true;
 
   const label = state.src
     .slice(labelStart, labelEnd)
@@ -66,6 +65,8 @@ const abbrDefinition: RuleBlock = (
   const title = state.src.slice(titleStart, titleEnd);
 
   if (label.length === 0 || title.length === 0) return false;
+  // Asked only now: in silent mode the question is whether this line ends the paragraph above it, and a line with no term or no title is not a definition.
+  if (silent) return true;
 
   // The `:` prefix, as in markdown-it-abbr, keeps a term from naming a member every object inherits: with `_`, the term `_proto__` became the key `__proto__` and was never stored.
   (state.env.abbreviations ??= {})[`:${label}`] ??= title;
