@@ -87,6 +87,32 @@ describe("presets", () => {
     });
   });
 
+  // A site build renders every page with one preset. Whatever a page defines (abbreviations, footnotes, heading slugs, tab, code-block and lightbox ids) must not reach the next page, so the same pages rendered in the opposite order have to come out the same.
+  describe.each(engines)(
+    "%s renders a document the same whatever it rendered before",
+    (_, render) => {
+      it("in either order", () => {
+        const shared = render({ mermaidPele });
+        const inputs = fixtureCases.map(({ input }) => input);
+        const forwards = inputs.map((input) => shared(input));
+        const backwards = inputs
+          .toReversed()
+          .map((input) => shared(input))
+          .toReversed();
+        expect(backwards).toEqual(forwards);
+      });
+
+      it("and the same as a preset that has rendered nothing", () => {
+        const shared = render();
+        const first =
+          "*[HTML]: Hyper Text\n\n# Title\n\nHTML[^1]\n\n[^1]: Note.";
+        const second = "# Title\n\nHTML[^1]";
+        shared(first);
+        expect(shared(second)).toBe(render()(second));
+      });
+    }
+  );
+
   // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).
   const features: readonly {
     key: keyof MarkdownItOptions & keyof RemarkOptions & keyof SatteriOptions;
@@ -182,6 +208,45 @@ describe("presets", () => {
       expect(render({ slug: { prefix: "doc-" } })("## Sub Title")).toContain(
         'id="doc-sub-title"'
       );
+    });
+
+    // `true` is what a config computed from a flag passes (`lightbox: !isPrint`); it must mean the plugin's defaults, not an options object.
+    it("reads `true` as the default", () => {
+      const everything = Object.fromEntries(
+        features.map(({ key }) => [key, true])
+      );
+      const document = features.map(({ input }) => input).join("\n\n");
+      expect(render(everything)(document)).toBe(render()(document));
+    });
+
+    // A config object is often a shared constant: two presets built from it, or one preset per build. A plugin that wrote its defaults back into the object would change the next preset built from it; freezing makes that write throw.
+    it("leaves the options it is given untouched", () => {
+      const deepFreeze = <T>(value: T): T => {
+        if (typeof value === "object" && value !== null) {
+          Object.values(value).forEach(deepFreeze);
+          Object.freeze(value);
+        }
+        return value;
+      };
+      const options = deepFreeze({
+        autolinkHeadings: {},
+        copyCode: {},
+        fileTree: {},
+        githubAlerts: { icons: false },
+        lightbox: {},
+        mermaidPele: { ...mermaidPele },
+        prompt: {},
+        ruby: {},
+        slug: { prefix: "doc-" },
+        steps: {},
+        tabs: { containerClass: "my-tabs" },
+        tabIcons: {}
+      });
+      const document = features.map(({ input }) => input).join("\n\n");
+      const html = render(options)(document);
+      expect(html).toContain('id="doc-sub-title"');
+      // A second preset from the same object, after the first has rendered.
+      expect(render(options)(document)).toBe(html);
     });
   });
 
