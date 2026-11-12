@@ -10,39 +10,34 @@ export interface RubyOptions {
   rp?: [string, string];
 }
 
+// The grammar the three engines share: `{`, a base (no `|`, `{`, `}` or line ending, though it may start with `{`), `|`, a reading (no `}` or line ending), `}`. A ruby never crosses a line or another brace group, so prose braces and an attribute block before a ruby (`{.a}{b|c}`) are left alone.
+const RUBY = /\{([^|}\r\n][^|{}\r\n]*)\|([^}\r\n]+)\}/y;
+// Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
+const tidy = (text: string): string =>
+  text.replace(/^[ \t]+|[ \t]+$/g, "") || text;
+
 function makeRule(rp: [string, string] | undefined) {
   const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   return (state: StateInline, silent: boolean): boolean => {
-    if (silent) return false;
-
-    const max = state.posMax;
     const start = state.pos;
 
     if (state.src.charCodeAt(start) !== 0x7b /* { */) return false;
-    if (start + 4 >= max) return false;
 
-    let devPos = 0;
-    let closePos = 0;
+    RUBY.lastIndex = start;
+    const match = RUBY.exec(state.src);
+    if (!match) return false;
+    const end = start + match[0].length;
+    if (end > state.posMax) return false;
 
-    for (let i = start + 1; i < max; i++) {
-      const ch = state.src.charCodeAt(i);
-      if (devPos) {
-        if (ch === 0x7d /* } */) {
-          closePos = i;
-          break;
-        }
-      } else if (ch === 0x7c /* | */) {
-        devPos = i;
-      }
+    // A scan for the end of a link label or an emphasis run calls the rule silently: the ruby is still one unit to step over, so a `]` inside it does not end the label.
+    if (silent) {
+      state.pos = end;
+      return true;
     }
 
-    if (!devPos || !closePos) return false;
-
-    const baseText = state.src.slice(start + 1, devPos);
-    const rubyText = state.src.slice(devPos + 1, closePos);
-
-    if (baseText.length === 0 || rubyText.length === 0) return false;
+    const baseText = tidy(match[1]);
+    const rubyText = tidy(match[2]);
 
     const pushInline = (content: string): void => {
       const tokens: Token[] = [];
@@ -53,7 +48,7 @@ function makeRule(rp: [string, string] | undefined) {
     const open = state.push("ruby_open", "ruby", 1);
     open.markup = "{";
     // The source of the whole run, for positions that render plain text.
-    open.meta = { raw: state.src.slice(start, closePos + 1) };
+    open.meta = { raw: match[0] };
 
     pushInline(baseText);
     if (hasRp) state.push("rp_open", "rp", 0).content = rp[0]!;
@@ -64,7 +59,7 @@ function makeRule(rp: [string, string] | undefined) {
 
     state.push("ruby_close", "ruby", -1).markup = "}";
 
-    state.pos = closePos + 1;
+    state.pos = end;
     return true;
   };
 }
