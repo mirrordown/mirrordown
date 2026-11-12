@@ -22,15 +22,19 @@ const isLineBreak = (type: string): boolean =>
 
 // Plain text of inline tokens, for the title's aria-label: text, inline code
 // and image alt count; raw HTML does not. (markdown-it's renderInlineAsText
-// skips inline code.)
+// skips inline code.) An escaped character or a character reference is a
+// `text_special` token until `text_join` runs, and a soft break inside
+// emphasis is the line ending the other engines keep in the text.
 const plainText = (tokens: Token[]): string =>
   tokens
     .map((t) =>
-      t.type === "text" || t.type === "code_inline"
+      t.type === "text" || t.type === "text_special" || t.type === "code_inline"
         ? t.content
-        : t.type === "image" && t.children
-          ? plainText(t.children)
-          : ""
+        : t.type === "softbreak"
+          ? "\n"
+          : t.type === "image" && t.children
+            ? plainText(t.children)
+            : ""
     )
     .join("");
 
@@ -76,9 +80,14 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       }
       closeIdx--; // points at blockquote_close
 
-      // The first inline token inside the blockquote holds the first line
+      // The first inline token inside the blockquote holds the first line. Only a paragraph opens an alert: a heading that starts with a marker stays a heading in a blockquote.
       const firstInline = tokens[i + 2];
-      if (firstInline?.type !== "inline" || !firstInline.children) continue;
+      if (
+        tokens[i + 1]?.type !== "paragraph_open" ||
+        firstInline?.type !== "inline" ||
+        !firstInline.children
+      )
+        continue;
 
       // Check first child text token for the [!TYPE] marker
       const firstChild = firstInline.children[0];
@@ -95,10 +104,18 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
 
       // The first line is the marker plus an optional title (inline content,
       // formatting included); everything after the first line break, soft or
-      // hard, is the body.
+      // hard, is the body. A break inside inline markup (emphasis, a link)
+      // doesn't end the line, as remark and Sätteri keep such content
+      // together, and cutting there would split the element in two.
       const children = firstInline.children;
-      let lineEnd = children.findIndex((t) => isLineBreak(t.type));
-      if (lineEnd === -1) lineEnd = children.length;
+      let lineEnd = children.length;
+      let depth = 0;
+      for (const [index, child] of children.entries()) {
+        depth += child.nesting;
+        if (depth > 0 || !isLineBreak(child.type)) continue;
+        lineEnd = index;
+        break;
+      }
       const afterMarker = firstChild.content.trimStart().slice(marker.length);
       firstChild.content = afterMarker.trimStart();
       const titleTokens = children
@@ -134,7 +151,8 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const titleInline = new state.Token("inline", "", 0);
       titleInline.children = [
         ...(iconSvg ? [iconToken] : []),
-        ...(titleText ? titleTokens : [defaultTitle])
+        // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+        ...(titleTokens.length > 0 ? titleTokens : [defaultTitle])
       ];
 
       const titleClose = new state.Token(`${titleTag}_close`, titleTag, -1);
