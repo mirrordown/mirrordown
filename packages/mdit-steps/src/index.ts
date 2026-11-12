@@ -56,6 +56,37 @@ const stripContinuation = (line: string): string =>
 const isOwnAlertLine = (line: string): boolean =>
   isAlertMarkerLine(line) && !NESTED_QUOTE_RE.test(line);
 
+// The paragraph that starts at `startLine`, as markdown-it's paragraph rule reads one. For a line CommonMark continues the header's paragraph with (a `>` indented four columns or more), which ends the group: left to the block rules, a line indented that far after it would be indented code.
+const lazyParagraph = (
+  state: StateBlock,
+  startLine: number,
+  endLine: number
+): void => {
+  const terminators = state.md.block.ruler.getRules("paragraph");
+  const parentType = state.parentType;
+  state.parentType = "paragraph";
+  let nextLine = startLine + 1;
+  for (; nextLine < endLine && !state.isEmpty(nextLine); nextLine++) {
+    // An indented line, or one a list item's negative indent marks, continues the paragraph.
+    const indent = state.sCount[nextLine] - state.blkIndent;
+    if (indent > 3 || state.sCount[nextLine] < 0) continue;
+    const line = nextLine;
+    if (terminators.some((rule) => rule(state, line, endLine, true))) break;
+  }
+  const content = state
+    .getLines(startLine, nextLine, state.blkIndent, false)
+    .trim();
+  state.line = nextLine;
+  const open = state.push("paragraph_open", "p", 1);
+  open.map = [startLine, nextLine];
+  const inline = state.push("inline", "", 0);
+  inline.content = content;
+  inline.map = [startLine, nextLine];
+  inline.children = [];
+  state.push("paragraph_close", "p", -1);
+  state.parentType = parentType;
+};
+
 /** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   const { containerClass = "markdown-steps" } = options;
@@ -114,6 +145,11 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
 
     let currentFrame: StepFrame | null = null;
     let nextLine = startLine;
+    // Whether the group ended at a line that continues the last header's paragraph.
+    let lazyEnd = false;
+    // A line indented four columns or more past the block the steps are in: CommonMark reads no `>` marker there, as markdown-it's own block rules read none.
+    const indented = (line: number): boolean =>
+      state.sCount[line] - state.blkIndent >= 4;
 
     const flushFrame = (): void => {
       if (currentFrame) block.frames.push(currentFrame);
@@ -163,8 +199,10 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
           // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
+          // Indented four columns or more, it is indented code.
           const isContinuation =
             state.sCount[peek] >= state.blkIndent &&
+            !indented(peek) &&
             ((CONTINUATION_RE.test(peekLine) && !isOwnAlertLine(peekLine)) ||
               parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
@@ -179,6 +217,15 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           CONTINUATION_RE.test(line) &&
           state.sCount[nextLine] >= state.blkIndent
         ) {
+          if (indented(nextLine)) {
+            // CommonMark continues a paragraph with such a line: the header's, which ends the steps since a title is one line, or the body's last, where it stays as text (its `>` escaped, so the body's own rules read it as text wherever that paragraph is nested). After a blank line there is no paragraph to continue, and the line is indented code after the steps.
+            const before = currentFrame.bodyLines.at(-1);
+            if (before === undefined) lazyEnd = true;
+            if (!before?.trim()) break;
+            currentFrame.bodyLines.push(`\\${line}`);
+            nextLine++;
+            continue;
+          }
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
@@ -203,6 +250,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       nextLine - 1,
       containerClass
     );
+    if (lazyEnd) lazyParagraph(state, nextLine, endLine);
 
     return true;
   }

@@ -286,19 +286,51 @@ describe.each<Difference>([
     input: `% A\n---\n> a`,
     mdit: `${group([`A`])}<hr><blockquote><p>a</p></blockquote>`,
     others: `<h2>% A</h2><blockquote><p>a</p></blockquote>`
-  },
-  {
-    // CommonMark continues the header's paragraph with a line indented four columns, whatever it starts with; markdown-it's rule reads the line without its indentation.
-    name: `a > line indented four columns is the panel's body only in markdown-it`,
-    input: `% A\n    > Body.`,
-    mdit: group([`A`, `<p>Body.</p>`]),
-    others: `${group([`A`])}<p>> Body.</p>`
   }
 ])(`tabs: known difference: $name`, ({ input, mdit, others }) => {
   it.each(engines)(`$engine`, ({ engine, render }) => {
     expect(mask(render(input))).toBe(engine === `markdown-it` ? mdit : others);
   });
 });
+
+// Indented four columns or more, a `>` is no blockquote marker in CommonMark: the line continues the paragraph before it, or is indented code after a blank line. remark and Sätteri have parsed it that way before recognition runs, so markdown-it's rule, which read the line without its indentation and took it for the panel, reads it the same way.
+check(`tabs: a > indented four columns or more is not the panel's marker`, [
+  {
+    name: `directly after a header it continues the header's paragraph, so it ends the tabs as text`,
+    input: `% A\n    > Body.`,
+    expected: `${group([`A`])}<p>> Body.</p>`
+  },
+  {
+    name: `the paragraph it starts goes on until a block interrupts it`,
+    input: `% A\n    > Body.\nmore\n% B\n> b`,
+    expected: `${group([`A`])}<p>> Body.\nmore</p>${group([`B`, `<p>b</p>`])}`
+  },
+  {
+    name: `after a panel line it continues the panel's paragraph as text`,
+    input: `% A\n> a\n    > b\n> c`,
+    expected: group([`A`, `<p>a\n> b\nc</p>`])
+  },
+  {
+    name: `after a panel's list item it continues the item's paragraph`,
+    input: `% A\n> - a\n    > b`,
+    expected: group([`A`, `<ul><li>a\n> b</li></ul>`])
+  },
+  {
+    name: `after a panel's blank line it is indented code after the tabs`,
+    input: `% A\n> a\n>\n    > b`,
+    expected: `${group([`A`, `<p>a</p>`])}<pre><code>> b\n</code></pre>`
+  },
+  {
+    name: `in a list item the four columns count from the item's content`,
+    input: `- % A\n      > body\n\n  more`,
+    expected: `<ul><li>${group([`A`])}<p>> body</p><p>more</p></li></ul>`
+  },
+  {
+    name: `a header indented that far after a blank line is indented code`,
+    input: `> % A\n> > a\n>\n>     % B`,
+    expected: `<blockquote>${group([`A`, `<p>a</p>`])}<pre><code>% B\n</code></pre></blockquote>`
+  }
+]);
 
 check(`tabs: a header after text in a list item, after a blank line`, [
   {

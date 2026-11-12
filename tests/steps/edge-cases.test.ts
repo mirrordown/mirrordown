@@ -397,6 +397,55 @@ check(`steps: an escaped header is text`, [
   }
 ]);
 
+// Indented four columns or more, a `>` is no blockquote marker in CommonMark: the line continues the paragraph before it, or is indented code after a blank line. remark and Sätteri have parsed it that way before recognition runs, so markdown-it's rule, which read the line without its indentation and took it for the body, reads it the same way.
+check(`steps: a > indented four columns or more is not the body's marker`, [
+  {
+    name: `directly after a header it continues the header's paragraph, so it ends the steps as text`,
+    input: `@1. S\n    > body`,
+    expected: `${OL}${LI(1)}${T}S</p></li></ol><p>> body</p>`
+  },
+  {
+    name: `the paragraph it starts goes on until a block interrupts it`,
+    input: `@1. S\n    > body\nmore\n@1. B`,
+    expected: `${OL}${LI(1)}${T}S</p></li></ol><p>> body\nmore</p>${OL}${LI(1)}${T}B</p></li></ol>`
+  },
+  {
+    name: `a tab indents it as far`,
+    input: `@1. S\n\t> body`,
+    expected: `${OL}${LI(1)}${T}S</p></li></ol><p>> body</p>`
+  },
+  {
+    name: `after a body line it continues the body's paragraph as text`,
+    input: `@1. S\n> a\n    > b\n> c`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>a\n> b\nc</p></div></li></ol>`
+  },
+  {
+    name: `after a body's list item it continues the item's paragraph`,
+    input: `@1. S\n> - a\n    > b`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<ul><li>a\n> b</li></ul></div></li></ol>`
+  },
+  {
+    name: `after a body's blank line it is indented code after the steps`,
+    input: `@1. S\n> a\n>\n    > b`,
+    expected: `${OL}${LI(1)}${T}S</p>${B}<p>a</p></div></li></ol><pre><code>> b\n</code></pre>`
+  },
+  {
+    name: `after a blank line without the marker too`,
+    input: `@1. S\n\n    > body`,
+    expected: `${OL}${LI(1)}${T}S</p></li></ol><pre><code>> body\n</code></pre>`
+  },
+  {
+    name: `in a list item the four columns count from the item's content`,
+    input: `- @1. S\n      > body`,
+    expected: `<ul><li>${OL}${LI(1)}${T}S</p></li></ol>\n> body</li></ul>`
+  },
+  {
+    name: `a header indented that far after a blank line is indented code`,
+    input: `> @1. A\n> > a\n>\n>     @1. B`,
+    expected: `<blockquote>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol><pre><code>@1. B\n</code></pre></blockquote>`
+  }
+]);
+
 // Known difference, pinned so a change to it is noticed. In a list item, a header after a line of text interrupts the paragraph in markdown-it, as its block rule does anywhere. remark and Sätteri leave such a line alone: by indentation they can't tell a header written in the item from one CommonMark lazily continued into it. A blank line before the header reads the same in every engine.
 describe(`steps: a header after text in a list item (known difference)`, () => {
   const input = `- text\n  @1. Step\n  > Body.`;
