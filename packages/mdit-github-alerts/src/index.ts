@@ -151,7 +151,8 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const titleInline = new state.Token("inline", "", 0);
       titleInline.children = [
         ...(iconSvg ? [iconToken] : []),
-        ...(titleText ? titleTokens : [defaultTitle])
+        // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+        ...(titleTokens.length > 0 ? titleTokens : [defaultTitle])
       ];
 
       const titleClose = new state.Token(`${titleTag}_close`, titleTag, -1);

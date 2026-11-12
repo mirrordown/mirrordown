@@ -62,7 +62,8 @@ export const satteriGithubAlerts =
           },
           children: [
             ...(icon ? [{ type: "html", value: icon }] : []),
-            ...(alert.titleText
+            // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+            ...(alert.titleNodes.length > 0
               ? alert.titleNodes
               : [{ type: "text", value: title }])
           ]

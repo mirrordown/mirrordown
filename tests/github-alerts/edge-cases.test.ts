@@ -172,6 +172,15 @@ describe("github-alerts: escapes and character references on the marker line", (
   });
 });
 
+describe("github-alerts: a title with no plain text", () => {
+  // The default title stands in for a missing title, not for one that has no text: the image was dropped from the document.
+  it("keeps an image without alt text, labelled by the default title", () => {
+    expect(renderAll("> [!NOTE] ![](x.png)\n> body")).toStrictEqual(
+      inAll(alert('<img src="x.png" alt="">', "<p>body</p>", "Note"))
+    );
+  });
+});
+
 describe("github-alerts: line endings", () => {
   it.each(["\r", "\r\n", "\n"])(
     "ends the title at %j, as CommonMark ends a line",

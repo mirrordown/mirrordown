@@ -70,7 +70,10 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
         },
         alertType: type,
         alertTitle: alert.titleText || titleFor(type),
-        ...(alert.titleText ? { alertTitleNodes: alert.titleNodes } : {}),
+        // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+        ...(alert.titleNodes.length > 0
+          ? { alertTitleNodes: alert.titleNodes }
+          : {}),
         alertFoldable: alert.fold !== undefined,
         alertIcon: iconFor(type),
         attrsRole: "container"
