@@ -135,6 +135,7 @@ function resolveDefList(
   let indexOffset = 0;
   let defListDescriptionToken: Token | undefined;
   let expectFirstDescription = true;
+  let lastMarkerLine: number | undefined;
   let index = defListStart + 1;
   index += resolveDefinitionTermTo(defListStart, events);
 
@@ -174,16 +175,22 @@ function resolveDefList(
       if ((event[1] as FlowToken)._prevLoose && defListDescriptionToken) {
         (defListDescriptionToken as FlowToken)._loose = true;
       }
-      // mark this prefix loose if preceded by a blank line (blank between term and first dd)
-      if (events[index - 1][1].type === "lineEndingBlank") {
-        (event[1] as FlowToken)._loose = true;
-      } else if (events[index - 1][1].type === "chunkFlow") {
-        const flowEvents = (events[index - 1][1] as FlowToken)._tokenizer
-          ?.events;
-        if (flowEvents?.[flowEvents.length - 1][1].type === "lineEndingBlank") {
-          (event[1] as FlowToken)._loose = true;
-        }
+      // mark this prefix loose if preceded by a blank line. The marker's indent and container prefixes (`>`, a list item's indent) sit between the blank and the marker, so they are stepped over. The rest of a bare marker's own line reaches the flow as a blank line too, but it is the empty definition, not a blank before the next marker.
+      let before = index - 1;
+      while (before > 0 && ignorablePrefixTypes.has(events[before][1].type))
+        before--;
+      let blank: Token | undefined = events[before][1];
+      if (blank.type === "chunkFlow") {
+        const flowEvents = (blank as FlowToken)._tokenizer?.events;
+        blank = flowEvents?.[flowEvents.length - 1][1];
       }
+      if (
+        blank?.type === "lineEndingBlank" &&
+        blank.start.line !== lastMarkerLine
+      ) {
+        (event[1] as FlowToken)._loose = true;
+      }
+      lastMarkerLine = event[1].start.line;
     }
 
     index++;
