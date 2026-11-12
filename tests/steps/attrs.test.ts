@@ -270,6 +270,48 @@ describe("steps + attrs: a block on its own line after the steps goes on the lis
   });
 });
 
+// Once a line that is neither a header nor a `>` line has ended the steps, a block on a line of its own further down is no longer the list's: it goes on the block it is written after, as it would without the steps. The lines after the list are rebuilt by recognition in remark and Sätteri: a blockquote among them had no position, so remd-attrs put the block on its paragraph, and Sätteri's attributes, read off the body's quote, went on the list.
+describe("steps + attrs: a block on its own line after content that ended the steps goes on that content", () => {
+  const list =
+    '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><p>a</p></div></li></ol>';
+  const cases: [string, string, string][] = [
+    [
+      "on a blockquote written after the line",
+      "@1. A\n> a\ntext\n> q\n{.x}",
+      `${list}<p>text</p><blockquote class="x"><p>q</p></blockquote>`
+    ],
+    [
+      "on the line's own paragraph",
+      "@1. A\n> a\ntext\n{.x}",
+      `${list}<p class="x">text</p>`
+    ],
+    [
+      "after the paragraph's own block, joining its class",
+      "@1. A\n> a\ntext {.y}\n{.x}",
+      `${list}<p class="x y">text</p>`
+    ],
+    [
+      "on the blockquote when the steps end in a sub-step",
+      "@1. A\n@@1. B\n> a\ntext\n> q\n{.x}",
+      '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">B</p><div class="markdown-steps-body"><p>a</p></div></li></ol></li></ol><p>text</p><blockquote class="x"><p>q</p></blockquote>'
+    ],
+    [
+      "written with the blockquote's marker, on its paragraph",
+      "@1. A\n> a\ntext\n> q\n> {.x}",
+      `${list}<p>text</p><blockquote><p class="x">q</p></blockquote>`
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toBe(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(satAttrs(input)).toBe(expected);
+  });
+});
+
 // A title that is only an attribute block is empty once the block is taken for the step. An empty title paragraph still takes up its line in the stylesheet, so it renders like a step written without a title: not at all.
 describe("steps + attrs: a title that is only an attribute block renders no title", () => {
   const input = "@1. {.a}\n> body";

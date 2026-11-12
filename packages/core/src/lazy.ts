@@ -8,7 +8,7 @@ import type {
   Text
 } from "mdast";
 import type { Properties } from "hast";
-import { rebuiltParagraphs } from "./cut-attributes.js";
+import { mergeProperties, rebuiltParagraphs } from "./cut-attributes.js";
 
 /** A paragraph's data, with the attributes mdast-util-to-hast reads. Its type augmentation adds `hProperties` to mdast's data where it's loaded, but core doesn't load it; the intersection types the property either way. */
 type ParagraphAttributes = NonNullable<Paragraph["data"]> & {
@@ -352,6 +352,21 @@ const lastParagraph = (
   return { para, parent: node };
 };
 
+// The attributes a parser that reads attribute blocks before recognition (Sätteri) put on a body's blockquote, kept by the body's last paragraph when a line in it has already ended the group: the block they came from was written on a line of its own after the lines that ended the group, so they belong to the last of the blocks those lines are rebuilt as.
+const quoteAttributes = new WeakMap<Paragraph, Properties>();
+
+/** Keeps `properties`, read off the blockquote `blocks` were the content of, for the last block `endGroupsAtMarkers` rebuilds from the lines that left that content's last paragraph. */
+export const keepQuoteAttributes = (
+  blocks: ReadonlyArray<BlockContent | DefinitionContent>,
+  properties: Properties
+): void => {
+  // mdast blocks, in the loose node shape `lastParagraph` walks.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const children = blocks as unknown as GroupTreeNode[];
+  const para = lastParagraph({ type: `root`, children })?.para;
+  if (para) quoteAttributes.set(para, properties);
+};
+
 /**
  * End each group of `listType` (tab groups or steps) where its last panel's `>` markers stop, as markdown-it reads a panel: a line CommonMark lazily continued into the panel's last paragraph, written with fewer markers than the panel's own lines, starts the content after the group, with the lines after it. That content is rebuilt from the lines' markers, as markdown-it parses it once the group has ended: a line with more markers than the group's surroundings opens a blockquote, so a `>` body after a header among them is still one. Groups nested in a panel are ended first; a line that leaves the outer panel too is kept as a line for the outer group to place. The paragraph's attributes (Sätteri reads them off its end) go with its last line.
  */
@@ -390,14 +405,21 @@ export const endGroupsAtMarkers = (
       );
       const after = lines.slice(outside);
       let moved: Array<BlockContent | DefinitionContent>;
+      // The attributes of a block written on a line of its own after these lines (see `keepQuoteAttributes`).
+      let quoted = quoteAttributes.get(para);
       if ((after[0]?.markers ?? 0) < quotes) {
         const flat = linesToParagraph(segsOf(after));
         if (flat) leaving.add(flat);
+        // They stay with the lines until the outer group places them.
+        if (flat && quoted) quoteAttributes.set(flat, quoted);
+        quoted = undefined;
         moved = flat ? [flat] : [];
       } else {
         moved = rebuildLazyLines(
           after.map((line) => ({ ...line, markers: line.markers - quotes })),
-          0
+          0,
+          // A blockquote among them is placed, so what reads a block's source lines after this (an attribute block written on a line of its own) finds it.
+          { sourceLines, over: quotes }
         );
       }
       if (moved.length === 0) continue;
@@ -411,6 +433,17 @@ export const endGroupsAtMarkers = (
         const last = lastParagraph({ type: `root`, children: blocks })?.para;
         if (last) last.data = movedData;
         para.data = rest;
+      }
+      // Those attributes are the last block's: a blockquote's when the lines end in one, as the attrs plugins of the other engines place them.
+      const lastBlock = blocks.at(-1);
+      if (quoted && lastBlock) {
+        const own: ParagraphAttributes | undefined =
+          lastBlock.data ?? undefined;
+        const blockData: ParagraphAttributes = {
+          ...own,
+          hProperties: mergeProperties(quoted, own?.hProperties ?? {})
+        };
+        lastBlock.data = blockData;
       }
       if (kept) para.children = kept.children;
       else parent.children?.pop();

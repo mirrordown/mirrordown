@@ -17,6 +17,7 @@ import {
   endGroupsAtMarkers,
   headerLineContent,
   INDENTED_BLOCKS,
+  keepQuoteAttributes,
   markerLevels,
   splitAtOpeningLine,
   splitSourceLines,
@@ -781,6 +782,8 @@ export const processTabsInChildren = (
         let j = i + 1;
         let currentTabIdx = rawTabs.length - 1;
         let prevEndLine = node.position?.end.line ?? 0;
+        // Attributes for the group itself (see where a blockquote's are read).
+        let listProperties: Properties | undefined;
 
         while (rest.length === 0 && j < children.length) {
           const sibling = children[j];
@@ -991,13 +994,34 @@ export const processTabsInChildren = (
 
             prevEndLine = sibling.position?.end.line ?? prevEndLine;
             j++;
+            // Attributes on the blockquote itself (Sätteri) come from a block on a line of its own, written after the panel without its `>`. That line ends the tabs, and its attributes are the group's, as the attrs plugins of the other engines place them, unless a line in the blockquote had already ended the group: then they are written after that line, and are the last block's after the group.
+            const quoteProperties = paragraphProperties(
+              bq as unknown as Paragraph
+            );
             if (ending) {
+              const lastBlock = ending.at(-1);
+              if (quoteProperties && lastBlock)
+                lastBlock.data = {
+                  ...lastBlock.data,
+                  hProperties: { ...quoteProperties }
+                } as typeof lastBlock.data;
               children.splice(j, 0, ...ending);
               break;
             }
-            // A line left in the panel for the end-of-group pass ended the group too: a header after a blank line starts a new one.
-            if (!explicit && sourceLines && endsAtUnmarkedLine(bq, sourceLines))
+            // A line left in the panel for the end-of-group pass ended the group too (a header after a blank line starts a new one): the attributes go where that pass puts the line's blocks.
+            if (
+              !explicit &&
+              sourceLines &&
+              endsAtUnmarkedLine(bq, sourceLines)
+            ) {
+              if (quoteProperties)
+                keepQuoteAttributes(lastTab().body, quoteProperties);
               break;
+            }
+            if (quoteProperties) {
+              listProperties = quoteProperties;
+              break;
+            }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastTab().depth;
             const contHeaders = extractHeaderPara(
@@ -1023,6 +1047,8 @@ export const processTabsInChildren = (
 
         const list = buildTree(rawTabs, 1, 0, rawTabs.length, containerClass);
         list.containerClass = containerClass;
+        if (listProperties)
+          list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as RootContent);
         children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
         i = j;

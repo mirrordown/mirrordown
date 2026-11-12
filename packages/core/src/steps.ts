@@ -17,6 +17,7 @@ import {
   endGroupsAtMarkers,
   headerLineContent,
   INDENTED_BLOCKS,
+  keepQuoteAttributes,
   markerLevels,
   splitAtOpeningLine,
   linesToParagraph,
@@ -655,11 +656,16 @@ export const processStepsInChildren = (
               children.splice(j, 0, ...after);
               break;
             }
+            // A line in the quote ended the group and was left for the pass that ends groups at their markers: the quote's attributes were written after that line, so they go where that pass puts its blocks.
+            if (ended) {
+              if (quoteProperties)
+                keepQuoteAttributes(lastStep().body, quoteProperties);
+              break;
+            }
             if (quoteProperties) {
               listProperties = { ...listProperties, ...quoteProperties };
               break;
             }
-            if (ended) break;
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastStep().depth;
             const contHeaders = extractHeaderPara(
