@@ -40,9 +40,13 @@ md.render("![star](./icons/star.svg)");
 | ---------------- | ---------- | ------------------------------------------------------------ |
 | `optimize`       | `true`     | Optimize SVGs with SVGO. Pass an SVGO `Config` to customize. |
 | `deduplication`  | `false`    | Reuse repeated icons via `<symbol>`/`<use>`.                 |
-| `maxImageSize`   | `3000`     | Skip inlining SVGs larger than this many bytes.              |
-| `maxOccurrences` | `Infinity` | Maximum number of images to inline per render.               |
-| `maxTotalSize`   | `10000`    | Maximum total inlined bytes per render.                      |
+| `maxImageSize`   | `3000`     | Skip an SVG larger than this many characters.                |
+| `maxOccurrences` | `Infinity` | Skip an SVG referenced more than this many times.            |
+| `maxTotalSize`   | `10000`    | Skip an SVG whose occurrences total more characters.         |
+
+## Security
+
+The markdown and the SVG files it references are treated as trusted input. An image path may name any `.svg` file the build can read (`../` is followed), and an inlined SVG becomes part of the page, where its scripts, event handlers and external references are live, which they are not behind an `<img>`. SVGO's default preset does not remove them, and with `optimize: false` the file is inserted as it is. Do not use this plugin on markdown or SVG files you do not control.
 
 ## Documentation
 
