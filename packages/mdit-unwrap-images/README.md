@@ -23,11 +23,11 @@ The `unwrap-images` plugin removes the `<p>` wrapper that Markdown adds around s
 Any image that stands alone on a paragraph — with no other text or inline content — is unwrapped:
 
 ````markdown
-![An example image](https://picsum.photos/400/200)
+![Swan boats moored at a dock](./assets/swan-boats.jpg)
 
 Images mixed with text are **not** unwrapped:
 
-Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
+Here is an inline image: ![a swan](./assets/swan-thumb.jpg) within a sentence.
 ````
 
 A paragraph of several images, with only spaces or line breaks between them, is unwrapped too. So is a [lightbox](/guide/plugins/lightbox) image, whose trigger button takes the paragraph's place.

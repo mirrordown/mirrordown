@@ -30,7 +30,7 @@ There is no syntax and no visible change for normal Markdown — paragraphs with
 ````markdown
 A paragraph with text.
 
-A paragraph with *emphasis* and an image ![icon](https://picsum.photos/16/16) is not empty either.
+A paragraph with *emphasis* and an image ![a swan](./assets/swan-thumb.jpg) is not empty either.
 ````
 
 > [!NOTE]
