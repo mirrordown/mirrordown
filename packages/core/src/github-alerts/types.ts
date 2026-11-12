@@ -78,8 +78,8 @@ export interface AlertOptions {
    * that appears in the data-alert attribute and CSS class.
    */
   types?: Record<string, string>;
-  /** Default display titles, keyed by canonical type. */
-  titles?: Partial<Record<AlertType, string>>;
+  /** Default display titles, keyed by canonical type: a built-in one, or one that `types` adds. */
+  titles?: Partial<Record<AlertType, string>> & Partial<Record<string, string>>;
   /** Set false to require exact case on the [!TYPE] keyword. Default: true. */
   matchCaseInsensitive?: boolean;
   /** Set false to suppress the SVG icon in the title. Default: true. */

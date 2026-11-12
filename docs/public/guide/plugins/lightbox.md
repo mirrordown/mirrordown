@@ -44,7 +44,7 @@ Add a second `!` in front of any image. Click a thumbnail below to zoom; click i
 
 In renderers without the plugin, the extra `!` renders as plain text and the image still shows.
 
-The marker is read at the start of a line, after a space, or directly after other markup. After text it is not: `Look!![…](…)` and `(!![…](…))` are a `!` and a plain image. A backslash does not turn the marker off: `\!![…](…)` is still a lightbox image.
+The marker is read at the start of a line, after a space, or directly after other markup. After text it is not: `Look!![…](…)` and `(!![…](…))` are a `!` and a plain image. The marker cannot be escaped: `\!![…](…)` and `&#33;![…](…)` are still lightbox images. For a literal `!` before a plain image, put a space between them: `! ![…](…)`.
 
 The alt text is the engine's own, in the thumbnail and the dialog alike. Markers from other plugins in it (`!![--a--](x.png)`) differ as they do for any image: markdown-it drops them, and remark and Sätteri keep the text as written.
 

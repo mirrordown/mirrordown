@@ -6,6 +6,7 @@ import type {
   Root,
   Paragraph,
   Blockquote,
+  Text,
   PhrasingContent,
   BlockContent,
   DefinitionContent,
@@ -88,6 +89,20 @@ const parseTabHeader = (line: string): ParsedTabHeader | null => {
   return { depth: percents.length, open: plus === "+", label };
 };
 
+// A tab header as written. Recognition reads text values, where an escape (`\% A`, `%\+ A`) or a character reference (`&#37; A`) has become the character it stands for; markdown-it reads the line, where those are not a header. So with the source, the text must start with a header there too. A text node without a position is one recognition rebuilt, and is taken at its word.
+const SOURCE_HEADER_RE = /^%{1,6}\+? /;
+
+const writtenTabHeader = (
+  text: Text,
+  sourceLines?: readonly string[]
+): ParsedTabHeader | null => {
+  const header = parseTabHeader(text.value);
+  const start = text.position?.start;
+  if (!header || !sourceLines || !start) return header;
+  const source = (sourceLines[start.line - 1] ?? "").slice(start.column - 1);
+  return SOURCE_HEADER_RE.test(source) ? header : null;
+};
+
 // djb2 hash — returns an unsigned 32-bit integer
 const djb2 = (str: string): number => {
   let h = 5381;
@@ -165,7 +180,7 @@ const extractHeaderPara = (
   prevDepth = 0,
   sourceLines?: readonly string[]
 ): { tabs: RawTab[]; rest: PhrasingContent[][]; restLine: number } | null => {
-  const lines = paraToLines(para);
+  const lines = paraToLines(para, sourceLines);
   const tabs: RawTab[] = [];
   let currentDepth = prevDepth;
 
@@ -173,7 +188,8 @@ const extractHeaderPara = (
     // A header's line, without the hard break that can't follow it.
     const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
-    const header = first?.type === "text" ? parseTabHeader(first.value) : null;
+    const header =
+      first?.type === "text" ? writtenTabHeader(first, sourceLines) : null;
 
     const depth = header?.depth ?? 0;
     const open = header?.open ?? false;
@@ -216,7 +232,8 @@ const extractHeaderPara = (
 // to source lines) because a group at the root ends at a blank line.
 const splitAtGroupStarts = (
   lines: PhrasingContent[][],
-  firstLine: number
+  firstLine: number,
+  sourceLines?: readonly string[]
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   let start = 0;
@@ -232,7 +249,8 @@ const splitAtGroupStarts = (
   lines.forEach((line, index) => {
     const first = line[0];
     const opens =
-      first?.type === "text" && parseTabHeader(first.value)?.depth === 1;
+      first?.type === "text" &&
+      writtenTabHeader(first, sourceLines)?.depth === 1;
     if (opens && index > start) {
       flush(index);
       start = index;
@@ -278,13 +296,15 @@ interface BQSegment {
 // (remark collapsing consecutive `% Tab\n> body` lines into one blockquote)
 // never produces standalone header paragraphs — headers are only embedded
 // inside multi-line text nodes.
-const isExplicitBQ = (bq: Blockquote): boolean =>
+const isExplicitBQ = (
+  bq: Blockquote,
+  sourceLines?: readonly string[]
+): boolean =>
   bq.children.some((child) => {
     if (child.type !== "paragraph") return false;
     const first = child.children[0];
     return (
-      first?.type === "text" &&
-      parseTabHeader(first.value.split("\n")[0] ?? "") !== null
+      first?.type === "text" && writtenTabHeader(first, sourceLines) !== null
     );
   });
 
@@ -332,13 +352,14 @@ const extractTrailingTabHeader = (
       // blockquote can lazily absorb a header line and the body lines after it.
       const lines = paraToLines(last, sourceLines);
       const at = lines.findIndex(
-        (line) => line[0]?.type === "text" && parseTabHeader(line[0].value)
+        (line) =>
+          line[0]?.type === "text" && writtenTabHeader(line[0], sourceLines)
       );
       if (at === -1) return null;
       const headerLine = headerLineContent(lines[at] ?? [], sourceLines);
       const first = headerLine[0];
       const header =
-        first?.type === "text" ? parseTabHeader(first.value) : null;
+        first?.type === "text" ? writtenTabHeader(first, sourceLines) : null;
       if (!header) return null;
       const labelText = header.label;
       const labelNodes: PhrasingContent[] = labelText
@@ -411,7 +432,7 @@ const splitBlockquote = (
       const outsidePanel =
         !markersOf || base === undefined || markersOf(index) < base;
       return first?.type === "text" && outsidePanel
-        ? parseTabHeader(first.value)
+        ? writtenTabHeader(first, sourceLines)
         : null;
     };
 
@@ -593,7 +614,7 @@ const endsAtUnmarkedLine = (
     return (
       index > 0 &&
       markers < base &&
-      !(first?.type === "text" && parseTabHeader(first.value))
+      !(first?.type === "text" && writtenTabHeader(first, sourceLines))
     );
   });
 };
@@ -767,7 +788,7 @@ export const processTabsInChildren = (
         node,
         sourceLines,
         quotes,
-        (text) => parseTabHeader(text)?.depth === 1,
+        (_, text) => writtenTabHeader(text, sourceLines)?.depth === 1,
         column
       );
       if (split) {
@@ -803,7 +824,7 @@ export const processTabsInChildren = (
 
           if (sibling.type === "blockquote") {
             const bq = sibling;
-            const explicit = isExplicitBQ(bq);
+            const explicit = isExplicitBQ(bq, sourceLines);
             const segments = splitBlockquote(bq, explicit, sourceLines, true);
             // The `>` markers of the owning tab's body lines: an inner header written with fewer belongs outside it.
             const base =
@@ -932,7 +953,7 @@ export const processTabsInChildren = (
                     continue;
                   }
                   const innerBq = b;
-                  if (!isExplicitBQ(innerBq)) {
+                  if (!isExplicitBQ(innerBq, sourceLines)) {
                     // Re-split absorbed inner blockquote to extract sibling headers
                     const innerSegs = splitBlockquote(
                       innerBq,
@@ -1057,7 +1078,11 @@ export const processTabsInChildren = (
         if (listProperties)
           list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as RootContent);
-        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
+        children.splice(
+          j,
+          0,
+          ...splitAtGroupStarts(rest, restLine, sourceLines)
+        );
         i = j;
         continue;
       }

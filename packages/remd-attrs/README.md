@@ -132,7 +132,18 @@ export default defineConfig({
 | `left`    | `string`                       | `"{"`   | Opening delimiter.                                                                                                                                                                           |
 | `right`   | `string`                       | `"}"`   | Closing delimiter.                                                                                                                                                                           |
 | `allowed` | `Array<string \| RegExp>`      | `[]`    | The attribute names a block may set. A string must equal the name, a pattern must match it. `.x` counts as `class` and `#x` as `id`. Other attributes are dropped. Empty allows every name. |
-| `rule`    | `"all" \| boolean \| string[]` | `"all"` | Where blocks are read: any of `"fence"`, `"inline"`, `"table"`, `"list"`, `"heading"`, `"hr"`, `"softbreak"` and `"block"`. `false` or `[]` reads none.                                      |
+| `rule`    | `"all" \| boolean \| string[]` | `"all"` | Where blocks are read: any of the rule names below. `false` or `[]` reads none, and a name that is no rule throws.                                      |
+
+Each rule name covers one place. A block in a place that is turned off stays as text, unless it also ends a heading, list item or paragraph whose rule is on: with `"inline"` off, `*a*{.x}` ending a paragraph puts the class on the paragraph.
+
+- `"fence"`: a block in a code fence's info string.
+- `"inline"`: a block touching the end of an inline element, such as emphasis, a link, a code span or an image.
+- `"heading"`: a block ending a heading.
+- `"table"`: a block ending a table cell, and a block in a paragraph of its own after a table.
+- `"list"`: a block ending a list item's first paragraph, which goes on the item, and a block in a paragraph of its own after a list, which goes on the list.
+- `"hr"`: a block in a paragraph of its own after a thematic break.
+- `"softbreak"`: a block on a line of its own that ends a paragraph or a setext heading.
+- `"block"`: a block ending any other paragraph.
 
 ```ts
 remarkAttrs({ allowed: ["class", "id", /^data-/] });

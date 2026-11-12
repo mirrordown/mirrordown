@@ -16,7 +16,7 @@ import { satteriSteps } from "../../packages/sat-steps/src";
 import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
 import { normalizeHtml } from "../utils/index.js";
 
-// Alerts run before steps in every engine, as the presets order them.
+// Alerts are listed before steps here, in every engine. The presets list them the other way round, alerts after steps and tabs; this file covers the order a hand-written setup can still have.
 const md = new MarkdownIt().use(githubAlerts).use(steps);
 const remark = unified()
   .use(remarkParse)
@@ -88,7 +88,7 @@ describe("steps + github-alerts: an alert nested in a body stays in the body", (
   });
 });
 
-// Known difference, pinned so a change to it is noticed. A marker directly under a header, with the body's own `>`, is the first line of the body in markdown-it, where the alerts plugin never sees a quote. In remark and Sätteri the alerts plugin runs first and has already made the quote an alert, without its marker, so steps can only leave it be: the steps end and the alert follows them. Writing the alert as a nested quote (`> > [!TIP]`) is the same in every engine.
+// Known difference of this order (alerts listed before steps), pinned so a change to it is noticed; the presets list alerts after steps, and the alerts guide says to. A marker directly under a header, with the body's own `>`, is the first line of the body in markdown-it, where the alerts plugin never sees a quote. In remark and Sätteri the alerts plugin, listed first here, has already made the quote an alert, without its marker, so steps can only leave it be: the steps end and the alert follows them. Writing the alert as a nested quote (`> > [!TIP]`) is the same in every engine.
 describe("steps + github-alerts: a marker directly under a header, with the alerts plugin", () => {
   const input = "@1. Step\n> [!TIP]\n> A tip.";
   it("markdown-it reads the body's first line", () => {
