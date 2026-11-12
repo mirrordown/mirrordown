@@ -210,7 +210,7 @@ describe("presets", () => {
   });
 
   describe("preset-remark", () => {
-    // Plain remark-gfm reads `~2~` as strikethrough before remd-sub sees it; the preset's own GFM must leave single tildes to subscript.
+    // With remark-gfm's single-tilde strikethrough on, whichever of GFM and remd-sub is added later takes `~2~`; the preset turns it off, so subscript does not depend on the order.
     it("includes GFM, configured so `~sub~` is still subscript", () => {
       const html = remark()("H~2~O and ~~gone~~");
       expect(html).toContain("H<sub>2</sub>O");

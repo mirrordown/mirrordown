@@ -4,12 +4,7 @@ import { spoiler } from "../../packages/mdit-spoiler/src";
 import { sub } from "../../packages/mdit-sub/src";
 import { normalizeHtml } from "../utils/index.js";
 
-// Regression: mdit-spoiler's replacement `text` rule must return false (not a
-// non-advancing true) when state.pos === state.posMax, or a boundary-probing
-// rule like mdit-sub's scan loops forever (older markdown-it) / throws
-// "inline rule didn't increment state.pos" (markdown-it 14). See the paired fix
-// in mdit-sub (scan `< max`, not `<= max`). Either fix alone stops the hang;
-// both are independently correct.
+// Regression: mdit-spoiler's replacement `text` rule must return false (not a non-advancing true) when state.pos === state.posMax, or a rule that probes at the boundary with `skipToken` loops forever (older markdown-it) / throws "inline rule didn't increment state.pos" (markdown-it 14). mdit-sub's rule used to probe that way when it met an unclosed `~`, which is how the hang was found. It no longer scans ahead: it returns false in silent mode and otherwise always advances past the tilde run, so these inputs now pin both rules' side of the contract.
 describe("spoiler + sub: unclosed tilde must terminate", () => {
   const md = new MarkdownIt().use(spoiler).use(sub);
   const render = (src: string) => normalizeHtml(md.render(src));
