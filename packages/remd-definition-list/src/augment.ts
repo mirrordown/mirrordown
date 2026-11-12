@@ -23,13 +23,11 @@ declare module "micromark-util-types" {
     lastBlankLine?: boolean;
     furtherBlankLines?: boolean;
     _closeFlow?: boolean;
-    hadBlankInDescription?: boolean;
   }
 
   interface Token {
     _loose?: boolean;
     _container?: boolean;
-    _prevLoose?: boolean;
     _defListIndent?: boolean;
   }
 }

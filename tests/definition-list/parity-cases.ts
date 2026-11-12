@@ -210,5 +210,42 @@ export const parityCases: ParityCase[] = [
     input: "- T\n  : D\n\n    more\n\n  after",
     expected:
       "<ul><li><dl><dt>T</dt><dd><p>D</p><p>more</p></dd></dl><p>after</p></li></ul>"
+  },
+
+  // Only a blank line between a definition's own blocks makes it loose, as for a list item. A blank line inside one of those blocks belongs to that block.
+  {
+    name: "a blank line between the items of a nested list leaves the definition tight",
+    input: "Term\n: para\n  - a\n\n  - b",
+    expected:
+      "<dl><dt>Term</dt><dd>para\n<ul><li><p>a</p></li><li><p>b</p></li></ul></dd></dl>"
+  },
+  {
+    name: "a blank line inside a nested list item leaves the definition tight",
+    input: "T\n: para\n  - a\n\n    b",
+    expected:
+      "<dl><dt>T</dt><dd>para\n<ul><li><p>a</p><p>b</p></li></ul></dd></dl>"
+  },
+  {
+    name: "a blank line inside a nested list item in a blockquote leaves the definition tight",
+    input: "> T\n> : D\n>   - a\n>\n>     b",
+    expected:
+      "<blockquote><dl><dt>T</dt><dd>D\n<ul><li><p>a</p><p>b</p></li></ul></dd></dl></blockquote>"
+  },
+  {
+    name: "a blank line inside a nested blockquote leaves the definition tight",
+    input: "T\n: para\n  > a\n  >\n  > b",
+    expected:
+      "<dl><dt>T</dt><dd>para\n<blockquote><p>a</p><p>b</p></blockquote></dd></dl>"
+  },
+  {
+    name: "a blank line between two paragraphs of a definition makes it loose",
+    input: "T\n: para\n\n  more",
+    expected: "<dl><dt>T</dt><dd><p>para</p><p>more</p></dd></dl>"
+  },
+  {
+    name: "a blank line between a paragraph and indented code makes the definition loose",
+    input: "T\n: a\n\n      code\n: D2",
+    expected:
+      "<dl><dt>T</dt><dd><p>a</p><pre><code>code\n</code></pre></dd><dd>D2</dd></dl>"
   }
 ];

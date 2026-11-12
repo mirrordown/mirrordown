@@ -145,10 +145,6 @@ function resolveDefList(
     if (event[0] === "enter" && event[1].type === tokenTypes.defList) {
       index += resolveDefList(index, events, context);
     } else if (event[0] === "exit" && event[1].type === tokenTypes.defList) {
-      // if the last description had internal blanks, mark it loose
-      if ((event[1] as FlowToken)._prevLoose && defListDescriptionToken) {
-        (defListDescriptionToken as FlowToken)._loose = true;
-      }
       index += addDescriptionExit(index, events);
       defListDescriptionToken = undefined;
       indexOffset = index - defListStart;
@@ -171,10 +167,6 @@ function resolveDefList(
       event[0] === "enter" &&
       event[1].type === tokenTypes.defListDescriptionPrefix
     ) {
-      // mark the previous description loose if it had internal blanks
-      if ((event[1] as FlowToken)._prevLoose && defListDescriptionToken) {
-        (defListDescriptionToken as FlowToken)._loose = true;
-      }
       // mark this prefix loose if preceded by a blank line. The marker's indent and container prefixes (`>`, a list item's indent) sit between the blank and the marker, so they are stepped over. The rest of a bare marker's own line reaches the flow as a blank line too, but it is the empty definition, not a blank before the next marker.
       let before = index - 1;
       while (before > 0 && ignorablePrefixTypes.has(events[before][1].type))
@@ -215,9 +207,6 @@ function resolveDefList(
 
   function addDescriptionExit(index: number, events: EventTuple[]): number {
     defListDescriptionToken!.end = clonePoint(events[index - 1][1].end);
-
-    // _prevLoose is set on the next prefix when the current description had internal blanks
-    // (handled in the enter defListDescriptionPrefix block)
 
     splice(events, index, 0, [["exit", defListDescriptionToken!, context]]);
     return 1;
@@ -487,11 +476,9 @@ function tokenizeDefListStart(
     if (code !== 58 /* : */ && code !== 126 /* ~ */) return nok(code);
 
     effects.enter(tokenTypes.defListDescriptionPrefix, {
-      _loose: this.containerState?.lastBlankLine,
-      _prevLoose: this.containerState?.hadBlankInDescription
+      _loose: this.containerState?.lastBlankLine
     });
     this.containerState!.lastBlankLine = undefined;
-    this.containerState!.hadBlankInDescription = undefined;
     effects.enter(tokenTypes.defListDescriptionMarker);
     effects.consume(code);
     effects.exit(tokenTypes.defListDescriptionMarker);
@@ -576,16 +563,9 @@ function tokenizeDefListContinuation(
       this.containerState!.furtherBlankLines = undefined;
       return notInCurrentItem(code);
     }
-    const hadBlank = this.containerState!.lastBlankLine;
     this.containerState!.furtherBlankLines = undefined;
     this.containerState!.lastBlankLine = undefined;
-    // indentOk is the success branch of the attempt â€” only reached when indented
-    // continuation is accepted, meaning the preceding blank was genuinely internal
-    const indentOk = (code: number | null): State | undefined => {
-      if (hadBlank) this.containerState!.hadBlankInDescription = true;
-      return ok(code);
-    };
-    return effects.attempt(indentConstruct, indentOk, notInCurrentItem)(code);
+    return effects.attempt(indentConstruct, ok, notInCurrentItem)(code);
   };
 
   return effects.check(blankLine, onBlank, notBlank);
@@ -645,9 +625,5 @@ function tokenizeDefListDescriptionPrefixWhitespace(
 }
 
 function tokenizeDefListEnd(this: TokenizeContext, effects: Effects): void {
-  const defListToken = effects.exit(tokenTypes.defList);
-  if (this.containerState?.hadBlankInDescription) {
-    (defListToken as FlowToken)._prevLoose = true;
-    this.containerState.hadBlankInDescription = undefined;
-  }
+  effects.exit(tokenTypes.defList);
 }

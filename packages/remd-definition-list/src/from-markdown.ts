@@ -58,7 +58,18 @@ function enterDefListDescription(this: CompileContext, token: Token): void {
   );
 }
 
+// A definition is loose when a blank line comes before its marker (`_loose`, from the tokenizer) or separates two of its own blocks, as for a list item. A blank line inside one of those blocks (between the items of a nested list, in a fenced code block) is that block's business, so the blocks' positions are compared rather than counting blank lines seen while the definition was open.
 function exitDefListDescription(this: CompileContext, token: Token): void {
+  const node = this.stack[
+    this.stack.length - 1
+  ] as unknown as DefinitionDescription;
+  const blocks = node.children;
+  for (let i = 1; i < blocks.length && !node.spread; i++) {
+    const above = blocks[i - 1].position;
+    const below = blocks[i].position;
+    if (above && below && below.start.line - above.end.line > 1)
+      node.spread = true;
+  }
   this.exit(token);
 }
 

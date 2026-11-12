@@ -69,4 +69,17 @@ describe("definition-list/remd", () => {
       expect(html.startsWith(start)).toBe(true);
     }
   );
+
+  // A blank line inside a fenced code block is code, not a gap between the definition's blocks. Not in the parity table only because markdown-it writes no line break between a hidden paragraph and a `<pre>` (in a tight list item too), which the normalizer does not level.
+  it("keeps a definition tight when its fenced code block holds a blank line", () => {
+    expect(
+      normalizeHtml(
+        String(
+          htmlProcessor.processSync("Term\n: para\n  ```\n  a\n\n  b\n  ```")
+        )
+      )
+    ).toBe(
+      "<dl><dt>Term</dt><dd>para\n<pre><code>a\n\nb\n</code></pre></dd></dl>"
+    );
+  });
 });
