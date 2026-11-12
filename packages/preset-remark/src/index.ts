@@ -164,8 +164,6 @@ export const mirrordown = (
       ...on(options.prompt !== false, remarkPrompt),
       // Before abbr and the delimiter plugins: it rebuilds each ruby from its source text, so what an earlier plugin did inside the braces would be lost.
       ...configured(options.ruby, remarkRuby),
-      // Before the delimiter plugins, alerts and attrs: a definition is one plain line of text, which they would break up or take a piece of.
-      ...on(options.abbr, remarkAbbr),
       ...on(options.definitionList, remarkDefinitionList),
       // Before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it.
       ...on(options.kbd, remarkKbd),
@@ -181,6 +179,8 @@ export const mirrordown = (
       ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
+      // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
+      ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.
       ...on(options.caption, remarkCaption)
     ],

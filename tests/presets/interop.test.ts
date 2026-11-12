@@ -187,30 +187,28 @@ describe("presets: the plugins together", () => {
 
   // Known differences no order of plugins removes. Each is pinned so a change in any engine shows up here; when one is fixed in its plugin, move the case to the groups above.
   describe("pinned: where the engines still differ", () => {
-    // markdown-it reads a definition as a block and replaces terms after inline parsing. remark and Sätteri do both in one pass, which has to run before the plugins that would format a definition's own text, and so before alerts and attrs.
-    it("an abbreviation equal to an alert's keyword stops the alert in remark and Sätteri", () => {
+    // The next two are no longer differences, kept here as the cases that used to be. markdown-it replaces terms after inline parsing, so an alert's keyword and an attribute block are read before a term in them is wrapped. remark's and Sätteri's abbr once had to run first, while a definition was still one plain line of text; it reads definitions from their source now, so the presets run it after alerts and attrs, in markdown-it's order.
+    it("an abbreviation equal to an alert's keyword leaves the alert an alert, in every engine", () => {
       const input = "*[NOTE]: A note abbr\n\n> [!NOTE]\n> body NOTE";
       const term = '<abbr title="A note abbr">NOTE</abbr>';
-      expect(md(input)).toBe(
-        alert("note", "Note", "Note", `<p>body ${term}</p>`)
-      );
-      const blockquote = `<blockquote><p>[!${term}]\nbody ${term}</p></blockquote>`;
-      expect(rm(input)).toBe(blockquote);
-      expect(sat(input)).toBe(blockquote);
+      const expected = alert("note", "Note", "Note", `<p>body ${term}</p>`);
+      expect(md(input)).toBe(expected);
+      expect(rm(input)).toBe(expected);
+      expect(sat(input)).toBe(expected);
     });
 
-    it("a term inside an attribute block keeps the block from being read in remark", () => {
+    it("a term inside an attribute block is part of the block, in every engine", () => {
       const definition = "*[HTML]: Hyper Text\n\n";
       const term = '<abbr title="Hyper Text">HTML</abbr>';
       const paragraph = `${definition}Text HTML {.HTML}`;
       expect(md(paragraph)).toBe(`<p class="HTML">Text ${term}</p>`);
       expect(sat(paragraph)).toBe(md(paragraph));
-      expect(rm(paragraph)).toBe(`<p>Text ${term} {.${term}}</p>`);
+      expect(rm(paragraph)).toBe(md(paragraph));
 
       const value = `${definition}Text {data-x="HTML"}`;
       expect(md(value)).toBe('<p data-x="HTML">Text</p>');
       expect(sat(value)).toBe(md(value));
-      expect(rm(value)).toBe(`<p>Text {data-x="${term}"}</p>`);
+      expect(rm(value)).toBe(md(value));
     });
 
     // No longer a difference, kept here as the case that used to be one. remark parses a ruby with the document and Sätteri's ruby plugin runs first, so by the time abbr runs the definition is not one plain line of text. abbr reads a definition from its source, as markdown-it does, so what the title holds does not matter.
