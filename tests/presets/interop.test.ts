@@ -213,14 +213,13 @@ describe("presets: the plugins together", () => {
       expect(rm(value)).toBe(`<p>Text {data-x="${term}"}</p>`);
     });
 
-    // remark parses a ruby with the document and Sätteri's ruby plugin has to run first, so in both the definition is no longer one plain line of text by the time abbr reads it.
-    it("a definition whose title holds a ruby is not a definition in remark and Sätteri", () => {
+    // No longer a difference, kept here as the case that used to be one. remark parses a ruby with the document and Sätteri's ruby plugin runs first, so by the time abbr runs the definition is not one plain line of text. abbr reads a definition from its source, as markdown-it does, so what the title holds does not matter.
+    it("a definition whose title holds a ruby is still a definition, in every engine", () => {
       const input = "*[a]: Hyper {x|y}\n\na z";
-      expect(md(input)).toBe('<p><abbr title="Hyper {x|y}">a</abbr> z</p>');
-      const paragraphs =
-        "<p>*[a]: Hyper <ruby>x<rt>y</rt></ruby></p><p>a z</p>";
-      expect(rm(input)).toBe(paragraphs);
-      expect(sat(input)).toBe(paragraphs);
+      const defined = '<p><abbr title="Hyper {x|y}">a</abbr> z</p>';
+      expect(md(input)).toBe(defined);
+      expect(rm(input)).toBe(defined);
+      expect(sat(input)).toBe(defined);
     });
 
     // markdown-it has no footnotes of its own and the preset adds no dependency for them: `[^1]: Note.` is a link reference definition there.
