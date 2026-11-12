@@ -135,6 +135,7 @@ function resolveDefList(
   let indexOffset = 0;
   let defListDescriptionToken: Token | undefined;
   let expectFirstDescription = true;
+  let lastMarkerLine: number | undefined;
   let index = defListStart + 1;
   index += resolveDefinitionTermTo(defListStart, events);
 
@@ -144,10 +145,6 @@ function resolveDefList(
     if (event[0] === "enter" && event[1].type === tokenTypes.defList) {
       index += resolveDefList(index, events, context);
     } else if (event[0] === "exit" && event[1].type === tokenTypes.defList) {
-      // if the last description had internal blanks, mark it loose
-      if ((event[1] as FlowToken)._prevLoose && defListDescriptionToken) {
-        (defListDescriptionToken as FlowToken)._loose = true;
-      }
       index += addDescriptionExit(index, events);
       defListDescriptionToken = undefined;
       indexOffset = index - defListStart;
@@ -170,20 +167,22 @@ function resolveDefList(
       event[0] === "enter" &&
       event[1].type === tokenTypes.defListDescriptionPrefix
     ) {
-      // mark the previous description loose if it had internal blanks
-      if ((event[1] as FlowToken)._prevLoose && defListDescriptionToken) {
-        (defListDescriptionToken as FlowToken)._loose = true;
+      // mark this prefix loose if preceded by a blank line. The marker's indent and container prefixes (`>`, a list item's indent) sit between the blank and the marker, so they are stepped over. The rest of a bare marker's own line reaches the flow as a blank line too, but it is the empty definition, not a blank before the next marker.
+      let before = index - 1;
+      while (before > 0 && ignorablePrefixTypes.has(events[before][1].type))
+        before--;
+      let blank: Token | undefined = events[before][1];
+      if (blank.type === "chunkFlow") {
+        const flowEvents = (blank as FlowToken)._tokenizer?.events;
+        blank = flowEvents?.[flowEvents.length - 1][1];
       }
-      // mark this prefix loose if preceded by a blank line (blank between term and first dd)
-      if (events[index - 1][1].type === "lineEndingBlank") {
+      if (
+        blank?.type === "lineEndingBlank" &&
+        blank.start.line !== lastMarkerLine
+      ) {
         (event[1] as FlowToken)._loose = true;
-      } else if (events[index - 1][1].type === "chunkFlow") {
-        const flowEvents = (events[index - 1][1] as FlowToken)._tokenizer
-          ?.events;
-        if (flowEvents?.[flowEvents.length - 1][1].type === "lineEndingBlank") {
-          (event[1] as FlowToken)._loose = true;
-        }
       }
+      lastMarkerLine = event[1].start.line;
     }
 
     index++;
@@ -208,9 +207,6 @@ function resolveDefList(
 
   function addDescriptionExit(index: number, events: EventTuple[]): number {
     defListDescriptionToken!.end = clonePoint(events[index - 1][1].end);
-
-    // _prevLoose is set on the next prefix when the current description had internal blanks
-    // (handled in the enter defListDescriptionPrefix block)
 
     splice(events, index, 0, [["exit", defListDescriptionToken!, context]]);
     return 1;
@@ -248,11 +244,13 @@ function createDefTermEvent(
 
   for (let i = chunkFlowIndex; i >= 0; i--) {
     const event = events[i];
-    if (event[1].type !== "chunkFlow") {
+    if (event[1].start.offset < paragraphInfo.startOffset) {
       newDefListStartIndex = i + 1;
       break;
     }
-    if (event[1].start.offset < paragraphInfo.startOffset) {
+    // A container's prefix on a blank line between the term and its marker (`>` in a blockquote) is not the term's start: the term's own chunk lies behind it
+    if (ignorablePrefixTypes.has(event[1].type)) continue;
+    if (event[1].type !== "chunkFlow") {
       newDefListStartIndex = i + 1;
       break;
     }
@@ -355,7 +353,12 @@ function innermostContainerContinued(
   const needed = open.filter((type) => continuationTypes[type] === types);
   let continued = 0;
   for (let i = lastFlowIndex + 1; i < events.length; i++) {
-    if (events[i][0] === "enter" && types.has(events[i][1].type)) continued++;
+    if (
+      events[i][0] === "enter" &&
+      types.has(events[i][1].type) &&
+      !events[i][1]._defListIndent
+    )
+      continued++;
   }
   return continued >= needed.length;
 }
@@ -473,11 +476,9 @@ function tokenizeDefListStart(
     if (code !== 58 /* : */ && code !== 126 /* ~ */) return nok(code);
 
     effects.enter(tokenTypes.defListDescriptionPrefix, {
-      _loose: this.containerState?.lastBlankLine,
-      _prevLoose: this.containerState?.hadBlankInDescription
+      _loose: this.containerState?.lastBlankLine
     });
     this.containerState!.lastBlankLine = undefined;
-    this.containerState!.hadBlankInDescription = undefined;
     effects.enter(tokenTypes.defListDescriptionMarker);
     effects.consume(code);
     effects.exit(tokenTypes.defListDescriptionMarker);
@@ -562,16 +563,9 @@ function tokenizeDefListContinuation(
       this.containerState!.furtherBlankLines = undefined;
       return notInCurrentItem(code);
     }
-    const hadBlank = this.containerState!.lastBlankLine;
     this.containerState!.furtherBlankLines = undefined;
     this.containerState!.lastBlankLine = undefined;
-    // indentOk is the success branch of the attempt â€” only reached when indented
-    // continuation is accepted, meaning the preceding blank was genuinely internal
-    const indentOk = (code: number | null): State | undefined => {
-      if (hadBlank) this.containerState!.hadBlankInDescription = true;
-      return ok(code);
-    };
-    return effects.attempt(indentConstruct, indentOk, notInCurrentItem)(code);
+    return effects.attempt(indentConstruct, ok, notInCurrentItem)(code);
   };
 
   return effects.check(blankLine, onBlank, notBlank);
@@ -585,15 +579,23 @@ function tokenizeIndent(
 ): State {
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
-    return tail?.[1].type === "linePrefix" &&
+    if (
+      this.events.length > eventsBefore &&
+      tail[1].type === "listItemIndent" &&
       tail[2].sliceSerialize(tail[1], true).length === this.containerState!.size
-      ? ok(code)
-      : nok(code);
+    ) {
+      tail[1]._defListIndent = true;
+      return ok(code);
+    }
+    return nok(code);
   };
+  // An enclosing list item leaves a `listItemIndent` of its own on the line, so only a token made here counts
+  const eventsBefore = this.events.length;
+  // Not a `linePrefix`: a construct that starts right after it (a nested marker, a list item) measures its own indent from a tail `linePrefix`, and must not take this definition's continuation indent for it. micromark's list has `listItemIndent` for the same reason, and that type is reused, flagged as ours, because mdast-util-from-markdown only steps over the indent types it knows when it decides whether a list is loose.
   return factorySpace(
     effects,
     afterPrefix,
-    "linePrefix",
+    "listItemIndent",
     this.containerState!.size! + 1
   );
 }
@@ -623,9 +625,5 @@ function tokenizeDefListDescriptionPrefixWhitespace(
 }
 
 function tokenizeDefListEnd(this: TokenizeContext, effects: Effects): void {
-  const defListToken = effects.exit(tokenTypes.defList);
-  if (this.containerState?.hadBlankInDescription) {
-    (defListToken as FlowToken)._prevLoose = true;
-    this.containerState.hadBlankInDescription = undefined;
-  }
+  effects.exit(tokenTypes.defList);
 }

@@ -95,9 +95,12 @@ function getSubtokensForDefTerm(termFlowToken: FlowToken): {
         else if (tmpEvent[0] === "exit") contentExitIndex = i;
         break;
       default:
+        // A line ending belongs to the chunk it starts in. Its end can lie past the chunk's: inside a container the flow skips the next line's prefix (`>`), and the token runs up to where the next chunk begins.
         if (
           termFlowToken.start.offset <= tmpToken.start.offset &&
-          tmpToken.end.offset <= termFlowToken.end.offset
+          (tmpToken.end.offset <= termFlowToken.end.offset ||
+            (tmpToken.type === "lineEnding" &&
+              tmpToken.start.offset < termFlowToken.end.offset))
         ) {
           if (tmpToken.type === "chunkText") {
             const chunkToken = tmpToken as FlowToken;

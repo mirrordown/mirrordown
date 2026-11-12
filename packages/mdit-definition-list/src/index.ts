@@ -8,8 +8,9 @@ const SPACE = 32;
 const TAB = 9;
 const TAB_SIZE = 4;
 
-const expandTabStop = (offset: number): number =>
-  offset + TAB_SIZE - (offset % TAB_SIZE);
+// Tab stops are absolute columns, so the columns a container prefix (`> `) took from the line count too
+const expandTabStop = (offset: number, containerColumns: number): number =>
+  offset + TAB_SIZE - ((offset + containerColumns) % TAB_SIZE);
 
 // Search `[:~][\n ]`, returns next pos after marker on success or -1 on fail.
 const checkAndSkipMarker = (state: StateBlock, line: number): number => {
@@ -17,6 +18,9 @@ const checkAndSkipMarker = (state: StateBlock, line: number): number => {
   const max = state.eMarks[line];
 
   if (start >= max) return -1;
+
+  // Four or more columns past the block's indent is indented code or a paragraph continuation, never a marker
+  if (state.sCount[line] - state.blkIndent >= 4) return -1;
 
   const marker = state.src.charCodeAt(start++);
   if (marker !== TILDE && marker !== COLON) return -1;
@@ -85,6 +89,32 @@ const markTightParagraphs = (state: StateBlock, index: number): void => {
       i += 2;
     }
   }
+};
+
+// The first term is a paragraph start for free: every rule registered ahead of this one has already declined its line. A later term is read inside the loop, so the same rules are asked here, in validation mode, whether the line starts a block of theirs (a heading, fence, list item, thematic break, ...). A rule that ignores validation mode (`code` does) may push tokens or move the line, so both are put back.
+const startsAnotherBlock = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  const tokenCount = state.tokens.length;
+  const savedLine = state.line;
+  const savedLevel = state.level;
+  let found = false;
+
+  for (const rule of state.md.block.ruler.getRules("")) {
+    if (rule === dlRule) break;
+    if (rule(state, line, endLine, true)) {
+      found = true;
+      break;
+    }
+  }
+
+  state.tokens.length = tokenCount;
+  state.line = savedLine;
+  state.level = savedLevel;
+
+  return found;
 };
 
 const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
@@ -172,7 +202,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
       while (pos < max) {
         const ch = state.src.charCodeAt(pos);
 
-        if (ch === TAB) offset = expandTabStop(offset);
+        if (ch === TAB) offset = expandTabStop(offset, state.bsCount[ddLine]);
         else if (ch === SPACE) offset++;
         else break;
 
@@ -245,6 +275,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
     if (contentStart < 0) break;
 
+    if (startsAnotherBlock(state, dtLine, endLine)) break;
+
     // go to the next loop iteration:
     // insert DT and DD tags and repeat checking
   }
@@ -262,7 +294,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
 /** markdown-it plugin for definition lists, rendering `<dl>`, `<dt>`, and `<dd>` elements. */
 export const dl: PluginSimple = (md) => {
-  md.block.ruler.before("paragraph", "dl", dlRule, {
+  // Ahead of `lheading`, which would otherwise read `Term` / `: Def` / `===` as a setext heading: it scans past the marker line because this rule only terminates paragraphs inside a definition
+  md.block.ruler.before("lheading", "dl", dlRule, {
     alt: ["paragraph", "reference", "blockquote"]
   });
 };
