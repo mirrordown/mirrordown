@@ -42,17 +42,33 @@ export const createAlertResolver = (
     icons = true,
     containerClass = `markdown-alert`
   } = options;
-  const aliasMap: Record<string, string> = { ...ALERT_ALIASES, ...extraTypes };
+  // Own properties only, wherever a keyword or type from the document is the key: `constructor` and `toString` are members of every object, and are not alerts.
+  const own = <V>(
+    map: Partial<Record<string, V>>,
+    key: string
+  ): V | undefined => (Object.hasOwn(map, key) ? map[key] : undefined);
+  // A keyword is lowercased before the lookup, so the keys of `options.types` are too.
+  const aliasMap: Record<string, string> = {
+    ...ALERT_ALIASES,
+    ...(matchCaseInsensitive
+      ? Object.fromEntries(
+          Object.entries(extraTypes).map(([key, type]) => [
+            key.toLowerCase(),
+            type
+          ])
+        )
+      : extraTypes)
+  };
   // Titles may name user-defined types from `options.types` too.
   const customTitles: Partial<Record<string, string>> = titles;
   const isAlertType = (type: string): type is AlertType =>
-    type in DEFAULT_TITLE;
+    Object.hasOwn(DEFAULT_TITLE, type);
   return {
     resolve: (keyword) =>
-      aliasMap[matchCaseInsensitive ? keyword.toLowerCase() : keyword],
+      own(aliasMap, matchCaseInsensitive ? keyword.toLowerCase() : keyword),
     // A user-defined type may have no default title; capitalize the keyword as a last resort.
     titleFor: (type) =>
-      customTitles[type] ??
+      own(customTitles, type) ??
       (isAlertType(type) ? DEFAULT_TITLE[type] : undefined) ??
       capitalize(type),
     iconFor: (type) => (icons && isAlertType(type) ? ICONS[type] : ``),
