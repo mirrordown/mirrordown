@@ -5,7 +5,10 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
-import { parseAbbreviations } from "../../packages/core/src";
+import {
+  createAbbreviationScan,
+  parseAbbreviations
+} from "../../packages/core/src";
 import { abbr } from "../../packages/mdit-abbr/src";
 import { remarkAbbr } from "../../packages/remd-abbr/src";
 import { satteriAbbr } from "../../packages/sat-abbr/src";
@@ -194,5 +197,41 @@ describe("abbr: a definition line directly against other text (engines differ)",
     expect(mdit(input)).toBe(lineBased);
     expect(remd(input)).toBe(paragraphBased);
     expect(sat(input)).toBe(paragraphBased);
+  });
+});
+
+// A term is what stands between the brackets without the space around it, and a definition needs a term and a title. markdown-it kept the space (so ` HTML ` never matched) while remark and Sätteri matched it with the space inside the `<abbr>`, and a blank term wrapped single spaces. The scan is also given a table by its callers: one with no term to look for builds a pattern that matches the empty string at every boundary.
+describe("abbr: a definition needs a term and a title, without the space around them", () => {
+  describe.each(engines)("%s", (_engine, render) => {
+    it("takes the term without the space inside the brackets", () => {
+      expect(render(`*[ HTML ]: t\n\nx HTML y`)).toBe(
+        `<p>x <abbr title="t">HTML</abbr> y</p>`
+      );
+    });
+
+    it("takes the title without the space before it, a tab included", () => {
+      expect(render(`*[RD]:\tResearch\n\nRD`)).toBe(
+        `<p><abbr title="Research">RD</abbr></p>`
+      );
+    });
+
+    it("prints a line whose term is blank, and wraps no spaces", () => {
+      expect(render(`*[ ]: x\n\na b c. (d)`)).toBe(
+        `<p>*[ ]: x</p><p>a b c. (d)</p>`
+      );
+    });
+  });
+
+  it("finds nothing in any text when the table has no term to look for", () => {
+    expect(createAbbreviationScan(new Map())(`a b (c)`)).toBeUndefined();
+    expect(
+      createAbbreviationScan(new Map([[``, `x`]]))(`a b (c)`)
+    ).toBeUndefined();
+  });
+
+  it("reads a paragraph with a blank term or a blank title as ordinary text", () => {
+    expect(parseAbbreviations(`*[ ]: x`)).toBeUndefined();
+    expect(parseAbbreviations(`*[A]: one\n*[B]: \u00a0`)).toBeUndefined();
+    expect(parseAbbreviations(`*[ A ]:  one `)).toEqual([[`A`, `one`]]);
   });
 });

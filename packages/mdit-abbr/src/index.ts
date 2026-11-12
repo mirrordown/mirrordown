@@ -57,13 +57,11 @@ const abbrDefinition: RuleBlock = (
 
   const label = state.src
     .slice(labelStart, labelEnd)
-    .replaceAll(ESCAPE_RE, "$1");
+    .replaceAll(ESCAPE_RE, "$1")
+    .trim();
+  const title = state.src.slice(labelEnd + 2, max).trim();
 
-  pos = labelEnd + 2;
-  const titleStart = state.skipSpaces(pos);
-  const titleEnd = state.skipSpacesBack(max, titleStart);
-  const title = state.src.slice(titleStart, titleEnd);
-
+  // A blank term or a blank title is not a definition, and the space around either is not part of it, as in remark and Sätteri.
   if (label.length === 0 || title.length === 0) return false;
   // Asked only now: in silent mode the question is whether this line ends the paragraph above it, and a line with no term or no title is not a definition.
   if (silent) return true;

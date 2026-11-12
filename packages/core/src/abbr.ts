@@ -12,8 +12,11 @@ export const parseAbbreviations = (
   const definitions: Array<[string, string]> = [];
   for (const line of text.split(/\r\n|\r|\n/)) {
     const match = DEFINITION.exec(line);
-    if (!match) return undefined;
-    definitions.push([match[1] ?? ``, (match[2] ?? ``).trim()]);
+    const term = match?.[1]?.trim();
+    const title = match?.[2]?.trim();
+    // A line with a blank term or a blank title is not a definition.
+    if (!term || !title) return undefined;
+    definitions.push([term, title]);
   }
   return definitions;
 };
@@ -33,8 +36,11 @@ export const createAbbreviationScan = (
   abbreviations: ReadonlyMap<string, string>
 ): ((value: string) => AbbreviationPart[] | undefined) => {
   const terms = [...abbreviations.keys()]
+    .filter((term) => term.length > 0)
     .sort((a, b) => b.length - a.length)
     .map((term) => term.replace(REGEX_SPECIAL, `\\$&`));
+  // Without a term the pattern would match the empty string at every boundary.
+  if (terms.length === 0) return () => undefined;
   const pattern = new RegExp(
     `(^|${BOUNDARY})(${terms.join(`|`)})(?:$|${BOUNDARY})`,
     `gu`
