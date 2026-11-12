@@ -127,5 +127,57 @@ export const parityCases: ParityCase[] = [
     name: "a tab after the marker at the top level sets the content column to the tab stop",
     input: "T\n:\tD\n\n  more",
     expected: "<dl><dt>T</dt><dd>D</dd></dl><p>more</p>"
+  },
+
+  // A blank line before the marker makes the definition loose wherever the marker sits: its own indent, or the indent of a list item or an enclosing definition, does not hide the blank.
+  {
+    name: "a blank line before an indented marker makes the definition loose",
+    input: "T\n\n  : D",
+    expected: "<dl><dt>T</dt><dd><p>D</p></dd></dl>"
+  },
+  {
+    name: "a blank line before a marker in a bullet list item makes the definition loose",
+    input: "- Term\n\n  : Def",
+    expected: "<ul><li><dl><dt>Term</dt><dd><p>Def</p></dd></dl></li></ul>"
+  },
+  {
+    name: "a blank line before a marker in an ordered list item makes the definition loose",
+    input: "1. Term\n\n   : Def",
+    expected: "<ol><li><dl><dt>Term</dt><dd><p>Def</p></dd></dl></li></ol>"
+  },
+  {
+    name: "a blank line before a nested marker makes the nested definition loose",
+    input: "T\n: D\n\n  : D2",
+    expected:
+      "<dl><dt>T</dt><dd><dl><dt>D</dt><dd><p>D2</p></dd></dl></dd></dl>"
+  },
+  {
+    name: "a blank line before a nested marker after a nested term makes it loose",
+    input: "T\n: A\n\n  B\n\n  : C",
+    expected:
+      "<dl><dt>T</dt><dd><p>A</p><dl><dt>B</dt><dd><p>C</p></dd></dl></dd></dl>"
+  },
+  {
+    name: "a blank line before a later term's marker in a blockquote makes it loose",
+    input: "> T1\n> : D1\n>\n> T2\n>\n> : D2",
+    expected:
+      "<blockquote><dl><dt>T1</dt><dd>D1</dd><dt>T2</dt><dd><p>D2</p></dd></dl></blockquote>"
+  },
+
+  // An empty definition is not a blank line: the definition after it stays tight unless a real blank line separates the two markers.
+  {
+    name: "the definition after a bare marker stays tight",
+    input: "T\n:\n: D",
+    expected: "<dl><dt>T</dt><dd></dd><dd>D</dd></dl>"
+  },
+  {
+    name: "the definition after a marker followed only by spaces stays tight",
+    input: "T\n:   \n: D",
+    expected: "<dl><dt>T</dt><dd></dd><dd>D</dd></dl>"
+  },
+  {
+    name: "a blank line before a later definition still makes it loose",
+    input: "T\n: A\n\n: D",
+    expected: "<dl><dt>T</dt><dd>A</dd><dd><p>D</p></dd></dl>"
   }
 ];
