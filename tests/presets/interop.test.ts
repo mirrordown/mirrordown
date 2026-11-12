@@ -113,6 +113,34 @@ describe("presets: the plugins together", () => {
     });
   });
 
+  // Sätteri's tabs plugin writes a label and its panel's `aria-label` when it runs, from the label as it is then, so it has to run after the inline plugins. In remark and markdown-it the label is read later; the case is the same for all three.
+  describe("a tab's label is read after the inline plugins have formatted it", () => {
+    it("formats the label and names the panel with its text", () => {
+      const html = rendered(
+        "% ==Hot== [[K]] tab\n> body\n% {漢字|かんじ} ||s||\n> x"
+      );
+      expect(html).toContain("<mark>Hot</mark> <kbd>K</kbd> tab</label>");
+      expect(html).toContain(
+        `<ruby>漢字<rt>かんじ</rt></ruby> ${spoiler("s")}</label>`
+      );
+      expect(html).toContain('aria-label="Hot K tab"');
+      expect(html).toContain('aria-label="漢字かんじ s"');
+    });
+  });
+
+  // A prompt's preview is its text rendered as part of the page. remark and Sätteri build it in a plugin of its own, which has to run before the inline plugins for them to reach the preview.
+  describe("a prompt's preview is formatted like the rest of the page", () => {
+    it("applies the inline plugins inside it", () => {
+      expect(
+        rendered(
+          "```prompt\nSay ==hi== to {漢字|かんじ} with [[K]] --x-- ++y++.\n```"
+        )
+      ).toContain(
+        "<p>Say <mark>hi</mark> to <ruby>漢字<rt>かんじ</rt></ruby> with <kbd>K</kbd> <del>x</del> <ins>y</ins>.</p>"
+      );
+    });
+  });
+
   // markdown-it claims a key when the parser reaches `[[`, so delimiters inside it never pair with ones outside. remark and Sätteri match that only when kbd runs before the plugins whose delimiters could cross the brackets.
   describe("a key's brackets isolate the delimiters inside it", () => {
     it.each([
