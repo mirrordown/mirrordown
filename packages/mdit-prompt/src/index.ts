@@ -34,6 +34,8 @@ interface PromptMeta {
 // A preview's link reference definitions, by each of its inline tokens: they are the prompt's own, as in remark and Sätteri, where a preview is a document of its own.
 type References = Record<string, unknown> | undefined;
 const REFERENCES = new WeakMap<Token, References>();
+// The type a preview's inline token carries while markdown-it's `inline` rule runs.
+const HELD = `prompt_inline`;
 
 const isPrompt = (info: string): boolean =>
   info.trim().split(/\s+/)[0] === PROMPT_LANGUAGE;
@@ -82,12 +84,18 @@ export const prompt: PluginWithOptions<PromptOptions> = (md, options = {}) => {
     state.tokens = tokens;
   });
 
-  // markdown-it's own `inline` rule, which resolves every link against one set of definitions, replaced by one that reads a preview's text against the preview's: a prompt can't link through a definition on the page, nor the page through a prompt's.
-  md.core.ruler.at(`inline`, (state) => {
+  // markdown-it's `inline` rule resolves every link against one set of definitions. A preview's text is read against the preview's instead, so a prompt can't link through a definition on the page, nor the page through a prompt's. Two rules around markdown-it's own do it, leaving that rule as it is (and as any other plugin left it): the first keeps a preview's inline tokens out of its way, the second parses them and gives them their type back before the rules that follow look for inline tokens.
+  md.core.ruler.before(`inline`, `prompt_inline_hold`, (state) => {
     for (const token of state.tokens) {
-      if (token.type !== `inline`) continue;
+      if (REFERENCES.has(token)) token.type = HELD;
+    }
+  });
+  md.core.ruler.after(`inline`, `prompt_inline`, (state) => {
+    for (const token of state.tokens) {
+      if (token.type !== HELD) continue;
+      token.type = `inline`;
       const page: References = state.env.references;
-      if (REFERENCES.has(token)) state.env.references = REFERENCES.get(token);
+      state.env.references = REFERENCES.get(token);
       md.inline.parse(token.content, md, state.env, (token.children ??= []));
       state.env.references = page;
     }
