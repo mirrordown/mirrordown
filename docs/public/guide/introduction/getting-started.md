@@ -10,9 +10,9 @@ root: true
 
 ## What is @mirrordown/markdown?
 
-`@mirrordown/markdown` is a collection of markdown syntax extensions for the [unified](https://unifiedjs.com) and [markdown-it](https://github.com/markdown-it/markdown-it) ecosystems. Each plugin is independently installable and adds a specific syntax enhancement to your markdown authoring experience — from inline formatting like `<del>` and `<ins>`, to rich block-level components like tabbed code groups and step-by-step guides.
+`@mirrordown/markdown` is a collection of markdown syntax extensions for the [unified](https://unifiedjs.com), [markdown-it](https://github.com/markdown-it/markdown-it) and [Sätteri](https://github.com/bruits/satteri) ecosystems. Each plugin is independently installable and adds a specific syntax enhancement to your markdown authoring experience — from inline formatting like `<del>` and `<ins>`, to rich block-level components like tabbed code groups and step-by-step guides.
 
-The plugins are designed to work with [Astro](https://astro.build), [VitePress](https://vitepress.dev), and any toolchain built on [remark](https://github.com/remarkjs/remark) + [rehype](https://github.com/rehypejs/rehype).
+The plugins are designed to work with [Astro](https://astro.build), [VitePress](https://vitepress.dev), and any toolchain built on [remark](https://github.com/remarkjs/remark) + [rehype](https://github.com/rehypejs/rehype), markdown-it or Sätteri.
 
 ## Why these plugins?
 
@@ -52,11 +52,20 @@ import { mirrordown } from "@mirrordown/preset-remark";
 
 export default defineConfig({
   markdown: {
-    // Astro highlights code before the plugins run; mermaid diagrams render instead.
-    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid"] },
+    // Astro highlights code before the plugins run; mermaid diagrams and file trees render instead.
+    syntaxHighlight: { type: "shiki", excludeLangs: ["mermaid", "filetree"] },
     processor: unified(mirrordown({ lightbox: false })),
   },
 });
+```
+
+With Sätteri, the preset is the options `markdownToHtml` takes, and Astro's `satteri()` processor takes them too:
+
+```ts
+import { markdownToHtml } from "satteri";
+import { mirrordown } from "@mirrordown/preset-satteri";
+
+const { html } = markdownToHtml(source, mirrordown({ lightbox: false }));
 ```
 
 ## Basic Setup (Astro)
@@ -72,7 +81,7 @@ import { remarkSteps, stepsHastHandlers } from "@mirrordown/remd-steps";
 
 export default defineConfig({
   markdown: {
-    remarkPlugins: [remarkDel, remarkKbd, remarkTabs, remarkSteps],
+    remarkPlugins: [remarkKbd, remarkDel, remarkSteps, remarkTabs],
     remarkRehype: {
       handlers: {
         ...tabsHastHandlers,
@@ -82,6 +91,8 @@ export default defineConfig({
   },
 });
 ```
+
+The order of the list matters for some plugins: here kbd comes before del, so a key's brackets keep the `--` inside them, and tabs after the inline plugins. Each plugin's guide says where it goes, and the presets order the whole suite for you.
 
 Plugins that produce block-level HTML elements (tabs, steps, alerts) also need their stylesheet imported in your layout:
 
