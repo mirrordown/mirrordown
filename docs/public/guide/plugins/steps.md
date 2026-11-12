@@ -108,7 +108,9 @@ Use `@@` to nest steps inside a parent step:
 
 - Steps are numbered in the order they are written: the number in `@N.` is not read, so `@1.` on every step, or `@3.` after `@1.`, renders 1, 2, 3.
 - A blank line inside a body needs the body's `>`. Written without it, the blank line ends the blocks before it (a list or a code fence does not continue across it), though the body itself goes on with the next `>` line.
-- A line that is neither a header nor a `>` line ends the steps. In a list item, write a blank line before the first header if text comes before it: without one, markdown-it starts the steps there and remark and Sätteri leave the line as text.
+- A line that is neither a header nor a `>` line ends the steps. In a list item, write headers at the indentation of the item's content: a line written short of it continues the paragraph before it as text, as it does in CommonMark, whether it is a header or not.
+- In a blockquote, a line written without any `>` leaves the blockquote. Between two steps, markdown-it ends the blockquote at that line and starts another for the steps after it, while remark and Sätteri keep the line and those steps in the one blockquote.
+- With the tabs plugin, leave a blank line between a tab group and a step header after it: directly under the last panel, the header starts steps in markdown-it and stays text in remark and Sätteri.
 - A `>` indented four columns or more is not a body's marker, as it is no blockquote's in CommonMark: the line continues the paragraph before it as text (directly after a header, that ends the steps), and after a blank line it is indented code.
 - An alert in a step's body is written as a nested quote (`> > [!NOTE]`). After a blank line, a quote that starts with an alert marker at the body's own level (`> [!NOTE]`) is an alert of its own and ends the steps. Directly under a header, that same line is the first line of the body in markdown-it, while remark and Sätteri with the alerts plugin render the alert after the steps.
 - A backslash before the `@` (`\@1.`) writes the line as text.

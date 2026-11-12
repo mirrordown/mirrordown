@@ -1,4 +1,5 @@
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 
 // Matches: %{1,6}+? label text
 // Groups: 1=% string (depth), 2=+ (open marker, optional), 3=label text
@@ -55,6 +56,40 @@ export const lazyParagraph = (
   inline.children = [];
   state.push("paragraph_close", "p", -1);
   state.parentType = parentType;
+};
+
+// Whether a paragraph is open at the end of the lines read for an item so far, for a line CommonMark would continue it with: the header's own when the item has no body yet, else the last block of the body, through the lists and quotes it is nested in. The body's last run of lines is tokenized to tell (only when such a line is met).
+export const paragraphOpen = (
+  state: StateBlock,
+  bodyLines: ReadonlyArray<string | null>
+): boolean => {
+  if (bodyLines.length === 0) return true;
+  if (!bodyLines.at(-1)?.trim()) return false;
+  const run = bodyLines.slice(bodyLines.lastIndexOf(null) + 1).join("\n");
+  const tokens: Token[] = [];
+  state.md.block.parse(run, state.md, {}, tokens);
+  let last = tokens.length - 1;
+  while (
+    last >= 0 &&
+    tokens[last].nesting === -1 &&
+    tokens[last].type !== "paragraph_close"
+  )
+    last--;
+  return tokens[last]?.type === "paragraph_close";
+};
+
+// Whether a line that is neither a header nor a `>` line is one CommonMark lazily continues a paragraph with: written short of the content of the list item the group is in, and no block that interrupts a paragraph.
+export const isLazyLine = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  // A line written without a blockquote's marker (markdown-it marks it with a negative indent) is not one: it leaves the blockquote, which the other engines' recognition reproduces.
+  if (state.isEmpty(line) || state.sCount[line] < 0) return false;
+  if (state.sCount[line] >= state.blkIndent) return false;
+  return !state.md.block.ruler
+    .getRules("paragraph")
+    .some((rule) => rule(state, line, endLine, true));
 };
 
 // djb2 hash — returns an unsigned 32-bit integer

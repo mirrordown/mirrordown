@@ -17,6 +17,7 @@ import {
   endGroupsAtMarkers,
   headerLineContent,
   INDENTED_BLOCKS,
+  itemContentColumn,
   keepQuoteAttributes,
   markerLevels,
   splitAtOpeningLine,
@@ -742,7 +743,9 @@ export const processTabsInChildren = (
   checkBlankLines = true,
   sourceLines?: readonly string[],
   quotes = 0,
-  parentType = "root"
+  parentType = "root",
+  // Where the content of the list item the children are in starts (see `itemContentColumn`).
+  column?: number
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -751,17 +754,18 @@ export const processTabsInChildren = (
     const node = children[i];
     if (!node) break;
 
-    // A tab header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item or definition, a header line may instead be one CommonMark lazily continued, so those are left as they are.
+    // A tab header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item, a header line may instead be one CommonMark lazily continued, written short of the item's content: only one written in the item interrupts. In a definition, where the content's column isn't known, they are left as they are.
     if (
       node.type === "paragraph" &&
       sourceLines &&
-      !INDENTED_BLOCKS.has(parentType)
+      (column !== undefined || !INDENTED_BLOCKS.has(parentType))
     ) {
       const split = splitAtOpeningLine(
         node,
         sourceLines,
         quotes,
-        (text) => parseTabHeader(text)?.depth === 1
+        (text) => parseTabHeader(text)?.depth === 1,
+        column
       );
       if (split) {
         children.splice(i, 1, ...split);
@@ -1087,7 +1091,8 @@ export const processTabs = (
       false,
       sourceLines,
       inner,
-      node.type
+      node.type,
+      itemContentColumn(node)
     );
     for (const child of node.children) walk(child as Container, inner);
   };

@@ -446,23 +446,117 @@ check(`steps: a > indented four columns or more is not the body's marker`, [
   }
 ]);
 
-// Known difference, pinned so a change to it is noticed. In a list item, a header after a line of text interrupts the paragraph in markdown-it, as its block rule does anywhere. remark and Sätteri leave such a line alone: by indentation they can't tell a header written in the item from one CommonMark lazily continued into it. A blank line before the header reads the same in every engine.
-describe(`steps: a header after text in a list item (known difference)`, () => {
-  const input = `- text\n  @1. Step\n  > Body.`;
-  it.each(engines)(`$engine`, ({ engine, render }) => {
-    const html = normalizeHtml(render(input));
-    if (engine === `markdown-it`)
-      expect(html).toBe(
-        `<ul><li>text\n${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
-      );
-    else expect(html).not.toContain(`markdown-steps`);
-  });
-  it.each(engines)(
-    `$engine: with a blank line before it, the header starts steps`,
-    ({ render }) => {
-      expect(normalizeHtml(render(`- text\n\n  @1. Step\n  > Body.`))).toBe(
-        `<ul><li><p>text</p>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
-      );
+// A header interrupts the paragraph before it, as markdown-it's block rule does. In a list item, remark and Sätteri left every header after text alone, because CommonMark may have lazily continued it from outside the item; the column the item's content starts at tells the two apart, so a header written in the item starts steps in every engine.
+check(
+  `steps: a header after text in a list item starts steps when it is written in the item`,
+  [
+    {
+      name: `at the item's content column`,
+      input: `- text\n  @1. Step\n  > Body.`,
+      expected: `<ul><li>text\n${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
+    },
+    {
+      name: `in an ordered item, whose content starts further in`,
+      input: `1. text\n   @1. Step\n   > Body.`,
+      expected: `<ol><li>text\n${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ol>`
+    },
+    {
+      name: `in an item inside a blockquote`,
+      input: `> - text\n>   @1. Step\n>   > Body.`,
+      expected: `<blockquote><ul><li>text\n${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul></blockquote>`
+    },
+    {
+      name: `after a line that ended the item's earlier steps`,
+      input: `- @1. A\n  > a\n  text\n  @1. B`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol>\ntext\n${OL}${LI(1)}${T}B</p></li></ol></li></ul>`
+    },
+    {
+      name: `after a blank line, as before`,
+      input: `- text\n\n  @1. Step\n  > Body.`,
+      expected: `<ul><li><p>text</p>${OL}${LI(1)}${T}Step</p>${B}<p>Body.</p></div></li></ol></li></ul>`
     }
-  );
+  ]
+);
+
+// A header indented four columns or more past the paragraph before it continues that paragraph, in CommonMark and in markdown-it, whose block rules don't run on such a line. remark and Sätteri started steps there.
+check(
+  `steps: a header indented four columns or more after text continues the paragraph`,
+  [
+    {
+      name: `at the top level`,
+      input: `text\n    @1. Step`,
+      expected: `<p>text\n@1. Step</p>`
+    },
+    {
+      name: `in a blockquote`,
+      input: `> text\n>     @1. Step`,
+      expected: `<blockquote><p>text\n@1. Step</p></blockquote>`
+    },
+    {
+      name: `in a list item`,
+      input: `- text\n      @1. Step`,
+      expected: `<ul><li>text\n@1. Step</li></ul>`
+    }
+  ]
+);
+
+// A line written short of a list item's content, with nothing that interrupts a paragraph on it, continues the paragraph before it in CommonMark, so remark and Sätteri find it inside the item and cannot move it out. markdown-it's rule ended the item at such a line (a header there even started steps after the list); it now reads the line as the others do: it ends the steps and stays in the item, and a header written there is text.
+check(
+  `steps: a line written short of a list item's content stays in the item`,
+  [
+    {
+      name: `a header after the item's text is text`,
+      input: `- item\n@1. Step`,
+      expected: `<ul><li>item\n@1. Step</li></ul>`
+    },
+    {
+      name: `a plain line after a body ends the steps and follows them in the item`,
+      input: `- @1. A\n  > a\npara`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol>\npara</li></ul>`
+    },
+    {
+      name: `a plain line directly after a header does too`,
+      input: `- @1. A\npara`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p></li></ol>\npara</li></ul>`
+    },
+    {
+      name: `a header after that line continues its paragraph`,
+      input: `- @1. A\n  > a\npara\n@1. B`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol>\npara\n@1. B</li></ul>`
+    },
+    {
+      name: `the line continues a paragraph nested in the body`,
+      input: `- @1. A\n  > > q\npara`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<blockquote><p>q</p></blockquote></div></li></ol>\npara</li></ul>`
+    },
+    {
+      name: `with no paragraph to continue (the body ends in a fence), the line ends the item`,
+      input: "- @1. A\n  > ```\n  > code\n  > ```\npara",
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<pre><code>code\n</code></pre></div></li></ol></li></ul><p>para</p>`
+    },
+    {
+      name: `after a blank line of the body, it ends the item`,
+      input: `- @1. A\n  > a\n  >\npara`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol></li></ul><p>para</p>`
+    },
+    {
+      name: `a block that interrupts a paragraph ends the item`,
+      input: `- @1. A\n  > a\n# H`,
+      expected: `<ul><li>${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol></li></ul><h1>H</h1>`
+    }
+  ]
+);
+
+// Known difference, pinned so a change to it is noticed. A line without any `>` leaves the blockquote the steps are in. Where it ends the steps' last body, remark and Sätteri split the blockquote there as markdown-it does (see the cases above); where a header follows it, they keep the line and the steps after it in the blockquote.
+describe(`steps: a line that leaves the blockquote between two steps (known difference)`, () => {
+  const input = `> @1. A\n> > a\ntext\n> @1. B`;
+  const first = `${OL}${LI(1)}${T}A</p>${B}<p>a</p></div></li></ol>`;
+  const second = `${OL}${LI(1)}${T}B</p></li></ol>`;
+  it.each(engines)(`$engine`, ({ engine, render }) => {
+    expect(normalizeHtml(render(input))).toBe(
+      engine === `markdown-it`
+        ? `<blockquote>${first}</blockquote><p>text</p><blockquote>${second}</blockquote>`
+        : `<blockquote>${first}<p>text</p>${second}</blockquote>`
+    );
+  });
 });
