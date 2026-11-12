@@ -58,8 +58,11 @@ if (`CommandEvent` in window && `clipboard` in navigator && !page[LOADED]) {
     (event) => {
       if (!(event instanceof CommandEvent) || event.command !== COMMAND) return;
       const { source, target } = event;
-      if (source instanceof HTMLElement && target instanceof Element)
-        void copy(source, target);
+      if (!(source instanceof HTMLElement) || !(target instanceof Element))
+        return;
+      // `commandfor` finds the first element with the id, which is the button's own `<pre>` unless something before it on the page has the same one (a heading whose slug spells the hash, the same block in another document): the button is in its block, so that is the one it copies.
+      const pre = target.contains(source) ? target : source.closest(`pre`);
+      if (pre) void copy(source, pre);
     },
     // The command event doesn't bubble: catch it on its way down to the <pre>.
     { capture: true }
