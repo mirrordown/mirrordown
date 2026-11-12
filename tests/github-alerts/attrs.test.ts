@@ -105,3 +105,36 @@ describe("github-alerts + attrs: class on standalone paragraph after alert appli
     expect(result).toContain('data-alert="tip"');
   });
 });
+
+// The title's class is the alert's own, whatever classes the container gains: it was derived from the container's `class` after attrs had added to it, which gave `markdown-alert foo-title` and lost the title its styles.
+describe("github-alerts + attrs: classes on the container leave the title's class alone", () => {
+  it.each(["> [!NOTE]\n> body\n\n{.foo #bar}", "> [!NOTE]+\n> body\n\n{.foo}"])(
+    "markdown-it and remark render identically: %j",
+    (input) => {
+      const result = normalizeHtml(md.render(input));
+      expect(result).toContain('class="markdown-alert foo"');
+      expect(result).toContain('class="markdown-alert-title"');
+      expect(remd(input)).toBe(result);
+    }
+  );
+});
+
+// A plugin that runs before alerts may have put attributes on the blockquote; turning it into an alert must add to them, not replace them.
+describe("github-alerts + attrs: attributes already on the blockquote", () => {
+  it("stay on the alert when remark-attrs runs first", () => {
+    const html = normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkAttrs)
+          .use(remarkGithubAlerts, { icons: false })
+          .use(remarkRehype, { handlers: githubAlertsHastHandlers })
+          .use(rehypeStringify)
+          .processSync("> [!NOTE]\n> body\n{.foo #bar}")
+      )
+    );
+    expect(html).toBe(
+      '<div class="markdown-alert foo" data-alert="note" id="bar"><p class="markdown-alert-title" aria-label="Note">Note</p><p>body</p></div>'
+    );
+  });
+});

@@ -191,3 +191,22 @@ describe("github-alerts: line endings", () => {
     }
   );
 });
+
+describe("github-alerts: remark without the hast handlers", () => {
+  // The handlers only add the icon. Forgetting them must not lose the author's title, which used to live where only the handler could find it.
+  it("still renders the title, without its icon", () => {
+    const html = normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkGithubAlerts)
+          .use(remarkRehype)
+          .use(rehypeStringify)
+          .processSync("> [!NOTE]- Custom *title*\n> body")
+      )
+    );
+    expect(html).toBe(
+      '<details class="markdown-alert" data-alert="note"><summary class="markdown-alert-title" aria-label="Custom title">Custom <em>title</em></summary><p>body</p></details>'
+    );
+  });
+});
