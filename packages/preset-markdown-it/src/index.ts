@@ -98,20 +98,6 @@ export const mirrordown = (
           ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
         };
 
-  // markdown-it renders its own `~~strikethrough~~` as `<s>`; remark-gfm and Sätteri render `<del>`, so the preset does too. Retagging at render keeps whatever attributes the token was given.
-  const strikethrough: NonNullable<typeof md.renderer.rules.s_open> = (
-    tokens,
-    index,
-    renderOptions,
-    _env,
-    self
-  ) => {
-    tokens[index].tag = `del`;
-    return self.renderToken(tokens, index, renderOptions);
-  };
-  md.renderer.rules.s_open = strikethrough;
-  md.renderer.rules.s_close = strikethrough;
-
   on(options.abbr, abbr);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
