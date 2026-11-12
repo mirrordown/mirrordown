@@ -247,6 +247,15 @@ check(`steps: a tab after the body's marker is the marker's space`, [
   }
 ]);
 
+// markdown-it tokenizes a step's body from its lines with the `>` taken off, joined without a line ending after the last one. A fence that the end of the body closes then lost its last line's line ending, which every line of a blockquote's content has in CommonMark, and so in the other engines.
+check(`steps: a body is read as a blockquote's content`, [
+  {
+    name: `a fence the end of the body closes keeps its last line's line ending`,
+    input: "@1. A\n> ```\n> code\n@1. B",
+    expected: `${OL}${LI(1)}${T}A</p>${B}<pre><code>code\n</code></pre></div></li>${LI(2)}${T}B</p></li></ol>`
+  }
+]);
+
 // The stylesheet pads a step's body, so an empty body element is visible. markdown-it took the blank lines between two headers, or a lone `>`, for body lines and rendered an empty body for them; a step without content has no body element in any engine.
 check(`steps: a step without content has no body element`, [
   {
