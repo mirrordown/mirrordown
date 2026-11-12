@@ -4,6 +4,8 @@ export interface ParityCase {
   name: string;
   input: string;
   expected: string;
+  /** The case needs GFM tables: remark and Sätteri turn GFM on for it, and markdown-it has tables built in. */
+  gfm?: boolean;
 }
 
 export const parityCases: ParityCase[] = [
@@ -49,6 +51,28 @@ export const parityCases: ParityCase[] = [
     name: "an HTML block after a definition stays raw HTML",
     input: "T\n: D\n\n<div>\n: D2",
     expected: "<dl><dt>T</dt><dd>D</dd></dl><div>\n: D2"
+  },
+  // A line that is one inline tag starts an HTML block wherever it doesn't interrupt a paragraph, and a later term never follows one. markdown-it's HTML rule, asked in validation mode, only says whether its block may interrupt a paragraph, so the tag was taken for a term and wrapped in a `<dt>`.
+  {
+    name: "a lone inline tag after a definition is raw HTML, not a later term",
+    input: "T\n: D\n\n<span>\n: D2",
+    expected: "<dl><dt>T</dt><dd>D</dd></dl><span>\n: D2"
+  },
+  {
+    name: "a lone closing tag after a definition is raw HTML too",
+    input: "T\n: D\n\n</span>\n: D2",
+    expected: "<dl><dt>T</dt><dd>D</dd></dl></span>\n: D2"
+  },
+  {
+    name: "a lone inline tag right after a definition's code block is raw HTML",
+    input: "T\n: ```\n  x\n  ```\n<span>\n: D2",
+    expected:
+      "<dl><dt>T</dt><dd><pre><code>x\n</code></pre></dd></dl><span>\n: D2"
+  },
+  {
+    name: "an inline tag with text after it on its line is still a later term",
+    input: "T\n: D\n\n<b>bold</b>\n: D2",
+    expected: "<dl><dt>T</dt><dd>D</dd><dt><b>bold</b></dt><dd>D2</dd></dl>"
   },
   {
     name: "a link reference definition after a definition is not a later term",
@@ -247,5 +271,56 @@ export const parityCases: ParityCase[] = [
     input: "T\n: a\n\n      code\n: D2",
     expected:
       "<dl><dt>T</dt><dd><p>a</p><pre><code>code\n</code></pre></dd><dd>D2</dd></dl>"
+  },
+
+  // A marker under a definition's own content column, in a list item nested in it, has no term there and no definition list to join: it is the item's paragraph going on, as any other text at that column would be. markdown-it measured the marker against the list item and ended its paragraph. A marker left of the definition's content column is the term's next definition.
+  {
+    name: "a marker at the definition's content column continues a nested list item's paragraph",
+    input: "T\n: - a\n  : x",
+    expected: "<dl><dt>T</dt><dd><ul><li>a\n: x</li></ul></dd></dl>"
+  },
+  {
+    name: "a marker between the definition's content column and a nested item's continues the item's paragraph",
+    input: "T\n: 1. a\n   : x",
+    expected: "<dl><dt>T</dt><dd><ol><li>a\n: x</li></ol></dd></dl>"
+  },
+  {
+    name: "a marker left of the definition's content column, after a nested list item, is the next definition",
+    input: "T\n:   - a\n  : x",
+    expected: "<dl><dt>T</dt><dd><ul><li>a</li></ul></dd><dd>x</dd></dl>"
+  },
+  {
+    name: "a marker at the first column after a nested list item is the next definition",
+    input: "T\n: - a\n: b",
+    expected: "<dl><dt>T</dt><dd><ul><li>a</li></ul></dd><dd>b</dd></dl>"
+  },
+
+  // A table is not a term. remark's syntax took a table's finished head (its header and delimiter rows) for one, which closed the table for a definition list that was then declined, so a row starting with a marker fell out of the table as a paragraph. A line with a pipe that no delimiter row follows is not a table, and still is a term.
+  {
+    name: "a row that starts with a marker, right after a table's delimiter row, is a table row",
+    input: "| a |\n| - |\n: D2",
+    gfm: true,
+    expected:
+      "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>: D2</td></tr></tbody></table>"
+  },
+  {
+    name: "a row that starts with a marker is a table row in a blockquote too",
+    input: "> | a |\n> | - |\n> : D2",
+    gfm: true,
+    expected:
+      "<blockquote><table><thead><tr><th>a</th></tr></thead><tbody><tr><td>: D2</td></tr></tbody></table></blockquote>"
+  },
+  {
+    name: "a marker after a table's body row is a table row",
+    input: "| a |\n| - |\n| b |\n: D2",
+    gfm: true,
+    expected:
+      "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>b</td></tr><tr><td>: D2</td></tr></tbody></table>"
+  },
+  {
+    name: "a line with pipes that is not a table is a term",
+    input: "| a |\n: D",
+    gfm: true,
+    expected: "<dl><dt>| a |</dt><dd>D</dd></dl>"
   }
 ];

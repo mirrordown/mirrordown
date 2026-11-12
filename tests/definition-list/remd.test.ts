@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import {
@@ -35,6 +36,17 @@ const htmlProcessor = unified()
   })
   .use(rehypeStringify, { allowDangerousHtml: true });
 
+// With GFM, for the cases about tables: the definition-list syntax shares the line's first character with nothing of GFM's, but reads the table rows before it.
+const gfmProcessor = unified()
+  .use(remarkParse)
+  .use(remarkGfm, { singleTilde: false })
+  .use(remarkDefinitionList)
+  .use(remarkRehype, {
+    handlers: defListHastHandlers,
+    allowDangerousHtml: true
+  })
+  .use(rehypeStringify, { allowDangerousHtml: true });
+
 describe("definition-list/remd", () => {
   it.each(cmCases)("definition-list (remark): $name", ({ input, expected }) => {
     expect(normalizeHtml(String(cmProcessor.processSync(input)))).toBe(
@@ -44,8 +56,9 @@ describe("definition-list/remd", () => {
 
   it.each(parityCases)(
     "definition-list (remark) parity: $name",
-    ({ input, expected }) => {
-      expect(normalizeHtml(String(htmlProcessor.processSync(input)))).toBe(
+    ({ input, expected, gfm }) => {
+      const processor = gfm ? gfmProcessor : htmlProcessor;
+      expect(normalizeHtml(String(processor.processSync(input)))).toBe(
         expected
       );
     }

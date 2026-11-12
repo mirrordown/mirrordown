@@ -113,27 +113,6 @@ const satteriDifferences: Difference[] = [
   }
 ];
 
-// Known defects in one of the plugins, not engine limits: Sätteri's output is the expected one and the plugin has not been brought to it yet. Pinned so that the fix, or a regression in the engines that are right, shows up here.
-const pluginDifferences: Difference[] = [
-  {
-    // remark-gfm alone makes the line a table row; with the definition-list syntax loaded the table ends at the delimiter row
-    name: "remark drops a marker-like line out of a GFM table that has no body yet",
-    input: "| a |\n| - |\n: D2",
-    gfm: true,
-    mdit: "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>: D2</td></tr></tbody></table>",
-    remd: "<table><thead><tr><th>a</th></tr></thead></table><p>: D2</p>",
-    sat: "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>: D2</td></tr></tbody></table>"
-  },
-  {
-    // The marker sits at the definition's content column, where only a nested list could start, and there is no term for one
-    name: "markdown-it ends a nested list item at a marker that cannot start a definition",
-    input: "T\n: - a\n  : x",
-    mdit: "<dl><dt>T</dt><dd><ul><li>a</li></ul>\n: x</dd></dl>",
-    remd: "<dl><dt>T</dt><dd><ul><li>a\n: x</li></ul></dd></dl>",
-    sat: "<dl><dt>T</dt><dd><ul><li>a\n: x</li></ul></dd></dl>"
-  }
-];
-
 describe("definition-list/sat", () => {
   it.each(cmCases)(
     "definition-list (sätteri): $name",
@@ -144,21 +123,18 @@ describe("definition-list/sat", () => {
 
   it.each(parityCases)(
     "definition-list (sätteri) parity: $name",
-    ({ input, expected }) => {
-      expect(render(input)).toBe(expected);
+    ({ input, expected, gfm }) => {
+      expect(render(input, gfm)).toBe(expected);
     }
   );
 
   describe("engine differences", () => {
-    it.each([...satteriDifferences, ...pluginDifferences])(
-      "$name",
-      ({ input, gfm, mdit, remd, sat }) => {
-        expect({
-          mdit: renderMdit(input),
-          remd: renderRemd(input, gfm),
-          sat: render(input, gfm)
-        }).toEqual({ mdit, remd, sat });
-      }
-    );
+    it.each(satteriDifferences)("$name", ({ input, gfm, mdit, remd, sat }) => {
+      expect({
+        mdit: renderMdit(input),
+        remd: renderRemd(input, gfm),
+        sat: render(input, gfm)
+      }).toEqual({ mdit, remd, sat });
+    });
   });
 });
