@@ -45,20 +45,24 @@ export const satteriSlug =
       name: "slug",
       // An id a heading was given by hand is taken, wherever in the document it is written: the slugger is told of each before it makes any, so a generated id never repeats one.
       before(root) {
-        const walk = (node: object): void => {
+        const walk = (node: unknown): void => {
+          if (typeof node !== `object` || node === null) return;
           if (!(`children` in node) || !Array.isArray(node.children)) return;
           if (
             `tagName` in node &&
             typeof node.tagName === `string` &&
             HEADINGS.includes(node.tagName) &&
-            `properties` in node
+            `properties` in node &&
+            typeof node.properties === `object` &&
+            node.properties !== null &&
+            `id` in node.properties
           ) {
-            const { id } = node.properties as { id?: unknown };
+            const { id } = node.properties;
             if (typeof id === `string` && id.startsWith(prefix)) {
               slugger.occurrences[id.slice(prefix.length)] ??= 0;
             }
           }
-          for (const child of node.children) walk(child as object);
+          node.children.forEach(walk);
         };
         walk(root);
       },
