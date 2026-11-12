@@ -13,9 +13,11 @@ import {
   DEFAULT_TITLE,
   ICONS,
   createAlertResolver,
+  plainText,
   splitAlertParagraph,
   type AlertOptions,
-  type AlertType
+  type AlertType,
+  type PhrasingLike
 } from "@mirrordown/core";
 
 export type { AlertOptions, AlertType };
@@ -153,6 +155,12 @@ export const githubAlertsHastHandlers: Record<string, Handler> = {
     const children = state.all(node);
     const [title] = children;
     const icon = svgToHast(data.alertIcon);
+    // The label is the title's plain text as it is now: a plugin that ran after this one may have taken an attribute block off it (`*Title*{.x}`), which a screen reader must not read out.
+    const label = plainText(
+      (node.children[0] as { children?: PhrasingLike[] }).children ?? []
+    ).trim();
+    if (label && title?.type === "element")
+      title.properties["aria-label"] = label;
     if (icon && title?.type === "element") title.children.unshift(icon);
 
     const result: Element = {

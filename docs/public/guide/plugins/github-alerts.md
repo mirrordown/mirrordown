@@ -90,6 +90,22 @@ Use `+` to make an alert open by default, or `-` to make it collapsed by default
 > > This warning is collapsed by default.
 > ````
 
+### Attributes
+
+With the [`attrs`](/guide/plugins/attrs) plugin, or Sätteri's built-in `attributes` feature, an alert takes attribute blocks the way a blockquote does. A block on a line after the alert, written without the `>`, goes on the alert. Written with the `>`, it goes on the body's last paragraph. A block touching an inline element in the title goes on that element and is left out of the title's label.
+
+````markdown
+> [!NOTE] An *important*{.loud} note
+> The body.
+{#setup-note .wide}
+````
+
+List the attrs plugin after the alerts plugin. The engines differ in three places:
+
+- A block after a blank line (`> [!NOTE]`, the body, a blank line, then `{#setup-note}`) goes on the alert in markdown-it and remark. Sätteri reads that line as an empty paragraph of its own, so use the form above there.
+- A block that ends the title line, as in `> [!NOTE] Title {.wide}`, goes on the title in markdown-it and is printed as text in remark and Sätteri. Put the block on its own line instead.
+- An alert with no body takes a block from the next line only on Sätteri. In markdown-it and remark, `> [!NOTE]` followed by `{.wide}` leaves an empty paragraph inside the alert.
+
 ## Configuration
 
 All options are passed when registering the plugin.

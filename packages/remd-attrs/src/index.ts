@@ -331,7 +331,8 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           }
         }
 
-        const end = last.position?.end;
+        // The block ends the paragraph, so a text node another plugin rebuilt without a position (an alert's body, the text after a span) is written on the paragraph's last line.
+        const end = last.position?.end ?? node.position?.end;
         const kept = end
           ? containersKept(
               lines[end.line - 1] ?? "",
