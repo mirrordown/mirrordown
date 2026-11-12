@@ -50,4 +50,23 @@ describe("definition-list/remd", () => {
       );
     }
   );
+
+  // The term has to end up inside the list: a `<dl>` that opens with a `<dd>` is invalid HTML. The resolver used to stop at the blockquote prefix on the blank line and never reached the term.
+  it.each([
+    ["> Term\n>\n> : Def", "<blockquote><dl><dt>Term</dt><dd>"],
+    [
+      "> para\n>\n> Term\n>\n> : Def\n>\n> after",
+      "<blockquote><p>para</p><dl><dt>Term</dt><dd>"
+    ],
+    [
+      "> T1\n> : D1\n>\n> T2\n>\n> : D2",
+      "<blockquote><dl><dt>T1</dt><dd>D1</dd><dt>T2</dt><dd>"
+    ]
+  ])(
+    "keeps the term in the list when a blank line separates it from the marker in a blockquote: %j",
+    (input, start) => {
+      const html = normalizeHtml(String(htmlProcessor.processSync(input)));
+      expect(html.startsWith(start)).toBe(true);
+    }
+  );
 });

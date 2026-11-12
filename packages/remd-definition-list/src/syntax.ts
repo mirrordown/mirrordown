@@ -248,11 +248,13 @@ function createDefTermEvent(
 
   for (let i = chunkFlowIndex; i >= 0; i--) {
     const event = events[i];
-    if (event[1].type !== "chunkFlow") {
+    if (event[1].start.offset < paragraphInfo.startOffset) {
       newDefListStartIndex = i + 1;
       break;
     }
-    if (event[1].start.offset < paragraphInfo.startOffset) {
+    // A container's prefix on a blank line between the term and its marker (`>` in a blockquote) is not the term's start: the term's own chunk lies behind it
+    if (ignorablePrefixTypes.has(event[1].type)) continue;
+    if (event[1].type !== "chunkFlow") {
       newDefListStartIndex = i + 1;
       break;
     }
