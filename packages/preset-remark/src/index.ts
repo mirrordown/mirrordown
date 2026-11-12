@@ -162,19 +162,23 @@ export const mirrordown = (
       ...gfm,
       // First: the plugins after it see a prompt's preview as part of the page.
       ...on(options.prompt !== false, remarkPrompt),
+      // Before abbr and the delimiter plugins: it rebuilds each ruby from its source text, so what an earlier plugin did inside the braces would be lost.
+      ...configured(options.ruby, remarkRuby),
+      // Before the delimiter plugins, alerts and attrs: a definition is one plain line of text, which they would break up or take a piece of.
       ...on(options.abbr, remarkAbbr),
       ...on(options.definitionList, remarkDefinitionList),
-      ...on(options.del, remarkDel),
-      ...configured(options.githubAlerts, remarkGithubAlerts),
-      ...on(options.ins, remarkIns),
+      // Before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it.
       ...on(options.kbd, remarkKbd),
+      ...on(options.del, remarkDel),
+      ...on(options.ins, remarkIns),
       ...on(options.mark, remarkMark),
-      ...configured(options.ruby, remarkRuby),
       ...configured(options.steps, remarkSteps),
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),
       ...on(options.sup, remarkSup),
       ...configured(options.tabs, remarkTabs),
+      // After the inline plugins, whose output a title's `aria-label` is read from, and after steps and tabs, whose headers take the marker line directly under them as body text.
+      ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
       // After attrs and the containers: attributes ending a caption go on its figure.
