@@ -392,3 +392,24 @@ describe("tabs + steps: a tab header interrupts a paragraph in a sub-step's body
     expect(html).toContain(`aria-label="Tab"><p>body</p></section>`);
   });
 });
+
+// Sätteri renders each plugin's nodes before the next plugin runs, so with tabs registered before steps (the presets register steps first), steps read a panel as the node sat-tabs rendered, `tabsPanel`. That node wasn't counted as a block whose lines carry one more `>`, so a step header written in a panel after a line of text looked as if it were written outside the panel and stayed text.
+describe("tabs + steps: with tabs registered first in Sätteri, a step header interrupts a paragraph in a panel", () => {
+  const tabsFirst = (src: string) =>
+    normalizeHtml(
+      markdownToHtml(src, {
+        features: { gfm: true, frontmatter: false, smartPunctuation: false },
+        mdastPlugins: [satteriTabs(), satteriSteps()]
+      }).html
+    );
+
+  it.each([
+    ["in a tab's panel", `% A\n> text\n> @1. S\n> > body`],
+    ["in a sub-tab's panel", `% A\n%% B\n> text\n> @1. S\n> > body`]
+  ])("%s, as in markdown-it and in the preset's order", (_, input) => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toContain(`<p>text</p><ol class="markdown-steps">`);
+    expect(tabsFirst(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});

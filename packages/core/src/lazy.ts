@@ -282,11 +282,12 @@ interface GroupTreeNode {
   data?: unknown;
 }
 
-/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
+/** Blocks whose lines carry one more `>` marker than the block around them: a blockquote (or an alert, Sätteri's node for one) and a tab panel (`tabsPanel` once sat-tabs has rendered it, for a Sätteri plugin registered after tabs) or step body. A sub-item is the exception, so count a block's markers with `markerLevels`. */
 export const MARKED_BLOCKS: ReadonlySet<string> = new Set([
   `blockquote`,
   `alert`,
   `tabsItem`,
+  `tabsPanel`,
   `stepsItem`
 ]);
 
