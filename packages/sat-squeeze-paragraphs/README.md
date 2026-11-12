@@ -38,7 +38,7 @@ A paragraph with *emphasis* and an image ![icon](https://picsum.photos/16/16) is
 
 Two things differ between the engines:
 
-- With markdown-it's `breaks: true`, a paragraph of whitespace over several lines (`&#32;` on two lines running) is removed although its line break would render as a `<br>`. A hard break (two spaces or a backslash before the line ending) keeps the paragraph in every engine.
+- With markdown-it's `breaks: true`, a line ending inside a paragraph renders as a `<br>`, so a paragraph of whitespace over several lines (`&#32;` on two lines running) is kept there, and removed without the option. A hard break (two spaces or a backslash before the line ending) keeps the paragraph in every engine.
 - In a tight list item there is no `<p>` to remove in remark and Sätteri, so `- &#32;` keeps its space inside the `<li>`, where markdown-it leaves the item empty.
 
 > [!NOTE]
