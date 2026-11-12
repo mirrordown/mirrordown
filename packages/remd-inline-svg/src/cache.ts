@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { type Config, optimize as svgOptimize } from "svgo";
-import type { GroupedImageNodes, ImageNodeGroup } from "./image-node.js";
 
-export class SvgCache extends Map<string, string> {
+// An SVG's (optimized) content by absolute path, kept for the life of the plugin. The entry is the read itself, so documents processed concurrently share one read of a file and each waits for it. A file that can't be read or parsed resolves to `null` and isn't kept, as in the markdown-it and Sätteri plugins: the failure touches only the images that name it, and a later document tries again.
+export class SvgCache {
   #hits = 0;
   #misses = 0;
-  #queue: Array<Promise<void>> = [];
+  #reads = new Map<string, Promise<string | null>>();
 
   get hits(): number {
     return this.#hits;
@@ -16,47 +16,36 @@ export class SvgCache extends Map<string, string> {
   }
 
   read = async (
-    groupedNodes: GroupedImageNodes,
+    path: string,
+    occurrences: number,
     optimize: boolean | Config
-  ): Promise<void> => {
-    const promises = [...groupedNodes].map(async (group) =>
-      this.#readFile(group, optimize)
-    );
-    const queued = this.#queue.push(...promises);
-    await Promise.all(this.#queue);
-    this.#queue = this.#queue.slice(queued);
+  ): Promise<string | null> => {
+    const cached = this.#reads.get(path);
+    const pending = cached ?? this.#load(path, optimize);
+    if (!cached) this.#reads.set(path, pending);
+    const content = await pending;
+    if (content === null) return null;
+    if (cached) {
+      this.#hits += occurrences;
+    } else {
+      this.#misses++;
+      this.#hits += occurrences - 1;
+    }
+    return content;
   };
 
-  #readFile = async (
-    group: ImageNodeGroup,
+  #load = async (
+    path: string,
     optimize: boolean | Config
-  ): Promise<void> => {
-    const [path, nodes] = group;
-
-    if (this.has(path)) {
-      this.#hits += nodes.length;
-      return;
-    }
-
-    // Reserve the slot immediately to prevent concurrent reads of the same file
-    this.set(path, ``);
-    this.#misses++;
-    this.#hits += nodes.length - 1;
-
-    let content = await readFile(path, `utf-8`);
-
-    if (optimize) {
+  ): Promise<string | null> => {
+    try {
+      const content = await readFile(path, `utf-8`);
+      if (!optimize) return content;
       const optimizeConfig = typeof optimize === `boolean` ? {} : optimize;
-      const optimized = svgOptimize(content, { path, ...optimizeConfig });
-      content = optimized.data;
+      return svgOptimize(content, { path, ...optimizeConfig }).data;
+    } catch {
+      this.#reads.delete(path);
+      return null;
     }
-
-    if (this.get(path)!.length > 0) {
-      throw new Error(
-        `SvgCache race condition: ${path} was read multiple times.`
-      );
-    }
-
-    this.set(path, content);
   };
 }

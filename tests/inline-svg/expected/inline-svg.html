@@ -41,3 +41,27 @@
 <!-- @case: self-closing root keeps its closing slash after the label -->
 
 <p>a <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 32 32" aria-label="alt"/> b</p>
+
+<!-- @case: a missing file leaves the image alone -->
+
+<p><img src="./fixtures/nope.svg" alt="alt"></p>
+
+<!-- @case: a file that is not an svg leaves the image alone -->
+
+<p><img src="./fixtures/not-an-svg.svg" alt="alt"></p>
+
+<!-- @case: a malformed percent-escape leaves the image alone -->
+
+<p><img src="./fixtures/%FF.svg" alt="alt"></p>
+
+<!-- @case: an encoded separator names the same file in every engine -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="alt"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: a leading slash stays under the document's directory -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="alt"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: a url that is external once decoded is left alone -->
+
+<p><img src="%2F%2Fexample.com/x.svg" alt="alt"></p>

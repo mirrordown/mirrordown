@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { join } from "node:path";
 import type { Transformer } from "unified";
 import type { Node, Parent } from "unist";
 import type { Root } from "hast";
@@ -14,14 +14,21 @@ import { applyDefaults, type Options } from "./options.js";
 
 const isExternalUrl = (src: string): boolean => /^(?:[a-z]+:|\/\/)/i.test(src);
 
+// The file an image's `src` names, by the rule the markdown-it and Sätteri plugins share: decoded as a URL component and joined onto the document's directory, so a leading `/` stays under it. `null` when it names no local file: an external URL (also once decoded), or a malformed percent-escape, which makes `decodeURIComponent` throw.
+const resolveSvgPath = (src: string, docDir: string): string | null => {
+  if (isExternalUrl(src)) return null;
+  try {
+    const decoded = decodeURIComponent(src);
+    return isExternalUrl(decoded) ? null : join(docDir, decoded);
+  } catch {
+    return null;
+  }
+};
+
 const findSvgNodes = (node: Node | Parent): ImageNode[] => {
   let imgNodes: ImageNode[] = [];
 
-  if (
-    isImageNode(node) &&
-    node.properties.src.endsWith(`.svg`) &&
-    !isExternalUrl(node.properties.src)
-  ) {
+  if (isImageNode(node) && node.properties.src.endsWith(`.svg`)) {
     imgNodes.push(node);
   }
 
@@ -41,10 +48,8 @@ const groupSvgNodes = (
   const groupedNodes: GroupedImageNodes = new Map();
 
   for (const imgNode of imgNodes) {
-    const imagePath = resolve(
-      htmlFile.dirname!,
-      decodeURI(imgNode.properties.src)
-    );
+    const imagePath = resolveSvgPath(imgNode.properties.src, htmlFile.dirname!);
+    if (imagePath === null) continue;
     const group = groupedNodes.get(imagePath);
     if (!group) {
       groupedNodes.set(imagePath, [imgNode]);
@@ -66,16 +71,17 @@ export const rehypeInlineSvg = (
     misses = 0;
 
   return async (tree: Root, file: VFile): Promise<Root> => {
-    if (!file.path) {
-      throw new Error(
-        `Cannot inline SVG images because the path of the HTML file is unknown`
-      );
-    }
+    // Without the document's path there is nothing to resolve images against, so they are left as they are, as in the markdown-it and Sätteri plugins.
+    if (!file.path) return tree;
 
     const imgNodes = findSvgNodes(tree);
     const groupedNodes = groupSvgNodes(imgNodes, file);
-    await svgCache.read(groupedNodes, options.optimize);
-    imgToSVG(groupedNodes, svgCache, options, file.dirname!);
+    const contents = await Promise.all(
+      [...groupedNodes].map(async ([path, nodes]) =>
+        svgCache.read(path, nodes.length, options.optimize)
+      )
+    );
+    imgToSVG(groupedNodes, contents, options, file.dirname!);
 
     if (svgCache.hits !== hits || svgCache.misses !== misses) {
       hits = svgCache.hits;

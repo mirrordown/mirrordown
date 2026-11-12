@@ -18,9 +18,10 @@ const resolveSvgPath = (
   src: string,
   currentDocument: unknown
 ): string | null => {
-  const decoded = decodeURIComponent(src);
-  if (isExternalUrl(decoded)) return null;
+  // A malformed percent-escape makes `decodeURIComponent` throw; such an image is left alone, like one whose file can't be read.
   try {
+    const decoded = decodeURIComponent(src);
+    if (isExternalUrl(decoded)) return null;
     const currentFile = fileURLToPath(String(currentDocument));
     return join(dirname(currentFile), decoded);
   } catch {

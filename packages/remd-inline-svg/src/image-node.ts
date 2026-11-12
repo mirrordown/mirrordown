@@ -11,8 +11,6 @@ export interface ImageNode extends Node {
 
 export type GroupedImageNodes = Map<string, ImageNode[]>;
 
-export type ImageNodeGroup = [string, ImageNode[]];
-
 export const isImageNode = (node: unknown): node is ImageNode => {
   if (typeof node !== "object" || node === null) return false;
   const img = node as {

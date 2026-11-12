@@ -26,6 +26,17 @@ export interface InlineSvgPlugin {
 
 const isExternalUrl = (src: string): boolean => /^(?:[a-z]+:|\/\/)/i.test(src);
 
+// The file an image's `src` names, by the rule the markdown-it and rehype plugins share: decoded as a URL component and joined onto the document's directory, so a leading `/` stays under it. `null` when it names no local file: an external URL (also once decoded), or a malformed percent-escape, which makes `decodeURIComponent` throw.
+const resolveSvgPath = (src: string, docDir: string): string | null => {
+  if (isExternalUrl(src)) return null;
+  try {
+    const decoded = decodeURIComponent(src);
+    return isExternalUrl(decoded) ? null : join(docDir, decoded);
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Sätteri plugin that inlines referenced local `.svg` images as `<svg>` elements, relative to the document's `fileURL` compile option (Astro passes it); without one, images are left as they are. Files are read synchronously and cached across documents, as in `@mirrordown/mdit-inline-svg`. The limits, deduplication and markup are shared with the markdown-it and rehype plugins through `@mirrordown/core`. Node only: it reads from the file system.
  */
@@ -77,13 +88,13 @@ export const satteriInlineSvg = (
           for (const child of children) {
             if (child.type !== `element`) continue;
             const { src } = child.properties;
-            if (
+            const filePath =
               child.tagName === `img` &&
               typeof src === `string` &&
-              src.endsWith(`.svg`) &&
-              !isExternalUrl(src)
-            ) {
-              const filePath = join(docDir, decodeURIComponent(src));
+              src.endsWith(`.svg`)
+                ? resolveSvgPath(src, docDir)
+                : null;
+            if (filePath !== null) {
               groups.set(filePath, [...(groups.get(filePath) ?? []), child]);
             }
             walk(child.children);
