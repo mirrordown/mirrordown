@@ -33,3 +33,11 @@
 <p>This is a test markdown document.</p>
 <p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="Inline SVG"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
 <p>Cheers</p>
+
+<!-- @case: alt text with replacement patterns stays literal -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="Price: $1 $&amp; $$5"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: self-closing root keeps its closing slash after the label -->
+
+<p>a <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 32 32" aria-label="alt"/> b</p>

@@ -41,12 +41,17 @@ const extractSvgParts = (
 const escAttr = (s: string): string =>
   s.replace(/&/g, `&amp;`).replace(/"/g, `&quot;`);
 
+// The root's open tag: its attributes, then the `/` of a self-closing root (SVGO writes one when nothing is left inside). Quoted values are skipped whole, so a `>` inside one doesn't end the tag.
+const SVG_OPEN_TAG = /<svg((?:[^>"']|"[^"]*"|'[^']*')*?)(\s*\/)?>/i;
+
 // The image's alt text is the SVG's accessible name.
 const buildFullInline = (content: string, alt: string): string => {
   if (!alt) return content;
+  // A function, because a replacement string would read `$1` or `$&` in the alt text as a pattern. The label goes before a self-closing root's `/`, which would otherwise no longer close the tag.
   return content.replace(
-    /<svg([^>]*)>/i,
-    `<svg$1 aria-label="${escAttr(alt)}">`
+    SVG_OPEN_TAG,
+    (_, attrs: string, slash: string = ``) =>
+      `<svg${attrs} aria-label="${escAttr(alt)}"${slash}>`
   );
 };
 

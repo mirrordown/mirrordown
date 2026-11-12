@@ -37,3 +37,11 @@ This is a test markdown document.
 ![Inline SVG](./fixtures/circle.inline.svg)
 
 Cheers
+
+<!-- @case: alt text with replacement patterns stays literal -->
+
+![Price: $1 $& $$5](./fixtures/circle.inline.svg)
+
+<!-- @case: self-closing root keeps its closing slash after the label -->
+
+a ![alt](./fixtures/test.svg) b
