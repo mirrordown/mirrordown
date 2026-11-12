@@ -22,6 +22,8 @@ Use `{base text|reading}` inline to annotate characters with their pronunciation
 {東京|とうきょう} is the capital of Japan.
 ````
 
+A ruby is written on one line, and its first `|` splits it: the base holds no `{`, `}` or `|` (though it may start with `{`), and the reading runs to the next `}`. Spaces and tabs around the base and around the reading are dropped. A brace group without a `|`, such as an attribute block (`{.class}`), is never a ruby, and a ruby written right after one still is. Write `\{` to keep a brace literal. In a table cell, write the separator as `\|`.
+
 Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 
 ## Install
