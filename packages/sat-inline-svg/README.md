@@ -52,7 +52,7 @@ export default defineConfig({
 });
 ```
 
-Astro passes each document's `fileURL`. Files are read synchronously and cached for as long as the plugin lives, so a build reads each SVG once.
+Astro passes each document's `fileURL`. Files are read synchronously and cached for as long as the plugin lives, so a build reads each SVG once; a file whose modification time or size has changed is read again, so a dev server shows your edits.
 
 ### Output
 
