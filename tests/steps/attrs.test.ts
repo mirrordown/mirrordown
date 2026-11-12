@@ -326,3 +326,40 @@ describe("steps (remark): an author class set as className joins the element's o
     );
   });
 });
+
+// With remarkAttrs registered before remarkSteps, an attribute block is already gone from the text when steps read it, and that text still starts where the block was written. The line after it was then placed one source line too high, on the body's `>` line, so a header written under the body was missed and stayed text in the body.
+describe("steps + attrs (remark, attrs first): a line after an attribute block is placed on its own source line", () => {
+  const attrsFirst = (src: string) =>
+    normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkAttrs)
+          .use(remarkSteps)
+          .use(remarkRehype, { handlers: stepsHastHandlers as never })
+          .use(rehypeStringify)
+          .processSync(src)
+      )
+    );
+  const cases: [string, string][] = [
+    [
+      "a header after an image with attributes starts the next step",
+      "@1. A\n> ![a](x.png){.photo}\n@1. B"
+    ],
+    [
+      "a plain line after it ends the steps",
+      "@1. A\n> ![a](x.png){.photo}\nplain"
+    ],
+    [
+      "a header in the body after it starts steps in the body",
+      "@1. A\n> ![a](x.png){.photo}\n> @1. Inner"
+    ],
+    [
+      "a header after a paragraph that ends with an image with attributes starts steps",
+      "![a](x.png){.photo}\n@1. A\n> b"
+    ]
+  ];
+  it.each(cases)("%s", (_, input) => {
+    expect(attrsFirst(input)).toBe(normalizeHtml(md.render(input)));
+  });
+});

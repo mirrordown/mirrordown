@@ -75,14 +75,11 @@ const numberedLines = (
       // A text value keeps the document's own line endings, so a carriage return ends a line too: left on its line, it would end a title or a rebuilt paragraph.
       const parts = child.value.split(LINE_ENDING);
       const position = child.position;
-      // The line the text starts on. A parser's text that starts with a line ending starts at the end of the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`): the source tells the two apart.
+      // The line the text starts on. A parser's text that starts with a line ending starts on the line before it, but a rebuilt paragraph's is placed where its next line's content starts (see `pushPhrasing`), so it spans one line fewer than it has line endings: that tells the two apart. What is written at its start doesn't: a parser's text another plugin shortened (an attribute block taken off its start) still starts where the block was.
       const rebuilt =
         position !== undefined &&
-        parts.length > 1 &&
         parts[0] === "" &&
-        (sourceLines?.[position.start.line - 1] ?? "")
-          .slice(position.start.column - 1)
-          .trim() !== "";
+        position.end.line - position.start.line < parts.length - 1;
       const first =
         position === undefined
           ? undefined
