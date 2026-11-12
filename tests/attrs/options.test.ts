@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { attrs } from "../../packages/mdit-attrs/src";
@@ -18,6 +19,7 @@ const instances = (
   const md = new MarkdownIt().use(attrs, options);
   const processor = unified()
     .use(remarkParse)
+    .use(remarkGfm)
     .use(remarkAttrs, options)
     .use(remarkRehype)
     .use(rehypeStringify);
@@ -73,15 +75,6 @@ describe("attrs/options", () => {
     expect(mdit(options, "```js {.hl}\ncode\n```")).toContain('class="hl');
     expect(mdit(options, "# H {.title}")).toContain('class="title"');
     expect(mdit(options, "Paragraph. {.intro}")).not.toContain('class="intro"');
-  });
-
-  it("rule array: unknown rule name ignored", () => {
-    // @ts-expect-error intentionally invalid rule name
-    expect(() => mdit({ rule: ["unknown"] }, "# Hello {.title}")).not.toThrow();
-    // @ts-expect-error intentionally invalid rule name
-    expect(mdit({ rule: ["unknown"] }, "# Hello {.title}")).not.toContain(
-      'class="title"'
-    );
   });
 
   // â”€â”€ allowed: string list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -228,4 +221,96 @@ describe("attrs/options: allowed", () => {
       expect(render(src)).toBe(html);
     }
   );
+});
+
+// `rule` exists so an author can turn single places off. That only works when a name covers the same places in both engines that take the option, and when a block in a place that is turned off stays in the text: one that is removed without being applied is a silent loss of what the author wrote.
+describe("attrs/options: a rule name covers the same places in both engines", () => {
+  const TABLE = "| a |\n| - |\n";
+  const cases: [NonNullable<AttrsOptions["rule"]>, string, string][] = [
+    // `block` is the end of a paragraph, and nothing another rule reads.
+    [["block"], "p {.p}", '<p class="p">p</p>'],
+    [["block"], "> q {.q}", '<blockquote><p class="q">q</p></blockquote>'],
+    [["block"], "# H {.h}", "<h1>H {.h}</h1>"],
+    [["block"], "H {.h}\n===", "<h1>H {.h}</h1>"],
+    [
+      ["block"],
+      `${TABLE}| 1 {.td} |`,
+      "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1 {.td}</td></tr></tbody></table>"
+    ],
+    [
+      ["block"],
+      `${TABLE}| 1 |\n{.t}`,
+      "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr><tr><td>{.t}</td></tr></tbody></table>"
+    ],
+    // A tight list never renders the paragraph of an item, so a block read as that paragraph's would vanish.
+    [["block"], "- a {.li}\n- b", "<ul><li>a {.li}</li><li>b</li></ul>"],
+    [["block"], "- a\n- b\n{.l}", "<ul><li>a</li><li>b\n{.l}</li></ul>"],
+    [["block"], "- a\n  {.li}\n- b", "<ul><li>a\n{.li}</li><li>b</li></ul>"],
+    [["block"], "- *em*{.e}", "<ul><li><em>em</em>{.e}</li></ul>"],
+    [
+      ["block"],
+      "- a {.li}\n\n- b",
+      "<ul><li><p>a {.li}</p></li><li><p>b</p></li></ul>"
+    ],
+    // A later paragraph of an item is an ordinary paragraph.
+    [
+      ["block"],
+      "- a\n\n  p {.x}",
+      '<ul><li><p>a</p><p class="x">p</p></li></ul>'
+    ],
+    // With the softbreak rule off, a block on its own line still ends the element, and takes its line ending with it.
+    [["block"], "p\n{.p}", '<p class="p">p</p>'],
+    [["heading"], "H\n{.h}\n===", '<h1 class="h">H</h1>'],
+    [["list"], "- a\n  {.li}\n- b", '<ul><li class="li">a</li><li>b</li></ul>'],
+    // Each of the other names reads its own place and leaves a paragraph's block alone.
+    [["heading"], "# H {.h}\n\np {.p}", '<h1 class="h">H</h1><p>p {.p}</p>'],
+    [
+      ["table"],
+      `${TABLE}| 1 {.td} |\n\n{.t}\n\np {.p}`,
+      '<table class="t"><thead><tr><th>a</th></tr></thead><tbody><tr><td class="td">1</td></tr></tbody></table><p>p {.p}</p>'
+    ],
+    [
+      ["list"],
+      "- a {.li}\n\n{.l}\n\np {.p}",
+      '<ul class="l"><li class="li">a</li></ul><p>p {.p}</p>'
+    ]
+  ];
+
+  describe.each(cases)("rule %j on %j", (rule, src, expected) => {
+    it.each(instances({ rule }))("%s", (_engine, render) => {
+      expect(render(src)).toBe(expected);
+    });
+  });
+
+  // markdown-it's end-of-block rule used to read a second block ending a heading, which remark and Sätteri leave as text.
+  it.each(instances({}))(
+    "%s: with every rule on, a heading still takes one block",
+    (_engine, render) => {
+      expect(render("# H {.a} {.b}")).toBe('<h1 class="b">H {.a}</h1>');
+    }
+  );
+});
+
+// A misspelt rule name used to read no block at all, which looks like the plugin not working. Both engines name the rules that exist instead.
+describe("attrs/options: an unknown rule name is refused", () => {
+  const message =
+    'attrs: unknown rule "bogus". Use one of: fence, inline, table, list, heading, hr, softbreak, block.';
+
+  it("markdown-it", () => {
+    expect(() =>
+      new MarkdownIt().use(attrs, { rule: ["heading", "bogus"] })
+    ).toThrow(new TypeError(message));
+  });
+
+  it("remark", () => {
+    expect(() =>
+      unified()
+        .use(remarkParse)
+        // @ts-expect-error intentionally invalid rule name
+        .use(remarkAttrs, { rule: ["heading", "bogus"] })
+        .use(remarkRehype)
+        .use(rehypeStringify)
+        .processSync("# H {.h}")
+    ).toThrow(new TypeError(message));
+  });
 });

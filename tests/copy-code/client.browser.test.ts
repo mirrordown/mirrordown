@@ -128,4 +128,27 @@ describe(`copy-code client`, () => {
       expect(block.right - rect.right).toBeLessThan(16);
     }
   });
+
+  // A page can load the script twice: here from a second package, whose copy is a module of its own. Two listeners would write the clipboard twice for one press, and the second would take "Copied!" for the button's own name and leave it there for good, so a screen reader would hear a button that copies announced as one that already has.
+  it(`copies once per press, and gives the label back, when the script is loaded a second time`, async () => {
+    await import(`../../packages/remd-copy-code/src/client`);
+    const host = document.createElement(`div`);
+    host.innerHTML = new MarkdownIt().use(copyCode).render("```sh\npwd\n```");
+    document.body.append(host);
+    const button = host.querySelector<HTMLButtonElement>(`.markdown-copy-code`);
+    const label = button?.getAttribute(`aria-label`);
+    expect(label).toBeTruthy();
+    expect(label).not.toBe(`Copied!`);
+    copied.length = 0;
+    vi.useFakeTimers();
+    button?.click();
+    await vi.waitFor(() =>
+      expect(button?.getAttribute(`aria-label`)).toBe(`Copied!`)
+    );
+    vi.advanceTimersByTime(2000);
+    vi.useRealTimers();
+    expect(copied).toEqual([`pwd`]);
+    expect(button?.getAttribute(`aria-label`)).toBe(label);
+    expect(button?.hasAttribute(`data-copied`)).toBe(false);
+  });
 });

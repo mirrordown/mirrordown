@@ -1,5 +1,9 @@
 import type { DelimiterConfig } from "../types.js";
-import { addAttrs, getDelimiterChecker } from "../helper/index.js";
+import {
+  addAttrs,
+  dropEmptyTail,
+  getDelimiterChecker
+} from "../helper/index.js";
 import type { AttrRule } from "./types.js";
 
 export const createListRules = (options: DelimiterConfig): AttrRule[] => {
@@ -43,7 +47,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
 
       const attrStart = content.lastIndexOf(options.left, range[0] - 1);
       lastChild.content = content.slice(0, attrStart).trimEnd();
-      if (lastChild.content === "" && children.length > 1) children.pop();
+      dropEmptyTail(children);
     }
   };
 

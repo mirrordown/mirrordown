@@ -193,11 +193,26 @@ const rubyFromMarkdownExtension: FromMarkdownExtension = {
 // What a base or a reading that would parse as an HTML block is given to start with while it is parsed: a private-use character no author's text holds there.
 const START = String.fromCharCode(0xe003);
 
+// `rp` is a pair. With one string the other side printed as `undefined`, so anything but two strings is refused.
+const checkRp = (rp: unknown): void => {
+  if (rp === undefined) return;
+  if (
+    !Array.isArray(rp) ||
+    rp.length !== 2 ||
+    rp.some((side) => typeof side !== "string")
+  ) {
+    throw new TypeError(
+      `ruby: \`rp\` must be a pair of strings, such as ["(", ")"]. Received ${JSON.stringify(rp)}.`
+    );
+  }
+};
+
 /** remark plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
   options = {}
 ) {
   const { rp } = options;
+  checkRp(rp);
   const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   // oxlint-disable-next-line typescript/no-explicit-any
