@@ -132,3 +132,22 @@ describe("lightbox + caption: with `caption: true`, a caption that renders only 
     }
   );
 });
+
+// The dialog caption is a copy of the figcaption, so it has to read the same: a lightbox image written in the caption is a trigger in both, never a literal `!` before a plain image in the copy.
+describe("lightbox + caption: with `caption: true`, a lightbox image inside the caption is a trigger in the dialog's copy too", () => {
+  const nested = "!![a](x.jpg)\n~: cap with !![b](y.jpg) and !![c](z.jpg)";
+  const all = engines({ caption: true });
+  const [first] = all.map(({ render }) => render(nested));
+  it.each(all)("$engine", ({ render }) => {
+    const html = render(nested);
+    expect(html).toBe(first);
+    const inFigure = /<figcaption>(.*)<\/figcaption>/.exec(html)?.[1];
+    expect(inFigure).toMatch(
+      /^cap with <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-[a-z0-9]+"><img src="y\.jpg" alt="b"><\/button> and <button /
+    );
+    expect(html).toContain(
+      `<p class="markdown-lightbox-caption">${inFigure}</p></dialog>`
+    );
+    expect(html.match(/<dialog/g)).toHaveLength(3);
+  });
+});
