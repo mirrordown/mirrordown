@@ -43,7 +43,7 @@ const extractSvgParts = (
 } => {
   const open = SVG_OPEN_TAG.exec(content);
   const parts = { viewBox: ``, width: ``, height: ``, rest: [] as string[] };
-  for (const [source, name, double, single] of (open?.[1] ?? ``).matchAll(
+  for (const [source, name = ``, double, single] of (open?.[1] ?? ``).matchAll(
     ROOT_ATTRIBUTE
   )) {
     const value = double ?? single ?? ``;
