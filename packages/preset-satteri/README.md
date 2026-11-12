@@ -69,14 +69,17 @@ mirrordown({
 | `attrs`             | `{.class #id}`                              | Sätteri's `attributes` feature       |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/sat-autolink-headings`  |
 | `caption`           | `~: caption` after a block                  | `@mirrordown/sat-caption`            |
+| `copyCode`          | a copy button on code blocks                | `@mirrordown/sat-copy-code`          |
 | `definitionList`    | `Term` / `: Definition`                     | Sätteri's `definitionList` feature   |
 | `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
+| `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/sat-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |
 | `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
 | `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/sat-mermaid-pele`       |
+| `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/sat-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/sat-ruby`               |
 | `sectionize`        | headings wrapped in `<section>`             | `@mirrordown/sat-sectionize`         |
 | `slug`              | heading ids                                 | `@mirrordown/sat-slug`               |
@@ -86,6 +89,7 @@ mirrordown({
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
 | `tabs`              | `% Tab`                                     | `@mirrordown/sat-tabs`               |
+| `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/sat-tab-icons`          |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
 | `features`          | any other Sätteri feature                   | merged over the preset's features    |
 
@@ -94,6 +98,7 @@ mirrordown({
 - **Smart punctuation stays off.** The preset sets `smartPunctuation: false`, because hosts such as Astro turn it on by default and smart quotes and dashes rewrite text some plugins read. Pass `features: { smartPunctuation: true }` to turn it back on.
 - **GFM is Sätteri's.** Footnotes, task lists and bare-URL links come with the `gfm` feature, and the markdown-it preset does not have them: a document that uses them renders differently there.
 - **Synchronous.** The preset's plugins are all synchronous, and its types say so, so `markdownToHtml(source, mirrordown())` returns its result directly rather than a Promise.
+- **`tabIcons` follows `tabs`.** With `tabs: { containerClass }` set, tab-icons looks for groups of that class, unless you give it a `containerClass` of its own.
 - **`inline-svg` is not included.** It reads SVG files from disk; add [`@mirrordown/sat-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/sat-inline-svg) to `hastPlugins` yourself where that fits.
 
 ## License
