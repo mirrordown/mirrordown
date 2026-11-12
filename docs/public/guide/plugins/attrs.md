@@ -197,8 +197,6 @@ Sätteri reads attribute blocks itself, and the markdown-it and remark plugins f
 
 - A class or a value can't hold `<`, `[`, `]` or a backtick. `{.w-[10px]}` and `{title="a<b"}` are read by the plugins and stay text on Sätteri.
 - The CSS-module shorthand `{..name}` sets `css-module="name"` with the plugins. Sätteri has no such form and reads it as the class `.name`.
-- A block ending a heading isn't read when the heading has a closing sequence, as in `# Title {.a} #`.
+- A block ending a heading isn't read when the heading has a closing sequence, as in `# Title {.a} #`, or when the block holds a backslash, as in `# Title {data-path="C:\dir"}`.
 - A backslash escape earlier in the same text keeps a block from being read, as in `\* text {.a}`. An escaped brace ending a heading is read anyway, and `# Title \{#x}` gets the id.
 - There are no options, so no custom delimiters, no `allowed` list and no way to turn single rules off.
-
-On markdown-it, any backslash inside a block makes it text, as in `{data-path="C:\dir"}`. remark and Sätteri only mind a backslash that escapes a character.

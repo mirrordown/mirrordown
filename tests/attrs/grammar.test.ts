@@ -198,6 +198,40 @@ const escaped: Case[] = [
     "a character reference before the block doesn't stop it",
     "a &amp; *b*{.c} d {.e}",
     '<p class="e">a &amp; <em class="c">b</em> d</p>'
+  ],
+  [
+    "an escape next to a backslash that escapes nothing",
+    String.raw`text {data-path="C:\dir" .a\_b}`,
+    String.raw`<p>text {data-path="C:\dir" .a_b}</p>`
+  ]
+];
+
+// Only ASCII punctuation can be escaped, so a backslash before anything else is a backslash the author wants in the value (a Windows path, a regular expression). markdown-it still splits the text there, and mdit-attrs once read no block across the split.
+const backslashes: Case[] = [
+  [
+    "in a quoted value",
+    String.raw`text {data-path="C:\dir"}`,
+    String.raw`<p data-path="C:\dir">text</p>`
+  ],
+  [
+    "in a bare value",
+    String.raw`text {data-re=\d+ .a}`,
+    String.raw`<p data-re="\d+" class="a">text</p>`
+  ],
+  [
+    "after an inline element",
+    String.raw`*a*{data-path="C:\dir"} t`,
+    String.raw`<p><em data-path="C:\dir">a</em> t</p>`
+  ],
+  [
+    "on a line of its own",
+    "text\n" + String.raw`{data-path="C:\dir"}`,
+    String.raw`<p data-path="C:\dir">text</p>`
+  ],
+  [
+    "in the text before the block",
+    String.raw`C:\dir {.a}`,
+    String.raw`<p class="a">C:\dir</p>`
   ]
 ];
 
@@ -208,6 +242,13 @@ describe.each(engines)("attrs/grammar (%s)", (_engine, render) => {
 
   it.each(escaped)(
     "an escaped delimiter is text: %s",
+    (_why, input, expected) => {
+      expect(render(input)).toBe(expected);
+    }
+  );
+
+  it.each(backslashes)(
+    "a backslash that escapes nothing is part of the block: %s",
     (_why, input, expected) => {
       expect(render(input)).toBe(expected);
     }
@@ -256,6 +297,12 @@ const limits: [why: string, input: string, ours: string, satteri: string][] = [
     "# H \\{.x}",
     "<h1>H {.x}</h1>",
     '<h1 class="x">H \\</h1>'
+  ],
+  [
+    "a backslash that escapes nothing, in a block ending a heading",
+    String.raw`# H {data-path="C:\dir"}`,
+    String.raw`<h1 data-path="C:\dir">H</h1>`,
+    String.raw`<h1>H {data-path="C:\dir"}</h1>`
   ],
   [
     "a backslash escape earlier in the text",
