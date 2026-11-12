@@ -121,13 +121,26 @@ const hasClass = (node: HastLike, name: string): boolean => {
     : typeof value === `string` && value.split(/\s+/).includes(name);
 };
 
+/** The class a fence's language gave its `<code>`. An attribute block can add classes of the same shape (` ```js {.language-mermaid} `), and every engine writes those before the language's own, so it is the last `language-…` class. */
+const languageClass = (code: HastLike): unknown => {
+  const value = code.properties?.className;
+  const names: unknown[] = Array.isArray(value)
+    ? value
+    : typeof value === `string`
+      ? value.split(/\s+/)
+      : [];
+  return names
+    .filter((name) => typeof name === `string` && name.startsWith(`language-`))
+    .at(-1);
+};
+
 const textOf = (node: HastLike): string =>
   node.type === `text`
     ? (node.value ?? ``)
     : (node.children ?? []).map(textOf).join(``);
 
 /**
- * The diagram a `<pre>` holds, as rehype-mermaid finds them: a `<pre>` whose only content (besides whitespace) is a `<code class="language-mermaid">`, which is how a fenced `mermaid` block renders, or a `<pre class="mermaid">`. `element` is the one whose attributes the `<svg>` takes. `undefined` for anything else.
+ * The diagram a `<pre>` holds, as rehype-mermaid finds them: a `<pre>` whose only content (besides whitespace) is a `<code>` whose language class is `language-mermaid`, which is how a fenced `mermaid` block renders, or a `<pre class="mermaid">`. `element` is the one whose attributes the `<svg>` takes. `undefined` for anything else.
  */
 export const mermaidDiagram = (
   pre: HastLike
@@ -141,7 +154,7 @@ export const mermaidDiagram = (
     if (code || child.tagName !== `code`) return undefined;
     code = child;
   }
-  return code && hasClass(code, MERMAID_LANGUAGE_CLASS)
+  return code && languageClass(code) === MERMAID_LANGUAGE_CLASS
     ? { source: mermaidSource(textOf(code)), element: code }
     : undefined;
 };
