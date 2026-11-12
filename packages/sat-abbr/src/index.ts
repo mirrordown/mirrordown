@@ -1,4 +1,9 @@
-import { createAbbreviationScan, parseAbbreviations } from "@mirrordown/core";
+import {
+  carryEscapes,
+  createAbbreviationScan,
+  parseAbbreviations,
+  textEscapes
+} from "@mirrordown/core";
 import {
   defineMdastPlugin,
   type MdastPluginInstance,
@@ -14,6 +19,7 @@ type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
  */
 export interface AbbrPlugin {
   name: string;
+  options: { position: boolean };
   before: (...args: Parameters<BeforeHook>) => void;
   text: (...args: Parameters<TextVisitor>) => void;
 }
@@ -22,10 +28,13 @@ export interface AbbrPlugin {
  * Sätteri plugin for abbreviations: a paragraph of `*[term]: definition` lines defines them (and is removed), and each defined term elsewhere renders as `<abbr title="definition">`. The definition and term rules are shared with the markdown-it and remark plugins through `@mirrordown/core`.
  */
 export const satteriAbbr =
-  (): ((ctx: PluginFactoryContext) => AbbrPlugin) => () => {
+  (): ((ctx: PluginFactoryContext) => AbbrPlugin) =>
+  ({ source }) => {
     let scan: ReturnType<typeof createAbbreviationScan> | undefined;
     return defineMdastPlugin({
       name: `abbr`,
+      // Positions let the pieces of a split text node keep which characters were escaped.
+      options: { position: true },
       // Definitions can follow their uses, so they are all collected before any text is visited.
       before(root, ctx) {
         const abbreviations = new Map<string, string>();
@@ -59,17 +68,26 @@ export const satteriAbbr =
       text(node, ctx) {
         const parts = scan?.(node.value);
         if (!parts) return;
+        // The pieces have no source position, so each keeps a record of which of its characters were escaped: a span plugin that runs later still tells `\==` from `==`.
+        const escaped = textEscapes(node, source);
+        let offset = 0;
         ctx.replaceNode(
           node,
-          parts.map((part): MdastTarget =>
-            `text` in part
-              ? { type: `text`, value: part.text }
+          parts.map((part): MdastTarget => {
+            const text = {
+              type: `text` as const,
+              value: `text` in part ? part.text : part.term
+            };
+            carryEscapes(text, escaped, offset);
+            offset += text.value.length;
+            return `text` in part
+              ? text
               : {
                   type: `abbr`,
                   data: { hName: `abbr`, hProperties: { title: part.title } },
-                  children: [{ type: `text`, value: part.term }]
-                }
-          )
+                  children: [text]
+                };
+          })
         );
       }
     });
