@@ -41,14 +41,16 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   const { resolve, titleFor, iconFor, containerClass } =
     createAlertResolver(options);
 
-  return (tree) => {
+  return (tree, file) => {
+    // The source tells an escaped marker (`\[!NOTE]`) from a real one.
+    const source = String(file);
     visit(tree, "blockquote", (node: Blockquote) => {
       const firstChild = node.children[0];
       if (firstChild?.type !== "paragraph") return;
 
       // The marker line rule (title, formatting included; body after the
       // first line break) is shared with every engine in @mirrordown/core.
-      const alert = splitAlertParagraph(firstChild.children);
+      const alert = splitAlertParagraph(firstChild.children, source);
       if (!alert) return;
       const type = resolve(alert.keyword);
       if (!type) return;

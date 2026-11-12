@@ -23,6 +23,7 @@ type BlockquoteVisitor = NonNullable<MdastPluginInstance["blockquote"]>;
  */
 export interface GithubAlertsPlugin {
   name: string;
+  options: { position: boolean };
   blockquote: (...args: Parameters<BlockquoteVisitor>) => void;
 }
 
@@ -33,15 +34,17 @@ export const satteriGithubAlerts =
   (
     options: AlertOptions = {}
   ): ((ctx: PluginFactoryContext) => GithubAlertsPlugin) =>
-  () => {
+  ({ source }) => {
     const { resolve, titleFor, iconFor, containerClass } =
       createAlertResolver(options);
     return defineMdastPlugin({
       name: "github-alerts",
+      // Positions and the source tell an escaped marker (`\[!NOTE]`) from a real one.
+      options: { position: true },
       blockquote(node, ctx) {
         const [first, ...rest] = node.children;
         if (first?.type !== "paragraph") return;
-        const alert = splitAlertParagraph(first.children);
+        const alert = splitAlertParagraph(first.children, source);
         if (!alert) return;
         const type = resolve(alert.keyword);
         if (!type) return;

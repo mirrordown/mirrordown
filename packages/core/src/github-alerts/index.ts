@@ -5,6 +5,7 @@ import {
   type AlertType
 } from "./types.js";
 import { ICONS } from "./icons.js";
+import { carryEscapes, textEscapes, type TextLikeNode } from "../escapes.js";
 
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 export type { AlertOptions, AlertType };
@@ -82,6 +83,8 @@ export interface PhrasingLike {
   value?: string;
   alt?: string | null | undefined;
   children?: readonly PhrasingLike[];
+  position?: TextLikeNode[`position`];
+  data?: object | undefined;
 }
 
 /** A paragraph that opens with an alert marker, split into its parts. */
@@ -112,63 +115,90 @@ export const plainText = (nodes: readonly PhrasingLike[]): string =>
     )
     .join(``);
 
-const withValue = <N extends PhrasingLike>(node: N, value: string): N => ({
-  ...node,
-  value
-});
+// A copy of text node `node` holding its characters from `from` up to `to`. Given the document's `source`, the copy records which of its characters were escaped and has no position, as the node's no longer describes it: a span plugin that runs later reads `\==` in the copy as it would in the node. Without `source` there is nothing to tell an escape by, and the copy keeps the node's position.
+const slice = <N extends PhrasingLike>(
+  node: N,
+  source: string | undefined,
+  from: number,
+  to?: number
+): N => {
+  const copy = { ...node, value: (node.value ?? ``).slice(from, to) };
+  if (source === undefined) return copy;
+  delete copy.position;
+  carryEscapes(copy, textEscapes(node, source), from);
+  return copy;
+};
+
+// A text node without the whitespace at its `start`, its `end` or both.
+const trim = <N extends PhrasingLike>(
+  node: N,
+  source: string | undefined,
+  start: boolean,
+  end: boolean
+): N => {
+  const value = node.value ?? ``;
+  return slice(
+    node,
+    source,
+    start ? value.length - value.trimStart().length : 0,
+    end ? value.trimEnd().length : value.length
+  );
+};
+
+const LINE_ENDING = /\r\n?|\n/;
 
 /**
- * Split an alert's first paragraph (an mdast `paragraph`'s children) into its marker, title and body, or return `null` when it does not open with a `[!KEYWORD]` marker in plain text. The first line is the marker plus an optional title; everything after the first line break — a newline inside a text node (soft) or a `break` node (hard) — is the body. Nothing is dropped. Text nodes are copied; other nodes are reused as they are.
+ * Split an alert's first paragraph (an mdast `paragraph`'s children) into its marker, title and body, or return `null` when it does not open with a `[!KEYWORD]` marker in plain text. The first line is the marker plus an optional title; everything after the first line break — a line ending inside a text node (soft) or a `break` node (hard) — is the body. Nothing is dropped. Text nodes are copied; other nodes are reused as they are.
+ *
+ * Pass the document's `source` when the nodes have positions: a marker with an escaped character (`\[!NOTE]`) is then text, as it is in markdown-it, and the copies of text nodes keep which of their characters were escaped.
  */
 export const splitAlertParagraph = <N extends PhrasingLike>(
-  children: readonly N[]
+  children: readonly N[],
+  source?: string
 ): AlertParagraph<N> | null => {
   const [first, ...rest] = children;
   if (first?.type !== `text` || first.value === undefined) return null;
   const opening = first.value.trimStart();
   const match = MARKER_RE.exec(opening);
   if (!match) return null;
-  const [marker, keyword = ``, fold] = match;
+  const [, keyword = ``, foldMarker] = match;
+  const start = first.value.length - opening.length;
+  const escaped =
+    source === undefined ? new Set<number>() : textEscapes(first, source);
+  const bracketed = keyword.length + 3;
+  for (let i = 0; i < bracketed; i++) {
+    if (escaped.has(start + i)) return null;
+  }
+  // An escaped `+` or `-` is the title's first character.
+  const fold = escaped.has(start + bracketed) ? undefined : foldMarker;
 
   const line: N[] = [];
   const body: N[] = [];
   for (const child of [
-    withValue(first, opening.slice(marker.length)),
+    slice(first, source, start + bracketed + (fold ? 1 : 0)),
     ...rest
   ]) {
+    const ending =
+      child.type === `text` ? LINE_ENDING.exec(child.value ?? ``) : null;
     if (body.length > 0 || line.at(-1)?.type === `break`) {
       body.push(child);
-    } else if (child.type === `text` && child.value?.includes(`\n`)) {
-      const at = child.value.indexOf(`\n`);
-      line.push(withValue(child, child.value.slice(0, at)));
-      body.push(withValue(child, child.value.slice(at + 1)));
+    } else if (ending) {
+      line.push(slice(child, source, 0, ending.index));
+      body.push(slice(child, source, ending.index + ending[0].length));
     } else {
       line.push(child);
     }
   }
   if (line.at(-1)?.type === `break`) line.pop();
 
-  const trimmed = line.map((n, i) =>
-    n.type !== `text`
-      ? n
-      : withValue(
-          n,
-          i === 0 && i === line.length - 1
-            ? (n.value ?? ``).trim()
-            : i === 0
-              ? (n.value ?? ``).trimStart()
-              : i === line.length - 1
-                ? (n.value ?? ``).trimEnd()
-                : (n.value ?? ``)
-        )
-  );
-  const titleNodes = trimmed.filter((n) => n.type !== `text` || n.value !== ``);
+  const titleNodes = line
+    .map((n, i) =>
+      n.type === `text` ? trim(n, source, i === 0, i === line.length - 1) : n
+    )
+    .filter((n) => n.type !== `text` || n.value !== ``);
   const lastTitle = titleNodes.at(-1);
   if (lastTitle?.type === `text`) {
-    titleNodes[titleNodes.length - 1] = withValue(
-      lastTitle,
-      (lastTitle.value ?? ``).trimEnd()
-    );
+    titleNodes[titleNodes.length - 1] = trim(lastTitle, source, false, true);
   }
 
   return {

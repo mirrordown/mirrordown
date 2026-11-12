@@ -98,3 +98,87 @@ describe("github-alerts: `types` keys", () => {
     );
   });
 });
+
+describe("github-alerts: only a paragraph opens an alert", () => {
+  // markdown-it read the marker from whatever block came first in the quote, so a heading became an alert there and nowhere else.
+  it.each([
+    [
+      "> # [!NOTE] Title\n> body",
+      "<blockquote><h1>[!NOTE] Title</h1><p>body</p></blockquote>"
+    ],
+    ["> [!NOTE]\n> ===", "<blockquote><h1>[!NOTE]</h1></blockquote>"],
+    [
+      "> [!NOTE]\n> body\n> ---",
+      "<blockquote><h2>[!NOTE]\nbody</h2></blockquote>"
+    ]
+  ])("keeps a heading that starts with a marker: %j", (src, html) => {
+    expect(renderAll(src)).toStrictEqual(inAll(html));
+  });
+});
+
+describe("github-alerts: a line break inside inline markup", () => {
+  // The title ends at the first break outside inline markup. Cutting at one inside emphasis or a link split the element between the title and the body, which is not well-formed HTML.
+  it.each([
+    [
+      "> [!NOTE] **bold\n> more** text",
+      alert("<strong>bold\nmore</strong> text", "", "bold\nmore text")
+    ],
+    [
+      "> [!NOTE] [link\n> text](http://x) end\n> body",
+      alert(
+        '<a href="http://x">link\ntext</a> end',
+        "<p>body</p>",
+        "link\ntext end"
+      )
+    ],
+    [
+      "> [!NOTE] **a  \n> b** c",
+      alert("<strong>a<br>\nb</strong> c", "", "ab c")
+    ]
+  ])("stays in the title: %j", (src, html) => {
+    expect(renderAll(src)).toStrictEqual(inAll(html));
+  });
+});
+
+describe("github-alerts: escapes and character references on the marker line", () => {
+  // An escaped character is the author saying "this is text", so it belongs in the label like any other text.
+  it.each([
+    ["> [!NOTE] AT\\&T rules\n> body", alert("AT&amp;T rules", "<p>body</p>")],
+    [
+      "> [!NOTE] Q&amp;A &copy; time\n> body",
+      alert("Q&amp;A © time", "<p>body</p>")
+    ],
+    ["> [!NOTE] \\*\n> body", alert("*", "<p>body</p>")]
+  ])("reads them into the title and its label: %j", (src, html) => {
+    expect(renderAll(src)).toStrictEqual(inAll(html));
+  });
+
+  // And an escaped marker is not a marker: a backslash is how to write the text `[!NOTE]` at the start of a quote.
+  it.each([
+    "> \\[!NOTE]\n> body",
+    "> &#91;!NOTE]\n> body",
+    "> [\\!NOTE]\n> body",
+    "> [!NOTE\\]\n> body"
+  ])("leaves an escaped marker a blockquote: %j", (src) => {
+    expect(renderAll(src)).toStrictEqual(
+      inAll("<blockquote><p>[!NOTE]\nbody</p></blockquote>")
+    );
+  });
+
+  it("reads an escaped fold marker as the title's first character", () => {
+    expect(renderAll("> [!NOTE]\\+ plus\n> body")).toStrictEqual(
+      inAll(alert("+ plus", "<p>body</p>"))
+    );
+  });
+});
+
+describe("github-alerts: line endings", () => {
+  it.each(["\r", "\r\n", "\n"])(
+    "ends the title at %j, as CommonMark ends a line",
+    (eol) => {
+      expect(renderAll(`> [!NOTE] Title${eol}> body${eol}`)).toStrictEqual(
+        inAll(alert("Title", "<p>body</p>"))
+      );
+    }
+  );
+});
