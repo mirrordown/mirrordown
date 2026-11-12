@@ -80,3 +80,28 @@
 <!-- @case: an escaped asterisk makes the line text -->
 <p>*[HTML]: Hyper Text</p>
 <p>HTML</p>
+
+<!-- @case: definition after its use -->
+<p>The <abbr title="Hyper Text Markup Language">HTML</abbr> specification.</p>
+
+<!-- @case: definition inside a blockquote -->
+<blockquote>
+<p>The <abbr title="Hyper Text">HTML</abbr> spec.</p>
+</blockquote>
+<p>Still <abbr title="Hyper Text">HTML</abbr> outside.</p>
+
+<!-- @case: definition inside a list item -->
+<ul>
+<li><p>First item</p></li>
+<li><p>The <abbr title="Hyper Text">HTML</abbr> item</p></li>
+</ul>
+
+<!-- @case: indented definition -->
+<p>Intro.</p>
+<p><abbr title="Hyper Text">HTML</abbr></p>
+
+<!-- @case: inline code is not scanned -->
+<p><code>HTML</code> is code.</p>
+
+<!-- @case: link text is scanned, destinations and titles are not -->
+<p><a href="http://example.com/HTML" title="HTML"><abbr title="Hyper Text">HTML</abbr></a> and <a href="http://example.com/HTML">http://example.com/<abbr title="Hyper Text">HTML</abbr></a></p>

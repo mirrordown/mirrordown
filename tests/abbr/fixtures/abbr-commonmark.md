@@ -134,3 +134,39 @@ HTML and [HTML]
 \*[HTML]: Hyper Text
 
 HTML
+
+<!-- @case: definition after its use -->
+The HTML specification.
+
+*[HTML]: Hyper Text Markup Language
+
+<!-- @case: definition inside a blockquote -->
+> *[HTML]: Hyper Text
+>
+> The HTML spec.
+
+Still HTML outside.
+
+<!-- @case: definition inside a list item -->
+- First item
+
+  *[HTML]: Hyper Text
+
+- The HTML item
+
+<!-- @case: indented definition -->
+Intro.
+
+   *[HTML]: Hyper Text
+
+HTML
+
+<!-- @case: inline code is not scanned -->
+*[HTML]: Hyper Text
+
+`HTML` is code.
+
+<!-- @case: link text is scanned, destinations and titles are not -->
+*[HTML]: Hyper Text
+
+[HTML](http://example.com/HTML "HTML") and <http://example.com/HTML>

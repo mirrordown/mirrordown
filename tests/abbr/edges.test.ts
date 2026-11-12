@@ -321,3 +321,56 @@ describe("abbr: a term holding a quote is found with smart punctuation on", () =
     ).toBe(expected);
   });
 });
+
+// Behaviour the engines already share and nothing else holds in place. The shared fixture runs through the presets too, where a code block and an image get other plugins' markup, so those two are here.
+describe("abbr: what is never a definition or a term", () => {
+  describe.each(engines)("%s", (_engine, render) => {
+    it("leaves a definition line inside a code block as code, and defines nothing", () => {
+      expect(render("```\n*[HTML]: Hyper Text\n```\n\nHTML")).toBe(
+        `<pre><code>*[HTML]: Hyper Text\n</code></pre><p>HTML</p>`
+      );
+    });
+
+    it("leaves a term inside a code block alone", () => {
+      expect(render("*[HTML]: Hyper Text\n\n```\nHTML fenced\n```")).toBe(
+        `<pre><code>HTML fenced\n</code></pre>`
+      );
+    });
+
+    it("leaves a term in an image's alt text and title alone", () => {
+      expect(render(`*[HTML]: Hyper Text\n\n![HTML](HTML.png "HTML")`)).toBe(
+        `<p><img src="HTML.png" alt="HTML" title="HTML"></p>`
+      );
+    });
+  });
+});
+
+// Each engine keeps its table of terms somewhere: markdown-it in the render's `env`, remark in the transformer call, Sätteri in the plugin instance, reset before each document. A site renders many pages with one instance, and a term defined on one page must not be marked on the next.
+describe("abbr: definitions do not carry over to the next document", () => {
+  const first = `*[HTML]: Hyper Text\n\nHTML`;
+  const second = `HTML`;
+  const marked = `<p><abbr title="Hyper Text">HTML</abbr></p>`;
+  const plain = `<p>HTML</p>`;
+
+  it("markdown-it", () => {
+    const md = new MarkdownIt().use(abbr);
+    expect(normalizeHtml(md.render(first))).toBe(marked);
+    expect(normalizeHtml(md.render(second))).toBe(plain);
+  });
+
+  it("remark", () => {
+    const processor = unified()
+      .use(remarkParse)
+      .use(remarkAbbr)
+      .use(remarkRehype)
+      .use(rehypeStringify);
+    expect(normalizeHtml(String(processor.processSync(first)))).toBe(marked);
+    expect(normalizeHtml(String(processor.processSync(second)))).toBe(plain);
+  });
+
+  it("sätteri", () => {
+    const options = { mdastPlugins: [satteriAbbr()] };
+    expect(normalizeHtml(markdownToHtml(first, options).html)).toBe(marked);
+    expect(normalizeHtml(markdownToHtml(second, options).html)).toBe(plain);
+  });
+});
