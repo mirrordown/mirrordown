@@ -395,8 +395,84 @@ describe.each(engines)("attrs/grammar: fences (%s)", (_engine, render) => {
       "words between the language and the block",
       "```js x {.a .b}\ncode\n```",
       '<pre><code class="a b language-js">code\n</code></pre>'
+    ],
+    [
+      "the spaces inside a quoted value are kept, wherever remark split the info string",
+      '``` {title="a   b"}\ncode\n```',
+      '<pre><code title="a   b">code\n</code></pre>'
+    ],
+    [
+      "the same in a fence inside a blockquote",
+      '> ~~~ {title="a   b"}\n> code\n> ~~~',
+      '<blockquote><pre><code title="a   b">code\n</code></pre></blockquote>'
     ]
   ])("%s", (_why, input, expected) => {
+    expect(render(input)).toBe(expected);
+  });
+
+  // An info string's escapes and character references are resolved before it is used, as its language is: markdown-it hands the plugin the string as written, where remark and Sätteri have resolved it. A brace written as one is not a delimiter, as in a paragraph.
+  it.each<Case>([
+    [
+      "a character reference in a value is resolved once",
+      '```js {data-x="a&amp;b"}\ncode\n```',
+      '<pre><code class="language-js" data-x="a&amp;b">code\n</code></pre>'
+    ],
+    [
+      "an escaped character in a class",
+      "```js {.a\\_b}\ncode\n```",
+      '<pre><code class="a_b language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped character in a key",
+      "```js {a\\_b=c}\ncode\n```",
+      '<pre><code class="language-js" a_b="c">code\n</code></pre>'
+    ],
+    [
+      "a space written as a reference separates words",
+      "```js {title=a&#32;b}\ncode\n```",
+      '<pre><code class="language-js" title="a">code\n</code></pre>'
+    ],
+    [
+      "a backslash that escapes nothing stays",
+      '```js {data-x="C:\\dir"}\ncode\n```',
+      '<pre><code class="language-js" data-x="C:\\dir">code\n</code></pre>'
+    ],
+    [
+      "an escaped brace inside a quoted value is the value's",
+      '```js {title="a\\}b"}\ncode\n```',
+      '<pre><code class="language-js" title="a}b">code\n</code></pre>'
+    ],
+    [
+      "an escaped opening brace opens no block",
+      "```js \\{.a}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped closing brace closes no block",
+      "```js {.a\\}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "an escaped brace outside a quoted value ends the block early",
+      "```js {title=a\\}b}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "a brace written as a reference opens no block, and the word is the language",
+      "``` &#123;.a}\ncode\n```",
+      '<pre><code class="language-{.a}">code\n</code></pre>'
+    ],
+    [
+      "an escaped block after one that is not leaves both unread",
+      "```js {.a} \\{.b}\ncode\n```",
+      '<pre><code class="language-js">code\n</code></pre>'
+    ],
+    [
+      "the language keeps its own reference when a block follows it",
+      "```j&amp;s {.a}\ncode\n```",
+      '<pre><code class="a language-j&amp;s">code\n</code></pre>'
+    ]
+  ])("escapes and references: %s", (_why, input, expected) => {
     expect(render(input)).toBe(expected);
   });
 });

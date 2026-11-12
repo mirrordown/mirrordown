@@ -43,7 +43,10 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
   md,
   { left = "{", right = "}", allowed = [], rule = "all" } = {}
 ) => {
-  const rules = createRules({ left, right, allowed, rule });
+  const rules = createRules(
+    { left, right, allowed, rule },
+    md.utils.unescapeAll
+  );
 
   // A fence whose class slot the fence rule reserved renders as
   // `class=" language-x"`; drop the leading space.

@@ -19,11 +19,13 @@ import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
 import {
   containersKept,
+  escapedIndices,
   itemColumns,
   textEscapes,
   type LineContainer
 } from "@mirrordown/core";
 import { applyAttrs } from "./applyAttrs.js";
+import { readAttrs } from "./getAttrs.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
 import type { AttrsOptions, DelimiterRange } from "./types.js";
 
@@ -43,6 +45,11 @@ const listLoose = (list: List | undefined): boolean =>
   Boolean(list.spread) ||
   list.children.some((item) => item.spread ?? item.children.length > 1);
 type RuleSet = Set<string>;
+
+// A code fence's opening line from its marker on, capturing the info string as written.
+const FENCE_OPENING = /(?:`{3,}|~{3,})[ \t]*([^\r\n]*)/y;
+// Stands in for a delimiter character that was escaped or written as a reference, which no block opens or closes with.
+const LITERAL = String.fromCharCode(0xffff);
 
 const ALL_RULES = new Set([
   "fence",
@@ -147,11 +154,35 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         // remark splits the info string at its first space into `lang` and
         // `meta`, wherever that space is: a block is all of `meta` after a
         // language (```js {.x}), but opens in `lang` without one (``` {.a .b})
-        // or right after one (```js{.a .b}). Read it from the two rejoined.
-        const value = [node.lang, node.meta].filter(Boolean).join(" ").trim();
-        if (!value) return;
-        const range = check(value, "end") ?? check(value, "only");
+        // or right after one (```js{.a .b}). Read it from the two rejoined,
+        // with the spaces the source has between them: they can be inside a
+        // quoted value (``` {title="a   b"}).
+        if (!node.lang) return;
+        const start = node.position?.start.offset;
+        FENCE_OPENING.lastIndex = start ?? 0;
+        const written =
+          start === undefined ? null : FENCE_OPENING.exec(source)?.[1];
+        const gap = (written && /^\S+([ \t]+)/.exec(written)?.[1]) ?? " ";
+        const value = node.meta ? node.lang + gap + node.meta : node.lang;
+        // remark has resolved the info string's escapes and references. A delimiter written as one isn't a delimiter, as in a paragraph, though inside a quoted value it is an ordinary brace: the source tells which characters were, and those stand aside while the block is looked for.
+        const literal = written
+          ? escapedIndices(
+              value,
+              source,
+              FENCE_OPENING.lastIndex - written.length,
+              FENCE_OPENING.lastIndex
+            )
+          : new Set<number>();
+        const masked = value
+          .split("")
+          .map((char, at) =>
+            literal.has(at) && (left + right).includes(char) ? LITERAL : char
+          )
+          .join("");
+        const range = check(masked, "end") ?? check(masked, "only");
         if (!range) return;
+        const block = readAttrs(value, range[0], range[1], left, right);
+        if (block?.end !== range[1]) return;
         applyAttrs(node, value, range, allowed);
         const rest = value.slice(0, range[0] - left.length).trimEnd();
         const space = rest.search(/\s/);
