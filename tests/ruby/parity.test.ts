@@ -192,6 +192,48 @@ describe("ruby: text the author wrote is never taken for a ruby's stand-in", () 
   ]);
 });
 
+// Sätteri re-parses the lines around a ruby on their own. A later line of a paragraph can start with anything once it is indented four columns: read alone and unindented, the same characters open a quote, a list, a heading or a fence, which dropped the `>` or cut the paragraph off at the line before.
+describe("ruby: a continuation line that starts like a block is still the paragraph's text", () => {
+  everyEngine([
+    [
+      "a `>` on an indented line is text, not a quote marker",
+      "a\n    > b {x|y}",
+      `<p>a\n> b ${R("x", "y")}</p>`
+    ],
+    [
+      "the same in a list item",
+      "- a\n      > b {x|y}",
+      `<ul><li>a\n> b ${R("x", "y")}</li></ul>`
+    ],
+    [
+      "in a block quote the quote's own marker comes off and the next `>` stays",
+      "> a\n>     > b {x|y}",
+      `<blockquote><p>a\n> b ${R("x", "y")}</p></blockquote>`
+    ],
+    [
+      "a quote's markers come off every line, and a lazy line has none",
+      "> a {x|y}\nb {x|y}\n> c {x|y}",
+      `<blockquote><p>a ${R("x", "y")}\nb ${R("x", "y")}\nc ${R("x", "y")}</p></blockquote>`
+    ],
+    [
+      "a list marker on an indented line keeps the lines after it",
+      "a\n    - b {x|y}",
+      `<p>a\n- b ${R("x", "y")}</p>`
+    ],
+    [
+      "an ordered list marker likewise",
+      "a\n    1. b {x|y}",
+      `<p>a\n1. b ${R("x", "y")}</p>`
+    ],
+    [
+      "a heading marker likewise",
+      "a\n    # b {x|y}",
+      `<p>a\n# b ${R("x", "y")}</p>`
+    ],
+    ["a fence likewise", "a\n    ``` {x|y}", `<p>a\n\`\`\` ${R("x", "y")}</p>`]
+  ]);
+});
+
 describe("ruby beside attributes and mark", () => {
   everyEngine(
     [
