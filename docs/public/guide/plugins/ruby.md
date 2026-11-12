@@ -104,6 +104,8 @@ Optionally pass `rp` parentheses for fallback rendering in unsupported browsers:
 > It parses each base and reading on its own, with the document's features. List it first among the mdast plugins, since it re-reads its blocks from source: listed after a plugin that has already rebuilt a block, it only finds a ruby that sits whole inside one text node. The Sätteri preset does this for you.
 >
 > With Sätteri's `attributes` feature on, a brace group that ends a block is read as an attribute block before any plugin runs, so a ruby there whose base starts with `.` or `#`, or holds `=`, is lost (`{.NET|ドットネット}` alone on a line). Put text after such a ruby.
+>
+> With that feature on, an attribute block written right after a ruby goes on the ruby (`{漢字|かんじ}{.name}`), as it does with the attrs plugins of the other engines. One difference is the parser's: a table cell that holds a ruby holds an escaped pipe, and Sätteri reads no block of the cell's own there, so `| {漢字\|かんじ} {.name} |` keeps ` {.name}` as text.
 %% Standalone
 > ```ts
 > import { markdownToHtml } from "satteri";
