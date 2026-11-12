@@ -81,15 +81,41 @@ export const satteriTabIcons = (
               label.children[0]?.type === `text`
                 ? label.children[0]
                 : undefined;
+            // A keyword that is a defined abbreviation was wrapped by the abbr plugin, which splits the marker's text in three: `[!`, the abbreviation, and the text from `]` on. Read together they are the marker's text still.
+            const [, abbr, after] = label.children;
+            const key =
+              abbr?.type === `element` &&
+              abbr.tagName === `abbr` &&
+              abbr.children.length === 1 &&
+              abbr.children[0]?.type === `text`
+                ? abbr.children[0]
+                : undefined;
+            const split =
+              first?.value === `[!` &&
+              abbr &&
+              key &&
+              after?.type === `text` &&
+              after.value.startsWith(`]`)
+                ? { abbr, after, lead: first.value + key.value + after.value }
+                : undefined;
             const {
               icon,
               marker,
               label: text
             } = resolve(
               typeof plain === `string` ? plain : ``,
-              first?.value ?? ``
+              split?.lead ?? first?.value ?? ``
             );
-            if (marker && first) {
+            if (marker && split && first) {
+              const rest = split.lead.slice(marker.length);
+              // A label that is only a marker reads as its keyword, which stays the abbreviation it is; otherwise the abbreviation goes with the marker.
+              const only = label.children.length === 3 && rest === ``;
+              ctx.removeNode(first);
+              if (!only) ctx.removeNode(split.abbr);
+              if (rest === ``) ctx.removeNode(split.after);
+              else ctx.replaceNode(split.after, { type: `text`, value: rest });
+              if (panel) ctx.setProperty(panel, `ariaLabel`, text);
+            } else if (marker && first) {
               // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
               const rest =
                 first.value.slice(marker.length) ||

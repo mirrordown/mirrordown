@@ -49,8 +49,28 @@ export const tabIcons: PluginWithOptions<TabIconsOptions> = (
           (child) => child.type !== `text` || child.content !== ``
         );
         const first = children[0]?.type === `text` ? children[0] : undefined;
-        const { icon, marker, label } = resolve(text, first?.content ?? ``);
-        if (marker && first) {
+        // A keyword that is a defined abbreviation was wrapped by the abbr plugin, which splits the marker's text in three: `[!`, the abbreviation, and the text from `]` on. Read together they are the marker's text still.
+        const [, open, key, close, after] = children;
+        const split =
+          first?.content === `[!` &&
+          open?.type === `abbr_open` &&
+          key?.type === `text` &&
+          close?.type === `abbr_close` &&
+          after?.type === `text` &&
+          after.content.startsWith(`]`)
+            ? { after, lead: first.content + key.content + after.content }
+            : undefined;
+        const { icon, marker, label } = resolve(
+          text,
+          split?.lead ?? first?.content ?? ``
+        );
+        if (marker && split) {
+          split.after.content = split.lead.slice(marker.length);
+          // A label that is only a marker reads as its keyword, which stays the abbreviation it is; otherwise the abbreviation goes with the marker.
+          const only = children.length === 5 && split.after.content === ``;
+          children.splice(0, only ? 1 : 4);
+          panel?.attrSet(`aria-label`, label);
+        } else if (marker && first) {
           first.content = first.content.slice(marker.length);
           // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
           if (children.length === 1) first.content ||= label;
