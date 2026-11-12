@@ -1,6 +1,7 @@
 // Abbreviation rules shared by the remark and Sätteri plugins: which paragraphs define abbreviations, and how a text value splits around the defined terms.
 
 type Definitions = Array<[term: string, title: string]>;
+type Line = [term: string | undefined, title: string | undefined];
 
 // A definition line as the parser left it, in a text node.
 const DEFINITION = /^\*\[([^[\]]+)\]:(.+)$/;
@@ -13,7 +14,7 @@ const REGEX_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 
 const readLines = (
   lines: string,
-  read: (line: string) => [term?: string, title?: string]
+  read: (line: string) => Line
 ): Definitions | undefined => {
   const definitions: Definitions = [];
   for (const line of lines.split(/\r\n|\r|\n/)) {
@@ -25,12 +26,12 @@ const readLines = (
   return definitions;
 };
 
-const readText = (line: string): [term?: string, title?: string] => {
+const readText = (line: string): Line => {
   const match = DEFINITION.exec(line);
   return [match?.[1]?.trim(), match?.[2]?.trim()];
 };
 
-const readSource = (line: string): [term?: string, title?: string] => {
+const readSource = (line: string): Line => {
   const match = SOURCE_DEFINITION.exec(line.replace(LINE_PREFIX, ``));
   return [match?.[1]?.replace(ESCAPE, `$1`).trim(), match?.[2]?.trim()];
 };

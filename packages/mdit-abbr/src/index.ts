@@ -126,7 +126,7 @@ export const abbr: PluginSimple = (md) => {
 
         const nodes: Token[] = [];
         // The run's tokens over `from` to `to` of its text. A piece of a `text_special` token stays one, so the typographer, which runs later, still leaves an escaped character alone.
-        const pushText = (from: number, to: number) => {
+        const pushText = (from: number, to: number): void => {
           let offset = 0;
           for (const child of run) {
             const start = Math.max(from, offset) - offset;
