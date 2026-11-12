@@ -92,6 +92,40 @@ describe(`file-tree client`, () => {
     await userEvent.keyboard(`{Home}`);
     expect(focusedName()).toBe(`src`);
   });
+
+  // A page can load the script twice: here from a second package, whose copy is a module of its own. A tree with two sets of listeners acts twice on one key: → on a closed folder would open it and move into it at once, and ↓ would skip a row.
+  describe(`when the script is loaded a second time`, () => {
+    const pressRightOnClosedFolder = async (
+      target: HTMLElement
+    ): Promise<void> => {
+      const folder = target.querySelector<HTMLDetailsElement>(
+        `details[role="treeitem"]:not([open])`
+      );
+      if (!folder) throw new Error(`no closed folder`);
+      const name = folder.querySelector(`.markdown-file-tree-name`);
+      folder.focus();
+      await userEvent.keyboard(`{ArrowRight}`);
+      expect(folder.open).toBe(true);
+      expect(document.activeElement).toBe(folder);
+      expect(focusedName()).toBe(name?.textContent.trim());
+    };
+
+    it(`one key press still acts once on a tree that was already upgraded`, async () => {
+      await import(`../../packages/remd-file-tree/src/client`);
+      await pressRightOnClosedFolder(tree);
+      await userEvent.keyboard(`{ArrowDown}`);
+      expect(focusedName()).toBe(`a.ts`);
+    });
+
+    // Both copies watch the page for new trees, so one added later is offered to each.
+    it(`one key press acts once on a tree added afterwards`, async () => {
+      const added = render("```filetree\nlib/...\n  a.ts\n  b.ts\nc.ts\n```");
+      await expect.poll(() => added.getAttribute(`role`)).toBe(`tree`);
+      await pressRightOnClosedFolder(added);
+      await userEvent.keyboard(`{ArrowDown}`);
+      expect(focusedName()).toBe(`a.ts`);
+    });
+  });
 });
 
 describe(`file-tree colors`, () => {
