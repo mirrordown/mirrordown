@@ -65,3 +65,7 @@
 <!-- @case: a url that is external once decoded is left alone -->
 
 <p><img src="%2F%2Fexample.com/x.svg" alt="alt"></p>
+
+<!-- @case: ids inside two inlined svgs do not collide -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="svg-sprite-1skkiae__a"><stop offset="0" stop-color="red"/><stop offset="1" stop-color="gold"/></linearGradient></defs><path fill="url(#svg-sprite-1skkiae__a)" d="M0 0h10v10H0z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="svg-sprite-wbwtc9__a"><stop offset="0" stop-color="navy"/><stop offset="1" stop-color="#0ff"/></linearGradient></defs><path fill="url(#svg-sprite-wbwtc9__a)" d="M0 0h10v10H0z"/></svg></p>

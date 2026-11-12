@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { inlineSvgMarkup } from "@mirrordown/core";
+import { inlineSvgMarkup, svgSpriteId } from "@mirrordown/core";
 import {
   defineHastPlugin,
   type HastVisitorInstance,
   type PluginFactoryContext
 } from "satteri";
-import { optimize as svgOptimize } from "svgo";
+import { type Config, optimize as svgOptimize } from "svgo";
 import { applyDefaults, type Options } from "./options.js";
 
 export type { CacheEfficiency, Options } from "./options.js";
@@ -25,6 +25,23 @@ export interface InlineSvgPlugin {
 }
 
 const isExternalUrl = (src: string): boolean => /^(?:[a-z]+:|\/\/)/i.test(src);
+
+// SVGO's default preset shortens ids to `a`, `b`, …, so two inlined SVGs would both define `id="a"` and the second's `url(#a)` would pick up the first's gradient or clip path. Each file's ids get a prefix that hashes its content (line endings aside, so it is the same on every OS). A `plugins` list in the user's config replaces this one.
+const optimizeSvg = (content: string, path: string, config: Config): string =>
+  svgOptimize(content, {
+    path,
+    plugins: [
+      `preset-default`,
+      {
+        name: `prefixIds`,
+        params: {
+          prefix: svgSpriteId(content.replace(/\r\n?/g, `\n`)),
+          prefixClassNames: false
+        }
+      }
+    ],
+    ...config
+  }).data;
 
 // The file an image's `src` names, by the rule the markdown-it and rehype plugins share: decoded as a URL component and joined onto the document's directory, so a leading `/` stays under it. `null` when it names no local file: an external URL (also once decoded), or a malformed percent-escape, which makes `decodeURIComponent` throw.
 const resolveSvgPath = (src: string, docDir: string): string | null => {
@@ -60,12 +77,11 @@ export const satteriInlineSvg = (
     try {
       let content = readFileSync(filePath, `utf-8`);
       if (options.optimize) {
-        const optimizeConfig =
-          typeof options.optimize === `boolean` ? {} : options.optimize;
-        content = svgOptimize(content, {
-          path: filePath,
-          ...optimizeConfig
-        }).data;
+        content = optimizeSvg(
+          content,
+          filePath,
+          typeof options.optimize === `boolean` ? {} : options.optimize
+        );
       }
       cache.set(filePath, content);
       misses++;

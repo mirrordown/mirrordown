@@ -69,3 +69,7 @@ a ![alt](./fixtures/test.svg) b
 <!-- @case: a url that is external once decoded is left alone -->
 
 ![alt](%2F%2Fexample.com/x.svg)
+
+<!-- @case: ids inside two inlined svgs do not collide -->
+
+![](./fixtures/gradient-sunrise.svg) ![](./fixtures/gradient-ocean.svg)
