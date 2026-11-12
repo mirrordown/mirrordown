@@ -46,8 +46,13 @@ const copy = async (button: HTMLElement, pre: Element): Promise<void> => {
   );
 };
 
+// Set on the document by the first copy of this script to run. A page can load it twice (from two of the packages, a bundler's duplicate, a dev server's reload), and two listeners would write the clipboard twice and leave a button named for its copied state.
+const LOADED = Symbol.for(`mirrordown.copy-code`);
+const page: Document & { [LOADED]?: true } = document;
+
 // The clipboard is only there in secure contexts.
-if (`CommandEvent` in window && `clipboard` in navigator) {
+if (`CommandEvent` in window && `clipboard` in navigator && !page[LOADED]) {
+  page[LOADED] = true;
   document.addEventListener(
     `command`,
     (event) => {
