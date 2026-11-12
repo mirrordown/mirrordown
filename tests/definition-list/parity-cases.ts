@@ -81,5 +81,38 @@ export const parityCases: ParityCase[] = [
     name: "a setext heading whose underline comes before the marker is still a heading",
     input: "Term\n===\n: Def",
     expected: "<h1>Term</h1><p>: Def</p>"
+  },
+
+  // A marker may be indented up to three columns, like every block marker. Four or more is a paragraph continuation, or indented code after a blank line.
+  {
+    name: "a marker indented four columns continues the paragraph",
+    input: "Term\n    : Def",
+    expected: "<p>Term\n: Def</p>"
+  },
+  {
+    name: "a marker indented with a tab continues the paragraph",
+    input: "Term\n\t: Def",
+    expected: "<p>Term\n: Def</p>"
+  },
+  {
+    name: "a marker indented four columns after a blank line is indented code",
+    input: "Term\n\n    : Def",
+    expected: "<p>Term</p><pre><code>: Def\n</code></pre>"
+  },
+  {
+    name: "a marker four columns past a definition's content column is indented code inside it",
+    input: "T\n: D\n\n      : D2",
+    expected:
+      "<dl><dt>T</dt><dd><p>D</p><pre><code>: D2\n</code></pre></dd></dl>"
+  },
+  {
+    name: "a marker indented three columns still starts a definition",
+    input: "T\n   : D",
+    expected: "<dl><dt>T</dt><dd>D</dd></dl>"
+  },
+  {
+    name: "a marker two columns past a definition's content column nests a list",
+    input: "T\n: D\n    : D2",
+    expected: "<dl><dt>T</dt><dd><dl><dt>D</dt><dd>D2</dd></dl></dd></dl>"
   }
 ];

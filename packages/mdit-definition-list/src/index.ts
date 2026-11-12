@@ -18,6 +18,9 @@ const checkAndSkipMarker = (state: StateBlock, line: number): number => {
 
   if (start >= max) return -1;
 
+  // Four or more columns past the block's indent is indented code or a paragraph continuation, never a marker
+  if (state.sCount[line] - state.blkIndent >= 4) return -1;
+
   const marker = state.src.charCodeAt(start++);
   if (marker !== TILDE && marker !== COLON) return -1;
 
