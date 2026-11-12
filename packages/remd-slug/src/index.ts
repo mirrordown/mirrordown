@@ -47,6 +47,18 @@ export const rehypeSlug: Plugin<[SlugOptions?], Root> = (options) => {
   return (tree) => {
     slugger.reset();
 
+    // An id a heading was given by hand is taken, wherever in the document it is written: the slugger is told of each before it makes any, so a generated id never repeats one.
+    visit(tree, "element", (node) => {
+      const { id } = node.properties;
+      if (
+        headingRank(node) !== undefined &&
+        typeof id === "string" &&
+        id.startsWith(prefix)
+      ) {
+        slugger.occurrences[id.slice(prefix.length)] ??= 0;
+      }
+    });
+
     visit(tree, "element", (node) => {
       if (headingRank(node) !== undefined && !node.properties.id) {
         node.properties.id = prefix + slugger.slug(toString(node));

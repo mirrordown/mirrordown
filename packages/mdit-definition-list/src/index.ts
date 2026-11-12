@@ -1,15 +1,18 @@
 import type { PluginSimple } from "markdown-it";
 import type { RuleBlock } from "markdown-it/lib/parser_block.mjs";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 
 const COLON = 58;
 const TILDE = 126;
 const SPACE = 32;
 const TAB = 9;
+const LESS_THAN = 60;
 const TAB_SIZE = 4;
 
-const expandTabStop = (offset: number): number =>
-  offset + TAB_SIZE - (offset % TAB_SIZE);
+// Tab stops are absolute columns, so the columns a container prefix (`> `) took from the line count too
+const expandTabStop = (offset: number, containerColumns: number): number =>
+  offset + TAB_SIZE - ((offset + containerColumns) % TAB_SIZE);
 
 // Search `[:~][\n ]`, returns next pos after marker on success or -1 on fail.
 const checkAndSkipMarker = (state: StateBlock, line: number): number => {
@@ -17,6 +20,9 @@ const checkAndSkipMarker = (state: StateBlock, line: number): number => {
   const max = state.eMarks[line];
 
   if (start >= max) return -1;
+
+  // Four or more columns past the block's indent is indented code or a paragraph continuation, never a marker
+  if (state.sCount[line] - state.blkIndent >= 4) return -1;
 
   const marker = state.src.charCodeAt(start++);
   if (marker !== TILDE && marker !== COLON) return -1;
@@ -87,14 +93,57 @@ const markTightParagraphs = (state: StateBlock, index: number): void => {
   }
 };
 
+// The first term is a paragraph start for free: every rule registered ahead of this one has already declined its line. A later term is read inside the loop, so the same rules are asked here, in validation mode, whether the line starts a block of theirs (a heading, fence, list item, thematic break, ...). A rule that ignores validation mode (`code` does) may push tokens or move the line, so both are put back.
+const startsAnotherBlock = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  const tokenCount = state.tokens.length;
+  const savedLine = state.line;
+  const savedLevel = state.level;
+  let found = false;
+
+  for (const rule of state.md.block.ruler.getRules("")) {
+    if (rule === dlRule) break;
+    if (rule(state, line, endLine, true)) {
+      found = true;
+      break;
+    }
+  }
+
+  state.tokens.length = tokenCount;
+  state.line = savedLine;
+  state.level = savedLevel;
+
+  // markdown-it's `html_block` answers validation mode with whether its block may interrupt a paragraph, and a line that is one inline tag (`<span>`) may not, though it does start an HTML block anywhere else. A later term never follows a paragraph, so the line is parsed on its own, apart from the document's state, to see what it starts.
+  if (
+    !found &&
+    state.md.options.html &&
+    state.src.charCodeAt(state.bMarks[line] + state.tShift[line]) === LESS_THAN
+  ) {
+    const tokens: Token[] = [];
+    state.md.block.parse(
+      state.getLines(line, line + 1, state.blkIndent, false),
+      state.md,
+      {},
+      tokens
+    );
+    found = tokens[0]?.type === "html_block";
+  }
+
+  return found;
+};
+
 const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
   if (silent) {
     // validation mode validates a dd block only, not a whole definition list
     if (state.ddIndent < 0) return false;
 
+    // A marker left of the definition's content column starts the term's next definition, and ends a paragraph in this one. Measured from the definition, not the innermost block: a marker under the definition's own content column, inside a list item nested in it, has no definition list to belong to there, so it continues the item's paragraph.
     return (
       checkAndSkipMarker(state, startLine) >= 0 &&
-      state.sCount[startLine] < state.blkIndent
+      state.sCount[startLine] < state.ddIndent
     );
   }
 
@@ -172,7 +221,7 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
       while (pos < max) {
         const ch = state.src.charCodeAt(pos);
 
-        if (ch === TAB) offset = expandTabStop(offset);
+        if (ch === TAB) offset = expandTabStop(offset, state.bsCount[ddLine]);
         else if (ch === SPACE) offset++;
         else break;
 
@@ -245,6 +294,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
     if (contentStart < 0) break;
 
+    if (startsAnotherBlock(state, dtLine, endLine)) break;
+
     // go to the next loop iteration:
     // insert DT and DD tags and repeat checking
   }
@@ -262,7 +313,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
 /** markdown-it plugin for definition lists, rendering `<dl>`, `<dt>`, and `<dd>` elements. */
 export const dl: PluginSimple = (md) => {
-  md.block.ruler.before("paragraph", "dl", dlRule, {
+  // Ahead of `lheading`, which would otherwise read `Term` / `: Def` / `===` as a setext heading: it scans past the marker line because this rule only terminates paragraphs inside a definition
+  md.block.ruler.before("lheading", "dl", dlRule, {
     alt: ["paragraph", "reference", "blockquote"]
   });
 };

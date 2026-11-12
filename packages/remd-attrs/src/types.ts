@@ -9,13 +9,13 @@ export type AttrRuleName =
   | "softbreak"
   | "block";
 
-/** Delimiters and allowed characters for the attribute-list syntax. */
+/** Delimiters and allowed attribute names for the attribute-list syntax. */
 export interface DelimiterConfig {
   /** Opening delimiter (default `{`). */
   left: string;
   /** Closing delimiter (default `}`). */
   right: string;
-  /** Characters/patterns permitted inside the delimiters. */
+  /** Attribute names a block may set: a string must equal the name, a pattern must match it. Empty (the default) allows every name. */
   allowed: Array<string | RegExp>;
 }
 

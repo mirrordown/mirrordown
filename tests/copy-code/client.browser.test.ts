@@ -100,6 +100,21 @@ describe(`copy-code client`, () => {
     expect(button?.hasAttribute(`data-copied`)).toBe(false);
   });
 
+  // A block's id is a hash, and nothing keeps another element of the page from having the same one: a heading whose slug spells it, or the same block in a second document on the page. `commandfor` then finds that element, the first with the id, and a reader who pressed a block's button must still get that block, not a heading's text.
+  it(`copies its own block when an element before it has the block's id`, async () => {
+    const pre = second?.closest(`pre`);
+    if (!second || !pre) throw new Error(`missing block`);
+    const heading = document.createElement(`h1`);
+    heading.id = pre.id;
+    heading.textContent = `Not the code`;
+    document.body.prepend(heading);
+    second.click();
+    await Promise.resolve();
+    heading.remove();
+    expect(copied.at(-1)).toBe(`const a = 1;\nconst b = 2;`);
+    expect(second.hasAttribute(`data-copied`)).toBe(true);
+  });
+
   // Without a wrapper, anchor positioning is what puts each button on its own block.
   it(`sits in its own block's top corner`, () => {
     for (const button of [first, second]) {
@@ -112,5 +127,28 @@ describe(`copy-code client`, () => {
       expect(block.right - rect.right).toBeGreaterThanOrEqual(0);
       expect(block.right - rect.right).toBeLessThan(16);
     }
+  });
+
+  // A page can load the script twice: here from a second package, whose copy is a module of its own. Two listeners would write the clipboard twice for one press, and the second would take "Copied!" for the button's own name and leave it there for good, so a screen reader would hear a button that copies announced as one that already has.
+  it(`copies once per press, and gives the label back, when the script is loaded a second time`, async () => {
+    await import(`../../packages/remd-copy-code/src/client`);
+    const host = document.createElement(`div`);
+    host.innerHTML = new MarkdownIt().use(copyCode).render("```sh\npwd\n```");
+    document.body.append(host);
+    const button = host.querySelector<HTMLButtonElement>(`.markdown-copy-code`);
+    const label = button?.getAttribute(`aria-label`);
+    expect(label).toBeTruthy();
+    expect(label).not.toBe(`Copied!`);
+    copied.length = 0;
+    vi.useFakeTimers();
+    button?.click();
+    await vi.waitFor(() =>
+      expect(button?.getAttribute(`aria-label`)).toBe(`Copied!`)
+    );
+    vi.advanceTimersByTime(2000);
+    vi.useRealTimers();
+    expect(copied).toEqual([`pwd`]);
+    expect(button?.getAttribute(`aria-label`)).toBe(label);
+    expect(button?.hasAttribute(`data-copied`)).toBe(false);
   });
 });

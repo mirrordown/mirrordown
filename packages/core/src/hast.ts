@@ -83,12 +83,12 @@ export const sectionize = <N extends HastLike>(
 
   const result: N[] = [];
   let i = 0;
-  // Preamble: everything before the first heading of the shallowest rank.
+  // Preamble: everything before the first heading of the shallowest rank. It can still hold deeper headings (a run that starts deep and then goes shallower), and every heading gets a section, so it recurses too.
   for (; i < nodes.length; i++) {
     const node = nodes[i];
     if (!node || headingRank(node) === minRank) break;
-    result.push(node);
   }
+  result.push(...sectionize(nodes.slice(0, i), section, minRank));
   // Each shallowest heading starts a section that runs until the next peer.
   while (i < nodes.length) {
     const start = i;
@@ -136,8 +136,8 @@ export const lightboxTrigger = <C>(
   children: [image]
 });
 
-/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. */
-export const lightboxDialog = <C>(
+/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. A caption that is empty or only whitespace text shows nothing, so it gets no `<p>`, as in the markdown-it plugin. */
+export const lightboxDialog = <C extends HastLike>(
   id: string,
   image: C,
   caption?: C[]
@@ -158,7 +158,7 @@ export const lightboxDialog = <C>(
       },
       children: [image]
     },
-    ...(caption
+    ...(caption?.some((node) => !isWhitespaceText(node))
       ? [
           {
             type: `element` as const,

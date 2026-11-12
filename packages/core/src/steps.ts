@@ -6,6 +6,7 @@ import type {
   Root,
   Paragraph,
   Blockquote,
+  Text,
   PhrasingContent,
   BlockContent,
   DefinitionContent
@@ -14,15 +15,21 @@ import type { Properties } from "hast";
 import {
   blockquoteMarkers,
   endGroupsAtMarkers,
+  headerLineContent,
   INDENTED_BLOCKS,
-  MARKED_BLOCKS,
+  itemContentColumn,
+  keepQuoteAttributes,
+  markerLevels,
   splitAtOpeningLine,
   linesToParagraph,
   markerCount,
   paragraphProperties,
   paraToLines,
+  paraToSourceLines,
+  quotePosition,
   rebuildLazyLines,
-  type MarkedLine
+  splitSourceLines,
+  type SourceLine
 } from "./lazy.js";
 import { isAlertMarkerLine } from "./github-alerts/index.js";
 
@@ -60,6 +67,8 @@ export interface StepsItemNode {
     attrsRole?: string;
     attrsTitle?: PhrasingContent[];
     hProperties?: Properties;
+    /** A sub-step (`@@` and deeper): its body is written with its parent step's `>` markers, not with one more, which is how the lazy-line passes count its lines (see `markerLevels`). */
+    sub?: boolean;
   };
 }
 
@@ -76,6 +85,20 @@ const parseHeaderPrefix = (text: string): ParsedHeader | null => {
   if (!m) return null;
   const [, hashes = "", digits = "", rest = ""] = m;
   return { depth: hashes.length, number: parseInt(digits, 10), rest };
+};
+
+// A step header as written. Recognition reads text values, where an escape (`\@1.`) or a character reference (`&#64;1.`) has become the character it stands for; markdown-it reads the line, where those are not a header. So with the source, the text must start with a header there too.
+const SOURCE_HEADER_RE = /^@{1,6}\d+\./;
+
+const writtenHeader = (
+  text: Text,
+  sourceLines?: readonly string[]
+): ParsedHeader | null => {
+  const header = parseHeaderPrefix(text.value);
+  const start = text.position?.start;
+  if (!header || !sourceLines || !start) return header;
+  const source = (sourceLines[start.line - 1] ?? "").slice(start.column - 1);
+  return SOURCE_HEADER_RE.test(source) ? header : null;
 };
 
 // ── Raw step types ────────────────────────────────────────────────────────────
@@ -103,17 +126,24 @@ interface HeaderPara {
   steps: RawStep[];
   rest: PhrasingContent[][];
   restLine: number;
+  // Attributes the parser read off the end of the paragraph (Sätteri) from a block on a line of its own after the last header: written after the steps, they are the list's, as the attrs plugins of the other engines place them.
+  listProperties?: Properties | undefined;
 }
 
 const extractHeaderPara = (
   para: Paragraph,
   counters: Map<number, number>,
   requireDepthOne = true,
-  prevDepth = 0
+  prevDepth = 0,
+  sourceLines?: readonly string[]
 ): HeaderPara | null => {
-  const lines = paraToLines(para);
+  const lines = paraToLines(para, sourceLines);
   const steps: RawStep[] = [];
   let currentDepth = prevDepth;
+  // Whether the paragraph goes on past its last line's text: the parser took an attribute block from a line of its own.
+  const lastText = lines.at(-1)?.at(-1)?.position?.end.line;
+  const ownLine =
+    lastText !== undefined && (para.position?.end.line ?? lastText) > lastText;
   const stop = (index: number): HeaderPara | null =>
     steps.length > 0
       ? {
@@ -123,11 +153,12 @@ const extractHeaderPara = (
         }
       : null;
 
-  for (const [index, lineSegs] of lines.entries()) {
+  for (const [index, line] of lines.entries()) {
+    const lineSegs = headerLineContent(line, sourceLines);
     const first = lineSegs[0];
     if (first?.type !== "text") return stop(index);
 
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     if (!header) return stop(index);
 
     const { depth } = header;
@@ -148,13 +179,16 @@ const extractHeaderPara = (
       number,
       titleNodes,
       body: [],
-      ...(index === lines.length - 1
+      ...(index === lines.length - 1 && !ownLine
         ? { hProperties: paragraphProperties(para) }
         : {})
     });
   }
 
-  return stop(lines.length);
+  const all = stop(lines.length);
+  return all && ownLine
+    ? { ...all, listProperties: paragraphProperties(para) }
+    : all;
 };
 
 // Lines left over after a group ends become ordinary paragraphs, split before
@@ -163,7 +197,8 @@ const extractHeaderPara = (
 // to source lines) because group ids hash the start line.
 const splitAtGroupStarts = (
   lines: PhrasingContent[][],
-  firstLine: number
+  firstLine: number,
+  sourceLines?: readonly string[]
 ): Paragraph[] => {
   const paragraphs: Paragraph[] = [];
   let start = 0;
@@ -179,7 +214,7 @@ const splitAtGroupStarts = (
   lines.forEach((line, index) => {
     const first = line[0];
     const opens =
-      first?.type === "text" && parseHeaderPrefix(first.value)?.depth === 1;
+      first?.type === "text" && writtenHeader(first, sourceLines)?.depth === 1;
     if (opens && index > start) {
       flush(index);
       start = index;
@@ -203,13 +238,13 @@ interface ParentLike {
   children?: ParentLike[];
 }
 
-// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `isHeader` accepts; the paragraph is cut before it, in place.
+// CommonMark lets a line without a blockquote's `>` markers continue the paragraph before it, so lines meant for the next step can end up in a paragraph nested in a step's body (in a deeper blockquote or a list item), where markdown-it reads them by their markers instead. From the deepest last paragraph of `node`, take the lines from the first one written outside the step body (with fewer markers than the body's own, `base`) that `leaves` accepts (given the paragraph's lines and the line's index); the paragraph is cut before it, in place. The paragraph's `data` (attributes a parser read off its end) is returned with the lines: it belongs to the last of them.
 const takeLazyLines = (
   node: BlockContent | DefinitionContent,
   sourceLines: readonly string[],
   base: number,
-  isHeader: (segs: PhrasingContent[]) => boolean
-): MarkedLine[] | null => {
+  leaves: (lines: readonly SourceLine[], index: number) => boolean
+): { lines: SourceLine[]; data: Paragraph["data"] } | null => {
   let parent = node as unknown as ParentLike;
   let last = parent.children?.at(-1);
   while (last?.type !== "paragraph") {
@@ -218,43 +253,57 @@ const takeLazyLines = (
     last = parent.children?.at(-1);
   }
   const para = last as unknown as Paragraph;
-  const start = para.position?.start.line;
-  if (start === undefined || !parent.children) return null;
-  const lines = paraToLines(para, sourceLines).map(
-    (segs, index): MarkedLine => ({
-      segs,
-      markers: markerCount(sourceLines[start - 1 + index] ?? "")
-    })
-  );
+  const lines = paraToSourceLines(para, sourceLines);
+  if (!lines || !parent.children) return null;
   const at = lines.findIndex(
-    ({ segs, markers }, index) => index > 0 && markers < base && isHeader(segs)
+    ({ markers }, index) => index > 0 && markers < base && leaves(lines, index)
   );
   if (at === -1) return null;
-  const kept = linesToParagraph(lines.slice(0, at).map(({ segs }) => segs));
+  const kept = linesToParagraph(
+    lines.slice(0, at).map(({ segs }) => segs),
+    sourceLines
+  );
   parent.children.splice(
     -1,
     1,
     ...(kept ? [kept as unknown as ParentLike] : [])
   );
-  return lines.slice(at);
+  return { lines: lines.slice(at), data: para.data };
 };
+
+interface SplitQuote {
+  segments: BQSegment[];
+  // The blocks after the group, when a line in the quote ended it: that line and what follows it, as markdown-it parses them once the group has ended.
+  after: Array<BlockContent | DefinitionContent> | null;
+  // Whether such a line was left in the last body, for the pass that ends groups at their markers to move: the group has ended there all the same, so nothing after the quote continues it.
+  ended: boolean;
+}
 
 const splitBlockquote = (
   bq: Blockquote,
   counters: Map<number, number>,
   currentDepth: number,
   sourceLines?: readonly string[]
-): BQSegment[] => {
+): SplitQuote => {
   const segments: BQSegment[] = [];
   let currentSegment: BQSegment = { header: null, body: [] };
   // The `>` markers of the step body's own lines.
   const base = sourceLines ? blockquoteMarkers(bq, sourceLines) : undefined;
+  // The lines that ended the group, and the quote's blocks after their paragraph.
+  let ending: SourceLine[] | null = null;
+  const quoted: Array<BlockContent | DefinitionContent> = [];
+  // The data of the paragraph the group ended in: attributes the parser read from its end (Sätteri's run before steps), which belong to its last line.
+  let endingData: Paragraph["data"];
+  // Whether a line that ends the group was left in a body (see `endsGroup`).
+  let ended = false;
+  const outside = (line: SourceLine | undefined): boolean =>
+    base !== undefined && line !== undefined && line.markers < base;
 
   // A line's step header, if it has one that fits the group's depth.
   const stepHeader = (lineSegs: PhrasingContent[]): ParsedHeader | null => {
     const first = lineSegs[0];
     if (first?.type !== "text") return null;
-    const header = parseHeaderPrefix(first.value);
+    const header = writtenHeader(first, sourceLines);
     return header && header.depth <= currentDepth + 1 ? header : null;
   };
 
@@ -281,75 +330,183 @@ const splitBlockquote = (
     };
   };
 
-  for (const child of bq.children) {
+  // A line that is neither a header nor written with the body's markers ends the group, as it does in markdown-it. Here, that's one the pass that ends groups at their markers (`endGroupsAtMarkers`) doesn't reach: the `first` line after a header (that pass reads a paragraph from its second line), a line with a header after it (it isn't in the group's last step then), or a line with a block after its paragraph (it isn't in the body's last paragraph: not the quote's `last`). The other such lines are left to that pass. Tabs end a group the same way (`splitBlockquote` in tabs.ts).
+  const endsGroup = (
+    lines: readonly SourceLine[],
+    index: number,
+    first: boolean,
+    last: boolean
+  ): boolean =>
+    base !== undefined &&
+    (lines[index]?.markers ?? base) < base &&
+    (first ||
+      !last ||
+      lines.some(
+        (line, later) =>
+          later > index &&
+          line.markers < base &&
+          stepHeader(headerLineContent(line.segs, sourceLines)) !== null
+      ));
+
+  for (const [childIndex, child] of bq.children.entries()) {
+    // After the group has ended, the quote's other blocks follow it as they are.
+    if (ending) {
+      quoted.push(child);
+      continue;
+    }
+    const last = childIndex === bq.children.length - 1;
     if (child.type !== "paragraph") {
       currentSegment.body.push(child);
       if (!sourceLines || base === undefined) continue;
-      const lazy = takeLazyLines(
-        child,
-        sourceLines,
-        base,
-        (segs) => stepHeader(segs) !== null
-      );
+      const lazy = takeLazyLines(child, sourceLines, base, (lines, index) => {
+        const leaves =
+          stepHeader(lines[index]?.segs ?? []) !== null ||
+          endsGroup(lines, index, false, last);
+        if (!leaves) ended = true;
+        return leaves;
+      });
       if (!lazy) continue;
-      // The header and the lines after it: the steps they start, and those steps' bodies.
-      let pending: MarkedLine[] = [];
-      const flush = (): void => {
+      const { lines: lazyLines, data: lazyData } = lazy;
+      // Typed as in lazy.ts: core doesn't load the augmentation that adds `hProperties` to a paragraph's data.
+      const lazyAttributes:
+        | (NonNullable<Paragraph["data"]> & {
+            hProperties?: Properties | undefined;
+          })
+        | undefined = lazyData;
+      const lazyProperties = lazyAttributes?.hProperties;
+      // The header and the lines after it: the steps they start, and those steps' bodies. The cut paragraph's data goes with its last line: on the step, when that line is a header, else on the paragraph the line ends up in.
+      let pending: SourceLine[] = [];
+      const flush = (data?: Paragraph["data"]): void => {
         const relative = pending.map((line) => ({
           ...line,
           markers: line.markers - base
         }));
-        currentSegment.body.push(...rebuildLazyLines(relative, 0));
+        const blocks = rebuildLazyLines(relative, 0);
+        let block = blocks.at(-1);
+        while (block?.type === "blockquote") block = block.children.at(-1);
+        if (data && block?.type === "paragraph") block.data = data;
+        currentSegment.body.push(...blocks);
         pending = [];
       };
-      for (const line of lazy) {
-        const header = line.markers < base ? stepHeader(line.segs) : null;
+      for (const [index, line] of lazyLines.entries()) {
+        const content = headerLineContent(line.segs, sourceLines);
+        const header = line.markers < base ? stepHeader(content) : null;
         if (header) {
           flush();
-          startStep(header, line.segs);
+          startStep(
+            header,
+            content,
+            index === lazyLines.length - 1 ? lazyProperties : undefined
+          );
+        } else if (endsGroup(lazyLines, index, pending.length === 0, last)) {
+          ending = lazyLines.slice(index);
+          endingData = lazyData;
+          break;
         } else {
+          if (outside(line)) ended = true;
           pending.push(line);
         }
       }
-      flush();
+      flush(ending ? undefined : lazyData);
       continue;
     }
 
     let bodyLines: PhrasingContent[][] = [];
-    const lines = paraToLines(child, sourceLines);
-    const first = child.position?.start.line;
+    const marked = sourceLines ? paraToSourceLines(child, sourceLines) : null;
+    const lines = marked
+      ? marked.map(({ segs }) => segs)
+      : paraToLines(child, sourceLines);
     // A header written with the body's own `>` markers is the body's content (it can start a group of its own there), as markdown-it reads the body; only one written outside the body starts the next step.
     const outsideBody = (index: number): boolean =>
-      !sourceLines ||
-      base === undefined ||
-      first === undefined ||
-      markerCount(sourceLines[first - 1 + index] ?? "") < base;
+      !marked || base === undefined || (marked[index]?.markers ?? 0) < base;
     for (const [index, lineSegs] of lines.entries()) {
-      const header = outsideBody(index) ? stepHeader(lineSegs) : null;
+      const content = headerLineContent(lineSegs, sourceLines);
+      const header = outsideBody(index) ? stepHeader(content) : null;
       if (header) {
         // Flush accumulated body lines
-        const bodyPara = linesToParagraph(bodyLines);
+        const bodyPara = linesToParagraph(bodyLines, sourceLines);
         if (bodyPara) currentSegment.body.push(bodyPara);
         bodyLines = [];
         startStep(
           header,
-          lineSegs,
+          content,
           index === lines.length - 1 ? paragraphProperties(child) : undefined
         );
         continue;
       }
+      if (marked && endsGroup(marked, index, bodyLines.length === 0, last)) {
+        ending = marked.slice(index);
+        break;
+      }
+      if (outside(marked?.[index])) ended = true;
       bodyLines.push(lineSegs);
     }
 
     // These lines end the paragraph, so they keep its data: attributes the
-    // parser read from its end (Sätteri's run before steps).
-    const bodyPara = linesToParagraph(bodyLines);
-    if (bodyPara && child.data) bodyPara.data = child.data;
+    // parser read from its end (Sätteri's run before steps). When the group ended in the paragraph, the lines that ended it do.
+    const bodyPara = linesToParagraph(
+      bodyLines,
+      ending ? sourceLines : undefined
+    );
+    if (bodyPara && child.data && !ending) bodyPara.data = child.data;
     if (bodyPara) currentSegment.body.push(bodyPara);
+    if (ending) endingData = child.data;
   }
 
   segments.push(currentSegment);
-  return segments;
+  if (!ending || !sourceLines || base === undefined)
+    return { segments, after: null, ended };
+
+  // The lines that ended the group, rebuilt from their markers over those of the content around the group (one fewer than the body's), with the quote's later blocks still quoted.
+  const over = base - 1;
+  const after = rebuildLazyLines(
+    ending.map((line) => ({ ...line, markers: line.markers - over })),
+    0,
+    { sourceLines, over }
+  );
+  if (endingData) {
+    let block = after.at(-1);
+    while (block?.type === "blockquote") block = block.children.at(-1);
+    if (block?.type === "paragraph") block.data = endingData;
+  }
+  const firstQuoted = quoted[0];
+  if (firstQuoted) {
+    const lastRebuilt = after.at(-1);
+    if (lastRebuilt?.type === "blockquote")
+      lastRebuilt.children.push(...quoted);
+    else {
+      const quote: Blockquote = { type: "blockquote", children: quoted };
+      const from = firstQuoted.position?.start.line;
+      const to = quoted.at(-1)?.position?.end.line;
+      const position =
+        from !== undefined && to !== undefined
+          ? quotePosition(sourceLines, from, to, base)
+          : undefined;
+      if (position) quote.position = position;
+      after.push(quote);
+    }
+  }
+  return { segments, after, ended: true };
+};
+
+// Whether a quote after a step is an alert (`> [!NOTE]`), a block of its own, rather than more of the step's body. After a blank line it is, as markdown-it reads it, whether or not the alerts plugin reads it. Directly under the step it is the body, unless the alerts plugin (it runs before steps) has already made it an alert, taking its marker: that can't be made a body again. Only a marker with the quote's own `>` count counts: written deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlert = (
+  bq: Blockquote,
+  before: Paragraph["position"],
+  sourceLines: readonly string[]
+): boolean => {
+  const line = bq.position?.start.line;
+  if (line === undefined) return false;
+  const source = sourceLines[line - 1] ?? "";
+  if (
+    !isAlertMarkerLine(source) ||
+    markerCount(source) !== blockquoteMarkers(bq, sourceLines)
+  )
+    return false;
+  if (before && line > before.end.line + 1) return true;
+  const text =
+    bq.children[0]?.type === "paragraph" && bq.children[0].children[0];
+  return !(text && text.type === "text" && isAlertMarkerLine(text.value));
 };
 
 // ── Tree builder ──────────────────────────────────────────────────────────────
@@ -395,6 +552,7 @@ const buildTree = (
       data: {
         attrsRole: "containerItem",
         attrsTitle: s.titleNodes,
+        ...(targetDepth > 1 ? { sub: true } : {}),
         ...(s.hProperties ? { hProperties: { ...s.hProperties } } : {})
       }
     });
@@ -419,7 +577,9 @@ export const processStepsInChildren = (
   containerClass: string,
   sourceLines?: readonly string[],
   quotes = 0,
-  parentType = "root"
+  parentType = "root",
+  // Where the content of the list item the children are in starts (see `itemContentColumn`).
+  column?: number
 ): void => {
   const newChildren: typeof children = [];
   let i = 0;
@@ -428,17 +588,18 @@ export const processStepsInChildren = (
     const node = children[i];
     if (!node) break;
 
-    // A step header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item or definition, a header line may instead be one CommonMark lazily continued, so those are left as they are.
+    // A step header interrupts the paragraph before it, as markdown-it's block rule does, when it's written at the paragraph's own level (its `>` markers). In a list item, a header line may instead be one CommonMark lazily continued, written short of the item's content: only one written in the item interrupts. In a definition, where the content's column isn't known, they are left as they are.
     if (
       node.type === "paragraph" &&
       sourceLines &&
-      !INDENTED_BLOCKS.has(parentType)
+      (column !== undefined || !INDENTED_BLOCKS.has(parentType))
     ) {
       const split = splitAtOpeningLine(
         node,
         sourceLines,
         quotes,
-        (text) => parseHeaderPrefix(text)?.depth === 1
+        (_, text) => writtenHeader(text, sourceLines)?.depth === 1,
+        column
       );
       if (split) {
         children.splice(i, 1, ...split);
@@ -448,13 +609,20 @@ export const processStepsInChildren = (
 
     if (node.type === "paragraph") {
       const counters = new Map<number, number>();
-      const headerPara = extractHeaderPara(node, counters);
+      const headerPara = extractHeaderPara(
+        node,
+        counters,
+        true,
+        0,
+        sourceLines
+      );
 
       if (headerPara) {
         const rawSteps: RawStep[] = [...headerPara.steps];
         // Lines left over after a depth-skipping or non-header line end the group.
         let rest = headerPara.rest;
         let restLine = headerPara.restLine;
+        let listProperties = headerPara.listProperties;
         let j = i + 1;
         // A group always starts with at least one step.
         const lastStep = (): RawStep => rawSteps[rawSteps.length - 1]!;
@@ -466,15 +634,12 @@ export const processStepsInChildren = (
           if (!sibling) break;
 
           if (sibling.type === "blockquote") {
-            // An alert after a blank line is a block of its own, not more of the step's body.
-            const line = sibling.position?.start.line;
             if (
               sourceLines &&
-              line !== undefined &&
-              isAlertMarkerLine(sourceLines[line - 1] ?? "")
+              isOwnAlert(sibling, children[j - 1]?.position, sourceLines)
             )
               break;
-            const segments = splitBlockquote(
+            const { segments, after, ended } = splitBlockquote(
               sibling,
               counters,
               currentDepth,
@@ -485,6 +650,10 @@ export const processStepsInChildren = (
             if (firstSeg?.header === null) {
               rawSteps[currentStepIdx]?.body.push(...firstSeg.body);
             }
+            // Attributes on the quote itself (Sätteri) come from a block on a line of its own, written after the body without its `>`: that line ends the steps, and its attributes are the list's.
+            const quoteProperties = paragraphProperties(
+              sibling as unknown as Paragraph
+            );
 
             for (let s = 1; s < segments.length; s++) {
               const seg = segments[s];
@@ -496,18 +665,42 @@ export const processStepsInChildren = (
             }
 
             j++;
+            // A line in the quote ended the group: it and what follows it come after the list, where the loop reads them as it reads any block (a header among them starts a new group).
+            if (after) {
+              // The quote's attributes were written after its last line, which is now in the last of these blocks.
+              const lastBlock = after.at(-1);
+              if (quoteProperties && lastBlock)
+                lastBlock.data = {
+                  ...lastBlock.data,
+                  hProperties: { ...quoteProperties }
+                } as typeof lastBlock.data;
+              children.splice(j, 0, ...after);
+              break;
+            }
+            // A line in the quote ended the group and was left for the pass that ends groups at their markers: the quote's attributes were written after that line, so they go where that pass puts its blocks.
+            if (ended) {
+              if (quoteProperties)
+                keepQuoteAttributes(lastStep().body, quoteProperties);
+              break;
+            }
+            if (quoteProperties) {
+              listProperties = { ...listProperties, ...quoteProperties };
+              break;
+            }
           } else if (sibling.type === "paragraph") {
             const prevDepth = lastStep().depth;
             const contHeaders = extractHeaderPara(
               sibling,
               counters,
               false,
-              prevDepth
+              prevDepth,
+              sourceLines
             );
             if (contHeaders) {
               rawSteps.push(...contHeaders.steps);
               rest = contHeaders.rest;
               restLine = contHeaders.restLine;
+              listProperties = contHeaders.listProperties ?? listProperties;
               currentStepIdx = rawSteps.length - 1;
               currentDepth = lastStep().depth;
               j++;
@@ -522,8 +715,14 @@ export const processStepsInChildren = (
         const list = buildTree(rawSteps, 1, 0, rawSteps.length);
         list.containerClass = containerClass;
         if (parentType === "stepsItem") list.inBody = true;
+        if (listProperties)
+          list.data = { ...list.data, hProperties: { ...listProperties } };
         newChildren.push(list as unknown as Root["children"][number]);
-        children.splice(j, 0, ...splitAtGroupStarts(rest, restLine));
+        children.splice(
+          j,
+          0,
+          ...splitAtGroupStarts(rest, restLine, sourceLines)
+        );
         i = j;
         continue;
       }
@@ -549,16 +748,18 @@ export const processSteps = (
   containerClass: string,
   source?: string
 ): void => {
-  const sourceLines = source?.split(/\r?\n/);
+  const sourceLines =
+    source === undefined ? undefined : splitSourceLines(source);
   const walk = (node: Container, quotes: number): void => {
     if (!Array.isArray(node.children) || node.children.length === 0) return;
-    const inner = quotes + (MARKED_BLOCKS.has(node.type ?? "") ? 1 : 0);
+    const inner = quotes + markerLevels(node);
     processStepsInChildren(
       node.children as Array<BlockContent | DefinitionContent>,
       containerClass,
       sourceLines,
       inner,
-      node.type
+      node.type,
+      itemContentColumn(node)
     );
     for (const child of node.children) walk(child as Container, inner);
   };

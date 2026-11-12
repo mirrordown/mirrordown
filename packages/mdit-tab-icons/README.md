@@ -9,9 +9,9 @@ A markdown-it plugin for the `tab-icons` syntax extension.
 The `tab-icons` plugin adds an icon to the labels of [tab groups](/guide/plugins/tabs). A label gets the icon its text matches (`npm`, `pnpm`, `vite.config.ts`), or the one a `[!keyword]` marker at its start names. The icon is an inline `<svg>` before the label's text:
 
 ```html
-<label class="markdown-tabs-label">
-  <input type="radio" name="..." checked>
-  <svg class="markdown-tab-icon" aria-hidden="true" viewBox="0 0 32 32">...</svg>
+<input type="radio" name="..." id="..." hidden checked>
+<label class="markdown-tabs-label" for="...">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="markdown-tab-icon" aria-hidden="true">...</svg>
   npm
 </label>
 ```
@@ -83,7 +83,7 @@ Start a label with `[!keyword]` to choose its icon, the way a [GitHub alert](/gu
 > ```
 ````
 
-`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written.
+`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written. Nor is a marker that isn't plain text at the very start of the label: inside markup (`**[!npm]** Install`), or with a piece of it taken by markup (`[!n**p**m]`), it stays as written and the label is matched by its text. Markup after a marker is fine: `[!npm] **Install**`, and so is a keyword that is also a defined [abbreviation](/guide/plugins/abbr): `[!npm]` is still the marker.
 
 ## How a label is matched
 
@@ -123,13 +123,15 @@ Matching works on words, not meaning, so a label can match by accident: `Next st
 | Files | `editorconfig` `gitattributes` `gitignore` `tsconfig` `package.json` `uno.config.ts` `.env` |
 | Extensions | `.c` `.cjs` `.cpp` `.cs` `.css` `.cts` `.dart` `.gjs` `.go` `.groovy` `.gts` `.html` `.ico` `.ini` `.java` `.js` `.json` `.jsp` `.jsx` `.kt` `.less` `.lua` `.md` `.mjs` `.mts` `.php` `.py` `.r` `.rb` `.rs` `.sass` `.scala` `.scss` `.sln` `.swift` `.toml` `.ts` `.tsx` `.wasm` `.yaml` `.yml` |
 
+Some built-in icons define a gradient or a clip path with an id of its own, namespaced `markdown-tab-icon-…`. An icon that appears more than once in a document is written out each time, so those ids repeat, each time on the same definition.
+
 ## Configuration
 
 All options are passed when registering the plugin.
 
 ### Add or replace icons
 
-`icons` maps keys to SVG markup. A key with a `.` is matched as a file name or extension, any other key as a keyword, and a key that is also built in replaces that icon. Your file names and extensions are tried before the built-in ones, so `.vitepress` matches `.vitepress/config.ts` before `.ts` does. Icons from [Iconify](https://icon-sets.iconify.design/) work well: copy an icon's SVG.
+`icons` maps keys to SVG markup. A key with a `.` is matched as a file name or extension, any other key as a keyword, and a key that is also built in, in any case, replaces that icon. Your file names and extensions are tried before the built-in ones, so `.vitepress` matches `.vitepress/config.ts` before `.ts` does; the longest keyword still wins, and of two of the same length yours does. Icons from [Iconify](https://icon-sets.iconify.design/) work well: copy an icon's SVG. An icon is one `<svg>` element, which takes the icon's class and `aria-hidden`: markup that starts with anything else (an XML declaration, a comment, an `<img>`) throws when the plugin is created.
 
 ```ts
 md.use(tabIcons, {
@@ -187,7 +189,7 @@ Icons with light and dark variants follow the reader's preferred color scheme. A
 }
 ```
 
-The plugin decorates the tab groups that the [tabs](/guide/plugins/tabs) plugin builds, so install that too.
+The plugin decorates the tab groups that the [tabs](/guide/plugins/tabs) plugin builds, so install that too. Register it once: a second copy reads the labels the first one changed, so it adds a second icon and matches a label whose `[!none]` has already come out (unified ignores a plugin registered twice; markdown-it and Sätteri run both).
 
 ## Install
 
@@ -195,7 +197,7 @@ The plugin decorates the tab groups that the [tabs](/guide/plugins/tabs) plugin 
 npm install @mirrordown/mdit-tab-icons
 ```
 
-Install it after the tabs plugin.
+Install it after the tabs plugin. Before it, the icons are the same, but a marker is read from the label's source instead of its text, and a group whose marker came out gets other ids than the other engines give it.
 
 ### Standalone
 

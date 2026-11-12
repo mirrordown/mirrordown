@@ -8,7 +8,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { markdownLineEnding } from "micromark-util-character";
 import type { Plugin, Transformer } from "unified";
 import type { Data } from "unist";
-import type { Root, Nodes, Paragraph, PhrasingContent } from "mdast";
+import type { Root, Nodes, PhrasingContent } from "mdast";
 import type {
   Construct,
   Extension as MicromarkExtension,
@@ -190,11 +190,29 @@ const rubyFromMarkdownExtension: FromMarkdownExtension = {
 
 // ---- Plugin ----
 
+// What a base or a reading that would parse as an HTML block is given to start with while it is parsed: a private-use character no author's text holds there.
+const START = String.fromCharCode(0xe003);
+
+// `rp` is a pair. With one string the other side printed as `undefined`, so anything but two strings is refused.
+const checkRp = (rp: unknown): void => {
+  if (rp === undefined) return;
+  if (
+    !Array.isArray(rp) ||
+    rp.length !== 2 ||
+    rp.some((side) => typeof side !== "string")
+  ) {
+    throw new TypeError(
+      `ruby: \`rp\` must be a pair of strings, such as ["(", ")"]. Received ${JSON.stringify(rp)}.`
+    );
+  }
+};
+
 /** remark plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
   options = {}
 ) {
   const { rp } = options;
+  checkRp(rp);
   const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   // oxlint-disable-next-line typescript/no-explicit-any
@@ -204,16 +222,29 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
 
   // By transformation time all plugins have pushed into data, so forwarding these
   // arrays to fromMarkdown gives parseInline access to GFM strikethrough etc.
-  function parseInline(text: string): PhrasingContent[] {
+  // `definitions` is a placeholder definition for each link and footnote label the document defines (see `definitionsOf`): a base or a reading is parsed alone, where a reference to a label defined elsewhere would be text.
+  function parseInline(raw: string, definitions: string): PhrasingContent[] {
+    // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
+    const text = raw.replace(/^[ \t]+|[ \t]+$/g, "") || raw;
     if (!text) return [];
-    const tree = fromMarkdown(text, {
-      extensions: data.micromarkExtensions,
-      mdastExtensions: data.fromMarkdownExtensions
-    });
-    const para = tree.children[0] as Paragraph | undefined;
-    return para?.type === "paragraph"
-      ? para.children
-      : [{ type: "text", value: text }];
+    const parse = (source: string): Root["children"][number] | undefined =>
+      fromMarkdown(source + definitions, {
+        extensions: data.micromarkExtensions,
+        mdastExtensions: data.fromMarkdownExtensions
+      }).children[0];
+    const first = parse(text);
+    if (first?.type === "paragraph") return first.children;
+    // A base or a reading that opens with a tag is an HTML block when it stands alone, where in the document it is inline content, as markdown-it reads it. Parsed after a character, which is then dropped, it is a paragraph.
+    if (first?.type === "html") {
+      const again = parse(START + text);
+      const children = again?.type === "paragraph" ? again.children : [];
+      const lead = children.at(0);
+      if (lead?.type === "text" && lead.value.startsWith(START)) {
+        lead.value = lead.value.slice(START.length);
+        return lead.value ? children : children.slice(1);
+      }
+    }
+    return [{ type: "text", value: text }];
   }
 
   const makeRt = (children: PhrasingContent[]): Rt => ({
@@ -228,17 +259,44 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
     data: { hName: "rp" }
   });
 
+  // Only recognition matters: the reference a fragment is parsed to resolves against the document's own definitions when the tree is rendered.
+  const definitionsOf = (tree: Root): string => {
+    const labels: string[] = [];
+    visit(tree, "definition", (node) => {
+      labels.push(`[${node.label ?? node.identifier}]: #`);
+    });
+    visit(tree, "footnoteDefinition", (node) => {
+      labels.push(`[^${node.label ?? node.identifier}]: #`);
+    });
+    return labels.length > 0 ? `\n\n${labels.join("\n")}` : "";
+  };
+
   const transformer: Transformer<Root> = (tree) => {
+    const definitions = definitionsOf(tree);
+    const inTableCell = new Set<Ruby>();
+    visit(tree, "tableCell", (cell) => {
+      visit(cell, "ruby", (node: Ruby) => {
+        inTableCell.add(node);
+      });
+    });
     visit(tree, "ruby", (node: Ruby) => {
       // oxlint-disable-next-line typescript/no-explicit-any
       const raw = node.data as any;
+      // A node the transformer has already filled in has no raw fields left: running over the same tree again changes nothing.
+      if (typeof raw.rawBase !== "string") return;
       // Strip a trailing backslash from rawBase: when {word\|reading} appears in a GFM
       // table cell, the table tokenizer preserves the raw \| in the cell content. Our
       // micromark state machine consumes \ as base data and | as the separator, leaving
       // rawBase with a trailing \. Removing it lets parseInline see the correct text.
-      const rawBase = (raw.rawBase as string).replace(/\\$/, "");
-      const baseChildren = parseInline(rawBase);
-      const readingChildren = parseInline(raw.rawReading as string);
+      // Outside a table the backslash is the author's and stays, as in mdit.
+      const rawBase = inTableCell.has(node)
+        ? (raw.rawBase as string).replace(/\\$/, "")
+        : (raw.rawBase as string);
+      const baseChildren = parseInline(rawBase, definitions);
+      const readingChildren = parseInline(
+        raw.rawReading as string,
+        definitions
+      );
 
       node.children = [
         ...baseChildren,

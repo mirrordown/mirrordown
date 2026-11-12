@@ -231,3 +231,209 @@ describe("steps + attrs: a block on a line of its own in a body", () => {
     expect(body(normalizeHtml(html))).toBe(expected);
   });
 });
+
+const satAttrs = (input: string): string =>
+  normalizeHtml(
+    markdownToHtml(input, {
+      features: { attributes: true },
+      mdastPlugins: [satteriSteps()]
+    }).html
+  );
+
+// An attribute block on a line of its own, written after the steps without the body's `>`, is the step list's. Sätteri reads attribute blocks before the plugin runs and puts this one on the header's paragraph or on the body's quote, both of which recognition dissolves: the block ended up on the last step, or was lost.
+describe("steps + attrs: a block on its own line after the steps goes on the list in every engine", () => {
+  const cases: [string, string, string][] = [
+    [
+      "after a title-only step",
+      "@1. A\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p></li></ol>'
+    ],
+    [
+      "after a body",
+      "@1. A\n> body\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><p>body</p></div></li></ol>'
+    ],
+    [
+      "after a sub-step, on the outer list",
+      "@1. A\n@@1. B\n{.x}",
+      '<ol class="markdown-steps x"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">B</p></li></ol></li></ol>'
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toBe(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(satAttrs(input)).toBe(expected);
+  });
+});
+
+// Once a line that is neither a header nor a `>` line has ended the steps, a block on a line of its own further down is no longer the list's: it goes on the block it is written after, as it would without the steps. The lines after the list are rebuilt by recognition in remark and Sätteri: a blockquote among them had no position, so remd-attrs put the block on its paragraph, and Sätteri's attributes, read off the body's quote, went on the list.
+describe("steps + attrs: a block on its own line after content that ended the steps goes on that content", () => {
+  const list =
+    '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><p>a</p></div></li></ol>';
+  const cases: [string, string, string][] = [
+    [
+      "on a blockquote written after the line",
+      "@1. A\n> a\ntext\n> q\n{.x}",
+      `${list}<p>text</p><blockquote class="x"><p>q</p></blockquote>`
+    ],
+    [
+      "on the line's own paragraph",
+      "@1. A\n> a\ntext\n{.x}",
+      `${list}<p class="x">text</p>`
+    ],
+    [
+      "after the paragraph's own block, joining its class",
+      "@1. A\n> a\ntext {.y}\n{.x}",
+      `${list}<p class="x y">text</p>`
+    ],
+    [
+      "on the blockquote when the steps end in a sub-step",
+      "@1. A\n@@1. B\n> a\ntext\n> q\n{.x}",
+      '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><ol class="markdown-steps-list"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">B</p><div class="markdown-steps-body"><p>a</p></div></li></ol></li></ol><p>text</p><blockquote class="x"><p>q</p></blockquote>'
+    ],
+    [
+      "written with the blockquote's marker, on its paragraph",
+      "@1. A\n> a\ntext\n> q\n> {.x}",
+      `${list}<p>text</p><blockquote><p class="x">q</p></blockquote>`
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toBe(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(satAttrs(input)).toBe(expected);
+  });
+});
+
+// CommonMark continues a paragraph nested in a body (in a quote there) with the lines written after it, so Sätteri reads an attribute block that ends those lines off that nested paragraph. Recognition cuts the paragraph before the lines; the attributes went with neither part and were lost. They belong to the paragraph's last line: the step, when that line is a header, else the paragraph the line ends up in.
+describe("steps + attrs: attributes ending lines that continue a paragraph nested in a body go with the last line", () => {
+  const first =
+    '<li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><blockquote><p>x</p></blockquote></div></li>';
+  const cases: [string, string, string][] = [
+    [
+      "on the step a header starts",
+      "@1. A\n> > x\n@1. B {.y}",
+      `<ol class="markdown-steps">${first}<li class="markdown-steps-item y" data-step="2"><p class="markdown-steps-title">B</p></li></ol>`
+    ],
+    [
+      "on the last paragraph of that step's body",
+      "@1. A\n> > x\n@1. B\n> b {.y}",
+      `<ol class="markdown-steps">${first}<li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">B</p><div class="markdown-steps-body"><p class="y">b</p></div></li></ol>`
+    ],
+    [
+      "on the paragraph of a line that ends the steps",
+      "@1. A\n> > x\ntext {.y}\n@1. B",
+      `<ol class="markdown-steps">${first}</ol><p class="y">text</p><ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">B</p></li></ol>`
+    ]
+  ];
+  it.each(cases)("%s (markdown-it)", (_, input, expected) => {
+    expect(normalizeHtml(md.render(input))).toBe(expected);
+  });
+  it.each(cases)("%s (remark)", (_, input, expected) => {
+    expect(remd(input)).toBe(expected);
+  });
+  it.each(cases)("%s (sätteri)", (_, input, expected) => {
+    expect(satAttrs(input)).toBe(expected);
+  });
+});
+
+// A title that is only an attribute block is empty once the block is taken for the step. An empty title paragraph still takes up its line in the stylesheet, so it renders like a step written without a title: not at all.
+describe("steps + attrs: a title that is only an attribute block renders no title", () => {
+  const input = "@1. {.a}\n> body";
+  const expected =
+    '<ol class="markdown-steps"><li class="markdown-steps-item a" data-step="1"><div class="markdown-steps-body"><p>body</p></div></li></ol>';
+  it("markdown-it", () =>
+    expect(normalizeHtml(md.render(input))).toBe(expected));
+  it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(satAttrs(input)).toBe(expected));
+});
+
+// Known difference, pinned so a change to it is noticed: after a blank line, Sätteri's own attribute syntax makes the block an empty paragraph with the attributes, for any block and not only for steps, where the attrs plugins of the other engines put it on the block before it.
+describe("steps + attrs: a block after a blank line, in Sätteri", () => {
+  const input = "@1. A\n> body\n\n{.x}";
+  it("stays an empty paragraph after the list", () => {
+    expect(satAttrs(input)).toMatch(/<\/ol><p class="x"><\/p>$/);
+  });
+  it("is the list's in markdown-it and remark", () => {
+    expect(normalizeHtml(md.render(input))).toContain(
+      '<ol class="markdown-steps x">'
+    );
+    expect(remd(input)).toContain('<ol class="markdown-steps x">');
+  });
+});
+
+// hast names the class property `className`; remd-attrs sets `class`. A plugin that sets `className` on a step or its list must not leave the element with two class attributes.
+describe("steps (remark): an author class set as className joins the element's own", () => {
+  it("on the list and on a step", () => {
+    interface Classed {
+      data?: { hProperties?: Record<string, unknown> };
+      children: Classed[];
+    }
+    const withClassName = () => (tree: unknown) => {
+      const list = (tree as Classed).children[0];
+      const item = list?.children[0];
+      if (!list || !item) return;
+      list.data = { ...list.data, hProperties: { className: ["outer"] } };
+      item.data = {
+        ...item.data,
+        hProperties: { className: ["inner"], id: "first" }
+      };
+    };
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkSteps)
+        .use(withClassName)
+        .use(remarkRehype, { handlers: stepsHastHandlers as never })
+        .use(rehypeStringify)
+        .processSync("@1. One")
+    );
+    expect(normalizeHtml(html)).toBe(
+      '<ol class="markdown-steps outer"><li class="markdown-steps-item inner" data-step="1" id="first"><p class="markdown-steps-title">One</p></li></ol>'
+    );
+  });
+});
+
+// With remarkAttrs registered before remarkSteps, an attribute block is already gone from the text when steps read it, and that text still starts where the block was written. The line after it was then placed one source line too high, on the body's `>` line, so a header written under the body was missed and stayed text in the body.
+describe("steps + attrs (remark, attrs first): a line after an attribute block is placed on its own source line", () => {
+  const attrsFirst = (src: string) =>
+    normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkAttrs)
+          .use(remarkSteps)
+          .use(remarkRehype, { handlers: stepsHastHandlers as never })
+          .use(rehypeStringify)
+          .processSync(src)
+      )
+    );
+  const cases: [string, string][] = [
+    [
+      "a header after an image with attributes starts the next step",
+      "@1. A\n> ![a](x.png){.photo}\n@1. B"
+    ],
+    [
+      "a plain line after it ends the steps",
+      "@1. A\n> ![a](x.png){.photo}\nplain"
+    ],
+    [
+      "a header in the body after it starts steps in the body",
+      "@1. A\n> ![a](x.png){.photo}\n> @1. Inner"
+    ],
+    [
+      "a header after a paragraph that ends with an image with attributes starts steps",
+      "![a](x.png){.photo}\n@1. A\n> b"
+    ]
+  ];
+  it.each(cases)("%s", (_, input) => {
+    expect(attrsFirst(input)).toBe(normalizeHtml(md.render(input)));
+  });
+});

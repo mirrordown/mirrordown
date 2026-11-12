@@ -18,7 +18,9 @@ The `slug` plugin adds an `id` to every heading (`<h1>`–`<h6>`), derived from 
 <h2 id="getting-started">Getting Started</h2>
 ```
 
-Headings that already have an `id` (for example from [`attrs`](/guide/plugins/attrs) via `{#custom}`) are left untouched, and repeated heading text is de-duplicated with a numeric suffix (`overview`, `overview-1`, `overview-2`, …).
+Headings that already have an `id` (for example from [`attrs`](/guide/plugins/attrs) via `{#custom}`) are left untouched, and repeated heading text is de-duplicated with a numeric suffix (`overview`, `overview-1`, `overview-2`, …). A generated id never repeats one written by hand, wherever in the document that one is: with `## Other {#overview}` anywhere on the page, a heading titled "Overview" gets `overview-1`. Two ids written by hand that are the same are both kept as written.
+
+A heading with no text to make a slug from (`## !!!`, or an emoji alone) gets an empty `id=""` today, and the next such headings get `-1`, `-2`, and so on.
 
 ## Syntax
 
@@ -35,7 +37,7 @@ There is no special syntax — just write headings. Each one receives an `id` ba
 The three headings above become `id="a-simple-heading"`, `id="café--crème"`, and `id="a-simple-heading-1"` respectively.
 
 > [!NOTE]
-> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline. To honor explicit `{#custom}` ids, place it after [`attrs`](/guide/plugins/attrs).
+> For remark, this is a rehype plugin (`rehype-*`), not a remark plugin: add it **after** `remarkRehype` in your pipeline. Explicit `{#custom}` ids from [`attrs`](/guide/plugins/attrs) are honored in every engine, in whichever order the two plugins are listed.
 
 ## Install
 
@@ -77,7 +79,7 @@ export default defineConfig({
 
 | Option   | Type     | Default | Description                              |
 | -------- | -------- | ------- | ---------------------------------------- |
-| `prefix` | `string` | `""`    | Prepended to every generated `id` value. |
+| `prefix` | `string` | `""`    | Prepended to every generated `id` value. An id written by hand is left without it. |
 
 ```ts
 rehypeSlug({ prefix: "user-content-" });

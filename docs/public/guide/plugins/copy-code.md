@@ -39,7 +39,7 @@ There's nothing to write: every fenced and indented code block gets a button. Ho
 > ```
 > ````
 
-A block's id comes from a hash of its code, so it doesn't change when other blocks are edited. Repeated blocks get `-2`, `-3` and so on, in document order.
+A block's id comes from a hash of its code, so it doesn't change when other blocks are edited. Repeated blocks get `-2`, `-3` and so on, in document order. Ids are unique per document, not per page: the same block in two documents rendered into one page has the same id in both, and so can a heading whose slug happens to match. The script then copies the block its button is in.
 
 ### Turning it off for a block
 
@@ -83,7 +83,7 @@ export default defineConfig({
 
 ## The client script
 
-Import the script once per page, from the package for your engine. It does three things:
+Import the script once per page, from the package for your engine; a second copy on the page does nothing. It does three things:
 
 - **Shows the buttons.** It adopts a small stylesheet into the document, so buttons on pages that client-side navigation swaps in, such as Astro's view transitions, show too.
 - **Copies.** It handles the `--copy` command by copying the text of the block's `<code>`, without the newline markdown ends a block with.
@@ -157,7 +157,7 @@ There's no VS Code extension for this plugin: VS Code's Markdown preview has had
 ## Usage
 
 % Remark
-> The remark package ships `rehypeCopyCode`, a rehype plugin: register it after `remark-rehype`, and after plugins that replace code blocks, such as mermaid-pele. It adds each button as a `raw` node, so it reaches the HTML exactly as the other engines write it; stringify with `allowDangerousHtml: true` (Astro already does).
+> The remark package ships `rehypeCopyCode`, a rehype plugin: register it after `remark-rehype`, and after plugins that replace code blocks, such as mermaid-pele and file-tree: listed before them, it gives their fences a button and they stay code blocks. It adds each button as a `raw` node, so it reaches the HTML exactly as the other engines write it; stringify with `allowDangerousHtml: true` (Astro already does).
 >
 > ```sh
 > npm install @mirrordown/remd-copy-code
@@ -225,7 +225,7 @@ There's no VS Code extension for this plugin: VS Code's Markdown preview has had
 > npm install @mirrordown/sat-copy-code
 > ```
 >
-> List it after plugins that replace code blocks, such as mermaid-pele.
+> List it after plugins that replace code blocks, such as mermaid-pele and file-tree: listed before them, it gives their fences a button and they stay code blocks.
 %% Standalone
 > ```ts
 > import { markdownToHtml } from "satteri";

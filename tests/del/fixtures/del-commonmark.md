@@ -90,3 +90,61 @@ foo --bar
 <!-- @case: a run between spaces neither opens nor closes -->
 
 --a --- b--
+
+<!-- @case: a dash written as a character reference does not open a span -->
+
+&#45;-a--
+
+<!-- @case: a dash written as a character reference does not close a span -->
+
+--a&#45;-
+
+<!-- @case: referenced dashes are literal text -->
+
+&#45;&#45;a&#45;&#45;
+
+<!-- @case: a referenced dash between two runs is the span's content -->
+
+--&#45;--
+
+<!-- @case: an escaped character after a run counts as punctuation -->
+
+a--\*b--
+
+<!-- @case: an escaped character before a run counts as punctuation -->
+
+--a\*--b
+
+<!-- @case: a character reference after a run counts as punctuation -->
+
+a--&eacute;b--
+
+<!-- @case: a character reference before a run counts as punctuation -->
+
+--a&eacute;--b
+
+<!-- @case: a referenced letter is still a reference beside a run -->
+
+a--&#97;b--
+
+<!-- @case: an escape after an astral character reference is honoured -->
+
+&#x1F600; \--a--
+
+<!-- @case: autolink text is literal -->
+
+<http://x.com/--a-->
+
+<!-- @case: an astral symbol beside a run counts as punctuation -->
+
+a--😀b--
+
+<!-- @case: a line of dashes under text is a setext underline, not a delimiter -->
+
+--foo
+--
+
+<!-- @case: a span on the line above a setext underline still forms -->
+
+--a--
+---

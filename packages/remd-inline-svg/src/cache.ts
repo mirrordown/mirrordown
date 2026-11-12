@@ -1,11 +1,50 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
+import { svgSpriteId } from "@mirrordown/core";
 import { type Config, optimize as svgOptimize } from "svgo";
-import type { GroupedImageNodes, ImageNodeGroup } from "./image-node.js";
 
-export class SvgCache extends Map<string, string> {
+// SVGO's default preset shortens ids to `a`, `b`, …, so two inlined SVGs would both define `id="a"` and the second's `url(#a)` would pick up the first's gradient or clip path. Each file's ids get a prefix that hashes its content (line endings aside, so it is the same on every OS). A `plugins` list in the user's config replaces this one.
+const optimizeSvg = (content: string, path: string, config: Config): string =>
+  svgOptimize(content, {
+    path,
+    plugins: [
+      `preset-default`,
+      {
+        name: `prefixIds`,
+        params: {
+          prefix: svgSpriteId(content.replace(/\r\n?/g, `\n`)),
+          prefixClassNames: false
+        }
+      }
+    ],
+    ...config
+  }).data;
+
+// A file's content, optimized; `null` when it can't be read or parsed.
+const load = async (
+  path: string,
+  optimize: boolean | Config
+): Promise<string | null> => {
+  try {
+    const content = await readFile(path, `utf-8`);
+    if (!optimize) return content;
+    return optimizeSvg(
+      content,
+      path,
+      typeof optimize === `boolean` ? {} : optimize
+    );
+  } catch {
+    return null;
+  }
+};
+
+// An SVG's (optimized) content by absolute path, kept for the life of the plugin, with the modification time and size it was read at: a dev server keeps the plugin while files are edited, so a file is read again once either changes. The entry is the read itself, so documents processed concurrently share one read of a file and each waits for it. A file that can't be read or parsed resolves to `null` and isn't kept, as in the markdown-it and Sätteri plugins: the failure touches only the images that name it, and a later document tries again.
+export class SvgCache {
   #hits = 0;
   #misses = 0;
-  #queue: Array<Promise<void>> = [];
+  #reads = new Map<
+    string,
+    { version: string; content: Promise<string | null> }
+  >();
 
   get hits(): number {
     return this.#hits;
@@ -16,47 +55,33 @@ export class SvgCache extends Map<string, string> {
   }
 
   read = async (
-    groupedNodes: GroupedImageNodes,
+    path: string,
+    occurrences: number,
     optimize: boolean | Config
-  ): Promise<void> => {
-    const promises = [...groupedNodes].map(async (group) =>
-      this.#readFile(group, optimize)
-    );
-    const queued = this.#queue.push(...promises);
-    await Promise.all(this.#queue);
-    this.#queue = this.#queue.slice(queued);
-  };
-
-  #readFile = async (
-    group: ImageNodeGroup,
-    optimize: boolean | Config
-  ): Promise<void> => {
-    const [path, nodes] = group;
-
-    if (this.has(path)) {
-      this.#hits += nodes.length;
-      return;
+  ): Promise<string | null> => {
+    let version: string;
+    try {
+      const { mtimeMs, size } = await stat(path);
+      version = `${String(mtimeMs)}:${String(size)}`;
+    } catch {
+      return null;
     }
-
-    // Reserve the slot immediately to prevent concurrent reads of the same file
-    this.set(path, ``);
-    this.#misses++;
-    this.#hits += nodes.length - 1;
-
-    let content = await readFile(path, `utf-8`);
-
-    if (optimize) {
-      const optimizeConfig = typeof optimize === `boolean` ? {} : optimize;
-      const optimized = svgOptimize(content, { path, ...optimizeConfig });
-      content = optimized.data;
+    const entry = this.#reads.get(path);
+    const cached = entry?.version === version ? entry.content : undefined;
+    const pending = cached ?? load(path, optimize);
+    if (!cached) this.#reads.set(path, { version, content: pending });
+    const content = await pending;
+    if (content === null) {
+      // Not kept, unless a newer read has taken its place.
+      if (this.#reads.get(path)?.content === pending) this.#reads.delete(path);
+      return null;
     }
-
-    if (this.get(path)!.length > 0) {
-      throw new Error(
-        `SvgCache race condition: ${path} was read multiple times.`
-      );
+    if (cached) {
+      this.#hits += occurrences;
+    } else {
+      this.#misses++;
+      this.#hits += occurrences - 1;
     }
-
-    this.set(path, content);
+    return content;
   };
 }

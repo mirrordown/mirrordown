@@ -377,3 +377,39 @@ describe("tabs + steps: tab groups after steps stay separate at a blank line", (
     expect(normalizeHtml(md.render(input))).toBe(remd(input));
   });
 });
+
+// A `@@` sub-step is nested in the step before it, but its body is written with that step's single `>`. Counting the sub-step as one more level made a header in its body look as if it were written outside it, so it stayed paragraph text in remark and Sätteri.
+describe("tabs + steps: a tab header interrupts a paragraph in a sub-step's body", () => {
+  const input = `@1. A\n@@1. B\n> text\n> % Tab\n> > body`;
+
+  it.each([
+    ["markdown-it", (src: string) => normalizeHtml(md.render(src))],
+    ["remark", remd],
+    ["Sätteri", sat]
+  ])("%s", (_, render) => {
+    const html = render(input);
+    expect(html).toContain(`<p>text</p><div class="markdown-tabs"`);
+    expect(html).toContain(`aria-label="Tab"><p>body</p></section>`);
+  });
+});
+
+// Sätteri renders each plugin's nodes before the next plugin runs, so with tabs registered before steps (the presets register steps first), steps read a panel as the node sat-tabs rendered, `tabsPanel`. That node wasn't counted as a block whose lines carry one more `>`, so a step header written in a panel after a line of text looked as if it were written outside the panel and stayed text.
+describe("tabs + steps: with tabs registered first in Sätteri, a step header interrupts a paragraph in a panel", () => {
+  const tabsFirst = (src: string) =>
+    normalizeHtml(
+      markdownToHtml(src, {
+        features: { gfm: true, frontmatter: false, smartPunctuation: false },
+        mdastPlugins: [satteriTabs(), satteriSteps()]
+      }).html
+    );
+
+  it.each([
+    ["in a tab's panel", `% A\n> text\n> @1. S\n> > body`],
+    ["in a sub-tab's panel", `% A\n%% B\n> text\n> @1. S\n> > body`]
+  ])("%s, as in markdown-it and in the preset's order", (_, input) => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toContain(`<p>text</p><ol class="markdown-steps">`);
+    expect(tabsFirst(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});

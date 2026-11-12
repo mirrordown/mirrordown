@@ -16,11 +16,15 @@ export const tabIcons: PluginWithOptions<TabIconsOptions> = (
   options = {}
 ) => {
   const resolve = createTabIconResolver(options);
+  const { containerClass = `markdown-tabs` } = options;
 
   md.core.ruler.push(`tab_icons`, (state) => {
     const { tokens } = state;
     for (const [index, token] of tokens.entries()) {
       if (token.type !== `tabs_open`) continue;
+      // Only the groups with the tabs plugin's class, as the rehype and Sätteri plugins find them.
+      const classes = token.attrGet(`class`)?.split(` `) ?? [];
+      if (!classes.includes(containerClass)) continue;
       // This group's own labels and panels, in order; a group nested in a panel has its own.
       const labels: Token[] = [];
       const panels: Token[] = [];
@@ -40,14 +44,36 @@ export const tabIcons: PluginWithOptions<TabIconsOptions> = (
       for (const [i, inline] of labels.entries()) {
         const panel = panels[i];
         const text = panel?.attrGet(`aria-label`) ?? inline.content;
-        const { icon, marker, label } = resolve(text);
-        const children = inline.children ?? [];
-        if (marker) {
-          const first = children[0];
-          if (first?.type === `text`) {
-            first.content = first.content.slice(marker.length);
-            if (first.content === `` && label) first.content = label;
-          }
+        // Without the empty text token markdown-it leaves before markup that starts a label, so the first child is the one the other engines see.
+        const children = (inline.children ?? []).filter(
+          (child) => child.type !== `text` || child.content !== ``
+        );
+        const first = children[0]?.type === `text` ? children[0] : undefined;
+        // A keyword that is a defined abbreviation was wrapped by the abbr plugin, which splits the marker's text in three: `[!`, the abbreviation, and the text from `]` on. Read together they are the marker's text still.
+        const [, open, key, close, after] = children;
+        const split =
+          first?.content === `[!` &&
+          open?.type === `abbr_open` &&
+          key?.type === `text` &&
+          close?.type === `abbr_close` &&
+          after?.type === `text` &&
+          after.content.startsWith(`]`)
+            ? { after, lead: first.content + key.content + after.content }
+            : undefined;
+        const { icon, marker, label } = resolve(
+          text,
+          split?.lead ?? first?.content ?? ``
+        );
+        if (marker && split) {
+          split.after.content = split.lead.slice(marker.length);
+          // A label that is only a marker reads as its keyword, which stays the abbreviation it is; otherwise the abbreviation goes with the marker.
+          const only = children.length === 5 && split.after.content === ``;
+          children.splice(0, only ? 1 : 4);
+          panel?.attrSet(`aria-label`, label);
+        } else if (marker && first) {
+          first.content = first.content.slice(marker.length);
+          // A label that is only a marker reads as its keyword; one with markup after the marker keeps just that.
+          if (children.length === 1) first.content ||= label;
           panel?.attrSet(`aria-label`, label);
         }
         if (icon) {

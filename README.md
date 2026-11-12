@@ -6,7 +6,7 @@ A collection of [markdown-it](https://github.com/markdown-it/markdown-it) plugin
 
 ## 📦 Packages
 
-Each feature is implemented as a matched set: a markdown-it plugin, a remark/rehype plugin for unified pipelines, a Sätteri plugin (the Rust markdown processor behind Astro's `@astrojs/markdown-satteri`), and (usually) a VSCode extension for live preview support. The `mdit-*`, `remd-*` and `sat-*` plugins emit byte-identical HTML for the same input. Where Sätteri parses a syntax itself, the table names its built-in feature instead of a package.
+Each feature is implemented as a matched set: a markdown-it plugin, a remark/rehype plugin for unified pipelines, a Sätteri plugin (the Rust markdown processor behind Astro's `@astrojs/markdown-satteri`), and (usually) a VSCode extension for live preview support. The `mdit-*`, `remd-*` and `sat-*` plugins emit byte-identical HTML for the same input. Each plugin's guide lists the differences that remain for its set. Where Sätteri parses a syntax itself, the table names its built-in feature instead of a package.
 
 ### Presets
 

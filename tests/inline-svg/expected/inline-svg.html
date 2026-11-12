@@ -33,3 +33,39 @@
 <p>This is a test markdown document.</p>
 <p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="Inline SVG"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
 <p>Cheers</p>
+
+<!-- @case: alt text with replacement patterns stays literal -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="Price: $1 $&amp; $$5"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: self-closing root keeps its closing slash after the label -->
+
+<p>a <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 32 32" aria-label="alt"/> b</p>
+
+<!-- @case: a missing file leaves the image alone -->
+
+<p><img src="./fixtures/nope.svg" alt="alt"></p>
+
+<!-- @case: a file that is not an svg leaves the image alone -->
+
+<p><img src="./fixtures/not-an-svg.svg" alt="alt"></p>
+
+<!-- @case: a malformed percent-escape leaves the image alone -->
+
+<p><img src="./fixtures/%FF.svg" alt="alt"></p>
+
+<!-- @case: an encoded separator names the same file in every engine -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="alt"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: a leading slash stays under the document's directory -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" width="250" height="250" viewBox="0 0 250 250" aria-label="alt"><circle cx="125" cy="125" r="100" fill="#ba5b5b" fill-opacity=".5"/></svg></p>
+
+<!-- @case: a url that is external once decoded is left alone -->
+
+<p><img src="%2F%2Fexample.com/x.svg" alt="alt"></p>
+
+<!-- @case: ids inside two inlined svgs do not collide -->
+
+<p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="svg-sprite-1skkiae__a"><stop offset="0" stop-color="red"/><stop offset="1" stop-color="gold"/></linearGradient></defs><path fill="url(#svg-sprite-1skkiae__a)" d="M0 0h10v10H0z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="svg-sprite-wbwtc9__a"><stop offset="0" stop-color="navy"/><stop offset="1" stop-color="#0ff"/></linearGradient></defs><path fill="url(#svg-sprite-wbwtc9__a)" d="M0 0h10v10H0z"/></svg></p>

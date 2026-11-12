@@ -23,6 +23,7 @@ type BlockquoteVisitor = NonNullable<MdastPluginInstance["blockquote"]>;
  */
 export interface GithubAlertsPlugin {
   name: string;
+  options: { position: boolean };
   blockquote: (...args: Parameters<BlockquoteVisitor>) => void;
 }
 
@@ -33,15 +34,17 @@ export const satteriGithubAlerts =
   (
     options: AlertOptions = {}
   ): ((ctx: PluginFactoryContext) => GithubAlertsPlugin) =>
-  () => {
+  ({ source }) => {
     const { resolve, titleFor, iconFor, containerClass } =
       createAlertResolver(options);
     return defineMdastPlugin({
       name: "github-alerts",
+      // Positions and the source tell an escaped marker (`\[!NOTE]`) from a real one.
+      options: { position: true },
       blockquote(node, ctx) {
         const [first, ...rest] = node.children;
         if (first?.type !== "paragraph") return;
-        const alert = splitAlertParagraph(first.children);
+        const alert = splitAlertParagraph(first.children, source);
         if (!alert) return;
         const type = resolve(alert.keyword);
         if (!type) return;
@@ -59,7 +62,8 @@ export const satteriGithubAlerts =
           },
           children: [
             ...(icon ? [{ type: "html", value: icon }] : []),
-            ...(alert.titleText
+            // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+            ...(alert.titleNodes.length > 0
               ? alert.titleNodes
               : [{ type: "text", value: title }])
           ]
@@ -69,14 +73,29 @@ export const satteriGithubAlerts =
             ? [{ ...first, children: alert.bodyNodes }, ...rest]
             : rest;
 
+        // Sätteri reads attribute blocks while it parses, and has put one written for the blockquote (on a line after it, without its `>`) on the node this one replaces: the alert keeps them, as it does in the other engines.
+        const data: unknown = node.data;
+        const written: Record<string, unknown> =
+          typeof data === "object" &&
+          data !== null &&
+          "hProperties" in data &&
+          typeof data.hProperties === "object" &&
+          data.hProperties !== null
+            ? { ...data.hProperties }
+            : {};
+        const { className, ...attributes } = written;
         ctx.replaceNode(node, {
           type: "alert",
           data: {
             hName: alert.fold ? "details" : "div",
             hProperties: {
-              className: [containerClass],
+              className: [
+                containerClass,
+                ...(Array.isArray(className) ? className : [])
+              ],
               dataAlert: type,
-              ...(alert.fold === "+" ? { open: true } : {})
+              ...(alert.fold === "+" ? { open: true } : {}),
+              ...attributes
             }
           },
           children: [titleNode, ...body]

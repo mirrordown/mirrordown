@@ -1,6 +1,6 @@
 // oxlint-disable-next-line typescript/triple-slash-reference
 /// <reference types="vite/client" />
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { prompt } from "../../packages/mdit-prompt/src";
 import css from "../../packages/mdit-prompt/src/prompt.css?inline";
@@ -113,6 +113,28 @@ describe(`prompt client`, () => {
     await expect
       .poll(() => document.querySelector(`[aria-live="polite"]`)?.textContent)
       .toBe(`Copied prompt. Paste it into Gemini.`);
+  });
+
+  // A page can load the script twice: here from a second package, whose copy is a module of its own. Two listeners would copy twice for one press, and the second would take "Copied prompt" for the button's own name and leave it there for good, so the button would go on saying it had copied.
+  it(`copies once per press, and gives the label back, when the script is loaded a second time`, async () => {
+    await import(`../../packages/remd-prompt/src/client`);
+    const element = render("```prompt\nTwice?\n```");
+    const copy = element.querySelector<HTMLButtonElement>(
+      `.markdown-prompt-copy`
+    );
+    const label = copy?.getAttribute(`aria-label`);
+    expect(label).toBe(`Copy prompt`);
+    copied.length = 0;
+    vi.useFakeTimers();
+    copy?.click();
+    await vi.waitFor(() =>
+      expect(copy?.getAttribute(`aria-label`)).toBe(`Copied prompt`)
+    );
+    vi.advanceTimersByTime(2000);
+    vi.useRealTimers();
+    expect(copied).toEqual([`Twice?`]);
+    expect(copy?.getAttribute(`aria-label`)).toBe(label);
+    expect(copy?.dataset.state).toBeUndefined();
   });
 });
 

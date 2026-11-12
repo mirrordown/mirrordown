@@ -36,9 +36,15 @@ Add a second `!` in front of any image. Click a thumbnail below to zoom; click i
 
 In renderers without the plugin, the extra `!` renders as plain text and the image still shows.
 
+The marker is read at the start of a line, after a space, or directly after other markup. After text it is not: `Look!![…](…)` and `(!![…](…))` are a `!` and a plain image. The marker cannot be escaped: `\!![…](…)` and `&#33;![…](…)` are still lightbox images. For a literal `!` before a plain image, put a space between them: `! ![…](…)`.
+
+The alt text is the engine's own, in the thumbnail and the dialog alike. Markers from other plugins in it (`!![--a--](x.png)`) differ as they do for any image: markdown-it drops them, and remark and Sätteri keep the text as written.
+
 ### Repeated images share one dialog
 
 The dialog `id` is a stable hash of the image `src`, so referencing the same image more than once produces a **single** dialog that every trigger opens — not a duplicate per reference.
+
+Ids are unique per document, not per page. If you render several documents into one page and two of them lightbox the same image (or use the same name, below), their dialogs have the same `id` and every trigger opens the first one.
 
 ````markdown
 Here is a dock: !![A dock on a still lake](./assets/dock.jpg "Dock").
@@ -49,13 +55,15 @@ And here is the very same dock again: !![The same dock](./assets/dock.jpg "Dock"
 
 By default the `id` is hashed from the `src`. With the [`attrs`](/guide/plugins/attrs) plugin you can name it explicitly with `{#id}` — handy for stable, human-readable ids. The id moves onto the dialog, so it isn't duplicated on the image.
 
+A name belongs to one image. An id that is already taken, by another element such as a heading or by an earlier lightbox image with a different `src`, is ignored: that image keeps its hashed id, so its trigger still opens its own dialog. Two names on the same image give it two dialogs, and references to it without a name share the first. The plugin only sees the ids that exist when it runs, so an id added afterwards (by a slug plugin listed after it, or by the page around the document) is not detected.
+
 ````markdown
 !![Mount Fuji at dawn](./assets/fuji.jpg "Mount Fuji"){#fuji}
 ````
 
 ### Images inside links
 
-An image wrapped in a link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal.
+An image wrapped in a Markdown link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal. A link written as raw HTML (`<a href="…">!![…](…)</a>`) is not seen as one: the image inside it still becomes a trigger.
 
 ````markdown
 [!![Swan boats on the lake](./assets/swan-boats.jpg "Swan boats")](https://example.com)
@@ -103,7 +111,7 @@ Requires `command`/`commandfor`, `<dialog closedby>`, and `@starting-style` (Chr
 
 ## Install
 
-The remark package ships `rehypeLightbox`, a rehype plugin — it runs on the hast tree, so register it after `remark-rehype`. Run it before [`unwrap-images`](/guide/plugins/unwrap-images) if you use both.
+The remark package ships `rehypeLightbox`, a rehype plugin — it runs on the hast tree, so register it after `remark-rehype`. Run it before [`unwrap-images`](/guide/plugins/unwrap-images) and before `rehypeInlineSvg` (`@mirrordown/remd-inline-svg`) if you use them: once an image is inlined there is no `<img>` left to turn into a lightbox.
 
 ```sh
 npm install @mirrordown/remd-lightbox

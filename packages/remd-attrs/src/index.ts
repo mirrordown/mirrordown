@@ -17,10 +17,17 @@ import type {
 } from "mdast";
 import type { Properties } from "hast";
 import type { Node, Parent } from "unist";
-import { containersKept, type LineContainer } from "@mirrordown/core";
+import {
+  containersKept,
+  escapedIndices,
+  itemColumns,
+  textEscapes,
+  type LineContainer
+} from "@mirrordown/core";
 import { applyAttrs } from "./applyAttrs.js";
+import { readAttrs } from "./getAttrs.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
-import type { AttrsOptions } from "./types.js";
+import type { AttrsOptions, DelimiterRange } from "./types.js";
 
 export type {
   AttrsOptions,
@@ -39,6 +46,11 @@ const listLoose = (list: List | undefined): boolean =>
   list.children.some((item) => item.spread ?? item.children.length > 1);
 type RuleSet = Set<string>;
 
+// A code fence's opening line from its marker on, capturing the info string as written.
+const FENCE_OPENING = /(?:`{3,}|~{3,})[ \t]*([^\r\n]*)/y;
+// Stands in for a delimiter character that was escaped or written as a reference, which no block opens or closes with.
+const LITERAL = String.fromCharCode(0xffff);
+
 const ALL_RULES = new Set([
   "fence",
   "inline",
@@ -54,15 +66,30 @@ const resolveRules = (rule: AttrsOptions["rule"]): RuleSet => {
   if (rule === false || (Array.isArray(rule) && rule.length === 0))
     return new Set();
   if (rule === "all" || rule === true || rule === undefined) return ALL_RULES;
-  return new Set((rule as string[]).filter((r) => ALL_RULES.has(r)));
+  // A name that is no rule used to be dropped, so a typo read no block at all without a word.
+  const names: readonly string[] = Array.isArray(rule) ? rule : [rule];
+  const unknown = names.find((name) => !ALL_RULES.has(name));
+  if (unknown !== undefined) {
+    throw new TypeError(
+      `attrs: unknown rule "${unknown}". Use one of: ${[...ALL_RULES].join(", ")}.`
+    );
+  }
+  return new Set(names);
 };
+
+/** Reads a block closing `content`, the text of `node` or its last line, unless the source escapes it. */
+type BlockReader = (
+  node: Node,
+  content: string,
+  pos: "end" | "only"
+) => DelimiterRange | null;
 
 // Shared visitor for list/table/hr: apply attrs from a standalone paragraph
 // to the preceding sibling of the given type, then remove the paragraph.
 const makeSiblingAttrVisitor =
   (
     siblingType: string,
-    check: ReturnType<typeof getDelimiterChecker>,
+    blockAt: BlockReader,
     allowed: Array<string | RegExp>
   ): Visitor =>
   (node: Node, index: number | undefined, parent: Parent | undefined) => {
@@ -71,7 +98,7 @@ const makeSiblingAttrVisitor =
     const para = node as Paragraph;
     if (para.children.length !== 1 || para.children[0].type !== "text") return;
     const content = para.children[0].value.trim();
-    const range = check(content, "only");
+    const range = blockAt(para.children[0], content, "only");
     if (!range) return;
     const prev = parent.children[index - 1];
     if (!prev || prev.type !== siblingType) return;
@@ -87,20 +114,88 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
   const check = getDelimiterChecker(left, right);
 
   const transformer: Transformer<Root> = (tree, file) => {
+    // remark resolves `\{` and `&#123;` before any plugin runs, so a text node's value can't tell an escaped delimiter from a real one. markdown-it and Sätteri keep a block as text when a delimiter, or anything inside it, is escaped or written as a character reference; here the source the node was read from tells the same: the block must be written there as it reads. A node with no position is one another plugin built: a span plugin records which characters of the text it rebuilt were escaped (`data.escaped`, read by `textEscapes`), and a block holding one of them stays text. Without a record the node is taken at its word.
+    const source = String(file.value);
+    const written = (
+      node: Node,
+      block: string,
+      at: "start" | "end",
+      skip = 0
+    ): boolean => {
+      const from = node.position?.start.offset;
+      const to = node.position?.end.offset;
+      if (from === undefined || to === undefined) {
+        const value = (node as { value?: unknown }).value;
+        if (typeof value !== "string") return true;
+        const begin =
+          at === "start" ? skip : value.trimEnd().length - block.length;
+        for (const index of textEscapes(node, source))
+          if (index >= begin && index < begin + block.length) return false;
+        return true;
+      }
+      const raw = source.slice(from, to);
+      // Nothing is escaped without a backslash, nor referenced without an ampersand.
+      if (!raw.includes("\\") && !raw.includes("&")) return true;
+      if (at === "start") return raw.startsWith(block, skip);
+      const text = raw.trimEnd();
+      if (!text.endsWith(block)) return false;
+      // `\{` is a literal brace, `\\{` a literal backslash before a real one.
+      let slashes = 0;
+      let before = text.length - block.length - 1;
+      while (before >= 0 && text[before] === "\\") {
+        slashes++;
+        before--;
+      }
+      return slashes % 2 === 0;
+    };
+    const blockAt: BlockReader = (node, content, pos) => {
+      const range = check(content, pos);
+      if (!range) return null;
+      return written(node, content.slice(range[0] - left.length), "end")
+        ? range
+        : null;
+    };
+
     // â”€â”€ fence: code block with attrs in lang string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (rules.has("fence")) {
       visit(tree, "code", (node: Code) => {
-        // remark puts text after the language in `meta` (```js {.x}); with no
-        // language, the attrs are the whole `lang` (``` {.x}).
-        const field = node.meta?.trim() ? "meta" : "lang";
-        const value = node[field]?.trim() ?? "";
-        if (!value) return;
-        const range = check(value, "end") ?? check(value, "only");
+        // remark splits the info string at its first space into `lang` and
+        // `meta`, wherever that space is: a block is all of `meta` after a
+        // language (```js {.x}), but opens in `lang` without one (``` {.a .b})
+        // or right after one (```js{.a .b}). Read it from the two rejoined,
+        // with the spaces the source has between them: they can be inside a
+        // quoted value (``` {title="a   b"}).
+        if (!node.lang) return;
+        const start = node.position?.start.offset;
+        FENCE_OPENING.lastIndex = start ?? 0;
+        const written =
+          start === undefined ? null : FENCE_OPENING.exec(source)?.[1];
+        const gap = (written && /^\S+([ \t]+)/.exec(written)?.[1]) ?? " ";
+        const value = node.meta ? node.lang + gap + node.meta : node.lang;
+        // remark has resolved the info string's escapes and references. A delimiter written as one isn't a delimiter, as in a paragraph, though inside a quoted value it is an ordinary brace: the source tells which characters were, and those stand aside while the block is looked for.
+        const literal = written
+          ? escapedIndices(
+              value,
+              source,
+              FENCE_OPENING.lastIndex - written.length,
+              FENCE_OPENING.lastIndex
+            )
+          : new Set<number>();
+        const masked = value
+          .split("")
+          .map((char, at) =>
+            literal.has(at) && (left + right).includes(char) ? LITERAL : char
+          )
+          .join("");
+        const range = check(masked, "end") ?? check(masked, "only");
         if (!range) return;
+        const block = readAttrs(value, range[0], range[1], left, right);
+        if (block?.end !== range[1]) return;
         applyAttrs(node, value, range, allowed);
-        node[field] =
-          value.slice(0, value.lastIndexOf(left, range[0] - 1)).trimEnd() ||
-          null;
+        const rest = value.slice(0, range[0] - left.length).trimEnd();
+        const space = rest.search(/\s/);
+        node.lang = (space === -1 ? rest : rest.slice(0, space)) || null;
+        node.meta = space === -1 ? null : rest.slice(space).trim() || null;
         // mdast-util-to-hast puts the language class in `className` before
         // applying hProperties; merge the attr classes into it (attr classes
         // first, as markdown-it renders them) instead of adding a second key.
@@ -136,14 +231,30 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           let range = check(content, "start");
           if (!range) continue;
 
+          // Raw HTML and a footnote reference can't carry attributes (a block
+          // given to them would be lost, or land on a generated `<sup>`), so
+          // theirs is left for the end-of-block rule, as in mdit-attrs.
           const prevType = prev.type;
-          if (prevType === "text" || prevType === "break") continue;
+          if (
+            prevType === "text" ||
+            prevType === "break" ||
+            prevType === "html" ||
+            prevType === "footnoteReference"
+          )
+            continue;
 
+          // How much of the node's source the blocks read so far take up.
+          let taken = 0;
           while (range) {
+            const length = range[1] + right.length;
+            if (!written(child, content.slice(0, length), "start", taken))
+              break;
             applyAttrs(prev, content, range, allowed);
-            content = content.slice(range[1] + right.length);
+            taken += length;
+            content = content.slice(length);
             range = check(content, "start");
           }
+          if (taken === 0) continue;
           if (content) child.value = content;
           else children.splice(i, 1);
         }
@@ -181,7 +292,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const lineStart = last.value.trimEnd().lastIndexOf("\n");
         if (!hard && lineStart === -1) return;
         const content = last.value.slice(lineStart + 1).trim();
-        const range = check(content, "only");
+        const range = blockAt(last, content, "only");
         if (!range) return;
         const parentMap = parentsOf();
         lines ??= String(file.value).split(/\r?\n/);
@@ -190,7 +301,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const ancestors: Parent[] = [];
         for (let p = parentMap.get(node); p; p = parentMap.get(p))
           ancestors.unshift(p);
-        const containers: Array<{ target: Node; line: LineContainer }> = [];
+        const containers: Array<{
+          target: Node;
+          line: LineContainer;
+          /** The line a list item opens on. */
+          opens?: number;
+        }> = [];
         for (const [i, ancestor] of ancestors.entries()) {
           const start = ancestor.position?.start;
           if (ancestor.type === "blockquote" && start) {
@@ -205,16 +321,26 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
               line: { kind: "quote", markers: before.split(">").length }
             });
           } else if (ancestor.type === "listItem") {
-            const first = ancestor.children[0]?.position?.start;
-            if (!first) return;
+            if (!start) return;
+            // The column the item's content starts at, read from its marker's
+            // line as mdit-attrs does. The item's first child doesn't always
+            // start there: a task item's paragraph starts after `[x] `. Items
+            // opened on the same line, outside this one, come first there.
+            const before = containers.filter(
+              (c) => c.opens === start.line
+            ).length;
+            const column = itemColumns(lines[start.line - 1] ?? "").at(before);
+            if (column === undefined) return;
             containers.push({
               target: ancestors[i - 1] ?? ancestor,
-              line: { kind: "item", column: first.column - 1 }
+              line: { kind: "item", column },
+              opens: start.line
             });
           }
         }
 
-        const end = last.position?.end;
+        // The block ends the paragraph, so a text node another plugin rebuilt without a position (an alert's body, the text after a span) is written on the paragraph's last line.
+        const end = last.position?.end ?? node.position?.end;
         const kept = end
           ? containersKept(
               lines[end.line - 1] ?? "",
@@ -244,7 +370,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const last = node.children[node.children.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();
-        const range = check(content, "end");
+        const range = blockAt(last, content, "end");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);
@@ -263,7 +389,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         if (last?.type !== "text") return;
 
         const content = last.value.trimEnd();
-        const range = check(content, "end");
+        const range = blockAt(last, content, "end");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);
@@ -278,7 +404,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const last = node.children[node.children.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();
-        const range = check(content, "end");
+        const range = blockAt(last, content, "end");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);
@@ -289,7 +415,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
     // â”€â”€ list: attrs at end of list item / standalone paragraph after list â”€
     if (rules.has("list")) {
-      visit(tree, makeSiblingAttrVisitor("list", check, allowed));
+      visit(tree, makeSiblingAttrVisitor("list", blockAt, allowed));
 
       // â”€â”€ custom containerItem nodes (data.attrsRole === "containerItem") â”€â”€
       // Third-party plugins opt in by setting data.attrsRole = "containerItem" and
@@ -308,7 +434,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         const last = title[title.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();
-        const range = check(content, "end");
+        const range = blockAt(last, content, "end");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);
@@ -327,7 +453,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           if (para.children.length !== 1 || para.children[0].type !== "text")
             return;
           const content = para.children[0].value.trim();
-          const range = check(content, "only");
+          const range = blockAt(para.children[0], content, "only");
           if (!range) return;
           const prev = parent.children[index - 1] as
             | { data?: { attrsRole?: string } }
@@ -342,12 +468,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
     // â”€â”€ table: standalone paragraph after table containing only attrs â”€â”€â”€â”€â”€
     if (rules.has("table")) {
-      visit(tree, makeSiblingAttrVisitor("table", check, allowed));
+      visit(tree, makeSiblingAttrVisitor("table", blockAt, allowed));
     }
 
     // â”€â”€ hr: standalone paragraph after thematic break containing only attrs
     if (rules.has("hr")) {
-      visit(tree, makeSiblingAttrVisitor("thematicBreak", check, allowed));
+      visit(tree, makeSiblingAttrVisitor("thematicBreak", blockAt, allowed));
     }
 
     // â”€â”€ block: paragraph with trailing attrs on last text child â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -355,11 +481,13 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
     // belongs to an inline element, a list, a table or a rule is claimed by
     // those rules first.
     if (rules.has("block")) {
-      visit(tree, "paragraph", (node: Paragraph) => {
+      visit(tree, "paragraph", (node: Paragraph, index, parent) => {
+        // The end of a list item's first paragraph is the list rule's, so that `block` means the same with or without it. Read here, the block would go on the paragraph a tight list never renders, where it is lost.
+        if (parent?.type === "listItem" && index === 0) return;
         const last = node.children[node.children.length - 1];
         if (last?.type !== "text") return;
         const content = last.value.trimEnd();
-        const range = check(content, "end");
+        const range = blockAt(last, content, "end");
         if (!range) return;
         applyAttrs(node, content, range, allowed);
         const attrStart = content.lastIndexOf(left, range[0] - 1);

@@ -1,13 +1,13 @@
 // This plugin hands Sätteri's nodes to core's mdast recognition and back; the type assertions bridging Sätteri's `MdastTarget`, mdast and the step node types are reviewed and intentional, so the rule is disabled file-wide, as in remd-steps.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import {
+  createAttributeReader,
   editableTree,
   placeCutAttributes,
   processSteps,
   type StepsItemNode,
   type StepsListNode,
-  type StepsTitleNode,
-  type ReadAttributes
+  type StepsTitleNode
 } from "@mirrordown/core";
 import type { Root } from "mdast";
 import {
@@ -22,17 +22,7 @@ import {
 type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
 
 // An attribute block as Sätteri reads one after text: the properties it gives the paragraph, if all of it is one.
-const readAttributes: ReadAttributes = (block) => {
-  const root = markdownToMdast(`x ${block}`, {
-    features: { attributes: true }
-  });
-  const para = root.children[0];
-  const text = para?.type === `paragraph` ? para.children : [];
-  return text.length === 1 && text[0]?.type === `text` && text[0].value === `x`
-    ? (para?.data as { hProperties?: ReturnType<ReadAttributes> } | undefined)
-        ?.hProperties
-    : undefined;
-};
+const readAttributes = createAttributeReader(markdownToMdast);
 
 /** Options for the {@link satteriSteps} plugin. */
 export interface StepsOptions {
@@ -97,6 +87,8 @@ export const satteriSteps =
         type: `stepsItem`,
         data: {
           hName: `li`,
+          // Plugins that run after this one (tabs) count the `>` markers of a body's lines from the tree, and a sub-step's body adds none to its parent's.
+          ...(item.data?.sub ? { sub: true } : {}),
           hProperties: withAuthorProperties(
             {
               className: [`${containerClass}-item`],
@@ -186,7 +178,7 @@ export const satteriSteps =
         if (attributes)
           placeCutAttributes(
             tree as unknown as Root,
-            source.split(/\r?\n/),
+            source.split(/\r\n|\r|\n/),
             readAttributes
           );
         writeBack(tree);

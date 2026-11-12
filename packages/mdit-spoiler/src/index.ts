@@ -4,6 +4,9 @@ import type {
   Delimiter
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 
+// A pair nested deeper than this stays text, as in the remark and Sätteri plugins: Sätteri rejects a document whose content nests deeper than 128 levels, and a spoiler is two levels there (the label and the content span).
+const MAX_DEPTH = 50;
+
 // The revealed content is a following sibling of the checkbox so CSS's
 // `:checked ~ .content` combinator can reach it. Order matters: <input> must
 // precede the <span>, or the reveal never fires.
@@ -20,6 +23,7 @@ const CLOSE_HTML = `</span></label>`;
 // `text` (the documented "alternative implementation" from markdown-it) with `|`
 // appended to the terminator set — changing only where text runs break, not how
 // any other character is handled.
+// The list is a hand copy of markdown-it's `isTerminatorChar` plus `|`; tests/spoiler/mdit.test.ts fails if the two drift apart. `ruler.at` replaces the rule for the whole instance, so a plugin that replaces `text` after this one silently turns spoilers off.
 const TERMINATOR_RE = /[\n!#$%&*+\-:<=>@[\\\]^_`{}~|]/;
 
 const textWithPipeTerminator = (
@@ -27,11 +31,7 @@ const textWithPipeTerminator = (
   silent: boolean
 ): boolean => {
   const pos = state.pos;
-  // Nothing left to consume. Must return false (not true) — a `true` return
-  // that doesn't advance state.pos violates markdown-it's rule contract and can
-  // hang the inline parser when another rule probes at the boundary (e.g.
-  // mdit-sub's scan calling skipToken at posMax). The core text rule returns
-  // false here too.
+  // Nothing left to consume. Must return false (not true) — a `true` return that doesn't advance state.pos violates markdown-it's rule contract and can hang the inline parser when another rule probes at the boundary by calling skipToken at posMax (mdit-sub once did; it no longer scans ahead). The core text rule returns false here too.
   if (pos >= state.posMax) return false;
   const slice = state.src.slice(pos, state.posMax);
   const idx = slice.search(TERMINATOR_RE);
@@ -118,8 +118,10 @@ export function spoiler(md: MDit): void {
 
   const postProcess = (state: StateInline, delimiters: Delimiter[]): void => {
     const loneMarkers: number[] = [];
+    // The closers of the pairs around the current delimiter, innermost last.
+    const around: number[] = [];
 
-    for (const startDelim of delimiters) {
+    for (const [i, startDelim] of delimiters.entries()) {
       if (startDelim.marker !== 0x7c /* | */) {
         continue;
       }
@@ -134,6 +136,16 @@ export function spoiler(md: MDit): void {
       if (!endDelim || !openToken || !closeToken) {
         continue;
       }
+
+      while ((around.at(-1) ?? Infinity) < i) {
+        around.pop();
+      }
+
+      if (around.length >= MAX_DEPTH) {
+        continue;
+      }
+
+      around.push(startDelim.end);
 
       openToken.type = `spoiler_open`;
       openToken.tag = `span`;

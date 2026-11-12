@@ -23,6 +23,7 @@ npm install @mirrordown/mdit-inline-svg
 ## Usage
 
 ```ts
+import { pathToFileURL } from "node:url";
 import MarkdownIt from "markdown-it";
 import { inlineSvg } from "@mirrordown/mdit-inline-svg";
 
@@ -31,18 +32,29 @@ const md = MarkdownIt().use(inlineSvg, {
   deduplication: false // emit each occurrence inline rather than via <use>
 });
 
-md.render("![star](./icons/star.svg)");
+md.render("![star](./icons/star.svg)", {
+  currentDocument: pathToFileURL("docs/guide.md")
+});
 ```
+
+Image paths are resolved relative to the document, which the plugin learns from `env.currentDocument`, a `file:` URL (as a `URL` or a string). Without one, images are left as they are.
 
 ### Options
 
-| Option           | Default    | Description                                                  |
-| ---------------- | ---------- | ------------------------------------------------------------ |
-| `optimize`       | `true`     | Optimize SVGs with SVGO. Pass an SVGO `Config` to customize. |
-| `deduplication`  | `false`    | Reuse repeated icons via `<symbol>`/`<use>`.                 |
-| `maxImageSize`   | `3000`     | Skip inlining SVGs larger than this many bytes.              |
-| `maxOccurrences` | `Infinity` | Maximum number of images to inline per render.               |
-| `maxTotalSize`   | `10000`    | Maximum total inlined bytes per render.                      |
+| Option            | Default    | Description                                                  |
+| ----------------- | ---------- | ------------------------------------------------------------ |
+| `optimize`        | `true`     | Optimize SVGs with SVGO. Pass an SVGO `Config` to customize. |
+| `deduplication`   | `false`    | Reuse repeated icons via `<symbol>`/`<use>`.                 |
+| `maxImageSize`    | `3000`     | Skip an SVG larger than this many characters.                |
+| `maxOccurrences`  | `Infinity` | Skip an SVG referenced more than this many times.            |
+| `maxTotalSize`    | `10000`    | Skip an SVG whose occurrences total more characters.         |
+| `cacheEfficiency` | —          | Called with cache `{ hits, misses }` after a render reads.   |
+
+With `deduplication`, a sprite's id is a hash of the SVG's path relative to the document, so it is unique per document, not per page: two documents rendered into one page that reuse an SVG at the same relative path write the same id.
+
+## Security
+
+The markdown and the SVG files it references are treated as trusted input. An image path may name any `.svg` file the build can read (`../` is followed), and an inlined SVG becomes part of the page, where its scripts, event handlers and external references are live, which they are not behind an `<img>`. SVGO's default preset does not remove them, and with `optimize: false` the file is inserted as it is. Do not use this plugin on markdown or SVG files you do not control.
 
 ## Documentation
 

@@ -25,9 +25,7 @@ describe("squeeze-paragraphs (markdown-it)", () => {
   );
 });
 
-// A prior core rule that empties every paragraph's inline content, leaving
-// residue for squeeze to remove. Raw markdown never produces an empty
-// paragraph, so removal can only be exercised through such an interaction.
+// A prior core rule that empties every paragraph's inline content, leaving residue for squeeze to remove. Raw markdown only produces an empty paragraph from a whitespace character reference (the fixture covers that), so a paragraph with no children at all can only be exercised through such an interaction.
 const withResidue = new MarkdownIt().use(squeezeParagraphs);
 withResidue.core.ruler.before("squeeze_paragraphs", "empty_out", (state) => {
   // Empty only paragraph inline tokens (mirrors the rehype helper touching only

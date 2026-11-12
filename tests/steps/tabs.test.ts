@@ -389,3 +389,63 @@ describe("steps + tabs: a blank `>` line between tab entries in a step body keep
     ]);
   });
 });
+
+// ── Sub-steps and tabs ────────────────────────────────────────────────────────
+
+// A sub-step's body carries its parent step's single `>`, not one per nesting level, so a panel's second line inside it is still the panel's: counted as deeper, remark and Sätteri moved it out of the tab group, or out of the sub-step.
+describe("steps + tabs: a sub-step's body lines stay where they're written", () => {
+  it.each([
+    [
+      "tabs in a sub-step's body",
+      "@1. A\n@@1. B\n> % T\n> > one\n> > two",
+      '<section class="markdown-tabs-panel" aria-label="T"><p>one\ntwo</p></section>'
+    ],
+    [
+      "a sub-step in a tab panel",
+      "% Tab\n> @1. Step\n> @@1. Sub\n> > line one\n> > line two",
+      '<p class="markdown-steps-title">Sub</p><div class="markdown-steps-body"><p>line one\nline two</p></div>'
+    ]
+  ])("%s", (_, input, fragment) => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toContain(fragment);
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});
+
+// The lines that end a step group are rebuilt as the blocks they're written as, so the tab header among them and its `>` body are a paragraph and a blockquote again, which is what the tabs recognition (it runs after steps) looks for. Flattened into one paragraph, remark and Sätteri rendered the tab group as text.
+describe("steps + tabs: a tab group directly after a step group, without a blank line", () => {
+  const input = "@1. A\n> body\n% Tab\n> t";
+  it("is a tab group in every engine", () => {
+    const expected = normalizeHtml(md.render(input));
+    expect(expected).toMatch(
+      /^<ol class="markdown-steps">.*<\/ol><div class="markdown-tabs".*aria-label="Tab"><p>t<\/p><\/section>/s
+    );
+    expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
+  });
+});
+
+// Known difference, pinned so a change to it is noticed. A step header directly under a tab group's last panel is a lazy continuation of that panel's paragraph in CommonMark. Steps run before tabs in remark and Sätteri, and it is tabs that move the line out of the panel, after steps have looked: the header stays text. markdown-it's rules read line by line and start the steps. The other order (a tab header under a step's body) reads the same in every engine, and so does this one with a blank line between.
+describe("steps + tabs: a step header directly after a tab group (known difference)", () => {
+  const input = "% Tab\n> t\n@1. A\n> body";
+  const stepsList =
+    '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">A</p><div class="markdown-steps-body"><p>body</p></div></li></ol>';
+  const text = "<p>@1. A</p><blockquote><p>body</p></blockquote>";
+  const afterTabs = (html: string): string =>
+    html.slice(html.lastIndexOf("</section></div></div>") + 22);
+
+  it("markdown-it starts the steps", () =>
+    expect(afterTabs(normalizeHtml(md.render(input)))).toBe(stepsList));
+  it("remark leaves the header as text", () =>
+    expect(afterTabs(remd(input))).toBe(text));
+  it("sätteri leaves the header as text", () =>
+    expect(afterTabs(sat(input))).toBe(text));
+  it.each([
+    ["markdown-it", (src: string) => normalizeHtml(md.render(src))],
+    ["remark", remd],
+    ["sätteri", sat]
+  ] as const)("%s: after a blank line the header starts steps", (_, render) =>
+    expect(afterTabs(render("% Tab\n> t\n\n@1. A\n> body"))).toBe(stepsList)
+  );
+});

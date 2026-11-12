@@ -40,3 +40,68 @@
 
 <!-- @case: no abbreviations defined -->
 <p>No abbreviation here.</p>
+
+<!-- @case: term that starts or ends with a symbol -->
+<p>Use <abbr title="C plus plus">C++</abbr> and <abbr title="dot net">.NET</abbr> and <abbr title="C sharp">C#</abbr> daily.</p>
+
+<!-- @case: term in another script -->
+<p><abbr title="Japan">日本</abbr> is here, a <abbr title="coffee">café</abbr> there.</p>
+
+<!-- @case: no match next to a letter of any script -->
+<p>HTMLé éHTML これはHTMLです</p>
+
+<!-- @case: punctuation and underscore end a word -->
+<p>foo_<abbr title="Hyper Text">HTML</abbr> <abbr title="Hyper Text">HTML</abbr>_bar (<abbr title="Hyper Text">HTML</abbr>) <abbr title="Hyper Text">HTML</abbr>-5 「<abbr title="Hyper Text">HTML</abbr>」</p>
+
+<!-- @case: no match next to a symbol that is not punctuation -->
+<p>HTML™ HTML° ©HTML</p>
+
+<!-- @case: a character written as a reference is part of the word -->
+<p>HTMLA and AHTML</p>
+
+<!-- @case: a term matches however its characters are written -->
+<p><abbr title="telco">AT&amp;T</abbr>, <abbr title="telco">AT&amp;T</abbr>, <abbr title="telco">AT&amp;T</abbr></p>
+
+<!-- @case: a title is the rest of its line as written -->
+<p><abbr title="Hyper *Text* Markup">HTML</abbr> and <abbr title="Research &amp;amp; Development \* 2">RD</abbr></p>
+
+<!-- @case: a term can hold inline syntax -->
+<p>The <abbr title="product">a*b</abbr> term.</p>
+
+<!-- @case: an escaped bracket in a term -->
+<p>The <abbr title="bracket">a]b</abbr> term.</p>
+
+<!-- @case: a line that would otherwise be emphasis -->
+<p>The <abbr title="bar*">foo</abbr> term.</p>
+
+<!-- @case: a term that is also a link reference -->
+<p><abbr title="Hyper Text">HTML</abbr> and <a href="http://example.com"><abbr title="Hyper Text">HTML</abbr></a></p>
+
+<!-- @case: an escaped asterisk makes the line text -->
+<p>*[HTML]: Hyper Text</p>
+<p>HTML</p>
+
+<!-- @case: definition after its use -->
+<p>The <abbr title="Hyper Text Markup Language">HTML</abbr> specification.</p>
+
+<!-- @case: definition inside a blockquote -->
+<blockquote>
+<p>The <abbr title="Hyper Text">HTML</abbr> spec.</p>
+</blockquote>
+<p>Still <abbr title="Hyper Text">HTML</abbr> outside.</p>
+
+<!-- @case: definition inside a list item -->
+<ul>
+<li><p>First item</p></li>
+<li><p>The <abbr title="Hyper Text">HTML</abbr> item</p></li>
+</ul>
+
+<!-- @case: indented definition -->
+<p>Intro.</p>
+<p><abbr title="Hyper Text">HTML</abbr></p>
+
+<!-- @case: inline code is not scanned -->
+<p><code>HTML</code> is code.</p>
+
+<!-- @case: link text is scanned, destinations and titles are not -->
+<p><a href="http://example.com/HTML" title="HTML"><abbr title="Hyper Text">HTML</abbr></a> and <a href="http://example.com/HTML">http://example.com/<abbr title="Hyper Text">HTML</abbr></a></p>

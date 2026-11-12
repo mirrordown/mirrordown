@@ -177,25 +177,37 @@ export const mirrordown = (
     ...options.features
   };
 
+  // tab-icons finds the tabs plugin's groups by class, so it takes the tabs plugin's `containerClass` unless given its own.
+  const tabsClass =
+    typeof options.tabs === `object` ? options.tabs.containerClass : undefined;
+  const tabIconsSetting =
+    options.tabIcons === false || tabsClass === undefined
+      ? options.tabIcons
+      : {
+          containerClass: tabsClass,
+          ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
+        };
+
   return {
     features,
-    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Caption last, after the containers whose blocks it captions.
+    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
       ...(options.prompt === false ? [] : [satteriPromptPreview()]),
       ...(options.ruby === false ? [] : [satteriRuby(settings(options.ruby))]),
-      ...(options.abbr === false ? [] : [satteriAbbr()]),
-      ...(options.del === false ? [] : [satteriDel()]),
-      ...(options.githubAlerts === false
-        ? []
-        : [satteriGithubAlerts(settings(options.githubAlerts))]),
-      ...(options.ins === false ? [] : [satteriIns()]),
       ...(options.kbd === false ? [] : [satteriKbd()]),
+      ...(options.del === false ? [] : [satteriDel()]),
+      ...(options.ins === false ? [] : [satteriIns()]),
       ...(options.mark === false ? [] : [satteriMark()]),
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      ...(options.githubAlerts === false
+        ? []
+        : [satteriGithubAlerts(settings(options.githubAlerts))]),
+      // After the delimiter plugins and alerts, as markdown-it applies abbreviations once inline parsing is done.
+      ...(options.abbr === false ? [] : [satteriAbbr()]),
       // After the containers, whose blocks it captions.
       ...(options.caption === false ? [] : [satteriCaption()])
     ],
@@ -213,9 +225,9 @@ export const mirrordown = (
       ...(options.copyCode === false
         ? []
         : [satteriCopyCode(settings(options.copyCode))]),
-      ...(options.tabIcons === false
+      ...(tabIconsSetting === false
         ? []
-        : [satteriTabIcons(settings(options.tabIcons))]),
+        : [satteriTabIcons(settings(tabIconsSetting))]),
       ...(options.sectionize === false ? [] : [satteriSectionize()]),
       ...(options.slug === false ? [] : [satteriSlug(settings(options.slug))]),
       ...(options.autolinkHeadings === false

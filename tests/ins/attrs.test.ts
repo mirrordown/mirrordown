@@ -5,11 +5,18 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { ins } from "../../packages/mdit-ins/src";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkIns } from "../../packages/remd-ins/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
+import { satteriIns } from "../../packages/sat-ins/src";
 import { normalizeHtml } from "../utils/index.js";
+import {
+  spanAttrsCases,
+  spanAttrsOffCases,
+  type SpanSyntax
+} from "../core/span-attrs-cases.js";
 
 const md = new MarkdownIt().use(ins).use(attrs);
 
@@ -27,6 +34,20 @@ const remd = (src: string) =>
     )
   );
 
+// Sätteri reads attribute blocks itself, as a feature of the document, where the other two engines have an attrs plugin.
+const sat = (src: string, attributes = true) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: {
+        gfm: true,
+        frontmatter: false,
+        smartPunctuation: false,
+        attributes
+      },
+      mdastPlugins: [satteriIns()]
+    }).html
+  );
+
 describe("ins + attrs: ins inline with class attr", () => {
   const input = "++inserted++{.new}";
   const expected = '<p><ins class="new">inserted</ins></p>';
@@ -34,6 +55,7 @@ describe("ins + attrs: ins inline with class attr", () => {
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
   it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(sat(input)).toBe(expected));
 });
 
 describe("ins + attrs: ins inline with id attr", () => {
@@ -43,6 +65,7 @@ describe("ins + attrs: ins inline with id attr", () => {
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
   it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(sat(input)).toBe(expected));
 });
 
 describe("ins + attrs: ins with heading attrs", () => {
@@ -53,6 +76,7 @@ describe("ins + attrs: ins with heading attrs", () => {
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
   it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(sat(input)).toBe(expected));
 });
 
 describe("ins + attrs: ins and block attrs coexist", () => {
@@ -62,4 +86,29 @@ describe("ins + attrs: ins and block attrs coexist", () => {
   it("markdown-it", () =>
     expect(normalizeHtml(md.render(input))).toBe(expected));
   it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(sat(input)).toBe(expected));
 });
+
+const syntax: SpanSyntax = {
+  span: "++x++",
+  html: (attributes) => `<ins${attributes}>x</ins>`
+};
+
+// A block written right after the span: every engine gives it to the span, wherever the span is. Sätteri's parser has read the block before the plugin builds the span, so there the plugin takes it back (see `../core/span-attrs-cases.ts`).
+describe.each(spanAttrsCases(syntax))(
+  "ins + attrs: %s",
+  (_name, input, expected) => {
+    it("markdown-it", () =>
+      expect(normalizeHtml(md.render(input))).toBe(expected));
+    it("remark", () => expect(remd(input)).toBe(expected));
+    it("sätteri", () => expect(sat(input)).toBe(expected));
+  }
+);
+
+// With the document's attribute blocks off, Sätteri's parser leaves every block as text, and the plugin must not read one the document did not ask for.
+describe.each(spanAttrsOffCases(syntax))(
+  "ins, attribute blocks off: %s",
+  (_name, input, expected) => {
+    it("sätteri", () => expect(sat(input, false)).toBe(expected));
+  }
+);
