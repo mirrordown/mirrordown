@@ -132,4 +132,23 @@ describe("presets: the plugins together", () => {
       );
     });
   });
+
+  // GFM strikethrough is `<del>` in remark-gfm and Sätteri; markdown-it's own renders `<s>`, which the preset changes so a document does not depend on the engine.
+  describe("`~~strikethrough~~` is the same element in every engine", () => {
+    it("renders <del>", () => {
+      expect(rendered("~~gone~~")).toBe("<p><del>gone</del></p>");
+    });
+
+    it("nests with the del plugin's `--`", () => {
+      expect(rendered("~~--a--~~ --~~b~~--")).toBe(
+        "<p><del><del>a</del></del> <del><del>b</del></del></p>"
+      );
+    });
+
+    it("takes attributes like any other span", () => {
+      expect(rendered("~~gone~~{.old}")).toBe(
+        '<p><del class="old">gone</del></p>'
+      );
+    });
+  });
 });
