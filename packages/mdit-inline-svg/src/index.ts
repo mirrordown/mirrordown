@@ -1,6 +1,6 @@
 // Renderer rule callbacks receive `env: unknown`; casts to object are intentional for planMap keying.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type MarkdownIt from "markdown-it";
@@ -95,11 +95,14 @@ export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
     for (const [filePath, tokens] of pathGroups) {
       let content: string;
 
-      if (svgCache.has(filePath)) {
-        content = svgCache.get(filePath)!;
-        svgCache.addHits(tokens.length);
-      } else {
-        try {
+      try {
+        const { mtimeMs, size } = statSync(filePath);
+        const version = `${String(mtimeMs)}:${String(size)}`;
+        const cached = svgCache.get(filePath);
+        if (cached?.version === version) {
+          content = cached.content;
+          svgCache.addHits(tokens.length);
+        } else {
           let raw = readFileSync(filePath, `utf-8`);
           if (options.optimize) {
             raw = optimizeSvg(
@@ -108,14 +111,14 @@ export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
               typeof options.optimize === `boolean` ? {} : options.optimize
             );
           }
-          svgCache.set(filePath, raw);
+          svgCache.set(filePath, { version, content: raw });
           svgCache.addMiss();
           svgCache.addHits(tokens.length - 1);
           content = raw;
-        } catch {
-          for (const token of tokens) plan.set(token, null);
-          continue;
         }
+      } catch {
+        for (const token of tokens) plan.set(token, null);
+        continue;
       }
 
       // The limits, deduplication and markup are shared with the rehype and Sätteri plugins through `@mirrordown/core`.

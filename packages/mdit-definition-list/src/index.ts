@@ -1,11 +1,13 @@
 import type { PluginSimple } from "markdown-it";
 import type { RuleBlock } from "markdown-it/lib/parser_block.mjs";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 
 const COLON = 58;
 const TILDE = 126;
 const SPACE = 32;
 const TAB = 9;
+const LESS_THAN = 60;
 const TAB_SIZE = 4;
 
 // Tab stops are absolute columns, so the columns a container prefix (`> `) took from the line count too
@@ -114,6 +116,22 @@ const startsAnotherBlock = (
   state.line = savedLine;
   state.level = savedLevel;
 
+  // markdown-it's `html_block` answers validation mode with whether its block may interrupt a paragraph, and a line that is one inline tag (`<span>`) may not, though it does start an HTML block anywhere else. A later term never follows a paragraph, so the line is parsed on its own, apart from the document's state, to see what it starts.
+  if (
+    !found &&
+    state.md.options.html &&
+    state.src.charCodeAt(state.bMarks[line] + state.tShift[line]) === LESS_THAN
+  ) {
+    const tokens: Token[] = [];
+    state.md.block.parse(
+      state.getLines(line, line + 1, state.blkIndent, false),
+      state.md,
+      {},
+      tokens
+    );
+    found = tokens[0]?.type === "html_block";
+  }
+
   return found;
 };
 
@@ -122,9 +140,10 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
     // validation mode validates a dd block only, not a whole definition list
     if (state.ddIndent < 0) return false;
 
+    // A marker left of the definition's content column starts the term's next definition, and ends a paragraph in this one. Measured from the definition, not the innermost block: a marker under the definition's own content column, inside a list item nested in it, has no definition list to belong to there, so it continues the item's paragraph.
     return (
       checkAndSkipMarker(state, startLine) >= 0 &&
-      state.sCount[startLine] < state.blkIndent
+      state.sCount[startLine] < state.ddIndent
     );
   }
 

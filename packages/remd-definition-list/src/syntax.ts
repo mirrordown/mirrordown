@@ -42,13 +42,8 @@ const skippableFlowTypes = new Set([
   "content"
 ]);
 
-// Token types that qualify as valid def-term content (tableHead/tableRow from gfm-table).
-const validTermTypes = new Set([
-  "paragraph",
-  "chunkContent",
-  "tableHead",
-  "tableRow"
-]);
+// Token types that qualify as valid def-term content. `tableRow` is gfm-table's: a line with a pipe in it is a row of a table's head until the next line turns out not to be a delimiter row, and that row is the term. A `tableHead` is not one: it only closes once it has its delimiter row, and then it is a table, which the line after it continues. Taking it for a term made micromark close the table for a definition list that the second look, at the closed table, then declined, and the line fell out of the table as a paragraph.
+const validTermTypes = new Set(["paragraph", "chunkContent", "tableRow"]);
 
 const defListConstruct: Construct = {
   name: "defList",

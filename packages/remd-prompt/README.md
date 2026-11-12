@@ -53,6 +53,8 @@ A prompt in a prompt stays a code block.
 ````
 `````
 
+Two things in a prompt are looked up by label. Link definitions (`[label]: url`) are kept apart: a prompt's own resolve inside its preview only, and the page's don't reach into it. Footnotes are not: where your page has them (GFM, in remark and Sätteri), a footnote in a prompt joins the page's, so a label the page also uses points at the page's note and the prompt's own is dropped. Give a prompt's footnotes labels of their own.
+
 ### Invisible characters
 
 Some characters show as nothing at all, or reorder the text around them: zero-width spaces, bidirectional controls, and Unicode tags, which spell out text no reader sees but an AI can read. A prompt that holds any warns of them in its title, opens on its markdown, and marks each one there with its code point. They're still copied and sent as written, so the AI gets the prompt the reader was warned about. The zero-width joiner and the emoji variation selector don't count, since emoji are built with them.

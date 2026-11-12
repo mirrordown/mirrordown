@@ -102,3 +102,21 @@ Say​ hi.󠁨󠁩
 > 1. Read **`AGENTS.md`**.
 > 2. ==Ask== before \==guessing==.
 > ```
+
+<!-- @case: a link definition in a prompt is the prompt's: the page's text can't link through it -->
+See [docs].
+
+```prompt open
+[docs]: https://prompt.example
+
+Read the [docs].
+```
+
+<!-- @case: a link definition on the page is the page's: a prompt's text can't link through it -->
+[guide]: https://page.example
+
+The [guide].
+
+```prompt open
+Read the [guide].
+```

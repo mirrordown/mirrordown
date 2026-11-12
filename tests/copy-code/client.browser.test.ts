@@ -100,6 +100,21 @@ describe(`copy-code client`, () => {
     expect(button?.hasAttribute(`data-copied`)).toBe(false);
   });
 
+  // A block's id is a hash, and nothing keeps another element of the page from having the same one: a heading whose slug spells it, or the same block in a second document on the page. `commandfor` then finds that element, the first with the id, and a reader who pressed a block's button must still get that block, not a heading's text.
+  it(`copies its own block when an element before it has the block's id`, async () => {
+    const pre = second?.closest(`pre`);
+    if (!second || !pre) throw new Error(`missing block`);
+    const heading = document.createElement(`h1`);
+    heading.id = pre.id;
+    heading.textContent = `Not the code`;
+    document.body.prepend(heading);
+    second.click();
+    await Promise.resolve();
+    heading.remove();
+    expect(copied.at(-1)).toBe(`const a = 1;\nconst b = 2;`);
+    expect(second.hasAttribute(`data-copied`)).toBe(true);
+  });
+
   // Without a wrapper, anchor positioning is what puts each button on its own block.
   it(`sits in its own block's top corner`, () => {
     for (const button of [first, second]) {

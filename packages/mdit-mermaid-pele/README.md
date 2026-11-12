@@ -30,7 +30,7 @@ flowchart LR
 
 In renderers without the plugin, the diagram stays a code block.
 
-The language is case-sensitive and must be the first word of the info string: ` ```Mermaid ` and ` ```mermaidjs ` stay code blocks, and anything after `mermaid` is ignored. Indented code blocks are never rendered.
+The language is case-sensitive and must be the first word of the info string: ` ```Mermaid ` and ` ```mermaidjs ` stay code blocks, and anything after `mermaid` is ignored. Indented code blocks are never rendered. A class doesn't make a diagram either: ` ```js {.language-mermaid} ` stays a `js` code block. (One exception, in Sätteri only: a fence with no language at all that is given that class renders exactly as a `mermaid` fence does, so it is drawn.)
 
 ### Every diagram type
 
