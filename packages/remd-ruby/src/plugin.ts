@@ -222,10 +222,11 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
     // A base or a reading that opens with a tag is an HTML block when it stands alone, where in the document it is inline content, as markdown-it reads it. Parsed after a character, which is then dropped, it is a paragraph.
     if (first?.type === "html") {
       const again = parse(START + text);
-      const [lead, ...rest] = again?.type === "paragraph" ? again.children : [];
+      const children = again?.type === "paragraph" ? again.children : [];
+      const lead = children.at(0);
       if (lead?.type === "text" && lead.value.startsWith(START)) {
         lead.value = lead.value.slice(START.length);
-        return lead.value ? [lead, ...rest] : rest;
+        return lead.value ? children : children.slice(1);
       }
     }
     return [{ type: "text", value: text }];

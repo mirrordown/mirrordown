@@ -216,10 +216,11 @@ export const satteriRuby =
           again?.type === `paragraph` && `children` in again
             ? rebuild(again.children, START + text, inCell)
             : [];
-        if (lead?.type === `text` && lead.value.startsWith(START)) {
+        const value = lead?.type === `text` ? lead.value : undefined;
+        if (lead && value?.startsWith(START)) {
           const cut = {
             type: `text` as const,
-            value: lead.value.slice(START.length)
+            value: value.slice(START.length)
           };
           carryEscapes(cut, textEscapes(lead, ``), START.length);
           return cut.value ? [cut, ...rest] : rest;
