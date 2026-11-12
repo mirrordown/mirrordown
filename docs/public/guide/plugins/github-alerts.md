@@ -56,9 +56,11 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 > > Advises about risks or negative outcomes of certain actions.
 > ````
 
+The keyword is read in any case (`[!note]` is a note). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
+
 ### Custom titles
 
-Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
 
 % Demo
 > > [!NOTE] Custom *Title*
@@ -211,10 +213,17 @@ Register new keywords with `types`. The value is the canonical type name that ap
 > }
 > ```
 
+### Other options
+
+| Option | Default | |
+| --- | --- | --- |
+| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is an alert and `[!NOTE]` is not. |
+| `containerClass` | `"markdown-alert"` | The alert's class, which also starts the title's (`-title`). The stylesheet targets the default. |
+
 ## Usage
 
 % Remark
-> Install `@mirrordown/remd-github-alerts`. You must also pass `githubAlertsHastHandlers` to `remarkRehype` and import the stylesheet:
+> Install `@mirrordown/remd-github-alerts` and import the stylesheet. Pass `githubAlertsHastHandlers` to `remarkRehype` too: they add the title's icon, and without them an alert renders with no icon. List the plugin after the steps and tabs plugins if you use them, so a marker line directly under a step or tab header stays that body's text, as in markdown-it:
 >
 > ```sh
 > npm install @mirrordown/remd-github-alerts
@@ -256,7 +265,7 @@ Register new keywords with `types`. The value is the canonical type name that ap
 > ```ts
 > import MarkdownIt from "markdown-it";
 > import { githubAlerts } from "@mirrordown/mdit-github-alerts";
-> import "@mirrordown/mdit-github-alerts/github-alerts.css";
+> import "@mirrordown/mdit-github-alerts/styles";
 >
 > const md = new MarkdownIt().use(githubAlerts);
 > ```
@@ -265,7 +274,7 @@ Register new keywords with `types`. The value is the canonical type name that ap
 > // .vitepress/config.ts
 > import { defineConfig } from "vitepress";
 > import { githubAlerts } from "@mirrordown/mdit-github-alerts";
-> import "@mirrordown/mdit-github-alerts/github-alerts.css";
+> import "@mirrordown/mdit-github-alerts/styles";
 >
 > export default defineConfig({
 >   markdown: {
@@ -277,10 +286,13 @@ Register new keywords with `types`. The value is the canonical type name that ap
 > ```sh
 > npm install @mirrordown/sat-github-alerts
 > ```
+>
+> List it after the plugins for inline syntax (mark, kbd and so on), so a title's `aria-label` reads the title's text rather than its markup, and after the steps and tabs plugins, so a marker line directly under a step or tab header stays that body's text.
 %% Standalone
 > ```ts
 > import { markdownToHtml } from "satteri";
 > import { satteriGithubAlerts } from "@mirrordown/sat-github-alerts";
+> import "@mirrordown/sat-github-alerts/github-alerts.css";
 >
 > const { html } = markdownToHtml(source, {
 >   mdastPlugins: [satteriGithubAlerts()],
@@ -298,4 +310,7 @@ Register new keywords with `types`. The value is the canonical type name that ap
 >     processor: satteri({ mdastPlugins: [satteriGithubAlerts()] }),
 >   },
 > });
+>
+> // In your layout:
+> import "@mirrordown/sat-github-alerts/github-alerts.css";
 > ```

@@ -36,9 +36,11 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 > Advises about risks or negative outcomes of certain actions.
 ````
 
+The keyword is read in any case (`[!note]` is a note). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
+
 ### Custom titles
 
-Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
 
 ````markdown
 > [!NOTE] Custom *Title*
@@ -122,6 +124,13 @@ md.use(githubAlerts, {
 }
 ```
 
+### Other options
+
+| Option | Default | |
+| --- | --- | --- |
+| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is an alert and `[!NOTE]` is not. |
+| `containerClass` | `"markdown-alert"` | The alert's class, which also starts the title's (`-title`). The stylesheet targets the default. |
+
 ## Install
 
 ```sh
@@ -133,7 +142,7 @@ npm install @mirrordown/mdit-github-alerts
 ```ts
 import MarkdownIt from "markdown-it";
 import { githubAlerts } from "@mirrordown/mdit-github-alerts";
-import "@mirrordown/mdit-github-alerts/github-alerts.css";
+import "@mirrordown/mdit-github-alerts/styles";
 
 const md = new MarkdownIt().use(githubAlerts);
 ```
@@ -144,7 +153,7 @@ const md = new MarkdownIt().use(githubAlerts);
 // .vitepress/config.ts
 import { defineConfig } from "vitepress";
 import { githubAlerts } from "@mirrordown/mdit-github-alerts";
-import "@mirrordown/mdit-github-alerts/github-alerts.css";
+import "@mirrordown/mdit-github-alerts/styles";
 
 export default defineConfig({
   markdown: {

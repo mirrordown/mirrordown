@@ -36,9 +36,11 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 > Advises about risks or negative outcomes of certain actions.
 ````
 
+The keyword is read in any case (`[!note]` is a note). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
+
 ### Custom titles
 
-Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
 
 ````markdown
 > [!NOTE] Custom *Title*
@@ -122,9 +124,16 @@ remarkGithubAlerts({
 }
 ```
 
+### Other options
+
+| Option | Default | |
+| --- | --- | --- |
+| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is an alert and `[!NOTE]` is not. |
+| `containerClass` | `"markdown-alert"` | The alert's class, which also starts the title's (`-title`). The stylesheet targets the default. |
+
 ## Install
 
-Install `@mirrordown/remd-github-alerts`. You must also pass `githubAlertsHastHandlers` to `remarkRehype` and import the stylesheet:
+Install `@mirrordown/remd-github-alerts` and import the stylesheet. Pass `githubAlertsHastHandlers` to `remarkRehype` too: they add the title's icon, and without them an alert renders with no icon. List the plugin after the steps and tabs plugins if you use them, so a marker line directly under a step or tab header stays that body's text, as in markdown-it:
 
 ```sh
 npm install @mirrordown/remd-github-alerts
