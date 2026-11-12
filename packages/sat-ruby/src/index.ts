@@ -106,6 +106,20 @@ const findSpans = (
   return spans;
 };
 
+// `rp` is a pair. With one string the other engines printed the missing side as `undefined` and this one printed no `<rp>` at all, so anything but two strings is refused.
+const checkRp = (rp: unknown): void => {
+  if (rp === undefined) return;
+  if (
+    !Array.isArray(rp) ||
+    rp.length !== 2 ||
+    rp.some((side) => typeof side !== "string")
+  ) {
+    throw new TypeError(
+      `ruby: \`rp\` must be a pair of strings, such as ["(", ")"]. Received ${JSON.stringify(rp)}.`
+    );
+  }
+};
+
 /**
  * Sätteri plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements with the same output as `@mirrordown/remd-ruby` and `@mirrordown/mdit-ruby`. `|` is a hard delimiter: the base and the reading are parsed as separate inline content, so no construct straddles them. Sätteri parses before plugins run, so the plugin finds rubies in each block's source and re-parses the content around them with each ruby held as a placeholder. List it before plugins that build nodes over the same text (the preset does), since nodes without a source position can't be re-read.
  */
@@ -113,6 +127,7 @@ export const satteriRuby =
   (options: RubyOptions = {}): ((ctx: PluginFactoryContext) => RubyPlugin) =>
   ({ source, features }) => {
     const { rp } = options;
+    checkRp(rp);
     // Sätteri reads attribute blocks before plugins run, when the document's features turn them on: a block written right after a ruby is then the ruby's to take.
     const read =
       features.attributes === true

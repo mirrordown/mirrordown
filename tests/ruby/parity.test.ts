@@ -434,3 +434,48 @@ describe("ruby (sätteri): the plugin is listed first", () => {
     expect(render("==x== \\{a|b}", false)).toBe("<p><mark>x</mark> {a|b}</p>");
   });
 });
+
+// `rp` is the fallback a browser without ruby support prints around the reading, so it has to come out the same in every engine, and a value that is not a pair must not reach the page: one string used to print `<rp>undefined</rp>` in markdown-it and remark and no `<rp>` at all on Sätteri.
+describe("ruby: `rp` is a pair of strings", () => {
+  const withRp: Record<string, (rp: unknown) => string> = {
+    "markdown-it": (rp) =>
+      new MarkdownIt()
+        .use(ruby, { rp: rp as [string, string] })
+        .render("{a|b}"),
+    remark: (rp) =>
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkRuby, { rp: rp as [string, string] })
+          .use(remarkRehype)
+          .use(rehypeStringify)
+          .processSync("{a|b}")
+      ),
+    sätteri: (rp) =>
+      markdownToHtml("{a|b}", {
+        features: { gfm: true, frontmatter: false, smartPunctuation: false },
+        mdastPlugins: [satteriRuby({ rp: rp as [string, string] })]
+      }).html
+  };
+
+  describe.each(Object.entries(withRp))("%s", (_engine, render) => {
+    it("a pair wraps the reading", () => {
+      expect(normalizeHtml(render(["(", ")"]))).toBe(
+        "<p><ruby>a<rp>(</rp><rt>b</rt><rp>)</rp></ruby></p>"
+      );
+    });
+
+    it.each([
+      ["one string", ["【"], '["【"]'],
+      ["three strings", ["(", ")", "!"], '["(",")","!"]'],
+      ["a string that is not a pair", "()", '"()"'],
+      ["a pair holding something that is no string", ["(", 1], '["(",1]']
+    ])("%s is refused, and named in the error", (_name, rp, received) => {
+      expect(() => render(rp)).toThrow(
+        new TypeError(
+          `ruby: \`rp\` must be a pair of strings, such as ["(", ")"]. Received ${received}.`
+        )
+      );
+    });
+  });
+});

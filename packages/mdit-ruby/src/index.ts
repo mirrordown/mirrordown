@@ -90,9 +90,24 @@ const verbatimRuby = (
   return out;
 };
 
+// `rp` is a pair. With one string the other side printed as `undefined`, so anything but two strings is refused.
+const checkRp = (rp: unknown): void => {
+  if (rp === undefined) return;
+  if (
+    !Array.isArray(rp) ||
+    rp.length !== 2 ||
+    rp.some((side) => typeof side !== "string")
+  ) {
+    throw new TypeError(
+      `ruby: \`rp\` must be a pair of strings, such as ["(", ")"]. Received ${JSON.stringify(rp)}.`
+    );
+  }
+};
+
 /** markdown-it plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const ruby = (md: MarkdownIt, options: RubyOptions = {}): void => {
   const { rp } = options;
+  checkRp(rp);
   const hasRp = Array.isArray(rp) && rp[0] !== "" && rp[1] !== "";
 
   if (hasRp) {
