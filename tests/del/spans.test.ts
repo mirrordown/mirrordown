@@ -220,6 +220,94 @@ describe("private-use characters the author typed survive the scans", () => {
   });
 });
 
+describe("a hard break after a run: how the break was written decides whether the run can open", () => {
+  // markdown-it reads the source character after a run. A break written as a backslash puts punctuation there, so a run after punctuation still opens; one written as two spaces puts a space there, so the run opens nothing. The tree holds the same `break` node for both, and remark and Sätteri have to look at the source to tell them apart.
+  const cases: [name: string, input: string, expected: string][] = [
+    [
+      "a backslash break after a run that follows punctuation lets it open",
+      "(--\\\na--",
+      "<p>(<del><br>\na</del></p>"
+    ],
+    [
+      "the same inside emphasis",
+      "*(++\\\na++*",
+      "<p><em>(<ins><br>\na</ins></em></p>"
+    ],
+    [
+      "the same in a block quote, where the next line has a marker of its own",
+      "> (==\\\n> a==",
+      "<blockquote><p>(<mark><br>\na</mark></p></blockquote>"
+    ],
+    [
+      "a backslash break after a run that follows a letter opens nothing",
+      "x--\\\na--",
+      "<p>x--<br>\na--</p>"
+    ],
+    [
+      "a two-space break after a run is a space, so the run opens nothing",
+      "(--  \na--",
+      "<p>(--<br>\na--</p>"
+    ],
+    [
+      "a break before a run is a line ending however it was written",
+      "--a\\\n--)",
+      "<p>--a<br>\n--)</p>"
+    ]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(cases)("%s", (_name, input, expected) => {
+      expect(render(input)).toBe(expected);
+    });
+  });
+});
+
+describe("nesting stops at 100 spans, so one deep run can't make Sätteri reject the whole document", () => {
+  // Sätteri throws on content nested deeper than 128 levels, where markdown-it and remark would render any depth. All three stop at markdown-it's own nesting limit instead, as keys do, and leave the markers of deeper pairs as text: the outer 100 pairs still form.
+  const nested = (marker: string, depth: number): string =>
+    `${marker.repeat(depth)}a${marker.repeat(depth)}`;
+  const spans: [marker: string, tag: string][] = [
+    ["--", "del"],
+    ["++", "ins"],
+    ["==", "mark"]
+  ];
+
+  describe.each(engines)("%s", (_engine, render) => {
+    it.each(spans)("%s: 100 nested spans all form", (marker, tag) => {
+      expect(render(nested(marker, 100))).toBe(
+        `<p>${`<${tag}>`.repeat(100)}a${`</${tag}>`.repeat(100)}</p>`
+      );
+    });
+
+    it.each(spans)(
+      "%s: the pairs past the 100th stay markers",
+      (marker, tag) => {
+        expect(render(nested(marker, 150))).toBe(
+          `<p>${`<${tag}>`.repeat(100)}${marker.repeat(50)}a${marker.repeat(50)}${`</${tag}>`.repeat(100)}</p>`
+        );
+      }
+    );
+
+    it.each(spans)(
+      "%s: spans side by side are not nested, however many",
+      (marker, tag) => {
+        expect(render(Array(150).fill(`${marker}a${marker}`).join(" "))).toBe(
+          `<p>${Array(150).fill(`<${tag}>a</${tag}>`).join(" ")}</p>`
+        );
+      }
+    );
+
+    it.each(spans)(
+      "%s: a span after a run that hit the limit still forms",
+      (marker, tag) => {
+        expect(render(`${nested(marker, 101)} ${marker}b${marker}`)).toBe(
+          `<p>${`<${tag}>`.repeat(100)}${marker}a${marker}${`</${tag}>`.repeat(100)} <${tag}>b</${tag}></p>`
+        );
+      }
+    );
+  });
+});
+
 describe("image alt text: a known difference between the engines", () => {
   // markdown-it runs inline rules inside an image label and renders the alt from the result, so the markers are gone. In mdast the alt is a string the parser wrote, which no plugin scans. Pinned so that closing the gap, or widening it, is a deliberate change (the guide documents it).
   const input = "![--a--](x.png)";

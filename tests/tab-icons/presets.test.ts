@@ -56,10 +56,26 @@ const cases: [string, string, string][] = [
     `% [!npm] ==Install== x^2^\n> Body.`,
     `<svg/><mark>Install</mark> x<sup>2</sup>`
   ],
+  // Defining `npm` as an abbreviation is no reason for `[!npm]` to stop naming an icon: the abbr plugin wraps the keyword, which splits the marker's text in three, and the marker is read across the three.
   [
-    `a marker whose keyword became an abbreviation stays as written`,
+    `a marker whose keyword is a defined abbreviation still comes out of the label`,
     `*[npm]: Node Package Manager\n\n% [!npm] Install\n> Body.`,
-    `<svg/>[!<abbr title="Node Package Manager">npm</abbr>] Install`
+    `<svg/>Install`
+  ],
+  [
+    `markup after such a marker is kept`,
+    `*[npm]: Node Package Manager\n\n% [!npm] **Install**\n> Body.`,
+    `<svg/><strong>Install</strong>`
+  ],
+  [
+    `a label that is only such a marker reads as its keyword, still an abbreviation`,
+    `*[npm]: Node Package Manager\n\n% [!npm]\n> Body.`,
+    `<svg/><abbr title="Node Package Manager">npm</abbr>`
+  ],
+  [
+    `an abbreviation in brackets that names no icon is not a marker`,
+    `*[foo]: Some Thing\n\n% [!foo] Install\n> Body.`,
+    `[!<abbr title="Some Thing">foo</abbr>] Install`
   ]
 ];
 
@@ -71,6 +87,18 @@ describe.each(cases)(
     });
   }
 );
+
+describe(`tab-icons with the presets' inline plugins: a marker whose keyword is an abbreviation comes out of the panel's name too`, () => {
+  // The panel's `aria-label` is what a screen reader announces for the tab's content: it must not read the marker out.
+  it.each(engines)(`$engine`, ({ render }) => {
+    const html = normalizeHtml(
+      render(`*[npm]: Node Package Manager\n\n% [!npm] Install\n> Body.`)
+    );
+    expect(html).toContain(
+      `<section class="markdown-tabs-panel" aria-label="Install">`
+    );
+  });
+});
 
 describe(`tab-icons with the presets' inline plugins: a spoiler after the marker is written once`, () => {
   it.each(engines)(`$engine`, ({ render }) => {

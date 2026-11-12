@@ -192,6 +192,154 @@ describe("ruby: text the author wrote is never taken for a ruby's stand-in", () 
   ]);
 });
 
+// Sätteri re-parses the lines around a ruby on their own. A later line of a paragraph can start with anything once it is indented four columns: read alone and unindented, the same characters open a quote, a list, a heading or a fence, which dropped the `>` or cut the paragraph off at the line before.
+describe("ruby: a continuation line that starts like a block is still the paragraph's text", () => {
+  everyEngine([
+    [
+      "a `>` on an indented line is text, not a quote marker",
+      "a\n    > b {x|y}",
+      `<p>a\n> b ${R("x", "y")}</p>`
+    ],
+    [
+      "the same in a list item",
+      "- a\n      > b {x|y}",
+      `<ul><li>a\n> b ${R("x", "y")}</li></ul>`
+    ],
+    [
+      "in a block quote the quote's own marker comes off and the next `>` stays",
+      "> a\n>     > b {x|y}",
+      `<blockquote><p>a\n> b ${R("x", "y")}</p></blockquote>`
+    ],
+    [
+      "a quote's markers come off every line, and a lazy line has none",
+      "> a {x|y}\nb {x|y}\n> c {x|y}",
+      `<blockquote><p>a ${R("x", "y")}\nb ${R("x", "y")}\nc ${R("x", "y")}</p></blockquote>`
+    ],
+    [
+      "a list marker on an indented line keeps the lines after it",
+      "a\n    - b {x|y}",
+      `<p>a\n- b ${R("x", "y")}</p>`
+    ],
+    [
+      "an ordered list marker likewise",
+      "a\n    1. b {x|y}",
+      `<p>a\n1. b ${R("x", "y")}</p>`
+    ],
+    [
+      "a heading marker likewise",
+      "a\n    # b {x|y}",
+      `<p>a\n# b ${R("x", "y")}</p>`
+    ],
+    ["a fence likewise", "a\n    ``` {x|y}", `<p>a\n\`\`\` ${R("x", "y")}</p>`]
+  ]);
+});
+
+// markdown-it parses a base and a reading as part of the document, so a reference in one finds its definition. remark and Sätteri parse each on its own, where the definition is out of sight unless the plugin shows it the document's labels.
+describe("ruby: a reference in a base or a reading finds the document's definition", () => {
+  everyEngine([
+    [
+      "a shortcut reference as the base",
+      "{[foo]|bar}\n\n[foo]: /url",
+      `<p>${R(`<a href="/url">foo</a>`, "bar")}</p>`
+    ],
+    [
+      "a shortcut reference as the reading",
+      "{a|[foo]}\n\n[foo]: /url",
+      `<p>${R("a", `<a href="/url">foo</a>`)}</p>`
+    ],
+    [
+      "full and collapsed references, with the definition's title",
+      `{[text][foo]|[foo][]}\n\n[foo]: /url "T"`,
+      `<p>${R(`<a href="/url" title="T">text</a>`, `<a href="/url" title="T">foo</a>`)}</p>`
+    ],
+    [
+      "an image reference",
+      "{![alt][pic]|bar}\n\n[pic]: /p.png",
+      `<p>${R(`<img src="/p.png" alt="alt">`, "bar")}</p>`
+    ],
+    [
+      "a definition written before the ruby",
+      "[foo]: /url\n\n{[foo]|bar}",
+      `<p>${R(`<a href="/url">foo</a>`, "bar")}</p>`
+    ],
+    [
+      "brackets no definition names stay text",
+      "{[nope]|bar}\n\n[foo]: /url",
+      `<p>${R("[nope]", "bar")}</p>`
+    ]
+  ]);
+
+  // markdown-it has no footnotes here, so only the two engines that do are compared.
+  it.each([
+    ["remark", engines.remark],
+    ["sätteri", engines.sätteri]
+  ] as const)("%s: a footnote reference in a reading", (_engine, render) => {
+    expect(normalizeHtml(render("{a|b[^1]}\n\n[^1]: note", false))).toContain(
+      `<rt>b<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></rt>`
+    );
+  });
+});
+
+// A base or a reading is inline content, so a tag in it is inline HTML. remark and Sätteri parse each on its own, where text that opens with a tag is an HTML block, and they used to fall back to printing it as escaped text. Each host has raw HTML switched on here: without it markdown-it escapes every tag and remark drops every one, in a ruby or out of it.
+describe("ruby: a base or a reading that opens with an HTML tag is inline HTML", () => {
+  const withHtml: [string, (src: string) => string][] = [
+    [
+      "markdown-it",
+      (src) => new MarkdownIt({ html: true }).use(ruby).render(src)
+    ],
+    [
+      "remark",
+      (src) =>
+        String(
+          unified()
+            .use(remarkParse)
+            .use(remarkRuby)
+            .use(remarkRehype, { allowDangerousHtml: true })
+            .use(rehypeStringify, { allowDangerousHtml: true })
+            .processSync(src)
+        )
+    ],
+    [
+      "sätteri",
+      (src) =>
+        markdownToHtml(src, {
+          features: { gfm: false, frontmatter: false, smartPunctuation: false },
+          mdastPlugins: [satteriRuby()]
+        }).html
+    ]
+  ];
+  const cases: [string, string, string][] = [
+    ["a lone tag as the base", "{<b>|x}", `<p><ruby><b><rt>x</rt></ruby></p>`],
+    [
+      "a lone tag as the reading",
+      "{a|<i>}",
+      `<p><ruby>a<rt><i></rt></ruby></p>`
+    ],
+    [
+      "a block-level tag around text",
+      "{<div>a</div>|x}",
+      `<p><ruby><div>a</div><rt>x</rt></ruby></p>`
+    ],
+    ["a comment", "{<!-- c -->|y}", `<p><ruby><!-- c --><rt>y</rt></ruby></p>`],
+    [
+      "formatting after the tag is still read",
+      "{<b>*a*|x}",
+      `<p><ruby><b><em>a</em><rt>x</rt></ruby></p>`
+    ],
+    [
+      "what only starts like a tag is text",
+      "{<div oops|x}",
+      `<p><ruby>&lt;div oops<rt>x</rt></ruby></p>`
+    ]
+  ];
+
+  describe.each(cases)("%s", (_name, input, expected) => {
+    it.each(withHtml)("%s", (_engine, render) => {
+      expect(normalizeHtml(render(input))).toBe(normalizeHtml(expected));
+    });
+  });
+});
+
 describe("ruby beside attributes and mark", () => {
   everyEngine(
     [

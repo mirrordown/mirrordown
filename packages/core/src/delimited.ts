@@ -26,6 +26,9 @@ const INLINE_PARENTS = new Set([
   `superscript`
 ]);
 
+// markdown-it's `maxNesting`, which `kbd.ts` stops nested keys at too: a pair nested deeper than this stays text. Sätteri rejects a whole document whose content nests deeper than 128 levels, so the bound is what lets all three engines render the same thing there.
+const MAX_DEPTH = 100;
+
 type CharClass = `space` | `punct` | `other`;
 
 // markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S). A masked character is punctuation: where the source has an escape or a character reference, markdown-it reads the escaped character or the `;` before a run, and the `\` or the `&` after it.
@@ -102,14 +105,17 @@ const balancePairs = (delimiters: Delimiter[]): void => {
   });
 };
 
-/** Build the delimiter scan for one marker: `=` (mark), `+` (ins), `-` (del) or `|` (spoiler). */
+/**
+ * Build the delimiter scan for one marker: `=` (mark), `+` (ins), `-` (del) or `|` (spoiler). Pairs nested deeper than `maxDepth` stay text; pass a lower bound when a wrapper is more than one node deep (a spoiler is two), so the nodes stay within what Sätteri accepts.
+ */
 export const createDelimitedTransform = <N extends PhrasingLike>(
   marker: DelimiterMarker,
-  nodes: SpanNodes<N>
+  nodes: SpanNodes<N>,
+  maxDepth = MAX_DEPTH
 ): SpanTransform<N> =>
-  createSpanTransform(nodes, (children, parentType, { text, wrap }) => {
+  createSpanTransform(nodes, (children, parentType, { text, wrap }, source) => {
     const edge: CharClass = INLINE_PARENTS.has(parentType) ? `punct` : `space`;
-    // The character class beside a text node, from its sibling: a break is a line ending; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
+    // The character class beside a text node, from its sibling: a break is a line ending, unless it follows the run and was written as a backslash, which is then the character markdown-it reads there; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
     const beside = (
       sibling: N | undefined,
       side: `before` | `after`
@@ -126,7 +132,14 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
             : charAt(node.value, 0)
         );
       }
-      return sibling.type === `break` ? `space` : `punct`;
+      if (sibling.type !== `break`) return `punct`;
+      // Only the source tells a backslash break from one written as trailing spaces.
+      const start = sibling.position?.start.offset;
+      return side === `after` &&
+        start !== undefined &&
+        source?.charAt(start) === `\\`
+        ? `punct`
+        : `space`;
     };
 
     // markdown-it-mark's tokenizer: text between runs is one item, as markdown-it's pending text becomes one token.
@@ -187,9 +200,15 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
 
     // markdown-it-mark's postProcess: paired delimiters become tags, and the odd marker of an odd-length closing run moves after the closing tags.
     const lone: number[] = [];
-    for (const delimiter of delimiters) {
+    // The closers of the pairs around the current delimiter, innermost last. Pairs never cross, so a pair is left behind once the scan passes its closer.
+    const around: number[] = [];
+    for (const [index, delimiter] of delimiters.entries()) {
       const closer = delimiters[delimiter.end];
       if (!closer) continue;
+      while ((around.at(-1) ?? Infinity) < index) around.pop();
+      // A pair nested too deep stays the markers it was written as (see `MAX_DEPTH`).
+      if (around.length >= maxDepth) continue;
+      around.push(delimiter.end);
       items[delimiter.item] = { kind: `opening` };
       items[closer.item] = { kind: `closing` };
       const previous = items[closer.item - 1];

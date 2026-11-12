@@ -322,6 +322,37 @@ describe("abbr: a term holding a quote is found with smart punctuation on", () =
   });
 });
 
+// markdown-it keeps a term as its source line has it and looks for it in text whose references are already decoded, so a term written with a character reference names the reference's own characters, not the character it stands for. remark and Sätteri look for a term as the parser left it only to undo smart punctuation; doing it for a decoded reference marked text markdown-it leaves alone.
+describe("abbr: a term written with a character reference is the characters as written", () => {
+  describe.each(engines)("%s", (_engine, render) => {
+    it("does not mark the character the reference stands for", () => {
+      expect(render(`*[A&amp;B]: x\n\nA&B and A&amp;B`)).toBe(
+        `<p>A&amp;B and A&amp;B</p>`
+      );
+    });
+
+    it("marks text that spells the reference out", () => {
+      expect(render(`*[A&amp;B]: x\n\nsee A&amp;amp;B here`)).toBe(
+        `<p>see <abbr title="x">A&amp;amp;B</abbr> here</p>`
+      );
+    });
+  });
+
+  it("looks for the parser's term only where smart punctuation made the difference", () => {
+    expect(parseAbbreviations(`*[A&B]: x`, `*[A&amp;B]: x`)).toEqual([
+      [`A&amp;B`, `x`]
+    ]);
+    expect(parseAbbreviations(`*[Int’l]: x`, `*[Int'l]: x`)).toEqual([
+      [`Int'l`, `x`],
+      [`Int’l`, `x`]
+    ]);
+    expect(parseAbbreviations(`*[a–b… “c”]: x`, `*[a--b... "c"]: x`)).toEqual([
+      [`a--b... "c"`, `x`],
+      [`a–b… “c”`, `x`]
+    ]);
+  });
+});
+
 // Behaviour the engines already share and nothing else holds in place. The shared fixture runs through the presets too, where a code block and an image get other plugins' markup, so those two are here.
 describe("abbr: what is never a definition or a term", () => {
   describe.each(engines)("%s", (_engine, render) => {

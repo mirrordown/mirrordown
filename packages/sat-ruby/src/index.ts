@@ -65,6 +65,10 @@ const MAYBE_RUBY = /\{[^|{}\r\n]+\|[^}\r\n]+\}/;
 const OPEN = `⸨${String.fromCharCode(0xe000)}`;
 const CLOSE = `${String.fromCharCode(0xe001)}⸩`;
 const PLACEHOLDER = new RegExp(`${OPEN}(\\d+)${CLOSE}`, `g`);
+// What a base or a reading that would parse as an HTML block is given to start with while it is parsed.
+const START = String.fromCharCode(0xe003);
+// What a line after the first is indented by while a slice is re-parsed: four columns, where no block can open.
+const CONTINUATION = `    `;
 // What a slice that ends in an attribute block is given to end with while it is re-parsed, so the block stays the text it is in the document.
 const END = String.fromCharCode(0xe002);
 // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
@@ -197,13 +201,32 @@ export const satteriRuby =
             ]
           : [node];
       });
+    // Link and footnote labels defined anywhere in the document. A re-parsed slice stands alone, and so does a base or a reading, so each gets a placeholder definition for each label; only recognition matters, since the spliced-back reference still resolves against the document's own definitions.
+    let definitions = ``;
     const parseInline = (raw: string, inCell: boolean): MdastTarget[] => {
       const text = tidy(raw);
       if (!text) return [];
-      const first = parseChildren(text)[0];
-      return first?.type === `paragraph` && `children` in first
-        ? rebuild(first.children, text, inCell)
-        : [{ type: `text`, value: text }];
+      const first = parseChildren(text + definitions)[0];
+      if (first?.type === `paragraph` && `children` in first)
+        return rebuild(first.children, text, inCell);
+      // A base or a reading that opens with a tag is an HTML block when it stands alone, where in the document it is inline content, as markdown-it reads it. Parsed after a character, which is then dropped, it is a paragraph.
+      if (first?.type === `html`) {
+        const again = parseChildren(START + text + definitions)[0];
+        const [lead, ...rest] =
+          again?.type === `paragraph` && `children` in again
+            ? rebuild(again.children, START + text, inCell)
+            : [];
+        const value = lead?.type === `text` ? lead.value : undefined;
+        if (lead && value?.startsWith(START)) {
+          const cut = {
+            type: `text` as const,
+            value: value.slice(START.length)
+          };
+          carryEscapes(cut, textEscapes(lead, ``), START.length);
+          return cut.value ? [cut, ...rest] : rest;
+        }
+      }
+      return [{ type: `text`, value: text }];
     };
     const custom = (type: string, children: MdastTarget[]): Custom => ({
       type,
@@ -277,8 +300,6 @@ export const satteriRuby =
         : [...to];
 
     const seen = new WeakSet<object>();
-    // Link and footnote labels defined anywhere in the document. A re-parsed slice stands alone, so it gets a placeholder definition for each label; only recognition matters, since the spliced-back reference still resolves against the document's own definitions.
-    let definitions = ``;
     return defineMdastPlugin({
       name: `ruby`,
       options: { position: true },
@@ -358,6 +379,15 @@ export const satteriRuby =
           }
         }
 
+        let quotes = 0;
+        for (let up = ctx.parent(block); up; up = ctx.parent(up)) {
+          if (up.type === `blockquote`) quotes++;
+        }
+        const prefix = new RegExp(
+          `(\\r\\n?|\\n)(?:[ \\t]*>){0,${String(quotes)}}[ \\t]*`,
+          `g`
+        );
+
         const next: MdastTarget[] = [];
         let cursor = 0;
         for (const group of groups) {
@@ -371,12 +401,14 @@ export const satteriRuby =
             at = span.end;
           });
           slice += source.slice(at, end);
-          // Continuation lines carry container prefixes (`> `, list indent). A paragraph line can never begin with `>` (that would open a blockquote), and its leading whitespace is stripped anyway, so dropping `[ \t>]*` after each line ending rebuilds the inline source exactly.
-          slice = slice.replace(/(\r\n?|\n)[ \t>]*/g, `$1`);
+          // Continuation lines carry container prefixes: the indentation of a list item, and one `>` for each block quote the block is in. They come off after each line ending, and no more than that: a `>` past the quotes' own is text the author wrote (a line indented four columns opens no quote).
+          slice = slice.replace(prefix, `$1`);
           // A paragraph drops the whitespace at its own edges, but here it sits between the slice and a neighbouring node (`*x* {a|b}`): set it aside and put it back as text.
           const lead = /^[ \t\r\n]*/.exec(slice)?.[0] ?? ``;
-          const body = slice.slice(lead.length).replace(/[ \t\r\n]+$/, ``);
-          const trail = slice.slice(lead.length + body.length);
+          const content = slice.slice(lead.length).replace(/[ \t\r\n]+$/, ``);
+          const trail = slice.slice(lead.length + content.length);
+          // Every line after the first continues a paragraph, whatever it starts with (`>`, `-`, `#`, a fence). Parsed alone it would open a block and end the paragraph, so each is indented four columns, where nothing can open: the parser drops the indentation again.
+          const body = content.replace(/\r\n?|\n/g, `$&${CONTINUATION}`);
           let parsed = body + definitions;
           let reparsed = parseChildren(parsed)[0];
           // A slice that ends in an attribute block loses it to the paragraph it is re-parsed as, though in the document, where the content goes on or the block isn't the last, it is text: parsed again with a character after it, which is then dropped, it stays text.
@@ -401,7 +433,7 @@ export const satteriRuby =
                     children.slice(group.first, group.last + 1),
                     reparsed.children
                   )
-                : [{ type: `text`, value: body }],
+                : [{ type: `text`, value: content }],
               group.spans,
               parsed,
               inCell
