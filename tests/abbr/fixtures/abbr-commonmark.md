@@ -91,3 +91,13 @@ foo_HTML HTML_bar (HTML) HTML-5 「HTML」
 *[HTML]: Hyper Text
 
 HTML™ HTML° ©HTML
+
+<!-- @case: a character written as a reference is part of the word -->
+*[HTML]: Hyper Text
+
+HTML&#65; and &#65;HTML
+
+<!-- @case: a term matches however its characters are written -->
+*[AT&T]: telco
+
+AT&T, AT&amp;T, AT\&T

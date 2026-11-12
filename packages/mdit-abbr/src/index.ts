@@ -7,6 +7,7 @@ import type { RuleBlock } from "markdown-it/lib/parser_block.mjs";
 import type { RuleCore } from "markdown-it/lib/parser_core.mjs";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
 import type StateCore from "markdown-it/lib/rules_core/state_core.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 
 interface AbbrStateBlock extends StateBlock {
   env: { abbreviations?: Record<string, string> };
@@ -17,6 +18,9 @@ interface AbbrStateCore extends StateCore {
 }
 
 const ESCAPE_RE = /\\(.)/g;
+
+const isText = (token: Token): boolean =>
+  token.type === "text" || token.type === "text_special";
 
 const abbrDefinition: RuleBlock = (
   state: AbbrStateBlock,
@@ -72,7 +76,7 @@ const abbrDefinition: RuleBlock = (
 
 /** markdown-it plugin for abbreviations (`*[term]: definition`), rendering `<abbr>` elements. */
 export const abbr: PluginSimple = (md) => {
-  const { arrayReplaceAt, escapeRE, lib } = md.utils;
+  const { escapeRE, lib } = md.utils;
 
   const OTHER_CHARS = " \r\n$+<=>^`|~";
   // oxlint-disable-next-line typescript/no-unsafe-member-access
@@ -109,36 +113,48 @@ export const abbr: PluginSimple = (md) => {
 
       let children = token.children!;
 
+      // Text is scanned a run at a time. Until `text_join`, which runs after this rule, an escaped character or a character reference is a `text_special` token of its own, and it is a character of the word around it, not the edge of the text.
       for (let index = children.length - 1; index >= 0; index--) {
-        const currentToken = children[index];
+        if (!isText(children[index])) continue;
 
-        if (currentToken.type !== "text") continue;
-
-        const text = currentToken.content;
+        const end = index + 1;
+        while (index > 0 && isText(children[index - 1])) index--;
+        const run = children.slice(index, end);
+        const text = run.map((child) => child.content).join("");
         regExp.lastIndex = 0;
 
         if (!regexpSimple.test(text)) continue;
 
-        const nodes = [];
+        const nodes: Token[] = [];
+        // The run's tokens over `from` to `to` of its text. A piece of a `text_special` token stays one, so the typographer, which runs later, still leaves an escaped character alone.
+        const pushText = (from: number, to: number) => {
+          let offset = 0;
+          for (const child of run) {
+            const start = Math.max(from, offset) - offset;
+            const stop = Math.min(to, offset + child.content.length) - offset;
+            offset += child.content.length;
+            if (start >= stop) continue;
+            const textToken = new state.Token(child.type, "", 0);
+            textToken.content = child.content.slice(start, stop);
+            textToken.info = child.info;
+            textToken.markup = child.markup;
+            nodes.push(textToken);
+          }
+        };
         let match: RegExpExecArray | null;
         let pos = 0;
 
         while ((match = regExp.exec(text))) {
           const [, before, word, after] = match;
+          const wordStart = match.index + before.length;
 
-          if (match.index > 0 || before.length > 0) {
-            const textToken = new state.Token("text", "", 0);
-            textToken.content = text.slice(pos, match.index + before.length);
-            nodes.push(textToken);
-          }
+          pushText(pos, wordStart);
 
           const abbrOpenToken = new state.Token("abbr_open", "abbr", 1);
           abbrOpenToken.attrPush(["title", abbreviations[`:${word}`]]);
           nodes.push(abbrOpenToken);
 
-          const textToken = new state.Token("text", "", 0);
-          textToken.content = word!;
-          nodes.push(textToken);
+          pushText(wordStart, wordStart + word.length);
 
           const abbrCloseToken = new state.Token("abbr_close", "abbr", -1);
           nodes.push(abbrCloseToken);
@@ -149,13 +165,13 @@ export const abbr: PluginSimple = (md) => {
 
         if (nodes.length === 0) continue;
 
-        if (pos < text.length) {
-          const textToken = new state.Token("text", "", 0);
-          textToken.content = text.slice(pos);
-          nodes.push(textToken);
-        }
+        pushText(pos, text.length);
 
-        token.children = children = arrayReplaceAt(children, index, nodes);
+        token.children = children = [
+          ...children.slice(0, index),
+          ...nodes,
+          ...children.slice(end)
+        ];
       }
     }
   };

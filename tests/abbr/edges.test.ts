@@ -122,3 +122,29 @@ describe("abbr: a term stands between the same boundaries in every engine", () =
     });
   });
 });
+
+// markdown-it holds an escaped character or a character reference in a token of its own until `text_join`. The abbreviation rule reads such a run as one text (the shared fixture has those cases) but stays ahead of the typographer, so a term is found as it was written, and what was escaped is still escaped when the typographer runs.
+describe("mdit-abbr: abbreviations are found before the typographer runs", () => {
+  const typographer = (input: string): string =>
+    normalizeHtml(
+      new MarkdownIt({ typographer: true }).use(abbr).render(input)
+    );
+
+  it("finds a term holding characters the typographer rewrites", () => {
+    expect(typographer(`*[rock'n'roll]: music\n\nrock'n'roll here`)).toBe(
+      `<p><abbr title="music">rock’n’roll</abbr> here</p>`
+    );
+  });
+
+  it("leaves an escaped quote next to a term straight, and curls a plain one", () => {
+    expect(typographer(`*[HTML]: Hyper\n\n\\"HTML\\" and "HTML"`)).toBe(
+      `<p>"<abbr title="Hyper">HTML</abbr>" and “<abbr title="Hyper">HTML</abbr>”</p>`
+    );
+  });
+
+  it("leaves an escaped character inside a term to the typographer as escaped", () => {
+    expect(typographer(`*[a"b]: t\n\nsee a\\"b now`)).toBe(
+      `<p>see <abbr title="t">a"b</abbr> now</p>`
+    );
+  });
+});

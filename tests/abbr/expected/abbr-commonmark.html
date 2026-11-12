@@ -55,3 +55,9 @@
 
 <!-- @case: no match next to a symbol that is not punctuation -->
 <p>HTML™ HTML° ©HTML</p>
+
+<!-- @case: a character written as a reference is part of the word -->
+<p>HTMLA and AHTML</p>
+
+<!-- @case: a term matches however its characters are written -->
+<p><abbr title="telco">AT&amp;T</abbr>, <abbr title="telco">AT&amp;T</abbr>, <abbr title="telco">AT&amp;T</abbr></p>

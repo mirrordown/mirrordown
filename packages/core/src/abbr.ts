@@ -43,11 +43,7 @@ export const createAbbreviationScan = (
     const parts: AbbreviationPart[] = [];
     let last = 0;
     pattern.lastIndex = 0;
-    for (
-      let match = pattern.exec(value);
-      match;
-      match = pattern.exec(value)
-    ) {
+    for (let match = pattern.exec(value); match; match = pattern.exec(value)) {
       const term = match[2] ?? ``;
       const start = match.index + (match[1] ?? ``).length;
       if (start > last) parts.push({ text: value.slice(last, start) });
