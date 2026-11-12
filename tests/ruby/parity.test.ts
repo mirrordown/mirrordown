@@ -280,6 +280,66 @@ describe("ruby: a reference in a base or a reading finds the document's definiti
   });
 });
 
+// A base or a reading is inline content, so a tag in it is inline HTML. remark and Sätteri parse each on its own, where text that opens with a tag is an HTML block, and they used to fall back to printing it as escaped text. Each host has raw HTML switched on here: without it markdown-it escapes every tag and remark drops every one, in a ruby or out of it.
+describe("ruby: a base or a reading that opens with an HTML tag is inline HTML", () => {
+  const withHtml: [string, (src: string) => string][] = [
+    [
+      "markdown-it",
+      (src) => new MarkdownIt({ html: true }).use(ruby).render(src)
+    ],
+    [
+      "remark",
+      (src) =>
+        String(
+          unified()
+            .use(remarkParse)
+            .use(remarkRuby)
+            .use(remarkRehype, { allowDangerousHtml: true })
+            .use(rehypeStringify, { allowDangerousHtml: true })
+            .processSync(src)
+        )
+    ],
+    [
+      "sätteri",
+      (src) =>
+        markdownToHtml(src, {
+          features: { gfm: false, frontmatter: false, smartPunctuation: false },
+          mdastPlugins: [satteriRuby()]
+        }).html
+    ]
+  ];
+  const cases: [string, string, string][] = [
+    ["a lone tag as the base", "{<b>|x}", `<p><ruby><b><rt>x</rt></ruby></p>`],
+    [
+      "a lone tag as the reading",
+      "{a|<i>}",
+      `<p><ruby>a<rt><i></rt></ruby></p>`
+    ],
+    [
+      "a block-level tag around text",
+      "{<div>a</div>|x}",
+      `<p><ruby><div>a</div><rt>x</rt></ruby></p>`
+    ],
+    ["a comment", "{<!-- c -->|y}", `<p><ruby><!-- c --><rt>y</rt></ruby></p>`],
+    [
+      "formatting after the tag is still read",
+      "{<b>*a*|x}",
+      `<p><ruby><b><em>a</em><rt>x</rt></ruby></p>`
+    ],
+    [
+      "what only starts like a tag is text",
+      "{<div oops|x}",
+      `<p><ruby>&lt;div oops<rt>x</rt></ruby></p>`
+    ]
+  ];
+
+  describe.each(cases)("%s", (_name, input, expected) => {
+    it.each(withHtml)("%s", (_engine, render) => {
+      expect(normalizeHtml(render(input))).toBe(normalizeHtml(expected));
+    });
+  });
+});
+
 describe("ruby beside attributes and mark", () => {
   everyEngine(
     [

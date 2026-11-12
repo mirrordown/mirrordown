@@ -8,7 +8,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { markdownLineEnding } from "micromark-util-character";
 import type { Plugin, Transformer } from "unified";
 import type { Data } from "unist";
-import type { Root, Nodes, Paragraph, PhrasingContent } from "mdast";
+import type { Root, Nodes, PhrasingContent } from "mdast";
 import type {
   Construct,
   Extension as MicromarkExtension,
@@ -190,6 +190,9 @@ const rubyFromMarkdownExtension: FromMarkdownExtension = {
 
 // ---- Plugin ----
 
+// What a base or a reading that would parse as an HTML block is given to start with while it is parsed: a private-use character no author's text holds there.
+const START = String.fromCharCode(0xe003);
+
 /** remark plugin for ruby annotation syntax (`{base|reading}`), rendering `<ruby>` elements. */
 export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
   options = {}
@@ -209,14 +212,23 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
     // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
     const text = raw.replace(/^[ \t]+|[ \t]+$/g, "") || raw;
     if (!text) return [];
-    const tree = fromMarkdown(text + definitions, {
-      extensions: data.micromarkExtensions,
-      mdastExtensions: data.fromMarkdownExtensions
-    });
-    const para = tree.children[0] as Paragraph | undefined;
-    return para?.type === "paragraph"
-      ? para.children
-      : [{ type: "text", value: text }];
+    const parse = (source: string): Root["children"][number] | undefined =>
+      fromMarkdown(source + definitions, {
+        extensions: data.micromarkExtensions,
+        mdastExtensions: data.fromMarkdownExtensions
+      }).children[0];
+    const first = parse(text);
+    if (first?.type === "paragraph") return first.children;
+    // A base or a reading that opens with a tag is an HTML block when it stands alone, where in the document it is inline content, as markdown-it reads it. Parsed after a character, which is then dropped, it is a paragraph.
+    if (first?.type === "html") {
+      const again = parse(START + text);
+      const [lead, ...rest] = again?.type === "paragraph" ? again.children : [];
+      if (lead?.type === "text" && lead.value.startsWith(START)) {
+        lead.value = lead.value.slice(START.length);
+        return lead.value ? [lead, ...rest] : rest;
+      }
+    }
+    return [{ type: "text", value: text }];
   }
 
   const makeRt = (children: PhrasingContent[]): Rt => ({

@@ -65,6 +65,8 @@ const MAYBE_RUBY = /\{[^|{}\r\n]+\|[^}\r\n]+\}/;
 const OPEN = `⸨${String.fromCharCode(0xe000)}`;
 const CLOSE = `${String.fromCharCode(0xe001)}⸩`;
 const PLACEHOLDER = new RegExp(`${OPEN}(\\d+)${CLOSE}`, `g`);
+// What a base or a reading that would parse as an HTML block is given to start with while it is parsed.
+const START = String.fromCharCode(0xe003);
 // What a line after the first is indented by while a slice is re-parsed: four columns, where no block can open.
 const CONTINUATION = `    `;
 // What a slice that ends in an attribute block is given to end with while it is re-parsed, so the block stays the text it is in the document.
@@ -205,9 +207,25 @@ export const satteriRuby =
       const text = tidy(raw);
       if (!text) return [];
       const first = parseChildren(text + definitions)[0];
-      return first?.type === `paragraph` && `children` in first
-        ? rebuild(first.children, text, inCell)
-        : [{ type: `text`, value: text }];
+      if (first?.type === `paragraph` && `children` in first)
+        return rebuild(first.children, text, inCell);
+      // A base or a reading that opens with a tag is an HTML block when it stands alone, where in the document it is inline content, as markdown-it reads it. Parsed after a character, which is then dropped, it is a paragraph.
+      if (first?.type === `html`) {
+        const again = parseChildren(START + text + definitions)[0];
+        const [lead, ...rest] =
+          again?.type === `paragraph` && `children` in again
+            ? rebuild(again.children, START + text, inCell)
+            : [];
+        if (lead?.type === `text` && lead.value.startsWith(START)) {
+          const cut = {
+            type: `text` as const,
+            value: lead.value.slice(START.length)
+          };
+          carryEscapes(cut, textEscapes(lead, ``), START.length);
+          return cut.value ? [cut, ...rest] : rest;
+        }
+      }
+      return [{ type: `text`, value: text }];
     };
     const custom = (type: string, children: MdastTarget[]): Custom => ({
       type,
