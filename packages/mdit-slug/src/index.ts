@@ -40,12 +40,21 @@ export const slug: PluginWithOptions<SlugOptions> = (md, options) => {
   md.core.ruler.push("slug", (state) => {
     slugger.reset();
 
+    // An id a heading was given by hand is taken, wherever in the document it is written: the slugger is told of each before it makes any, so a generated id never repeats one.
+    for (const token of state.tokens) {
+      const id = token.type === "heading_open" ? token.attrGet("id") : null;
+      if (id?.startsWith(prefix)) {
+        slugger.occurrences[id.slice(prefix.length)] ??= 0;
+      }
+    }
+
     let prev: Token | undefined;
     for (const token of state.tokens) {
       if (
         prev?.type === "heading_open" &&
         token.type === "inline" &&
-        prev.attrGet("id") === null
+        // An empty id is no id, as in the rehype and Sätteri plugins.
+        !prev.attrGet("id")
       ) {
         prev.attrSet("id", prefix + slugger.slug(headingText(token)));
       }
