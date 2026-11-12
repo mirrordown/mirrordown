@@ -13,6 +13,7 @@ export interface SlugOptions {
 
 const HEADINGS = ["h1", "h2", "h3", "h4", "h5", "h6"];
 
+type BeforeHook = NonNullable<HastVisitorInstance["before"]>;
 type ElementVisitor = Extract<
   NonNullable<HastVisitorInstance["element"]>,
   { filter: string[] }
@@ -23,6 +24,7 @@ type ElementVisitor = Extract<
  */
 export interface SlugPlugin {
   name: string;
+  before: (...args: Parameters<BeforeHook>) => void;
   element: {
     filter: string[];
     visit: (...args: Parameters<ElementVisitor["visit"]>) => void;
@@ -41,6 +43,25 @@ export const satteriSlug =
     const slugger = new GithubSlugger();
     return defineHastPlugin({
       name: "slug",
+      // An id a heading was given by hand is taken, wherever in the document it is written: the slugger is told of each before it makes any, so a generated id never repeats one.
+      before(root) {
+        const walk = (node: object): void => {
+          if (!(`children` in node) || !Array.isArray(node.children)) return;
+          if (
+            `tagName` in node &&
+            typeof node.tagName === `string` &&
+            HEADINGS.includes(node.tagName) &&
+            `properties` in node
+          ) {
+            const { id } = node.properties as { id?: unknown };
+            if (typeof id === `string` && id.startsWith(prefix)) {
+              slugger.occurrences[id.slice(prefix.length)] ??= 0;
+            }
+          }
+          for (const child of node.children) walk(child as object);
+        };
+        walk(root);
+      },
       element: {
         filter: HEADINGS,
         visit(node, ctx) {
