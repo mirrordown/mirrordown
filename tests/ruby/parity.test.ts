@@ -234,6 +234,52 @@ describe("ruby: a continuation line that starts like a block is still the paragr
   ]);
 });
 
+// markdown-it parses a base and a reading as part of the document, so a reference in one finds its definition. remark and Sätteri parse each on its own, where the definition is out of sight unless the plugin shows it the document's labels.
+describe("ruby: a reference in a base or a reading finds the document's definition", () => {
+  everyEngine([
+    [
+      "a shortcut reference as the base",
+      "{[foo]|bar}\n\n[foo]: /url",
+      `<p>${R(`<a href="/url">foo</a>`, "bar")}</p>`
+    ],
+    [
+      "a shortcut reference as the reading",
+      "{a|[foo]}\n\n[foo]: /url",
+      `<p>${R("a", `<a href="/url">foo</a>`)}</p>`
+    ],
+    [
+      "full and collapsed references, with the definition's title",
+      `{[text][foo]|[foo][]}\n\n[foo]: /url "T"`,
+      `<p>${R(`<a href="/url" title="T">text</a>`, `<a href="/url" title="T">foo</a>`)}</p>`
+    ],
+    [
+      "an image reference",
+      "{![alt][pic]|bar}\n\n[pic]: /p.png",
+      `<p>${R(`<img src="/p.png" alt="alt">`, "bar")}</p>`
+    ],
+    [
+      "a definition written before the ruby",
+      "[foo]: /url\n\n{[foo]|bar}",
+      `<p>${R(`<a href="/url">foo</a>`, "bar")}</p>`
+    ],
+    [
+      "brackets no definition names stay text",
+      "{[nope]|bar}\n\n[foo]: /url",
+      `<p>${R("[nope]", "bar")}</p>`
+    ]
+  ]);
+
+  // markdown-it has no footnotes here, so only the two engines that do are compared.
+  it.each([
+    ["remark", engines.remark],
+    ["sätteri", engines.sätteri]
+  ] as const)("%s: a footnote reference in a reading", (_engine, render) => {
+    expect(normalizeHtml(render("{a|b[^1]}\n\n[^1]: note", false))).toContain(
+      `<rt>b<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></rt>`
+    );
+  });
+});
+
 describe("ruby beside attributes and mark", () => {
   everyEngine(
     [

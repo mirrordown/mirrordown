@@ -204,11 +204,12 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
 
   // By transformation time all plugins have pushed into data, so forwarding these
   // arrays to fromMarkdown gives parseInline access to GFM strikethrough etc.
-  function parseInline(raw: string): PhrasingContent[] {
+  // `definitions` is a placeholder definition for each link and footnote label the document defines (see `definitionsOf`): a base or a reading is parsed alone, where a reference to a label defined elsewhere would be text.
+  function parseInline(raw: string, definitions: string): PhrasingContent[] {
     // Spaces and tabs around a base or a reading are not part of it, as a paragraph's are not; one that is nothing but whitespace is kept.
     const text = raw.replace(/^[ \t]+|[ \t]+$/g, "") || raw;
     if (!text) return [];
-    const tree = fromMarkdown(text, {
+    const tree = fromMarkdown(text + definitions, {
       extensions: data.micromarkExtensions,
       mdastExtensions: data.fromMarkdownExtensions
     });
@@ -230,7 +231,20 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
     data: { hName: "rp" }
   });
 
+  // Only recognition matters: the reference a fragment is parsed to resolves against the document's own definitions when the tree is rendered.
+  const definitionsOf = (tree: Root): string => {
+    const labels: string[] = [];
+    visit(tree, "definition", (node) => {
+      labels.push(`[${node.label ?? node.identifier}]: #`);
+    });
+    visit(tree, "footnoteDefinition", (node) => {
+      labels.push(`[^${node.label ?? node.identifier}]: #`);
+    });
+    return labels.length > 0 ? `\n\n${labels.join("\n")}` : "";
+  };
+
   const transformer: Transformer<Root> = (tree) => {
+    const definitions = definitionsOf(tree);
     const inTableCell = new Set<Ruby>();
     visit(tree, "tableCell", (cell) => {
       visit(cell, "ruby", (node: Ruby) => {
@@ -250,8 +264,11 @@ export const remarkRuby: Plugin<[RubyOptions?], Root> = function (
       const rawBase = inTableCell.has(node)
         ? (raw.rawBase as string).replace(/\\$/, "")
         : (raw.rawBase as string);
-      const baseChildren = parseInline(rawBase);
-      const readingChildren = parseInline(raw.rawReading as string);
+      const baseChildren = parseInline(rawBase, definitions);
+      const readingChildren = parseInline(
+        raw.rawReading as string,
+        definitions
+      );
 
       node.children = [
         ...baseChildren,

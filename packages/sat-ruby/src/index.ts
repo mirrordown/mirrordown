@@ -199,10 +199,12 @@ export const satteriRuby =
             ]
           : [node];
       });
+    // Link and footnote labels defined anywhere in the document. A re-parsed slice stands alone, and so does a base or a reading, so each gets a placeholder definition for each label; only recognition matters, since the spliced-back reference still resolves against the document's own definitions.
+    let definitions = ``;
     const parseInline = (raw: string, inCell: boolean): MdastTarget[] => {
       const text = tidy(raw);
       if (!text) return [];
-      const first = parseChildren(text)[0];
+      const first = parseChildren(text + definitions)[0];
       return first?.type === `paragraph` && `children` in first
         ? rebuild(first.children, text, inCell)
         : [{ type: `text`, value: text }];
@@ -279,8 +281,6 @@ export const satteriRuby =
         : [...to];
 
     const seen = new WeakSet<object>();
-    // Link and footnote labels defined anywhere in the document. A re-parsed slice stands alone, so it gets a placeholder definition for each label; only recognition matters, since the spliced-back reference still resolves against the document's own definitions.
-    let definitions = ``;
     return defineMdastPlugin({
       name: `ruby`,
       options: { position: true },
