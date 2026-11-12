@@ -5,11 +5,16 @@ import type { VisitorResult } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Parent } from "unist";
 import type { Root, Text, PhrasingContent } from "mdast";
-import { createAbbreviationScan, parseAbbreviations } from "@mirrordown/core";
+import {
+  carryEscapes,
+  createAbbreviationScan,
+  parseAbbreviations,
+  textEscapes
+} from "@mirrordown/core";
 
 /** remark plugin for abbreviations (`*[term]: definition`), rendering `<abbr>` elements. The definition and term rules are shared with the Sätteri plugin through `@mirrordown/core`. */
 export const remarkAbbr: Plugin<[], Root> = () => {
-  const transformer: Transformer<Root> = (tree) => {
+  const transformer: Transformer<Root> = (tree, file) => {
     const abbreviations = new Map<string, string>();
     const nodesToRemove: Array<{ parent: Parent; index: number }> = [];
 
@@ -40,15 +45,24 @@ export const remarkAbbr: Plugin<[], Root> = () => {
       if ((parent as unknown as { type: string }).type === "abbr") return;
       const parts = scan(node.value);
       if (!parts) return;
-      const children: PhrasingContent[] = parts.map((part) =>
-        "text" in part
-          ? { type: "text", value: part.text }
-          : {
+      // The pieces have no source position, so each keeps a record of which of its characters were escaped: a span plugin that runs later still tells `\==` from `==`.
+      const escaped = textEscapes(node, String(file));
+      let offset = 0;
+      const children = parts.map((part): PhrasingContent => {
+        const text: Text = {
+          type: "text",
+          value: "text" in part ? part.text : part.term
+        };
+        carryEscapes(text, escaped, offset);
+        offset += text.value.length;
+        return "text" in part
+          ? text
+          : ({
               type: "abbr",
-              children: [{ type: "text", value: part.term }],
+              children: [text],
               data: { hName: "abbr", hProperties: { title: part.title } }
-            }
-      );
+            } as unknown as PhrasingContent);
+      });
       (parent as Parent).children.splice(index, 1, ...children);
       return [CONTINUE, index + children.length];
     });
