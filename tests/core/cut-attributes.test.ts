@@ -32,7 +32,7 @@ describe(`placeCutAttributes: an own-line block inside a list item goes on the i
     );
   });
 
-  // Only where the block lands is read here: on the item, Sätteri then renders `class="a"` where remark renders `class="a task-list-item"`, a difference in how a placed class meets the renderer's own, not in placement.
+  // Only where the block lands is read here; the classes it meets there are the next block's to check.
   it(`a task item, whose paragraph starts right of its content column`, () => {
     const input = `% One\n> - [ ] Task\n>   {.a}\n% Two\n> body`;
     expect(firstPanel(markdownToHtml(input, satteri).html)).toMatch(
@@ -40,6 +40,41 @@ describe(`placeCutAttributes: an own-line block inside a list item goes on the i
     );
     expect(firstPanel(String(remarkProcessor.processSync(input)))).toMatch(
       /^<ul class="contains-task-list"><li class="a[ "]/
+    );
+  });
+});
+
+// Sätteri's renderer gives a task item `task-list-item` and its list `contains-task-list`, unless a plugin has set a `className` on the node, which replaces them: a class placed here took the item's own away, and with it the styles that hide its bullet. Outside a panel the parser reads the same block itself and keeps both, as remark does.
+describe(`placeCutAttributes: a class placed on a task item or its list keeps the renderer's own`, () => {
+  const both = (input: string): string => {
+    const fromSatteri = firstPanel(markdownToHtml(input, satteri).html);
+    expect(fromSatteri).toBe(
+      firstPanel(String(remarkProcessor.processSync(input)))
+    );
+    return fromSatteri;
+  };
+
+  it(`on the item, from a line of its own`, () => {
+    expect(both(`% One\n> - [ ] Task\n>   {.a}\n% Two\n> body`)).toBe(
+      `<ul class="contains-task-list"><li class="a task-list-item"><input type="checkbox" disabled> Task</li></ul>`
+    );
+  });
+
+  it(`on the item, from the end of its first line`, () => {
+    expect(both(`% One\n> - [x] Task {.a}\n% Two\n> body`)).toBe(
+      `<ul class="contains-task-list"><li class="a task-list-item"><input type="checkbox" checked disabled> Task</li></ul>`
+    );
+  });
+
+  it(`on the list, from a line written outside the item`, () => {
+    expect(both(`% One\n> - [ ] Task\n> {.a}\n% Two\n> body`)).toBe(
+      `<ul class="a contains-task-list"><li class="task-list-item"><input type="checkbox" disabled> Task</li></ul>`
+    );
+  });
+
+  it(`an id alone leaves the classes as they were`, () => {
+    expect(both(`% One\n> - [ ] Task\n>   {#a}\n% Two\n> body`)).toBe(
+      `<ul class="contains-task-list"><li class="task-list-item" id="a"><input type="checkbox" disabled> Task</li></ul>`
     );
   });
 });

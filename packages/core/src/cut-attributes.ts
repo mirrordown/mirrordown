@@ -43,6 +43,18 @@ const listLoose = (list: Node | undefined): boolean =>
   Boolean(list.spread) ||
   list.children.some((item) => item.spread ?? item.children.length > 1);
 
+// The class the renderer itself gives the node's element: a task item's, or that of a list holding one.
+const generatedClass = (node: Node): string | undefined => {
+  if (node.type === "listItem" && typeof node.checked === "boolean")
+    return "task-list-item";
+  if (
+    node.type === "list" &&
+    node.children.some((item) => typeof item.checked === "boolean")
+  )
+    return "contains-task-list";
+  return undefined;
+};
+
 /**
  * Places the attribute block now ending each paragraph recognition rebuilt (one a header was cut from), as the parser places one: a block on a line of its own goes on the block it's written after, at the level its `>` markers and indentation put it (the paragraph, its list item in a tight list, or the outermost blockquote or list item it's written outside of, a list item giving its list); a block after text goes on the paragraph, or its list item from the item's first paragraph.
  */
@@ -150,10 +162,15 @@ export const placeCutAttributes = (
           hProperties?: Properties | undefined;
         })
       | undefined = target.data;
-    target.data = {
-      ...data,
-      hProperties: mergeProperties(data?.hProperties, properties)
-    };
+    const merged = mergeProperties(data?.hProperties, properties);
+    // The renderer gives a task item and its list a class of their own, which a `className` set here replaces: written last, as the parser orders it after a block's classes, it stays.
+    const generated = generatedClass(target);
+    if (generated && Array.isArray(merged.className))
+      merged.className = [
+        ...merged.className.filter((name) => name !== generated),
+        generated
+      ];
+    target.data = { ...data, hProperties: merged };
     const kept = ownLine
       ? value.slice(0, Math.max(lineStart, 0))
       : value.slice(0, lineStart + 1) + before;
