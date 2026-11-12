@@ -36,9 +36,11 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 > Advises about risks or negative outcomes of certain actions.
 ````
 
+The keyword is read in any case (`[!note]` is a note). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
+
 ### Custom titles
 
-Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line:
+Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
 
 ````markdown
 > [!NOTE] Custom *Title*
@@ -122,17 +124,27 @@ satteriGithubAlerts({
 }
 ```
 
+### Other options
+
+| Option | Default | |
+| --- | --- | --- |
+| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is an alert and `[!NOTE]` is not. |
+| `containerClass` | `"markdown-alert"` | The alert's class, which also starts the title's (`-title`). The stylesheet targets the default. |
+
 ## Install
 
 ```sh
 npm install @mirrordown/sat-github-alerts
 ```
 
+List it after the plugins for inline syntax (mark, kbd and so on), so a title's `aria-label` reads the title's text rather than its markup, and after the steps and tabs plugins, so a marker line directly under a step or tab header stays that body's text.
+
 ### Standalone
 
 ```ts
 import { markdownToHtml } from "satteri";
 import { satteriGithubAlerts } from "@mirrordown/sat-github-alerts";
+import "@mirrordown/sat-github-alerts/github-alerts.css";
 
 const { html } = markdownToHtml(source, {
   mdastPlugins: [satteriGithubAlerts()],
@@ -152,6 +164,9 @@ export default defineConfig({
     processor: satteri({ mdastPlugins: [satteriGithubAlerts()] }),
   },
 });
+
+// In your layout:
+import "@mirrordown/sat-github-alerts/github-alerts.css";
 ```
 
 ## Documentation

@@ -83,7 +83,7 @@ flowchart LR
 
 ### Ids
 
-Pele names the ids it writes (a title, a gradient) after an id prefix, which the plugins set per diagram: the `prefix` option (`mermaid` by default), then a hash of the diagram's source, so a diagram's ids don't change when you edit another. A diagram repeated on a page gets `-2`, `-3`… after its hash, so no two diagrams share an id.
+Pele names the ids it writes (a title, a gradient) after an id prefix, which the plugins set per diagram: the `prefix` option (`mermaid` by default), then a hash of the diagram's source, so a diagram's ids don't change when you edit another. A diagram repeated in a document gets `-2`, `-3`… after its hash, so no two diagrams in it share an id. Ids are unique per document, not per page: the same diagram in two documents rendered into one page has the same ids in both.
 
 ### With copy-code
 

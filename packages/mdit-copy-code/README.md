@@ -30,7 +30,7 @@ npm install @mirrordown/remd-copy-code
 ```
 ````
 
-A block's id comes from a hash of its code, so it doesn't change when other blocks are edited. Repeated blocks get `-2`, `-3` and so on, in document order.
+A block's id comes from a hash of its code, so it doesn't change when other blocks are edited. Repeated blocks get `-2`, `-3` and so on, in document order. Ids are unique per document, not per page: the same block in two documents rendered into one page has the same id in both, and so can a heading whose slug happens to match. The script then copies the block its button is in.
 
 ### Turning it off for a block
 
@@ -67,7 +67,7 @@ export default defineConfig({
 
 ## The client script
 
-Import the script once per page, from the package for your engine. It does three things:
+Import the script once per page, from the package for your engine; a second copy on the page does nothing. It does three things:
 
 - **Shows the buttons.** It adopts a small stylesheet into the document, so buttons on pages that client-side navigation swaps in, such as Astro's view transitions, show too.
 - **Copies.** It handles the `--copy` command by copying the text of the block's `<code>`, without the newline markdown ends a block with.

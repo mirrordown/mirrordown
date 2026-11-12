@@ -40,10 +40,14 @@ Any image that stands alone on a paragraph — with no other text or inline cont
 > Here is an inline image: ![icon](https://picsum.photos/16/16) within a sentence.
 > ````
 
+A paragraph of several images, with only spaces or line breaks between them, is unwrapped too. So is a [lightbox](/guide/plugins/lightbox) image, whose trigger button takes the paragraph's place.
+
+The paragraph's own attributes go with it. With the [`attrs`](/guide/plugins/attrs) plugin, a block on the line after the image (`{.wide}`) belongs to the paragraph and is dropped; write it on the image instead (`![…](…){.wide}`).
+
 ## Usage
 
 > [!NOTE]
-> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` in your pipeline.
+> The remark package ships a rehype plugin, not a remark plugin: add it **after** `remarkRehype` in your pipeline. In every engine, list the lightbox plugin before this one if you use both: listed after it, a lightbox image keeps its paragraph.
 
 % Rehype
 > ```sh

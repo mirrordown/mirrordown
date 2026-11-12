@@ -43,6 +43,14 @@ A term fits on one line: a marker after a paragraph of two or more lines continu
 
 Each definition is tight or loose on its own. A definition is loose, and wraps its content in `<p>`, when a blank line comes directly before its marker or separates blocks inside it. Otherwise its paragraphs render unwrapped. A marker with nothing after it produces an empty `<dd>`.
 
+### Sätteri
+
+Sätteri reads definition lists itself, so there is no Mirrordown package for it: turn on its `definitionList` feature (`markdownToHtml(source, { features: { definitionList: true } })`), as the Sätteri preset does. It renders what the two plugins render, except in three corners:
+
+- After a marker with nothing on its line, the plugins take indented content after a blank line into that definition. Sätteri ends the list there.
+- In a blockquote, a definition whose marker follows a blank line is loose in the plugins and tight in Sätteri.
+- After a list nested in a definition, a blank line and more content give a `<p>` in the plugins and unwrapped text in Sätteri.
+
 ### Styling
 
 The plugin ships no stylesheet: `<dl>`, `<dt>` and `<dd>` get the browser's defaults, which indent each definition and leave its term plain. The examples in the Mirrordown docs use the docs' own styles, which bold the term and set each definition off with a rule:
