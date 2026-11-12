@@ -2,11 +2,11 @@ import type { Config } from "svgo";
 
 /** Options for the inline-svg plugin. */
 export interface Options {
-  /** Skip inlining SVGs larger than this many bytes. */
+  /** Skip inlining SVGs larger than this many characters, measured after optimization. */
   maxImageSize: number;
-  /** Maximum number of images to inline per render. */
+  /** Skip inlining an SVG referenced more than this many times in a document. */
   maxOccurrences: number;
-  /** Maximum total inlined bytes per render. */
+  /** Skip inlining an SVG whose occurrences in a document add up to more than this many characters. */
   maxTotalSize: number;
   /** Optimize SVGs with SVGO; pass a `Config` to customize, or `false` to skip. */
   optimize: boolean | Config;
