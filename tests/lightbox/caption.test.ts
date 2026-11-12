@@ -110,3 +110,44 @@ describe("lightbox + caption: with `caption: true`, a repeated image's shared di
     );
   });
 });
+
+// The dialog caption is a copy the reader sees under the image; an empty `<p>` there is only a stray margin, and in markdown-it nothing downstream (squeeze-paragraphs) could remove it, so no engine writes one.
+describe("lightbox + caption: with `caption: true`, a caption that renders only whitespace gets no dialog caption", () => {
+  const all = engines({ caption: true });
+  const blank = "!![a](a.png)\n~: &#32;";
+  const [first] = all.map(({ render }) => render(blank));
+  it.each(all)("$engine", ({ render }) => {
+    const html = render(blank);
+    expect(html).toBe(first);
+    expect(html).toContain(`<dialog`);
+    expect(html).not.toContain(`markdown-lightbox-caption`);
+  });
+
+  it.each(all)(
+    "$engine keeps a non-breaking space, which is content",
+    ({ render }) => {
+      expect(render("!![a](a.png)\n~: &nbsp;")).toContain(
+        `<p class="markdown-lightbox-caption">\u00a0</p>`
+      );
+    }
+  );
+});
+
+// The dialog caption is a copy of the figcaption, so it has to read the same: a lightbox image written in the caption is a trigger in both, never a literal `!` before a plain image in the copy.
+describe("lightbox + caption: with `caption: true`, a lightbox image inside the caption is a trigger in the dialog's copy too", () => {
+  const nested = "!![a](x.jpg)\n~: cap with !![b](y.jpg) and !![c](z.jpg)";
+  const all = engines({ caption: true });
+  const [first] = all.map(({ render }) => render(nested));
+  it.each(all)("$engine", ({ render }) => {
+    const html = render(nested);
+    expect(html).toBe(first);
+    const inFigure = /<figcaption>(.*)<\/figcaption>/.exec(html)?.[1];
+    expect(inFigure).toMatch(
+      /^cap with <button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-[a-z0-9]+"><img src="y\.jpg" alt="b"><\/button> and <button /
+    );
+    expect(html).toContain(
+      `<p class="markdown-lightbox-caption">${inFigure}</p></dialog>`
+    );
+    expect(html.match(/<dialog/g)).toHaveLength(3);
+  });
+});

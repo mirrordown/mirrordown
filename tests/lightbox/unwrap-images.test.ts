@@ -79,3 +79,28 @@ describe("lightbox + unwrap-images: inline image keeps its paragraph", () => {
   it("markdown-it", () => expect(mdit(input)).toMatch(/^<p>text /));
   it("remark", () => expect(remd(input)).toMatch(/^<p>text /));
 });
+
+describe("lightbox + unwrap-images: markdown-it needs lightbox installed first", () => {
+  // Both are core rules that run in `use()` order. Run first, unwrap-images sees the `!` text before the image, so the paragraph is not image-only and stays; lightbox then strips the marker and the trigger is left wrapped. Nothing errors, so the order is pinned here and stated in the guide.
+  const input = "!![alt](photo.jpg)";
+  it("unwrap-images first leaves the trigger in its paragraph", () => {
+    const reversed = new MarkdownIt().use(unwrapImages).use(lightbox);
+    expect(normalizeHtml(reversed.render(input))).toMatch(
+      /^<p><button[^>]*class="markdown-lightbox-trigger"/
+    );
+    expect(mdit(input)).toMatch(/^<button/);
+  });
+});
+
+describe("lightbox + unwrap-images: lightbox images separated by a space on one line", () => {
+  const input = "!![a](x.jpg) !![b](y.jpg)";
+  it("remark unwraps the paragraph: only images and whitespace are left", () => {
+    expect(remd(input)).toMatch(/^<button[^]*<\/button> <button/);
+  });
+
+  // KNOWN ENGINE DIFFERENCE, pinned so it cannot change unnoticed. mdit-unwrap-images counts a paragraph as image-only when it holds just `image` and `softbreak` tokens, so the whitespace text between two images on one line keeps the `<p>`; the shared hast rule (`isImageParagraph`) accepts whitespace text. Lightbox output is the same in both; the fix belongs to mdit-unwrap-images (also for `![a](x.jpg) ![b](y.jpg)` without lightbox), and when it lands this expectation flips to match remark.
+  it("markdown-it keeps the paragraph: mdit-unwrap-images does not accept whitespace text between images", () => {
+    expect(mdit(input)).toMatch(/^<p><button[^]*<\/button> <button/);
+    expect(mdit(input).replace(/^<p>(.*?)<\/p>/, "$1")).toBe(remd(input));
+  });
+});

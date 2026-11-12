@@ -135,21 +135,31 @@ export const lightbox: PluginWithOptions<LightboxOptions> = (
     }
     if (opted.length === 0) return;
 
-    // One id per unique src: an author `{#id}` wins, else a stable hash.
+    // An author `{#id}` names its image's dialog unless the id is already taken, by another element or by an earlier lightbox image with a different src: a taken id is ignored, so every trigger opens a dialog that shows its own image. Without an id of its own an image shares the first one given to its src, else the stable hash.
+    const optedTokens = new Set(opted.map(({ token }) => token));
+    // id -> the src of the lightbox image that owns it (undefined: another element does).
+    const owner = new Map<string, string | undefined>();
+    for (const block of state.tokens) {
+      for (const token of [block, ...(block.children ?? [])]) {
+        const id = token.attrGet("id");
+        if (id !== null && !optedTokens.has(token)) owner.set(id, undefined);
+      }
+    }
     const srcToId = new Map<string, string>();
-    for (const { src, authorId } of opted) {
-      if (authorId !== undefined) srcToId.set(src, authorId);
-    }
-    for (const { src } of opted) {
-      if (!srcToId.has(src)) srcToId.set(src, hashId(src));
-    }
+    const named = opted.map(({ src, authorId }) => {
+      if (authorId === undefined) return undefined;
+      if (owner.has(authorId) && owner.get(authorId) !== src) return undefined;
+      owner.set(authorId, src);
+      if (!srcToId.has(src)) srcToId.set(src, authorId);
+      return authorId;
+    });
 
     // Tag each trigger with its id; collect one dialog image per id.
     const dialogImages = new Map<string, DialogsMeta["images"][number]>();
-    for (const { token, src, authorId, caption } of opted) {
-      const id = srcToId.get(src) ?? hashId(src);
+    for (const [index, { token, src, authorId, caption }] of opted.entries()) {
+      const id = named[index] ?? srcToId.get(src) ?? hashId(src);
       if (authorId !== undefined) {
-        // the author id becomes the lightbox id; drop it from the <img>
+        // the author id names the dialog (or is ignored as taken); drop it from the <img>
         token.attrs = token.attrs?.filter(([key]) => key !== "id") ?? null;
       }
       (token.meta as ImageMeta) = { ...token.meta, lightboxId: id };
@@ -165,13 +175,13 @@ export const lightbox: PluginWithOptions<LightboxOptions> = (
     state.tokens.push(token);
   });
 
-  // Each image renders as the inline trigger (a button wrapping the thumbnail).
+  // Each image renders as the inline trigger (a button wrapping the thumbnail). The id can be an author's (whatever an attributes plugin put on the image), so it is escaped like any other attribute value.
   md.renderer.rules.image = (tokens, idx, opts, env, self): string => {
     const img = renderImage(tokens, idx, opts, env, self);
     const id = (tokens[idx]?.meta as ImageMeta | null | undefined)?.lightboxId;
     return id === undefined
       ? img
-      : `<button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="${id}">${img}</button>`;
+      : `<button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="${md.utils.escapeHtml(id)}">${img}</button>`;
   };
 
   // The collected dialogs, emitted as a block at the document end.
@@ -184,11 +194,15 @@ export const lightbox: PluginWithOptions<LightboxOptions> = (
   ): string =>
     ((tokens[idx]?.meta as DialogsMeta | undefined)?.images ?? [])
       .map(({ image, caption }) => {
-        const id = (image.meta as Required<ImageMeta>).lightboxId;
+        const id = md.utils.escapeHtml(
+          (image.meta as Required<ImageMeta>).lightboxId
+        );
         const img = renderImage([image], 0, opts, env, self);
-        const text = caption
-          ? `<p class="markdown-lightbox-caption">${self.renderInline(caption, opts, env)}</p>`
-          : "";
+        // A caption that renders only HTML whitespace shows nothing, so it gets no `<p>`: this string is written at render time, where squeeze-paragraphs cannot remove an empty one. `lightboxDialog` in `@mirrordown/core` applies the same rule for the other engines.
+        const rendered = caption ? self.renderInline(caption, opts, env) : "";
+        const text = /^[ \t\n\f\r]*$/.test(rendered)
+          ? ""
+          : `<p class="markdown-lightbox-caption">${rendered}</p>`;
         return `<dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image">${img}</button>${text}</dialog>`;
       })
       .join("\n");
