@@ -63,7 +63,8 @@ const abbrDefinition: RuleBlock = (
 
   if (label.length === 0 || title.length === 0) return false;
 
-  (state.env.abbreviations ??= {})[`_${label}`] ??= title;
+  // The `:` prefix, as in markdown-it-abbr, keeps a term from naming a member every object inherits: with `_`, the term `_proto__` became the key `__proto__` and was never stored.
+  (state.env.abbreviations ??= {})[`:${label}`] ??= title;
   state.line = startLine + 1;
 
   return true;
@@ -84,7 +85,8 @@ export const abbr: PluginSimple = (md) => {
     const { tokens } = state;
     const { abbreviations } = state.env;
 
-    if (!abbreviations) return;
+    // No terms means an empty alternation, which matches the empty string at the same place forever.
+    if (!abbreviations || Object.keys(abbreviations).length === 0) return;
 
     const abbreviationsRegExpText = Object.keys(abbreviations)
       .map((item) => item.slice(1))
@@ -131,7 +133,7 @@ export const abbr: PluginSimple = (md) => {
           }
 
           const abbrOpenToken = new state.Token("abbr_open", "abbr", 1);
-          abbrOpenToken.attrPush(["title", abbreviations[`_${word}`]]);
+          abbrOpenToken.attrPush(["title", abbreviations[`:${word}`]]);
           nodes.push(abbrOpenToken);
 
           const textToken = new state.Token("text", "", 0);

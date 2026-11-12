@@ -10,7 +10,7 @@ export const parseAbbreviations = (
   text: string
 ): Array<[string, string]> | undefined => {
   const definitions: Array<[string, string]> = [];
-  for (const line of text.split(`\n`)) {
+  for (const line of text.split(/\r\n|\r|\n/)) {
     const match = DEFINITION.exec(line);
     if (!match) return undefined;
     definitions.push([match[1] ?? ``, (match[2] ?? ``).trim()]);
