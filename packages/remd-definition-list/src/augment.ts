@@ -30,6 +30,7 @@ declare module "micromark-util-types" {
     _loose?: boolean;
     _container?: boolean;
     _prevLoose?: boolean;
+    _defListIndent?: boolean;
   }
 }
 

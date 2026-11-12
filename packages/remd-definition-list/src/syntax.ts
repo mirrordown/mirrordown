@@ -364,7 +364,12 @@ function innermostContainerContinued(
   const needed = open.filter((type) => continuationTypes[type] === types);
   let continued = 0;
   for (let i = lastFlowIndex + 1; i < events.length; i++) {
-    if (events[i][0] === "enter" && types.has(events[i][1].type)) continued++;
+    if (
+      events[i][0] === "enter" &&
+      types.has(events[i][1].type) &&
+      !events[i][1]._defListIndent
+    )
+      continued++;
   }
   return continued >= needed.length;
 }
@@ -594,15 +599,23 @@ function tokenizeIndent(
 ): State {
   const afterPrefix = (code: number | null): State | undefined => {
     const tail = this.events[this.events.length - 1];
-    return tail?.[1].type === "linePrefix" &&
+    if (
+      this.events.length > eventsBefore &&
+      tail[1].type === "listItemIndent" &&
       tail[2].sliceSerialize(tail[1], true).length === this.containerState!.size
-      ? ok(code)
-      : nok(code);
+    ) {
+      tail[1]._defListIndent = true;
+      return ok(code);
+    }
+    return nok(code);
   };
+  // An enclosing list item leaves a `listItemIndent` of its own on the line, so only a token made here counts
+  const eventsBefore = this.events.length;
+  // Not a `linePrefix`: a construct that starts right after it (a nested marker, a list item) measures its own indent from a tail `linePrefix`, and must not take this definition's continuation indent for it. micromark's list has `listItemIndent` for the same reason, and that type is reused, flagged as ours, because mdast-util-from-markdown only steps over the indent types it knows when it decides whether a list is loose.
   return factorySpace(
     effects,
     afterPrefix,
-    "linePrefix",
+    "listItemIndent",
     this.containerState!.size! + 1
   );
 }

@@ -179,5 +179,36 @@ export const parityCases: ParityCase[] = [
     name: "a blank line before a later definition still makes it loose",
     input: "T\n: A\n\n: D",
     expected: "<dl><dt>T</dt><dd>A</dd><dd><p>D</p></dd></dl>"
+  },
+
+  // A block that starts on a continuation line of a definition measures its own content column from the definition's content column, not from the start of the line: the definition's indent is not the block's.
+  {
+    name: "a marker on a continuation line of a nested definition nests one level deeper",
+    input: "a\n: b\n  : c\n    : d",
+    expected:
+      "<dl><dt>a</dt><dd><dl><dt>b</dt><dd><dl><dt>c</dt><dd>d</dd></dl></dd></dl></dd></dl>"
+  },
+  {
+    name: "a bullet item on a continuation line keeps its second paragraph",
+    input: "T\n: D\n\n  - a\n\n    b",
+    expected:
+      "<dl><dt>T</dt><dd><p>D</p><ul><li><p>a</p><p>b</p></li></ul></dd></dl>"
+  },
+  {
+    name: "an ordered item on a continuation line keeps its second paragraph",
+    input: "T\n: D\n\n  1. a\n\n     b",
+    expected:
+      "<dl><dt>T</dt><dd><p>D</p><ol><li><p>a</p><p>b</p></li></ol></dd></dl>"
+  },
+  {
+    name: "a list item on a continuation line keeps its lazy and sibling lines",
+    input: "T\n: D\n  - a\n    b\n  - c",
+    expected: "<dl><dt>T</dt><dd>D\n<ul><li>a\nb</li><li>c</li></ul></dd></dl>"
+  },
+  {
+    name: "a definition inside a list item still ends at a line indented only to the item",
+    input: "- T\n  : D\n\n    more\n\n  after",
+    expected:
+      "<ul><li><dl><dt>T</dt><dd><p>D</p><p>more</p></dd></dl><p>after</p></li></ul>"
   }
 ];
