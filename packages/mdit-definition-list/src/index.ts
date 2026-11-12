@@ -290,7 +290,8 @@ const dlRule: RuleBlock = (state, startLine, endLine, silent) => {
 
 /** markdown-it plugin for definition lists, rendering `<dl>`, `<dt>`, and `<dd>` elements. */
 export const dl: PluginSimple = (md) => {
-  md.block.ruler.before("paragraph", "dl", dlRule, {
+  // Ahead of `lheading`, which would otherwise read `Term` / `: Def` / `===` as a setext heading: it scans past the marker line because this rule only terminates paragraphs inside a definition
+  md.block.ruler.before("lheading", "dl", dlRule, {
     alt: ["paragraph", "reference", "blockquote"]
   });
 };

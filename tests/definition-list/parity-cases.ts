@@ -59,5 +59,27 @@ export const parityCases: ParityCase[] = [
     name: "a plain paragraph line after a definition is still a later term",
     input: "T\n: D\n\nT2\n: D2",
     expected: "<dl><dt>T</dt><dd>D</dd><dt>T2</dt><dd>D2</dd></dl>"
+  },
+
+  // The marker line decides: once `: Def` follows the term, a `===` or `---` line below it belongs to the definition (or ends the list) and cannot reach back over the marker to make a setext heading of the term.
+  {
+    name: "a `===` line under a definition is its lazy continuation, not a setext underline",
+    input: "Term\n: Def\n===",
+    expected: "<dl><dt>Term</dt><dd>Def\n===</dd></dl>"
+  },
+  {
+    name: "a `---` line under a definition is a thematic break after the list",
+    input: "Term\n: Def\n---",
+    expected: "<dl><dt>Term</dt><dd>Def</dd></dl><hr>"
+  },
+  {
+    name: "a `===` line under a later term's definition does not make a heading either",
+    input: "T\n: D\n\nT2\n: D2\n===",
+    expected: "<dl><dt>T</dt><dd>D</dd><dt>T2</dt><dd>D2\n===</dd></dl>"
+  },
+  {
+    name: "a setext heading whose underline comes before the marker is still a heading",
+    input: "Term\n===\n: Def",
+    expected: "<h1>Term</h1><p>: Def</p>"
   }
 ];
