@@ -113,7 +113,7 @@ export const satteriLightbox =
           { img: Element; caption: Element | undefined }
         >();
         // What each opted-in image and its marker text become, to make the same changes in a dialog's copy of a caption.
-        const triggers = new Map<HastNode, HastNode>();
+        const triggers = new Map<HastNode, Element["children"][number]>();
         const rests = new Map<HastNode, string>();
         for (const [
           index,

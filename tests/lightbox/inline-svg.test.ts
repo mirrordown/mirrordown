@@ -18,13 +18,13 @@ import { normalizeHtml } from "../utils/index.js";
 const document = new URL("../inline-svg/document.md", import.meta.url);
 const input = "!![c](./fixtures/circle.inline.svg)";
 
-const markdownIt = (...plugins: Array<typeof lightbox | typeof inlineSvg>) => {
+const markdownIt = (...plugins: (typeof lightbox | typeof inlineSvg)[]) => {
   const md = new MarkdownIt();
   for (const plugin of plugins) md.use(plugin);
   return normalizeHtml(md.render(input, { currentDocument: document.href }));
 };
 const remark = async (
-  ...plugins: Array<typeof rehypeLightbox | typeof rehypeInlineSvg>
+  ...plugins: (typeof rehypeLightbox | typeof rehypeInlineSvg)[]
 ) => {
   const processor = unified().use(remarkParse).use(remarkRehype);
   for (const plugin of plugins) processor.use(plugin);
@@ -34,9 +34,10 @@ const remark = async (
   return normalizeHtml(String(file));
 };
 const satteri = (
-  ...plugins: Array<
-    ReturnType<typeof satteriLightbox> | ReturnType<typeof satteriInlineSvg>
-  >
+  ...plugins: (
+    | ReturnType<typeof satteriLightbox>
+    | ReturnType<typeof satteriInlineSvg>
+  )[]
 ) =>
   normalizeHtml(
     markdownToHtml(input, {
@@ -54,7 +55,7 @@ describe("lightbox + inline-svg: in the supported order, the trigger and the dia
       /^<p><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="(markdown-lightbox-[a-z0-9]+)"><svg [^]*<\/svg><\/button><\/p><dialog id="\1" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="\1" aria-label="Close image"><svg [^]*<\/svg><\/button><\/dialog>$/
     );
     expect(html).not.toContain(`<img`);
-    expect(await remark(rehypeLightbox, rehypeInlineSvg)).toBe(html);
+    await expect(remark(rehypeLightbox, rehypeInlineSvg)).resolves.toBe(html);
     expect(satteri(satteriLightbox(), satteriInlineSvg())).toBe(html);
   });
 });
@@ -74,7 +75,7 @@ describe("lightbox + inline-svg: the unsupported order loses the lightbox", () =
     expect(html).not.toContain(`markdown-lightbox`);
   });
 
-  it("Sätteri (inline-svg, then lightbox): no <img> is left to opt in, so the `!` stays literal", () => {
+  it("sätteri (inline-svg, then lightbox): no <img> is left to opt in, so the `!` stays literal", () => {
     const html = satteri(satteriInlineSvg(), satteriLightbox());
     expect(html).toMatch(/^<p>!<svg /);
     expect(html).not.toContain(`markdown-lightbox`);
