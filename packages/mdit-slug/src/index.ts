@@ -7,17 +7,14 @@ export interface SlugOptions {
   prefix?: string;
 }
 
-// Concatenate the slug-relevant text of a heading's inline token. Mirrors
-// hast-util-to-string (used by remd-slug) rather than markdown-it's
-// `renderInlineAsText`: include `text` and inline `code`, but NOT image `alt`
-// (an `<img>` contributes no text content in hast), so both engines slug the
-// same input.
+// A token's content that is not text a reader sees: an image's is its alt (an attribute; an `<img>` has no text content in hast), and inline HTML's is markup (a raw node, which has none either).
+const NOT_TEXT = new Set(["image", "html_inline"]);
+
+// The text of a heading a reader sees, as hast-util-to-string gives it to the rehype and Sätteri plugins (not markdown-it's `renderInlineAsText`, which includes image alt), so the three engines slug the same input. Every other token's content counts, whatever plugin made it: text, inline code, and what a plugin renders from a token of its own (a ruby's fallback parentheses), where a list of known types would silently leave a new one out.
 const headingText = (inline: Token): string => {
   let text = "";
   for (const token of inline.children ?? []) {
-    if (token.type === "text" || token.type === "code_inline") {
-      text += token.content;
-    }
+    if (!NOT_TEXT.has(token.type)) text += token.content;
   }
   return text;
 };
