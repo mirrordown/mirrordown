@@ -129,6 +129,10 @@ With the [`attrs`](/guide/plugins/attrs) plugin, attributes on the fence go on t
 
 Pele names the ids it writes (a title, a gradient) after an id prefix, which the plugins set per diagram: the `prefix` option (`mermaid` by default), then a hash of the diagram's source, so a diagram's ids don't change when you edit another. A diagram repeated on a page gets `-2`, `-3`… after its hash, so no two diagrams share an id.
 
+### With copy-code
+
+List this plugin before [`copy-code`](/guide/plugins/copy-code) in remark and Sätteri. Listed after it, the fence has already become a code block with a copy button, and stays one. The presets order them for you, and markdown-it reads either order.
+
 ### Links
 
 `click` statements link a node with a URL; JavaScript callbacks are ignored. Pele keeps `http`, `https`, `mailto` and `tel` links and relative URLs, adds `rel="noopener"`, and drops anything else, such as `javascript:` (see [Pele's security notes](https://pele.run/security)).
