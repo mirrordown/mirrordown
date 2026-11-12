@@ -64,11 +64,12 @@ export const mermaidSvg = (
   const own = [
     ...open
       .slice(4, selfClosing ? -2 : -1)
-      .matchAll(/\s([^\s=]+)=(?:"([^"]*)"|'([^']*)')/g)
-  ].map(([, name = ``, double, single = ``]): MermaidAttribute => [
+      // Every attribute the tag has is kept, or rewriting the tag would delete it: a value may also be unquoted or missing, and nothing has to separate an attribute from the quote that closes the one before it.
+      .matchAll(/([^\s=/"'>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)
+  ].map(([, name = ``, double, single, bare = ``]): MermaidAttribute => [
     name,
-    // A single-quoted value is written back in double quotes.
-    double ?? single.replace(/"/g, `&quot;`)
+    // A single-quoted, unquoted or missing value is written back in double quotes.
+    double ?? single?.replace(/"/g, `&quot;`) ?? bare
   ]);
   const merged = new Map<string, string>(own);
   for (const [name, value] of attributes) {
