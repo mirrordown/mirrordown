@@ -8,7 +8,7 @@ A markdown-it plugin for the `squeeze-paragraphs` syntax extension.
 
 The `squeeze-paragraphs` plugin removes paragraphs that are empty or contain only whitespace. A paragraph counts as empty when it has no children, or when every child is whitespace-only text. Whitespace means the characters HTML ignores between elements (space, tab, line feed, form feed and carriage return): a paragraph holding only a no-break space (`&nbsp;`) or another Unicode space is deliberate content and is kept. An empty paragraph is removed even if it carries attributes, such as an `id` or a `class`, and they are dropped with it.
 
-CommonMark never emits an empty paragraph on its own, so this plugin does nothing to ordinary hand-written Markdown. Its job is to run **after** other transforms that can leave an empty `<p>` behind — for example a comment stripper that removes a paragraph's only content, or a plugin that lifts an element out of its wrapping paragraph. Adding `squeeze-paragraphs` last tidies up that residue.
+Markdown has one way to write such a paragraph by hand: whitespace written as character references, such as `&#32;` alone between two blank lines, and the plugin removes that too. Otherwise it does nothing to hand-written Markdown. Its job is to run **after** other transforms that can leave an empty `<p>` behind — for example a comment stripper that removes a paragraph's only content, or a plugin that lifts an element out of its wrapping paragraph. Adding `squeeze-paragraphs` last tidies up that residue.
 
 **Before** (a prior transform emptied the middle paragraph):
 ```html
@@ -34,10 +34,15 @@ A paragraph with *emphasis* and an image ![icon](https://picsum.photos/16/16) is
 ````
 
 > [!NOTE]
-> Because empty paragraphs cannot be written directly in Markdown, the removal behaviour only shows up when another plugin produces one. Place `squeeze-paragraphs` last in your pipeline so it sees that residue.
+> Apart from a paragraph of whitespace character references (`&#32;`), empty paragraphs cannot be written directly in Markdown, so the removal behaviour mostly shows up when another plugin produces one. Place `squeeze-paragraphs` last in your pipeline so it sees that residue.
+
+Two things differ between the engines:
+
+- With markdown-it's `breaks: true`, a paragraph of whitespace over several lines (`&#32;` on two lines running) is removed although its line break would render as a `<br>`. A hard break (two spaces or a backslash before the line ending) keeps the paragraph in every engine.
+- In a tight list item there is no `<p>` to remove in remark and Sätteri, so `- &#32;` keeps its space inside the `<li>`, where markdown-it leaves the item empty.
 
 > [!NOTE]
-> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype` — and after any plugin whose residue it should clean up.
+> For remark, this is a rehype plugin (`rehype-*`), not a remark plugin: add it **after** `remarkRehype`. In every engine, add it after any plugin whose residue it should clean up.
 
 ## Install
 
