@@ -181,6 +181,15 @@ describe("github-alerts: a title with no plain text", () => {
   });
 });
 
+describe("github-alerts: a default title with spaces around it", () => {
+  // markdown-it and remark label a title by its text without the spaces around it, and Sätteri labelled a default title as the `titles` option gave it, so the engines disagreed.
+  it("is labelled without them, in every engine", () => {
+    expect(
+      renderAll("> [!NOTE]\n> body", { titles: { note: " Hinweis " } })
+    ).toStrictEqual(inAll(alert(" Hinweis ", "<p>body</p>", "Hinweis")));
+  });
+});
+
 describe("github-alerts: line endings", () => {
   it.each(["\r", "\r\n", "\n"])(
     "ends the title at %j, as CommonMark ends a line",

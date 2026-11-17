@@ -57,7 +57,8 @@ export const satteriGithubAlerts =
             hName: alert.fold ? "summary" : "p",
             hProperties: {
               className: [`${containerClass}-title`],
-              ariaLabel: title
+              // markdown-it and remark label a title by its text without the spaces around it, which a default title can have; one that is only spaces keeps them.
+              ariaLabel: title.trim() || title
             }
           },
           children: [
