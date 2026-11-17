@@ -157,11 +157,7 @@ Setext #tag
 
 <!-- @case: never in an autolink -->
 
-<https://example.com/#fragment> <https://example.com/ #x>
-
-<!-- @case: a url fragment is never a tag -->
-
-https://example.com/#fragment
+<https://example.com/#fragment>
 
 <!-- @case: never in image alt text -->
 

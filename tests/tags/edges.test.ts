@@ -158,6 +158,27 @@ describe("tags: raw HTML", () => {
   );
 });
 
+// Without GFM or linkify a bare URL is text, and its fragment follows a `/`, so it is never a tag either. Only a real autolink is skipped as a link: `<` and a space don't make one, and a tag after the space is read. These are not in the shared fixture, which the presets' suite renders with GFM on in remark and Sätteri and without linkify in markdown-it.
+describe("tags: a URL without GFM", () => {
+  it.each(engines)(
+    "%s: a fragment of a bare URL is text",
+    (_engine, render) => {
+      expect(normalizeHtml(render(`https://example.com/#fragment`))).toBe(
+        `<p>https://example.com/#fragment</p>`
+      );
+    }
+  );
+
+  it.each(engines)(
+    "%s: a tag in brackets that are not an autolink",
+    (_engine, render) => {
+      expect(normalizeHtml(render(`<https://example.com/ #x>`))).toBe(
+        `<p>&lt;https://example.com/ <a class="tag" href="#x">#x</a>></p>`
+      );
+    }
+  );
+});
+
 // markdown-it has no footnotes, so this is remark and Sätteri with GFM on. A footnote reference is a link to its note, and its label is never read; the note's own text is.
 describe("tags: a footnote reference is never read", () => {
   const input = `Text[^#x] #tag\n\n[^#x]: The note #in`;
