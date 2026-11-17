@@ -17,16 +17,26 @@ export interface Kbd extends Parent {
  * remark plugin for keyboard-key syntax (`[[Ctrl]]`), wrapping each match in a {@link Kbd} node that renders as a `<kbd>` element. The scan is shared with markdown-it-kbd's rules and the Sätteri plugin through `@mirrordown/core`: keys nest (`[[Ctrl+[[C]]]]`), and a line ending before the closing `]]` leaves the text as is.
  */
 export const remarkKbd: Plugin<[], Root> = () => {
-  const transform = createKbdTransform<PhrasingContent>({
-    text: (value) => ({ type: `text`, value }),
-    wrap: (children): Kbd => ({ type: `kbd`, children, data: { hName: `kbd` } })
-  });
-
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped bracket is not matched, as in markdown-it.
-    const restoreEscapes = maskTreeEscapes(tree, String(file));
+    const source = String(file);
+    const restoreEscapes = maskTreeEscapes(tree, source);
+    // The scan reads the source to lay a link out as written, so it is built for each file.
+    const transform = createKbdTransform<PhrasingContent>(
+      {
+        text: (value) => ({ type: `text`, value }),
+        wrap: (children): Kbd => ({
+          type: `kbd`,
+          children,
+          data: { hName: `kbd` }
+        })
+      },
+      source
+    );
     const seen = new WeakSet<Parent>();
-    visit(tree, `text`, (_node, _index, parent: Parent | undefined) => {
+    // A link is visited as well as text: its brackets can be a key's (`[[a]](b)`), and its parent may hold no text at all.
+    const inline = [`text`, `link`, `linkReference`];
+    visit(tree, inline, (_node, _index, parent: Parent | undefined) => {
       // Keys the scan built have already had their content scanned.
       if (!parent || seen.has(parent) || transform.built(parent)) return;
       seen.add(parent);

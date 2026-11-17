@@ -2163,6 +2163,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-ruby@workspace:packages/sat-ruby"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.11.3

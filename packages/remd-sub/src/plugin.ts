@@ -40,7 +40,7 @@ export const subscriptFromMarkdown: FromMarkdownExtension = {
 };
 
 /**
- * remark plugin for subscript syntax (`~text~`), parsed as a {@link Subscript} node that renders as a `<sub>` element. A single `~` is a delimiter run like emphasis, and its content is inline markup; it shares its syntax with `remd-sup` through `@mirrordown/core`, so the two nest and resolve crossing runs leftmost-first. Use `remark-gfm` with `singleTilde: false`, or GFM claims `~text~` as strikethrough first.
+ * remark plugin for subscript syntax (`~text~`), parsed as a {@link Subscript} node that renders as a `<sub>` element. A single `~` is a delimiter run like emphasis, and its content is inline markup; it shares its syntax with `remd-sup` through `@mirrordown/core`, so the two nest and resolve runs that cross each other leftmost-first. Use `remark-gfm` with `singleTilde: false`: with its single-tilde strikethrough on, whichever of the two plugins is added later takes `~text~`.
  */
 export const remarkSub: Plugin<[], Root> = function () {
   // this.data() in remark plugin context returns a generic shape; the cast narrows the known extension arrays.

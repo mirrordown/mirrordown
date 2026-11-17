@@ -7,7 +7,8 @@ const ITEM = `[role="treeitem"]`;
 const ROW = `.markdown-file-tree-row`;
 const NAME = `.markdown-file-tree-name`;
 
-const upgraded = new WeakSet<Element>();
+// Set on each tree once it is upgraded. On the element, not in this module: a page can load the script twice (from two of the packages, a bundler's duplicate, a dev server's reload), and a second copy must not give a tree a second set of listeners, where one key press would act twice.
+const UPGRADED = Symbol.for(`mirrordown.file-tree`);
 
 // The item a row's <li> holds.
 const itemOf = (entry: Element | null | undefined): HTMLElement | null =>
@@ -142,8 +143,9 @@ const label = (tree: HTMLElement): void => {
 };
 
 const upgrade = (tree: HTMLElement): void => {
-  if (upgraded.has(tree)) return;
-  upgraded.add(tree);
+  const marked: HTMLElement & { [UPGRADED]?: true } = tree;
+  if (marked[UPGRADED]) return;
+  marked[UPGRADED] = true;
   tree.setAttribute(`role`, `tree`);
   if (!tree.hasAttribute(`aria-label`) && !tree.hasAttribute(`aria-labelledby`))
     tree.setAttribute(`aria-label`, `Files`);

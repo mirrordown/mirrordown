@@ -52,7 +52,11 @@ export const mermaidPele: PluginWithOptions<MermaidPeleOptions> = (
       if (token.type !== `fence`) continue;
       const lang = md.utils.unescapeAll(token.info).trim().split(/\s+/)[0];
       if (lang !== `mermaid`) continue;
-      const source = mermaidSource(token.content);
+      // A fence the input ends without closing, and without a final line ending, has content with no last newline; the `<code>` text remark and Sätteri read always has one. The id prefix is a hash of the source, so the three must hash the same string.
+      const { content } = token;
+      const source = mermaidSource(
+        content === `` || content.endsWith(`\n`) ? content : `${content}\n`
+      );
       let html: string;
       try {
         html = mermaidSvg(

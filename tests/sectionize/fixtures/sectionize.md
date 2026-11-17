@@ -77,3 +77,43 @@ Just a paragraph with no headings at all.
 - ## Listed
 
 after
+
+<!-- @case: deeper heading before a shallower one inside a section is still wrapped -->
+
+# A
+
+#### D
+
+d
+
+## B
+
+b
+
+<!-- @case: document that starts deep then goes shallower wraps every heading -->
+
+#### Deep
+
+text
+
+## Shallow
+
+body
+
+<!-- @case: ascending heading order wraps every heading -->
+
+### C
+
+c
+
+#### D
+
+d
+
+## B
+
+b
+
+# A
+
+a

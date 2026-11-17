@@ -1,12 +1,12 @@
 // Renderer rule callbacks receive `env: unknown`; casts to object are intentional for planMap keying.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type MarkdownIt from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 import { type Config, optimize as svgOptimize } from "svgo";
-import { inlineSvgMarkup } from "@mirrordown/core";
+import { inlineSvgMarkup, svgSpriteId } from "@mirrordown/core";
 import { SvgCache } from "./cache.js";
 import { applyDefaults, type Options } from "./options.js";
 
@@ -14,13 +14,31 @@ export type { CacheEfficiency, Options } from "./options.js";
 
 const isExternalUrl = (src: string): boolean => /^(?:[a-z]+:|\/\/)/i.test(src);
 
+// SVGO's default preset shortens ids to `a`, `b`, …, so two inlined SVGs would both define `id="a"` and the second's `url(#a)` would pick up the first's gradient or clip path. Each file's ids get a prefix that hashes its content (line endings aside, so it is the same on every OS). A `plugins` list in the user's config replaces this one.
+const optimizeSvg = (content: string, path: string, config: Config): string =>
+  svgOptimize(content, {
+    path,
+    plugins: [
+      `preset-default`,
+      {
+        name: `prefixIds`,
+        params: {
+          prefix: svgSpriteId(content.replace(/\r\n?/g, `\n`)),
+          prefixClassNames: false
+        }
+      }
+    ],
+    ...config
+  }).data;
+
 const resolveSvgPath = (
   src: string,
   currentDocument: unknown
 ): string | null => {
-  const decoded = decodeURIComponent(src);
-  if (isExternalUrl(decoded)) return null;
+  // A malformed percent-escape makes `decodeURIComponent` throw; such an image is left alone, like one whose file can't be read.
   try {
+    const decoded = decodeURIComponent(src);
+    if (isExternalUrl(decoded)) return null;
     const currentFile = fileURLToPath(String(currentDocument));
     return join(dirname(currentFile), decoded);
   } catch {
@@ -77,25 +95,30 @@ export const inlineSvg = (md: MarkdownIt, config?: Partial<Options>): void => {
     for (const [filePath, tokens] of pathGroups) {
       let content: string;
 
-      if (svgCache.has(filePath)) {
-        content = svgCache.get(filePath)!;
-        svgCache.addHits(tokens.length);
-      } else {
-        try {
+      try {
+        const { mtimeMs, size } = statSync(filePath);
+        const version = `${String(mtimeMs)}:${String(size)}`;
+        const cached = svgCache.get(filePath);
+        if (cached?.version === version) {
+          content = cached.content;
+          svgCache.addHits(tokens.length);
+        } else {
           let raw = readFileSync(filePath, `utf-8`);
           if (options.optimize) {
-            const optimizeConfig: Config =
-              typeof options.optimize === `boolean` ? {} : options.optimize;
-            raw = svgOptimize(raw, { path: filePath, ...optimizeConfig }).data;
+            raw = optimizeSvg(
+              raw,
+              filePath,
+              typeof options.optimize === `boolean` ? {} : options.optimize
+            );
           }
-          svgCache.set(filePath, raw);
+          svgCache.set(filePath, { version, content: raw });
           svgCache.addMiss();
           svgCache.addHits(tokens.length - 1);
           content = raw;
-        } catch {
-          for (const token of tokens) plan.set(token, null);
-          continue;
         }
+      } catch {
+        for (const token of tokens) plan.set(token, null);
+        continue;
       }
 
       // The limits, deduplication and markup are shared with the rehype and Sätteri plugins through `@mirrordown/core`.

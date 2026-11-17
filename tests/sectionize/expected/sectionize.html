@@ -24,3 +24,12 @@
 
 <!-- @case: headings inside containers stay in place -->
 <section data-depth="1"><h1>Top</h1><blockquote><h2>Quoted</h2><p>text</p></blockquote><ul><li><h2>Listed</h2></li></ul><p>after</p></section>
+
+<!-- @case: deeper heading before a shallower one inside a section is still wrapped -->
+<section data-depth="1"><h1>A</h1><section data-depth="4"><h4>D</h4><p>d</p></section><section data-depth="2"><h2>B</h2><p>b</p></section></section>
+
+<!-- @case: document that starts deep then goes shallower wraps every heading -->
+<section data-depth="4"><h4>Deep</h4><p>text</p></section><section data-depth="2"><h2>Shallow</h2><p>body</p></section>
+
+<!-- @case: ascending heading order wraps every heading -->
+<section data-depth="3"><h3>C</h3><p>c</p><section data-depth="4"><h4>D</h4><p>d</p></section></section><section data-depth="2"><h2>B</h2><p>b</p></section><section data-depth="1"><h1>A</h1><p>a</p></section>

@@ -3,56 +3,20 @@ import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 import type { UnifiedProcessorOptions } from "@astrojs/markdown-remark";
 import type { SatteriProcessorOptions } from "@astrojs/markdown-satteri";
-import MarkdownIt from "markdown-it";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
-import {
-  mirrordown as markdownItPreset,
-  type MirrordownOptions as MarkdownItOptions
-} from "../../packages/preset-markdown-it/src";
-import {
-  mirrordown as satteriPreset,
-  type MirrordownOptions as SatteriOptions
-} from "../../packages/preset-satteri/src";
-import {
-  mirrordown as remarkPreset,
-  type MirrordownOptions as RemarkOptions
-} from "../../packages/preset-remark/src";
-import { normalizeHtml, parseFixture } from "../utils/index.js";
+import { mirrordown as satteriPreset } from "../../packages/preset-satteri/src";
+import { mirrordown as remarkPreset } from "../../packages/preset-remark/src";
+import { parseFixture } from "../utils/index.js";
 import { options as mermaidPele } from "../mermaid-pele/options.js";
-
-const markdownIt = (options: MarkdownItOptions = {}) => {
-  const md = new MarkdownIt().use(markdownItPreset, options);
-  return (input: string): string => normalizeHtml(md.render(input));
-};
-
-const remark = (options: RemarkOptions = {}) => {
-  const preset = remarkPreset(options);
-  const processor = unified()
-    .use(remarkParse)
-    .use(preset.remarkPlugins)
-    .use(remarkRehype, preset.remarkRehype)
-    .use(preset.rehypePlugins)
-    // Diagrams are raw nodes, so their <svg> reaches the HTML as Pele wrote it.
-    .use(rehypeStringify, { allowDangerousHtml: true });
-  return (input: string): string =>
-    normalizeHtml(String(processor.processSync(input)));
-};
-
-const satteri = (options: SatteriOptions = {}) => {
-  const preset = satteriPreset(options);
-  return (input: string): string =>
-    normalizeHtml(markdownToHtml(input, preset).html);
-};
-
-const engines = [
-  ["markdown-it", markdownIt],
-  ["remark", remark],
-  ["sätteri", satteri]
-] as const;
+import {
+  engines,
+  markdownIt,
+  remark,
+  satteri,
+  type MarkdownItOptions,
+  type RemarkOptions,
+  type SatteriOptions
+} from "./engines.js";
 
 // Every feature's shared fixtures, minus inline-svg (not in the presets), engine-specific files, and the GFM and raw-HTML variants whose baselines differ between the engines themselves.
 const testsDir = join(import.meta.dirname, "..");
@@ -122,6 +86,32 @@ describe("presets", () => {
       expect(sat(input)).toBe(rm(input));
     });
   });
+
+  // A site build renders every page with one preset. Whatever a page defines (abbreviations, footnotes, heading slugs, tab, code-block and lightbox ids) must not reach the next page, so the same pages rendered in the opposite order have to come out the same.
+  describe.each(engines)(
+    "%s renders a document the same whatever it rendered before",
+    (_, render) => {
+      it("in either order", () => {
+        const shared = render({ mermaidPele });
+        const inputs = fixtureCases.map(({ input }) => input);
+        const forwards = inputs.map((input) => shared(input));
+        const backwards = [...inputs]
+          .reverse()
+          .map((input) => shared(input))
+          .reverse();
+        expect(backwards).toEqual(forwards);
+      });
+
+      it("and the same as a preset that has rendered nothing", () => {
+        const shared = render();
+        const first =
+          "*[HTML]: Hyper Text\n\n# Title\n\nHTML[^1]\n\n[^1]: Note.";
+        const second = "# Title\n\nHTML[^1]";
+        shared(first);
+        expect(shared(second)).toBe(render()(second));
+      });
+    }
+  );
 
   // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).
   const features: readonly {
@@ -219,10 +209,73 @@ describe("presets", () => {
         'id="doc-sub-title"'
       );
     });
+
+    // `true` is what a config computed from a flag passes (`lightbox: !isPrint`); it must mean the plugin's defaults, not an options object.
+    it("reads `true` as the default", () => {
+      const everything = Object.fromEntries(
+        features.map(({ key }) => [key, true])
+      );
+      const document = features.map(({ input }) => input).join("\n\n");
+      expect(render(everything)(document)).toBe(render()(document));
+    });
+
+    // A config object is often a shared constant: two presets built from it, or one preset per build. A plugin that wrote its defaults back into the object would change the next preset built from it; freezing makes that write throw.
+    it("leaves the options it is given untouched", () => {
+      const deepFreeze = <T>(value: T): T => {
+        if (typeof value === "object" && value !== null) {
+          Object.values(value).forEach(deepFreeze);
+          Object.freeze(value);
+        }
+        return value;
+      };
+      const options = deepFreeze({
+        autolinkHeadings: {},
+        copyCode: {},
+        fileTree: {},
+        githubAlerts: { icons: false },
+        lightbox: {},
+        mermaidPele: { ...mermaidPele },
+        prompt: {},
+        ruby: {},
+        slug: { prefix: "doc-" },
+        steps: {},
+        tabs: { containerClass: "my-tabs" },
+        tabIcons: {}
+      });
+      const document = features.map(({ input }) => input).join("\n\n");
+      const html = render(options)(document);
+      expect(html).toContain('id="doc-sub-title"');
+      // A second preset from the same object, after the first has rendered.
+      expect(render(options)(document)).toBe(html);
+    });
+  });
+
+  // tab-icons finds the tabs plugin's groups by class. A preset that renamed the groups without telling tab-icons would drop every icon and leave the `[!keyword]` markers in the labels.
+  it("tab-icons follows the tabs plugin's `containerClass`", () => {
+    const options = { tabs: { containerClass: "my-tabs" } };
+    const input = "% npm\n> Body.\n% [!yarn] Y\n> Body.";
+    const html = remark(options)(input);
+    expect(html.match(/markdown-tab-icon/g)).toHaveLength(2);
+    expect(html).toContain('aria-label="Y"');
+    expect(markdownIt(options)(input)).toBe(html);
+    expect(satteri(options)(input)).toBe(html);
+  });
+
+  // An explicit tab-icons class still wins: with a different one it looks for groups that are not there.
+  it("tab-icons keeps a `containerClass` of its own", () => {
+    const options = {
+      tabs: { containerClass: "my-tabs" },
+      tabIcons: { containerClass: "other" }
+    };
+    for (const [, render] of engines) {
+      expect(render(options)("% npm\n> Body.")).not.toContain(
+        "markdown-tab-icon"
+      );
+    }
   });
 
   describe("preset-remark", () => {
-    // Plain remark-gfm reads `~2~` as strikethrough before remd-sub sees it; the preset's own GFM must leave single tildes to subscript.
+    // With remark-gfm's single-tilde strikethrough on, whichever of GFM and remd-sub is added later takes `~2~`; the preset turns it off, so subscript does not depend on the order.
     it("includes GFM, configured so `~sub~` is still subscript", () => {
       const html = remark()("H~2~O and ~~gone~~");
       expect(html).toContain("H<sub>2</sub>O");

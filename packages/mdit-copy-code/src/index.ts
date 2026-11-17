@@ -44,13 +44,15 @@ export const copyCode: PluginWithOptions<CopyCodeOptions> = (
         ? rule(tokens, idx, opts, env, self)
         : self.renderToken(tokens, idx, opts);
       const token = tokens[idx];
-      const ids = env[IDS];
-      if (!token || !ids || !html.startsWith(`<pre`)) return html;
+      if (!token || !html.startsWith(`<pre`)) return html;
+      // The core rule starts a document's ids on the `env` it is parsed with. A host that renders the tokens with another `env` starts them here, where it would otherwise get no ids and no buttons.
+      const ids = (env[IDS] ??= copyCodeIds());
       if (copyCodeOptedOut(meta(md.utils.unescapeAll(token.info)))) return html;
       const text = copyCodeText(token.content);
       if (text === ``) return html;
       const id = ids(text);
-      return `<pre id="${id}"${html.slice(4).replace(/<\/pre>\n?$/, `${copyCodeButton(id)}</pre>\n`)}`;
+      // A replacer function: the button holds text and icons from the options, and in a replacement string a `$&` or `$$` in them would be a pattern.
+      return `<pre id="${id}"${html.slice(4).replace(/<\/pre>\n?$/, () => `${copyCodeButton(id)}</pre>\n`)}`;
     };
 
   // A fence's meta is its info string after the language.

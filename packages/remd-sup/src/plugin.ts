@@ -40,7 +40,7 @@ export const superscriptFromMarkdown: FromMarkdownExtension = {
 };
 
 /**
- * remark plugin for superscript syntax (`^text^`), parsed as a {@link Superscript} node that renders as a `<sup>` element. A single `^` is a delimiter run like emphasis, and its content is inline markup; it shares its syntax with `remd-sub` through `@mirrordown/core`, so the two nest and resolve crossing runs leftmost-first.
+ * remark plugin for superscript syntax (`^text^`), parsed as a {@link Superscript} node that renders as a `<sup>` element. A single `^` is a delimiter run like emphasis, and its content is inline markup; it shares its syntax with `remd-sub` through `@mirrordown/core`, so the two nest and resolve runs that cross each other leftmost-first.
  */
 export const remarkSup: Plugin<[], Root> = function () {
   // this.data() in remark plugin context returns a generic shape; the cast narrows the known extension arrays.

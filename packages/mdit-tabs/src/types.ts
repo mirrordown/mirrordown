@@ -10,7 +10,8 @@ export interface TabFrame {
   depth: number;
   label: string; // raw label text (for inline parsing later)
   open: boolean; // true if marked with %+
-  bodyLines: string[]; // continuation lines with > prefix stripped
+  // The body's lines without their `>` marker; `null` for a blank line written without one, which ends the blocks before it as it ends a blockquote.
+  bodyLines: Array<string | null>;
 }
 
 export interface TabsBlock {

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
+import type { Root } from "mdast";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -33,5 +34,41 @@ const process = (src: string) =>
 describe("tabs/remd", () => {
   it.each(cases)("tabs (remark): $name", ({ input, expected }) => {
     expect(process(input)).toBe(expected);
+  });
+});
+
+// Author attributes reach the handler through `data.hProperties`. remd-attrs spells a class `class`, but hast and most remark plugins spell it `className`, which used to be spread next to the element's own `class`: the element rendered two class attributes and browsers drop the second.
+describe("tabs/remd: author classes join the element's own, however they are spelled", () => {
+  const withProperties = (properties: Record<string, unknown>) =>
+    normalizeHtml(
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkTabs)
+          .use(() => (tree: Root) => {
+            const list = tree.children.find(
+              (node) => (node.type as string) === "tabsList"
+            );
+            if (list)
+              Object.assign(list, { data: { hProperties: properties } });
+          })
+          .use(remarkRehype, { handlers: tabsHastHandlers as never })
+          .use(rehypeStringify)
+          .processSync("% A\n> b")
+      )
+    );
+
+  it("merges a className list into the class attribute", () => {
+    const html = withProperties({ className: ["x", "y"] });
+    expect(html).toContain(
+      `<div class="markdown-tabs x y" data-tabs-group="2b606">`
+    );
+  });
+
+  it("still merges a class string, with other properties after the element's own", () => {
+    const html = withProperties({ class: "x", id: "mine" });
+    expect(html).toContain(
+      `<div class="markdown-tabs x" data-tabs-group="2b606" id="mine">`
+    );
   });
 });

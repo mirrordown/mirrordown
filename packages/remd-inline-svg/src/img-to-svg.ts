@@ -1,6 +1,5 @@
 import { relative, sep } from "node:path";
 import { inlineSvgMarkup } from "@mirrordown/core";
-import type { SvgCache } from "./cache.js";
 import type { GroupedImageNodes, ImageNode } from "./image-node.js";
 import type { Options } from "./options.js";
 
@@ -31,20 +30,23 @@ const toRaw = (img: ImageNode, value: string): void => {
 // The limits, deduplication and markup are shared with the markdown-it and Sätteri plugins through `@mirrordown/core`.
 export const imgToSVG = (
   groupedNodes: GroupedImageNodes,
-  svgCache: SvgCache,
+  contents: ReadonlyArray<string | null>,
   options: Options,
   docDir: string
 ): void => {
-  for (const [filePath, imgNodes] of groupedNodes) {
+  [...groupedNodes].forEach(([filePath, imgNodes], group) => {
+    // A file that couldn't be read or parsed leaves its images as they are.
+    const content = contents[group];
+    if (content === null) return;
     const markup = inlineSvgMarkup(
-      svgCache.get(filePath)!,
+      content,
       imgNodes.map(altOf),
       relative(docDir, filePath).split(sep).join(`/`),
       options
     );
-    if (!markup) continue;
+    if (!markup) return;
     imgNodes.forEach((img, index) => {
       toRaw(img, markup[index]);
     });
-  }
+  });
 };

@@ -71,8 +71,13 @@ const copyForService = async (
   if (await copy(prompt)) announce(service.dataset.copy ?? ``);
 };
 
+// Set on the document by the first copy of this script to run. A page can load it twice (from two of the packages, a bundler's duplicate, a dev server's reload), and two listeners would copy twice and leave a button named for its copied state.
+const LOADED = Symbol.for(`mirrordown.prompt`);
+const page: Document & { [LOADED]?: true } = document;
+
 // The clipboard is only there in secure contexts.
-if (`clipboard` in navigator) {
+if (`clipboard` in navigator && !page[LOADED]) {
+  page[LOADED] = true;
   document.addEventListener(`click`, (event) => {
     if (!(event.target instanceof Element)) return;
     const prompt = event.target.closest(PROMPT);

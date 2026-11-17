@@ -53,6 +53,10 @@ A prompt in a prompt stays a code block.
 ````
 `````
 
+Two things in a prompt are looked up by label. Link definitions (`[label]: url`) are kept apart: a prompt's own resolve inside its preview only, and the page's don't reach into it. Footnotes are not: where your page has them (GFM, in remark and Sätteri), a footnote in a prompt joins the page's, so a label the page also uses points at the page's note and the prompt's own is dropped. Give a prompt's footnotes labels of their own.
+
+Ids are counted across the page and its previews together. With a slug plugin, a `# Task` heading in a preview that follows a page heading of the same text gets the id `task-1`, and the next such heading on the page gets `task-2`. A prompt's own ids (those of its view switch and its markdown) come from a hash of its text, with `-2`, `-3` and so on for a repeated prompt. They are unique per document, not per page: the same prompt in two documents rendered into one page has the same ids in both.
+
 ### Invisible characters
 
 Some characters show as nothing at all, or reorder the text around them: zero-width spaces, bidirectional controls, and Unicode tags, which spell out text no reader sees but an AI can read. A prompt that holds any warns of them in its title, opens on its markdown, and marks each one there with its code point. They're still copied and sent as written, so the AI gets the prompt the reader was warned about. The zero-width joiner and the emoji variation selector don't count, since emoji are built with them.
@@ -122,7 +126,7 @@ A prompt's markdown view is highlighted as markdown by your site's own highlight
 
 ## The client script
 
-Import it once per page, from the package for your engine. It shows the copy buttons, which render hidden so a page without it has no button that does nothing, and copies the prompt for the services that open for the reader to paste it. A screen reader hears that the prompt was copied, and where to paste it.
+Import it once per page, from the package for your engine; a second copy on the page does nothing. It shows the copy buttons, which render hidden so a page without it has no button that does nothing, and copies the prompt for the services that open for the reader to paste it. A screen reader hears that the prompt was copied, and where to paste it.
 
 ```ts
 import "@mirrordown/remd-prompt/client";
@@ -142,7 +146,7 @@ So the plugin keeps prompts quoted and out of sight of browsing agents, but no m
 
 ### Services
 
-`services` adds services, or replaces built-in ones, by id, and `defaultServices` sets the ones a prompt links to when its fence names none (`[]` leaves such prompts with only the copy button). A service's `url` takes the prompt where it says `{prompt}`, in a query parameter's value; give it only to a service that waits for the reader to send. Without `{prompt}`, the button copies the prompt and opens the URL. `icon` is SVG markup, filled with `currentColor` by the stylesheet.
+`services` adds services, or replaces built-in ones, by id, and `defaultServices` sets the ones a prompt links to when its fence names none (`[]` leaves such prompts with only the copy button). A service's `url` takes the prompt where it says `{prompt}`, in a query parameter's value; give it only to a service that waits for the reader to send. Without `{prompt}`, the button copies the prompt and opens the URL. `icon` is SVG markup, filled with `currentColor` by the stylesheet. `forms: false` writes each service as a link, with the prompt in its URL where the service takes one, instead of a form: it is for hosts that open links but don't submit forms, such as VSCode's Markdown preview.
 
 ```ts
 satteriPrompt({

@@ -27,6 +27,21 @@ export const remarkSteps: Plugin<[StepsOptions?], Root> = function (
 
 // ── HAST handlers ─────────────────────────────────────────────────────────────
 
+// An author class joins the element's own, whichever name a plugin set it by (`class`, as remd-attrs does, or hast's `className`): left beside it, the element would get two class attributes. Other author properties are added after the element's.
+const withAuthorProperties = (
+  own: Properties & { class: string },
+  author: Properties | undefined
+): Properties => {
+  if (!author) return own;
+  const { class: extraClass, className: extraClassName, ...rest } = author;
+  const extra = [extraClass, extraClassName]
+    .flat()
+    .filter(
+      (value): value is string => typeof value === "string" && value !== ""
+    );
+  return { ...own, class: [own.class, ...extra].join(" "), ...rest };
+};
+
 const buildListHast = (
   list: StepsListNode,
   containerClass: string,
@@ -38,7 +53,11 @@ const buildListHast = (
     const title = item.children.find(
       (c): c is StepsTitleNode => c.type === "stepsTitle"
     );
-    if (title && title.children.length > 0) {
+    // A title attrs emptied (it held only an attribute block) is no title, like a step written without one.
+    const titled = title?.children.some(
+      (c) => c.type !== "text" || c.value !== ""
+    );
+    if (title && titled) {
       liChildren.push({
         type: "element",
         tagName: "p",
@@ -78,16 +97,13 @@ const buildListHast = (
       liChildren.push(buildListHast(nested, containerClass, state));
     }
 
-    const liProps: Properties = {
-      class: `${containerClass}-item`,
-      "data-step": String(item.number)
-    };
-    if (item.data?.hProperties) {
-      const { class: extraClass, ...rest } = item.data.hProperties;
-      if (extraClass)
-        liProps.class = `${String(liProps.class)} ${String(extraClass)}`;
-      Object.assign(liProps, rest);
-    }
+    const liProps = withAuthorProperties(
+      {
+        class: `${containerClass}-item`,
+        "data-step": String(item.number)
+      },
+      item.data?.hProperties
+    );
 
     return {
       type: "element",
@@ -99,13 +115,10 @@ const buildListHast = (
 
   const baseClass =
     list.depth === 1 ? containerClass : `${containerClass}-list`;
-  const olProps: Properties = { class: baseClass };
-  if (list.data?.hProperties) {
-    const { class: extraClass, ...rest } = list.data.hProperties;
-    if (extraClass)
-      olProps.class = `${String(olProps.class)} ${String(extraClass)}`;
-    Object.assign(olProps, rest);
-  }
+  const olProps = withAuthorProperties(
+    { class: baseClass },
+    list.data?.hProperties
+  );
 
   return {
     type: "element",

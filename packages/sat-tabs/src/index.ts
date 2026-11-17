@@ -1,16 +1,15 @@
 // This plugin hands Sätteri's nodes to core's mdast recognition and back; the type assertions bridging Sätteri's `MdastTarget`, mdast and the tab node types are reviewed and intentional, so the rule is disabled file-wide, as in remd-tabs.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import {
+  createAttributeReader,
   editableTree,
   placeCutAttributes,
   processTabs,
   stripAttrs,
   tabLabelText,
-  tabsBlockId,
   type TabsItemNode,
   type TabsLabelNode,
-  type TabsListNode,
-  type ReadAttributes
+  type TabsListNode
 } from "@mirrordown/core";
 import type { Root } from "mdast";
 import {
@@ -25,17 +24,7 @@ import {
 type BeforeHook = NonNullable<MdastPluginInstance["before"]>;
 
 // An attribute block as Sätteri reads one after text: the properties it gives the paragraph, if all of it is one.
-const readAttributes: ReadAttributes = (block) => {
-  const root = markdownToMdast(`x ${block}`, {
-    features: { attributes: true }
-  });
-  const para = root.children[0];
-  const text = para?.type === `paragraph` ? para.children : [];
-  return text.length === 1 && text[0]?.type === `text` && text[0].value === `x`
-    ? (para?.data as { hProperties?: ReturnType<ReadAttributes> } | undefined)
-        ?.hProperties
-    : undefined;
-};
+const readAttributes = createAttributeReader(markdownToMdast);
 
 /** Options for the {@link satteriTabs} plugin. */
 export interface TabsOptions {
@@ -90,12 +79,10 @@ export const satteriTabs =
     // `back` writes copied nodes back as Sätteri's own (see `editableTree`).
     type Back = (node: MdastTarget) => MdastTarget;
 
-    // This document's tab groups, counted as they render (in the order they open), for their block ids.
-    let groupsRendered = 0;
-
     const renderList = (list: TabsListNode, back: Back): Custom => {
       const cc = list.containerClass ?? containerClass;
-      const blockId = tabsBlockId(groupsRendered++, list.groupId);
+      // Set at recognition, in document order, as in the remark plugin.
+      const { blockId } = list;
       const labels: MdastTarget[] = [];
       const panels: MdastTarget[] = [];
       for (const [idx, item] of list.children.entries()) {
@@ -153,7 +140,7 @@ export const satteriTabs =
       const content = (item.children as unknown as MdastTarget[]).filter(
         (child) => child.type !== `tabsLabel`
       );
-      return element(
+      const panel = element(
         `tabsPanel`,
         `section`,
         // From the label as it is now, so plugins that ran after tabs count too.
@@ -163,6 +150,9 @@ export const satteriTabs =
         },
         content.map(back)
       );
+      // Plugins that run after this one count the `>` markers of a panel's lines from the tree, and a `%%` tab's panel adds none to its parent's.
+      if (item.data?.sub) panel.data = { ...panel.data, sub: true };
+      return panel;
     };
 
     // A node recognition created: tabs render as `hName` nodes, anything else (paragraphs split around a group) as it is.
@@ -175,7 +165,7 @@ export const satteriTabs =
 
     return defineMdastPlugin({
       name: `tabs`,
-      // Group ids hash a group's start line, and leftover paragraphs keep their source lines.
+      // Recognition places lines by their source positions, and leftover paragraphs keep their source lines.
       options: { position: true },
       before(root, ctx) {
         if (!MAYBE_TABS.test(source)) return;

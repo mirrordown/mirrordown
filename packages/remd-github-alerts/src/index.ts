@@ -5,7 +5,7 @@
 /* oxlint-disable typescript/no-unnecessary-condition */
 import { visit } from "unist-util-visit";
 import type { Plugin } from "unified";
-import type { Root, Blockquote, PhrasingContent } from "mdast";
+import type { Root, Blockquote, BlockContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
 import {
@@ -13,9 +13,11 @@ import {
   DEFAULT_TITLE,
   ICONS,
   createAlertResolver,
+  plainText,
   splitAlertParagraph,
   type AlertOptions,
-  type AlertType
+  type AlertType,
+  type PhrasingLike
 } from "@mirrordown/core";
 
 export type { AlertOptions, AlertType };
@@ -25,9 +27,6 @@ interface AlertData {
   hName: string;
   hProperties: Properties;
   alertType: string;
-  alertTitle: string;
-  alertTitleNodes?: PhrasingContent[];
-  alertFoldable: boolean;
   alertIcon: string;
   attrsRole: string;
 }
@@ -41,14 +40,16 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
   const { resolve, titleFor, iconFor, containerClass } =
     createAlertResolver(options);
 
-  return (tree) => {
+  return (tree, file) => {
+    // The source tells an escaped marker (`\[!NOTE]`) from a real one.
+    const source = String(file);
     visit(tree, "blockquote", (node: Blockquote) => {
       const firstChild = node.children[0];
       if (firstChild?.type !== "paragraph") return;
 
       // The marker line rule (title, formatting included; body after the
       // first line break) is shared with every engine in @mirrordown/core.
-      const alert = splitAlertParagraph(firstChild.children);
+      const alert = splitAlertParagraph(firstChild.children, source);
       if (!alert) return;
       const type = resolve(alert.keyword);
       if (!type) return;
@@ -59,17 +60,40 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
         node.children.splice(0, 1);
       }
 
+      // The title is the alert's first child and renders through `hName`/`hProperties`, so it is there without `githubAlertsHastHandlers` too (which only add the icon), and its class is its own whatever the container's becomes.
+      const title = alert.titleText || titleFor(type);
+      const titleNode = {
+        type: "alertTitle",
+        data: {
+          hName: alert.fold ? "summary" : "p",
+          hProperties: {
+            class: `${containerClass}-title`,
+            "aria-label": title
+          }
+        },
+        // A title without plain text (an image with no alt) is still the title; the default one then only labels it.
+        children:
+          alert.titleNodes.length > 0
+            ? alert.titleNodes
+            : [{ type: "text", value: title }]
+      };
+      node.children.unshift(titleNode as unknown as BlockContent);
+
+      // A plugin that ran earlier may have left data on the blockquote (attributes): the alert adds to it.
+      const { class: classes, ...attributes } = node.data?.hProperties ?? {};
       (node as AlertNode).data = {
+        ...node.data,
         hName: alert.fold ? "details" : "div",
         hProperties: {
-          class: containerClass,
+          class:
+            typeof classes === "string"
+              ? `${containerClass} ${classes}`
+              : containerClass,
           "data-alert": type,
-          ...(alert.fold === "+" ? { open: true } : {})
+          ...(alert.fold === "+" ? { open: true } : {}),
+          ...attributes
         },
         alertType: type,
-        alertTitle: alert.titleText || titleFor(type),
-        ...(alert.titleText ? { alertTitleNodes: alert.titleNodes } : {}),
-        alertFoldable: alert.fold !== undefined,
         alertIcon: iconFor(type),
         attrsRole: "container"
       };
@@ -107,27 +131,6 @@ const svgToHast = (svgString: string): Element | undefined => {
   return roots[0];
 };
 
-const buildTitleElement = (
-  state: State,
-  tag: "p" | "summary",
-  data: AlertData,
-  containerClass: string
-): Element => {
-  const icon = svgToHast(data.alertIcon);
-  const title: ElementContent[] = data.alertTitleNodes
-    ? state.all({ type: "paragraph", children: data.alertTitleNodes })
-    : [{ type: "text", value: data.alertTitle }];
-  return {
-    type: "element",
-    tagName: tag,
-    properties: {
-      class: `${containerClass}-title`,
-      "aria-label": data.alertTitle
-    },
-    children: [...(icon ? [icon] : []), ...title]
-  };
-};
-
 const nl: ElementContent = { type: "text", value: "\n" };
 
 /** mdast-to-hast handler that renders alert blockquotes, for use with `remark-rehype`. */
@@ -148,24 +151,23 @@ export const githubAlertsHastHandlers: Record<string, Handler> = {
       return state.applyData(node, result);
     }
 
-    const containerClass =
-      typeof data.hProperties.class === "string"
-        ? data.hProperties.class
-        : "markdown-alert";
-    const titleTag = data.alertFoldable ? "summary" : "p";
-    const titleEl = buildTitleElement(state, titleTag, data, containerClass);
-    const bodyChildren = state.all(node);
+    // The title is the first child and renders by its own `data`; the icon goes in front of its content.
+    const children = state.all(node);
+    const [title] = children;
+    const icon = svgToHast(data.alertIcon);
+    // The label is the title's plain text as it is now: a plugin that ran after this one may have taken an attribute block off it (`*Title*{.x}`), which a screen reader must not read out.
+    const label = plainText(
+      (node.children[0] as { children?: PhrasingLike[] }).children ?? []
+    ).trim();
+    if (label && title?.type === "element")
+      title.properties["aria-label"] = label;
+    if (icon && title?.type === "element") title.children.unshift(icon);
 
     const result: Element = {
       type: "element",
       tagName: data.hName,
       properties: data.hProperties,
-      children: [
-        nl,
-        titleEl,
-        ...bodyChildren.flatMap((child) => [nl, child]),
-        nl
-      ]
+      children: [...children.flatMap((child) => [nl, child]), nl]
     };
     state.patch(node, result);
     return result;

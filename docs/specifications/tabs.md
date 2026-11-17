@@ -1,5 +1,7 @@
 # Tabs Plugin Specification
 
+> This is the design document the tabs plugins were first built from, kept for its history: it describes a `<details>`-based markup that is no longer emitted (the plugins now write radio inputs, labels and panels), and its syntax rules, ids and stylesheet have changed since. The [tabs guide](../public/guide/plugins/tabs.md) describes what the plugins do now.
+
 ## Overview
 
 The tabs plugin renders a set of switchable content panels using a pure HTML + CSS

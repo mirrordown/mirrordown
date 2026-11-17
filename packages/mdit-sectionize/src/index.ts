@@ -50,13 +50,13 @@ const sectionizeTokens = (tokens: Token[], floor: number): Token[] => {
   const result: Token[] = [];
   let i = 0;
 
-  // Preamble: everything before the first heading of the shallowest rank.
+  // Preamble: everything before the first heading of the shallowest rank. It can still hold deeper headings (a run that starts deep and then goes shallower), and every heading gets a section, so it recurses too. This mirrors `sectionize` in `@mirrordown/core`; change both together.
   while (i < tokens.length) {
     const token = tokens[i];
     if (token === undefined || headingRank(token) === minRank) break;
-    result.push(token);
     i++;
   }
+  result.push(...sectionizeTokens(tokens.slice(0, i), minRank));
 
   // Each shallowest heading starts a section that runs until the next peer.
   while (i < tokens.length) {

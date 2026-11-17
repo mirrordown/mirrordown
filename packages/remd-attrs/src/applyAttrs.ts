@@ -7,6 +7,24 @@ import { getAttrs } from "./getAttrs.js";
 
 type AttrNode = Node & { data?: { hProperties?: Properties } };
 
+/**
+ * The class mdast-util-to-hast gives the node's element itself, if any. It sets that one under `className` and then copies hProperties over it, so `class` from a block would be serialized as a second attribute, of which browsers read the first.
+ */
+const generatedClass = (node: Node): string | undefined => {
+  const { checked, children } = node as {
+    checked?: unknown;
+    children?: Array<{ checked?: unknown }>;
+  };
+  if (node.type === "listItem" && typeof checked === "boolean")
+    return "task-list-item";
+  if (
+    node.type === "list" &&
+    children?.some((item) => typeof item.checked === "boolean")
+  )
+    return "contains-task-list";
+  return undefined;
+};
+
 export const applyAttrs = (
   node: AttrNode,
   content: string,
@@ -22,8 +40,20 @@ export const applyAttrs = (
 
   for (const [key, value] of attrs) {
     if (key === "class") {
-      const existing = props.class as string | undefined;
-      props.class = existing ? `${existing} ${value}` : value;
+      const { className } = props;
+      const generated = generatedClass(node);
+      if (className !== undefined) {
+        // The node's classes are already under `className` (another plugin's, or the ones below): add to them, so the element keeps one `class` attribute.
+        props.className = [className, value].flat();
+      } else if (generated) {
+        // The block's classes first, as Sätteri orders them.
+        const existing = props.class as string | undefined;
+        props.className = [...(existing ? [existing] : []), value, generated];
+        delete props.class;
+      } else {
+        const existing = props.class as string | undefined;
+        props.class = existing ? `${existing} ${value}` : value;
+      }
     } else if (key === "css-module") {
       const existing = props["css-module"] as string | undefined;
       props["css-module"] = existing ? `${existing} ${value}` : value;

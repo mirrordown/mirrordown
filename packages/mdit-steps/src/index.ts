@@ -2,6 +2,7 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import type { PluginWithOptions } from "markdown-it";
 import type StateBlock from "markdown-it/lib/rules_block/state_block.mjs";
+import type Token from "markdown-it/lib/token.mjs";
 import { isAlertMarkerLine } from "@mirrordown/core";
 import type { StepsOptions } from "./types.js";
 
@@ -14,11 +15,15 @@ const STEP_HEADER_RE = /^(@{1,6})(\d+)\. ?(.*)/;
 // Matches: > or ><space> continuation line
 const CONTINUATION_RE = /^> ?/;
 
+// A second `>` after the body's own: the line is a quote in the body.
+const NESTED_QUOTE_RE = /^>[ \t]*>/;
+
 interface StepFrame {
   depth: number;
   number: number;
   title: string;
-  bodyLines: string[];
+  // The body's lines without their `>` marker; `null` for a blank line written without one, which ends the blocks before it as it ends a blockquote.
+  bodyLines: Array<string | null>;
 }
 
 interface StepsBlock {
@@ -33,11 +38,88 @@ const parseStepHeader = (
 ): { depth: number; number: number; title: string } | null => {
   const m = STEP_HEADER_RE.exec(line);
   if (!m) return null;
-  return { depth: m[1].length, number: parseInt(m[2], 10), title: m[3] };
+  // Spaces after the title are not part of it (two or more would be a hard break in a paragraph; a header is one line).
+  return {
+    depth: m[1].length,
+    number: parseInt(m[2], 10),
+    title: m[3].trimEnd()
+  };
 };
 
+// The marker takes one column of a tab after it, as it takes a space; the tab's other two columns stay as indentation, so the line isn't read as indented code.
 const stripContinuation = (line: string): string =>
-  line.replace(CONTINUATION_RE, "");
+  line.startsWith(">\t")
+    ? `  ${line.slice(2)}`
+    : line.replace(CONTINUATION_RE, "");
+
+// An alert (`> [!NOTE]`) written with the body's own marker. Deeper (`> > [!NOTE]`), it's an alert in the body.
+const isOwnAlertLine = (line: string): boolean =>
+  isAlertMarkerLine(line) && !NESTED_QUOTE_RE.test(line);
+
+// The paragraph that starts at `startLine`, as markdown-it's paragraph rule reads one. For a line CommonMark continues the header's paragraph with (a `>` indented four columns or more), which ends the group: left to the block rules, a line indented that far after it would be indented code.
+const lazyParagraph = (
+  state: StateBlock,
+  startLine: number,
+  endLine: number
+): void => {
+  const terminators = state.md.block.ruler.getRules("paragraph");
+  const parentType = state.parentType;
+  state.parentType = "paragraph";
+  let nextLine = startLine + 1;
+  for (; nextLine < endLine && !state.isEmpty(nextLine); nextLine++) {
+    // An indented line, or one a list item's negative indent marks, continues the paragraph.
+    const indent = state.sCount[nextLine] - state.blkIndent;
+    if (indent > 3 || state.sCount[nextLine] < 0) continue;
+    const line = nextLine;
+    if (terminators.some((rule) => rule(state, line, endLine, true))) break;
+  }
+  const content = state
+    .getLines(startLine, nextLine, state.blkIndent, false)
+    .trim();
+  state.line = nextLine;
+  const open = state.push("paragraph_open", "p", 1);
+  open.map = [startLine, nextLine];
+  const inline = state.push("inline", "", 0);
+  inline.content = content;
+  inline.map = [startLine, nextLine];
+  inline.children = [];
+  state.push("paragraph_close", "p", -1);
+  state.parentType = parentType;
+};
+
+// Whether a paragraph is open at the end of the lines read for an item so far, for a line CommonMark would continue it with: the header's own when the item has no body yet, else the last block of the body, through the lists and quotes it is nested in. The body's last run of lines is tokenized to tell (only when such a line is met).
+const paragraphOpen = (
+  state: StateBlock,
+  bodyLines: ReadonlyArray<string | null>
+): boolean => {
+  if (bodyLines.length === 0) return true;
+  if (!bodyLines.at(-1)?.trim()) return false;
+  const run = bodyLines.slice(bodyLines.lastIndexOf(null) + 1).join("\n");
+  const tokens: Token[] = [];
+  state.md.block.parse(run, state.md, {}, tokens);
+  let last = tokens.length - 1;
+  while (
+    last >= 0 &&
+    tokens[last].nesting === -1 &&
+    tokens[last].type !== "paragraph_close"
+  )
+    last--;
+  return tokens[last]?.type === "paragraph_close";
+};
+
+// Whether a line that is neither a header nor a `>` line is one CommonMark lazily continues a paragraph with: written short of the content of the list item the group is in, and no block that interrupts a paragraph.
+const isLazyLine = (
+  state: StateBlock,
+  line: number,
+  endLine: number
+): boolean => {
+  // A line written without a blockquote's marker (markdown-it marks it with a negative indent) is not one: it leaves the blockquote, which the other engines' recognition reproduces.
+  if (state.isEmpty(line) || state.sCount[line] < 0) return false;
+  if (state.sCount[line] >= state.blkIndent) return false;
+  return !state.md.block.ruler
+    .getRules("paragraph")
+    .some((rule) => rule(state, line, endLine, true));
+};
 
 /** markdown-it plugin for numbered step sequences, rendering ordered step lists. */
 export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
@@ -46,6 +128,29 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
   md.block.ruler.before("blockquote", "steps", stepsRule, {
     alt: ["paragraph", "reference"]
   });
+
+  // A title that held only an attribute block is empty once attrs has taken the block for the step: it renders nothing, like a step written without a title. The check is made when rendering because attrs runs after this rule, whichever plugin is installed first.
+  const isEmptied = (inline: Token | undefined): boolean =>
+    inline?.type === "inline" &&
+    (inline.children ?? []).every(
+      (child) => child.type === "text" && child.content === ""
+    );
+  md.renderer.rules.steps_title_open = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
+    isEmptied(tokens[idx + 1]) ? "" : self.renderToken(tokens, idx, opts);
+  md.renderer.rules.steps_title_close = (
+    tokens,
+    idx,
+    opts,
+    _env,
+    self
+  ): string =>
+    isEmptied(tokens[idx - 1]) ? "" : self.renderToken(tokens, idx, opts);
 
   function stepsRule(
     state: StateBlock,
@@ -63,7 +168,8 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
     // First line must be depth 1
     if (firstHeader.depth !== 1) return false;
 
-    if (silent) return true;
+    // As a line that would interrupt a paragraph, a header written outside the block the paragraph is in (short of a list item's content) doesn't: CommonMark continues the paragraph with it, which is all the other engines can read there.
+    if (silent) return state.sCount[startLine] >= state.blkIndent;
 
     // Collect all lines belonging to this steps block
     const block: StepsBlock = {
@@ -74,6 +180,11 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
 
     let currentFrame: StepFrame | null = null;
     let nextLine = startLine;
+    // Whether the group ended at a line that continues the last header's paragraph.
+    let lazyEnd = false;
+    // A line indented four columns or more past the block the steps are in: CommonMark reads no `>` marker there, as markdown-it's own block rules read none.
+    const indented = (line: number): boolean =>
+      state.sCount[line] - state.blkIndent >= 4;
 
     const flushFrame = (): void => {
       if (currentFrame) block.frames.push(currentFrame);
@@ -91,10 +202,6 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
 
         // No depth jumps â€” depth can only be currentDepth+1 or <=currentDepth
         if (depth > block.currentDepth + 1) break;
-
-        // Validate: going deeper is only +1
-        if (depth > block.currentDepth && depth !== block.currentDepth + 1)
-          break;
 
         // Reset counters for all depths deeper than this one
         for (const k of block.counters.keys()) {
@@ -126,18 +233,33 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
           const peekPos = state.bMarks[peek] + state.tShift[peek];
           const peekMax = state.eMarks[peek];
           const peekLine = state.src.slice(peekPos, peekMax);
-          // An alert after a blank line is a block of its own, not more of the step's body.
+          // An alert after a blank line is a block of its own, not more of the step's body. A line written outside the block the steps are in (a list item) ends that block after a blank line, and the steps with it.
+          // Indented four columns or more, it is indented code.
           const isContinuation =
-            (CONTINUATION_RE.test(peekLine) && !isAlertMarkerLine(peekLine)) ||
-            parseStepHeader(peekLine) !== null;
+            state.sCount[peek] >= state.blkIndent &&
+            !indented(peek) &&
+            ((CONTINUATION_RE.test(peekLine) && !isOwnAlertLine(peekLine)) ||
+              parseStepHeader(peekLine) !== null);
           if (!isContinuation) break;
           // Blank line is part of the body
-          currentFrame.bodyLines.push("");
+          currentFrame.bodyLines.push(null);
           nextLine++;
           continue;
         }
 
-        if (CONTINUATION_RE.test(line)) {
+        // A `>` line written outside the block the steps are in (a list item) is a blockquote after that block, as CommonMark reads it, not more of the body. A header there still continues the steps: CommonMark continues the body's paragraph with it, which is how the other engines find it.
+        if (
+          CONTINUATION_RE.test(line) &&
+          state.sCount[nextLine] >= state.blkIndent
+        ) {
+          if (indented(nextLine)) {
+            // CommonMark continues a paragraph with such a line: the header's, which ends the steps since a title is one line, or the body's last, where it stays as text (its `>` escaped, so the body's own rules read it as text wherever that paragraph is nested). After a blank line there is no paragraph to continue, and the line is indented code after the steps.
+            if (currentFrame.bodyLines.length === 0) lazyEnd = true;
+            if (lazyEnd || !paragraphOpen(state, currentFrame.bodyLines)) break;
+            currentFrame.bodyLines.push(`\\${line}`);
+            nextLine++;
+            continue;
+          }
           currentFrame.bodyLines.push(stripContinuation(line));
           nextLine++;
           continue;
@@ -145,6 +267,13 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       }
 
       // Line is neither a header nor a continuation â€” block ends
+      // A line CommonMark lazily continues the body's last paragraph with stays in the list item the steps are in, as a paragraph after the steps; any other ends the item too.
+      if (
+        currentFrame !== null &&
+        isLazyLine(state, nextLine, endLine) &&
+        paragraphOpen(state, currentFrame.bodyLines)
+      )
+        lazyEnd = true;
       break;
     }
 
@@ -162,6 +291,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
       nextLine - 1,
       containerClass
     );
+    if (lazyEnd) lazyParagraph(state, nextLine, endLine);
 
     return true;
   }
@@ -210,6 +340,7 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         "class",
         targetDepth === 1 ? containerClass : `${containerClass}-list`
       );
+      // The map ends at the last line of the steps (inclusive: the rule passes `nextLine - 1`), where markdown-it's own tokens end at the line after their last (exclusive). Rules and editors that read the map (scroll sync in a preview) depend on it as it is, so it stays; a reader that needs the exclusive end adds one.
       if (mapStart !== undefined && mapEnd !== undefined)
         olOpen.map = [mapStart, mapEnd];
       olOpen.block = true;
@@ -244,31 +375,35 @@ export const steps: PluginWithOptions<StepsOptions> = (md, options = {}) => {
         }
 
         // Step body â€” parse as nested block content
-        if (f.bodyLines.length > 0) {
+        // Blank lines alone (between two headers, or a lone `>`) are not a body.
+        if (f.bodyLines.some((line) => line !== null && line.trim() !== "")) {
           const bodyOpen = state.push("steps_body_open", "div", 1);
           bodyOpen.attrSet("class", `${containerClass}-body`);
           bodyOpen.block = true;
 
-          const bodyContent = f.bodyLines.join("\n");
-          // Token maps inside the body index its lines, without the `>` markers.
+          const bodyContent = f.bodyLines.map((line) => line ?? "").join("\n");
+          // The `attrsSource` protocol: the body is tokenized from its own text, so the `map` of every token between this one and its close indexes the lines of `attrsSource` (the body without its `>` markers), not the document's. A rule that reads a body token's lines must take them from here, as attrs and caption do; `map` alone points at the wrong document lines.
           bodyOpen.meta = { attrsSource: bodyContent };
-          const oldBullet = state.parentType;
-          state.parentType = "blockquote" as typeof state.parentType;
-          const oldLineMax = state.lineMax;
 
-          // Tokenize the body content by creating a child state
+          // Tokenize the body content by creating a child state. The body's last line ends with a line ending, as every line of a blockquote's content does: a fence the end of the body closes keeps its last line's.
           const childState = new (state.constructor as typeof StateBlock)(
-            bodyContent,
+            `${bodyContent}\n`,
             state.md,
             state.env,
             state.tokens
           );
           // Body tokens nest inside the list, item and body tokens, so core rules that only act at the top level (such as sectionize) leave them alone.
           childState.level = state.level;
-          childState.md.block.tokenize(childState, 0, childState.lineMax);
-
-          state.parentType = oldBullet;
-          state.lineMax = oldLineMax;
+          // A blank line written without the body's `>` ends the blocks before it, as CommonMark ends a blockquote there (the other engines get two blockquotes). So each run of lines between such blank lines is tokenized on its own: a list or a fence doesn't continue across one.
+          let runStart = 0;
+          for (let l = 0; l <= f.bodyLines.length; l++) {
+            if (l < f.bodyLines.length && f.bodyLines[l] !== null) continue;
+            if (l > runStart) {
+              childState.lineMax = l;
+              childState.md.block.tokenize(childState, runStart, l);
+            }
+            runStart = l + 1;
+          }
 
           state.push("steps_body_close", "div", -1);
         }

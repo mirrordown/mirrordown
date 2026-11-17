@@ -30,7 +30,7 @@ flowchart LR
 
 In renderers without the plugin, the diagram stays a code block.
 
-The language is case-sensitive and must be the first word of the info string: ` ```Mermaid ` and ` ```mermaidjs ` stay code blocks, and anything after `mermaid` is ignored. Indented code blocks are never rendered.
+The language is case-sensitive and must be the first word of the info string: ` ```Mermaid ` and ` ```mermaidjs ` stay code blocks, and anything after `mermaid` is ignored. Indented code blocks are never rendered. A class doesn't make a diagram either: ` ```js {.language-mermaid} ` stays a `js` code block. (One exception, in Sätteri only: a fence with no language at all that is given that class renders exactly as a `mermaid` fence does, so it is drawn.)
 
 ### Every diagram type
 
@@ -83,7 +83,11 @@ flowchart LR
 
 ### Ids
 
-Pele names the ids it writes (a title, a gradient) after an id prefix, which the plugins set per diagram: the `prefix` option (`mermaid` by default), then a hash of the diagram's source, so a diagram's ids don't change when you edit another. A diagram repeated on a page gets `-2`, `-3`… after its hash, so no two diagrams share an id.
+Pele names the ids it writes (a title, a gradient) after an id prefix, which the plugins set per diagram: the `prefix` option (`mermaid` by default), then a hash of the diagram's source, so a diagram's ids don't change when you edit another. A diagram repeated in a document gets `-2`, `-3`… after its hash, so no two diagrams in it share an id. Ids are unique per document, not per page: the same diagram in two documents rendered into one page has the same ids in both.
+
+### With copy-code
+
+List this plugin before [`copy-code`](/guide/plugins/copy-code) in remark and Sätteri. Listed after it, the fence has already become a code block with a copy button, and stays one. The presets order them for you, and markdown-it reads either order.
 
 ### Links
 

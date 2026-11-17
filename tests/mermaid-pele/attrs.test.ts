@@ -93,3 +93,30 @@ describe("mermaid-pele + attrs: another language keeps its attributes on the cod
     );
   });
 });
+
+// The fence's language decides what a block is, and it is the first word of its info string. A class that happens to be `language-mermaid` is styling the author chose for a code block: rendering that block as a diagram would throw on code that isn't one, or draw what was meant to be read.
+describe("mermaid-pele + attrs: the class `language-mermaid` on another language's fence doesn't make it a diagram", () => {
+  it.each(engines)("$engine", ({ render }) => {
+    expect(
+      render("```js {.language-mermaid}\nflowchart LR\n  A --> B\n```")
+    ).toBe(
+      `<pre><code class="language-mermaid language-js">flowchart LR\n  A --> B\n</code></pre>`
+    );
+  });
+});
+
+describe("mermaid-pele + attrs: a mermaid fence given another language's class is still a diagram", () => {
+  it.each(engines)("$engine", ({ render }) => {
+    expect(svgTag(render(fence(`{.language-js}`)))).toContain(
+      ` class="pele pele-flowchart language-js"`
+    );
+  });
+});
+
+// Engine difference, pinned: a fence with no language at all, given the class. markdown-it reads the info string and remark-attrs writes the class where the diagram finder doesn't look, so both keep a code block. Sätteri's `<code>` is then exactly the one a mermaid fence renders, so its plugin can't tell them apart and draws the diagram.
+describe("mermaid-pele + attrs: the class on a fence with no language makes a diagram in Sätteri only", () => {
+  const input = "```{.language-mermaid}\nflowchart LR\n  A --> B\n```";
+  it.each(engines)("$engine", ({ engine, render }) => {
+    expect(render(input).startsWith(`<svg`)).toBe(engine === `sätteri`);
+  });
+});

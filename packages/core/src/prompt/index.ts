@@ -153,8 +153,9 @@ const escapeText = (value: string): string =>
 const escapeAttribute = (value: string): string =>
   value.replace(/&/g, `&amp;`).replace(/"/g, `&quot;`).replace(/</g, `&lt;`);
 
+// A replacer function, here and for the prompt below: in a replacement string a `$&` or `$$` in the text put in would be a pattern.
 const fill = (template: string, service: string): string =>
-  template.replaceAll(`{service}`, service);
+  template.replaceAll(`{service}`, () => service);
 
 // Past this, a URL is too long for some services and servers to take, so the service opens for the reader to paste instead.
 const MAX_URL_LENGTH = 8000;
@@ -204,7 +205,7 @@ export const promptServiceTarget = (
     action: `${parsed.origin}${parsed.pathname}`,
     inputs: [...parsed.searchParams].map(([name, value]) => [
       name,
-      value.replaceAll(PLACEHOLDER, prompt)
+      value.replaceAll(PLACEHOLDER, () => prompt)
     ])
   };
 };

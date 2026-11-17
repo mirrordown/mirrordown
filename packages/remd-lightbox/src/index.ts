@@ -19,19 +19,16 @@ export interface LightboxOptions {
   caption?: boolean | undefined;
 }
 
-// The caption of the figure an image is the content of, as a copy of its `<figcaption>`'s children.
-const figureCaption = (
-  parent: Root | Element
-): ElementContent[] | undefined => {
-  if (!isCaptionFigure(parent)) return undefined;
-  const figcaption = [...parent.children]
-    .reverse()
-    .find(
-      (child): child is Element =>
-        child.type === "element" && child.tagName === "figcaption"
-    );
-  return figcaption ? structuredClone(figcaption.children) : undefined;
-};
+// The `<figcaption>` of the figure an image is the content of. The dialog's caption is a copy of its children, taken once every trigger is in place, so a lightbox image inside the caption is a trigger in the copy too.
+const figureCaption = (parent: Root | Element): Element | undefined =>
+  isCaptionFigure(parent)
+    ? [...parent.children]
+        .reverse()
+        .find(
+          (child): child is Element =>
+            child.type === "element" && child.tagName === "figcaption"
+        )
+    : undefined;
 
 /**
  * rehype plugin: opt an image into a fully declarative, JavaScript-free
@@ -65,7 +62,7 @@ export const rehypeLightbox: Plugin<[LightboxOptions?], Root> =
       img: Element;
       src: string;
       authorId: string | undefined;
-      caption: ElementContent[] | undefined;
+      caption: Element | undefined;
     }> = [];
     const emptiedParents = new Set<Root | Element>();
     visit(tree, "element", (node, index, parent) => {
@@ -96,24 +93,37 @@ export const rehypeLightbox: Plugin<[LightboxOptions?], Root> =
     });
     if (opted.length === 0) return;
 
-    // One id per unique src: an author `{#id}` wins, else a stable hash.
+    // An author `{#id}` names its image's dialog unless the id is already taken, by another element or by an earlier lightbox image with a different src: a taken id is ignored, so every trigger opens a dialog that shows its own image. Without an id of its own an image shares the first one given to its src, else the stable hash.
+    const optedImages = new Set(opted.map(({ img }) => img));
+    // id -> the src of the lightbox image that owns it (undefined: another element does).
+    const owner = new Map<string, string | undefined>();
+    visit(tree, "element", (node) => {
+      const { id } = node.properties;
+      if (typeof id === "string" && !optedImages.has(node)) {
+        owner.set(id, undefined);
+      }
+    });
     const srcToId = new Map<string, string>();
-    for (const { src, authorId } of opted) {
-      if (authorId !== undefined) srcToId.set(src, authorId);
-    }
-    for (const { src } of opted) {
-      if (!srcToId.has(src)) srcToId.set(src, lightboxId(src));
-    }
+    const named = opted.map(({ src, authorId }) => {
+      if (authorId === undefined) return undefined;
+      if (owner.has(authorId) && owner.get(authorId) !== src) return undefined;
+      owner.set(authorId, src);
+      if (!srcToId.has(src)) srcToId.set(src, authorId);
+      return authorId;
+    });
 
     // Replace each trigger with a button; collect one dialog image per id.
     const dialogImages = new Map<
       string,
-      { img: Element; caption: ElementContent[] | undefined }
+      { img: Element; caption: Element | undefined }
     >();
-    for (const { parent, index, img, src, authorId, caption } of opted) {
-      const id = srcToId.get(src) ?? lightboxId(src);
+    for (const [
+      i,
+      { parent, index, img, src, authorId, caption }
+    ] of opted.entries()) {
+      const id = named[i] ?? srcToId.get(src) ?? lightboxId(src);
       if (authorId !== undefined) {
-        // the author id becomes the lightbox id; drop it from the <img>
+        // the author id names the dialog (or is ignored as taken); drop it from the <img>
         delete img.properties.id;
       }
       parent.children[index] = lightboxTrigger(id, img);
@@ -134,7 +144,13 @@ export const rehypeLightbox: Plugin<[LightboxOptions?], Root> =
     // Append one dialog per id at the document end.
     const dialogs: RootContent[] = [];
     for (const [id, { img, caption }] of dialogImages) {
-      dialogs.push(lightboxDialog<ElementContent>(id, img, caption));
+      dialogs.push(
+        lightboxDialog<ElementContent>(
+          id,
+          img,
+          caption && structuredClone(caption.children)
+        )
+      );
     }
     tree.children.push(...dialogs);
   };

@@ -1,8 +1,10 @@
 export {
+  carryEscapes,
   escapedIndices,
   maskEscaped,
   unmaskEscaped,
   maskTreeEscapes,
+  textEscapes,
   type TextLikeNode
 } from "./escapes.js";
 export {
@@ -22,10 +24,19 @@ export {
 export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
 export { createKbdTransform } from "./kbd.js";
 export {
+  scanSpans,
   type Positioned,
+  type SpanHost,
   type SpanNodes,
+  type SpanParent,
   type SpanTransform
 } from "./spans.js";
+export {
+  addProperties,
+  claimTrailingAttributes,
+  createAttributeReader,
+  leadingAttributes
+} from "./span-attributes.js";
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
 export {
   LIGHTBOX_MARKER,

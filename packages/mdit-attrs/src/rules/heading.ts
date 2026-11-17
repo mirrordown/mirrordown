@@ -1,5 +1,9 @@
 import type { DelimiterConfig } from "../types.js";
-import { addAttrs, getDelimiterChecker } from "../helper/index.js";
+import {
+  addAttrs,
+  dropEmptyTail,
+  getDelimiterChecker
+} from "../helper/index.js";
 import type { AttrRule } from "./types.js";
 
 export const createHeadingRule = (options: DelimiterConfig): AttrRule => {
@@ -47,9 +51,7 @@ export const createHeadingRule = (options: DelimiterConfig): AttrRule => {
       lastChild.content = before.trimEnd();
 
       // Drop the child entirely if it's now empty
-      if (lastChild.content === "" && children.length > 1) {
-        children.pop();
-      }
+      dropEmptyTail(children);
     }
   };
 };

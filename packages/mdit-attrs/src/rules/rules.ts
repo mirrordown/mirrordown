@@ -23,7 +23,9 @@ const ALL_RULE_NAMES: AttrRuleName[] = [
 const ALL_RULE_SET = new Set<string>(ALL_RULE_NAMES);
 
 export const createRules = (
-  options: DelimiterConfig & Pick<AttrsOptions, "rule">
+  options: DelimiterConfig & Pick<AttrsOptions, "rule">,
+  /** markdown-it's `utils.unescapeAll`, which resolves a fence's info string. */
+  unescapeAll: (str: string) => string
 ): AttrRule[] => {
   const { rule = "all" } = options;
 
@@ -33,12 +35,20 @@ export const createRules = (
   } else if (!rule || (Array.isArray(rule) && rule.length === 0)) {
     return [];
   } else {
-    enabled = new Set(rule.filter((r) => ALL_RULE_SET.has(r)));
+    // A name that is no rule used to be dropped, so a typo read no block at all without a word.
+    const names: readonly string[] = Array.isArray(rule) ? rule : [rule];
+    const unknown = names.find((name) => !ALL_RULE_SET.has(name));
+    if (unknown !== undefined) {
+      throw new TypeError(
+        `attrs: unknown rule "${unknown}". Use one of: ${ALL_RULE_NAMES.join(", ")}.`
+      );
+    }
+    enabled = new Set(names);
   }
 
   const rules: AttrRule[] = [];
 
-  if (enabled.has("fence")) rules.push(createFenceRule(options));
+  if (enabled.has("fence")) rules.push(createFenceRule(options, unescapeAll));
   if (enabled.has("inline")) rules.push(...createInlineRules(options));
   // Before the list rules, so a list item's line of its own is placed before
   // the item reads a block ending its first line.

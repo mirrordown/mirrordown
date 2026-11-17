@@ -87,6 +87,17 @@ export const mirrordown = (
     if (setting !== false) md.use(plugin);
   };
 
+  // tab-icons finds the tabs plugin's groups by class, so it takes the tabs plugin's `containerClass` unless given its own.
+  const tabsClass =
+    typeof options.tabs === `object` ? options.tabs.containerClass : undefined;
+  const tabIconsSetting =
+    options.tabIcons === false || tabsClass === undefined
+      ? options.tabIcons
+      : {
+          containerClass: tabsClass,
+          ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
+        };
+
   on(options.abbr, abbr);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
@@ -103,7 +114,7 @@ export const mirrordown = (
   on(options.sup, sup);
   configured(options.tabs, tabs);
   // After tabs and attrs: it reads the labels they leave.
-  configured(options.tabIcons, tabIcons);
+  configured(tabIconsSetting, tabIcons);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

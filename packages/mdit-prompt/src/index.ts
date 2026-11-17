@@ -31,6 +31,12 @@ interface PromptMeta {
   markup?: PromptMarkup;
 }
 
+// A preview's link reference definitions, by each of its inline tokens: they are the prompt's own, as in remark and Sätteri, where a preview is a document of its own.
+type References = Record<string, unknown> | undefined;
+const REFERENCES = new WeakMap<Token, References>();
+// The type a preview's inline token carries while markdown-it's `inline` rule runs.
+const HELD = `prompt_inline`;
+
 const isPrompt = (info: string): boolean =>
   info.trim().split(/\s+/)[0] === PROMPT_LANGUAGE;
 
@@ -54,10 +60,16 @@ export const prompt: PluginWithOptions<PromptOptions> = (md, options = {}) => {
       )
         continue;
       const preview: Token[] = [];
+      // The environment is the page's, so ids stay unique across the page and its previews, but for the link reference definitions: the preview collects its own, and the page's are put back.
+      const page: References = state.env.references;
+      state.env.references = {};
       md.block.parse(token.content, md, state.env, preview);
+      const own: References = state.env.references;
+      state.env.references = page;
       // Its lines and nesting are the page's: the prompt's text starts the line after its fence.
       const line = (token.map?.[0] ?? 0) + 1;
       for (const child of preview) {
+        if (child.type === `inline`) REFERENCES.set(child, own);
         if (child.map) child.map = [child.map[0] + line, child.map[1] + line];
         child.level += token.level + 1;
       }
@@ -70,6 +82,23 @@ export const prompt: PluginWithOptions<PromptOptions> = (md, options = {}) => {
       tokens.push(...preview, close);
     }
     state.tokens = tokens;
+  });
+
+  // markdown-it's `inline` rule resolves every link against one set of definitions. A preview's text is read against the preview's instead, so a prompt can't link through a definition on the page, nor the page through a prompt's. Two rules around markdown-it's own do it, leaving that rule as it is (and as any other plugin left it): the first keeps a preview's inline tokens out of its way, the second parses them and gives them their type back before the rules that follow look for inline tokens.
+  md.core.ruler.before(`inline`, `prompt_inline_hold`, (state) => {
+    for (const token of state.tokens) {
+      if (REFERENCES.has(token)) token.type = HELD;
+    }
+  });
+  md.core.ruler.after(`inline`, `prompt_inline`, (state) => {
+    for (const token of state.tokens) {
+      if (token.type !== HELD) continue;
+      token.type = `inline`;
+      const page: References = state.env.references;
+      state.env.references = REFERENCES.get(token);
+      md.inline.parse(token.content, md, state.env, (token.children ??= []));
+      state.env.references = page;
+    }
   });
 
   const renderFence = md.renderer.rules.fence;

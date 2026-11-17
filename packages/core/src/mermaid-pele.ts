@@ -57,11 +57,20 @@ export const mermaidSvg = (
   svg: string,
   attributes: readonly MermaidAttribute[]
 ): string => {
-  const open = /^<svg\b[^>]*>/.exec(svg)?.[0];
+  // Tab icons pass markup people wrote through here too, so the opening tag is read as HTML allows it, not only as Pele writes it: a value may be in single quotes, a `>` in a value doesn't end the tag, and the tag may close itself.
+  const open = /^<svg\b(?:[^>"']|"[^"]*"|'[^']*')*>/.exec(svg)?.[0];
   if (!open || attributes.length === 0) return svg;
-  const own = [...open.slice(4, -1).matchAll(/\s([^\s=]+)="([^"]*)"/g)].map(
-    ([, name = ``, value = ``]): MermaidAttribute => [name, value]
-  );
+  const selfClosing = open.endsWith(`/>`);
+  const own = [
+    ...open
+      .slice(4, selfClosing ? -2 : -1)
+      // Every attribute the tag has is kept, or rewriting the tag would delete it: a value may also be unquoted or missing, and nothing has to separate an attribute from the quote that closes the one before it.
+      .matchAll(/([^\s=/"'>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)
+  ].map(([, name = ``, double, single, bare = ``]): MermaidAttribute => [
+    name,
+    // A single-quoted, unquoted or missing value is written back in double quotes.
+    double ?? single?.replace(/"/g, `&quot;`) ?? bare
+  ]);
   const merged = new Map<string, string>(own);
   for (const [name, value] of attributes) {
     const escaped = escapeAttribute(value);
@@ -78,7 +87,7 @@ export const mermaidSvg = (
   const tag = [...merged]
     .map(([name, value]) => ` ${name}="${value}"`)
     .join(``);
-  return `<svg${tag}>${svg.slice(open.length)}`;
+  return `<svg${tag}>${selfClosing ? `</svg>` : ``}${svg.slice(open.length)}`;
 };
 
 /** A hast element's properties as attributes; `className` becomes `class`, and other names are kept as the attribute plugins write them. */
@@ -112,13 +121,26 @@ const hasClass = (node: HastLike, name: string): boolean => {
     : typeof value === `string` && value.split(/\s+/).includes(name);
 };
 
+/** The class a fence's language gave its `<code>`. An attribute block can add classes of the same shape (` ```js {.language-mermaid} `), and every engine writes those before the language's own, so it is the last `language-…` class. */
+const languageClass = (code: HastLike): unknown => {
+  const value = code.properties?.className;
+  const names: unknown[] = Array.isArray(value)
+    ? value
+    : typeof value === `string`
+      ? value.split(/\s+/)
+      : [];
+  return names
+    .filter((name) => typeof name === `string` && name.startsWith(`language-`))
+    .at(-1);
+};
+
 const textOf = (node: HastLike): string =>
   node.type === `text`
     ? (node.value ?? ``)
     : (node.children ?? []).map(textOf).join(``);
 
 /**
- * The diagram a `<pre>` holds, as rehype-mermaid finds them: a `<pre>` whose only content (besides whitespace) is a `<code class="language-mermaid">`, which is how a fenced `mermaid` block renders, or a `<pre class="mermaid">`. `element` is the one whose attributes the `<svg>` takes. `undefined` for anything else.
+ * The diagram a `<pre>` holds, as rehype-mermaid finds them: a `<pre>` whose only content (besides whitespace) is a `<code>` whose language class is `language-mermaid`, which is how a fenced `mermaid` block renders, or a `<pre class="mermaid">`. `element` is the one whose attributes the `<svg>` takes. `undefined` for anything else.
  */
 export const mermaidDiagram = (
   pre: HastLike
@@ -132,7 +154,7 @@ export const mermaidDiagram = (
     if (code || child.tagName !== `code`) return undefined;
     code = child;
   }
-  return code && hasClass(code, MERMAID_LANGUAGE_CLASS)
+  return code && languageClass(code) === MERMAID_LANGUAGE_CLASS
     ? { source: mermaidSource(textOf(code)), element: code }
     : undefined;
 };

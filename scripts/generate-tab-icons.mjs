@@ -6,7 +6,7 @@ import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getIconData, iconToHTML, iconToSVG, replaceIDs } from "@iconify/utils";
+import { getIconData, iconToHTML, iconToSVG } from "@iconify/utils";
 
 const require = createRequire(import.meta.url);
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -153,7 +153,20 @@ const sets = {
   logos: require("@iconify-json/logos").icons
 };
 
-// An icon's SVG, sized by CSS (no width or height), with its ids prefixed by its name so two icons on a page can't share one.
+// An icon's ids, and the `url(#…)` and `href="#…"` references to them, renamed to the prefix and a number. (`replaceIDs` from @iconify/utils takes no prefix: it only keeps ids apart within one run, by a counter that depends on the order icons are read in.)
+const prefixIDs = (body, prefix) => {
+  const ids = new Map(
+    [...body.matchAll(/\sid="([^"]+)"/g)].map(([, id], index) => [
+      id,
+      `${prefix}${index}`
+    ])
+  );
+  return body.replace(/(\sid="|url\(#|href="#)([^")]+)/g, (whole, lead, id) =>
+    ids.has(id) ? lead + ids.get(id) : whole
+  );
+};
+
+// An icon's SVG, sized by CSS (no width or height), with its ids prefixed by its name so two icons on a page can't share one, nor an icon and the page.
 const svgs = new Map();
 const svgOf = (id) => {
   if (svgs.has(id)) return svgs.get(id).name;
@@ -166,7 +179,7 @@ const svgOf = (id) => {
     .replace(/[^A-Za-z0-9]+/g, "_")
     .toUpperCase();
   const svg = iconToHTML(
-    replaceIDs(body, `markdown-tab-icon-${collection}-${name}-`),
+    prefixIDs(body, `markdown-tab-icon-${collection}-${name}-`),
     rest
   );
   svgs.set(id, { name: constName, svg });

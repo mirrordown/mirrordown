@@ -32,3 +32,35 @@ describe("spoiler/mdit", () => {
     }
   );
 });
+
+// markdown-it's `text` rule does not stop at `|`, so the plugin replaces it with a copy whose terminator list is markdown-it's plus `|`. The list is copied by hand. If markdown-it changes its own list, enabling spoiler would silently change where every text run breaks, and a rule keyed on the new character would stop firing. A probe rule placed straight after `text` runs exactly where `text` declined, which shows each implementation's terminators without reaching into either.
+describe("spoiler/mdit: the replaced text rule stops where markdown-it's own does, plus `|`", () => {
+  const stops = (instance: MarkdownIt, src: string): number[] => {
+    const seen = new Set<number>();
+    instance.inline.ruler.after("text", "probe", (state) => {
+      seen.add(state.pos);
+      return false;
+    });
+    instance.parseInline(src, {});
+    return [...seen].sort((a, b) => a - b);
+  };
+  // Every ASCII character, each between two letters, plus a line ending.
+  const ascii = Array.from({ length: 0x7f }, (_, code) =>
+    String.fromCharCode(code + 1)
+  );
+
+  it("agrees with the built-in rule on every ASCII character but the pipe", () => {
+    const differing = ascii.filter(
+      (char) =>
+        char !== "|" &&
+        stops(new MarkdownIt(), `a${char}b`).join() !==
+          stops(new MarkdownIt().use(spoiler), `a${char}b`).join()
+    );
+    expect(differing).toEqual([]);
+  });
+
+  it("stops at a pipe, which the built-in rule runs through", () => {
+    expect(stops(new MarkdownIt(), "a|b")).toEqual([]);
+    expect(stops(new MarkdownIt().use(spoiler), "a|b")).toEqual([1]);
+  });
+});

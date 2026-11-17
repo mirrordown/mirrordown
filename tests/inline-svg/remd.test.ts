@@ -172,3 +172,55 @@ describe("inline-svg (rehype) deduplication", () => {
     expect(result).toContain(`<svg`);
   });
 });
+
+describe("inline-svg (rehype) failures and shared instances", () => {
+  const path = fileURLToPath(import.meta.url);
+  const shared = () =>
+    unified()
+      .use(remarkParse)
+      .use(remarkRehype)
+      .use(rehypeInlineSvg)
+      .use(rehypeStringify, { allowDangerousHtml: true });
+
+  // A build reuses one processor for every page, so one page's broken image must not reject the pages after it, and the failure must not be remembered: the file may exist by the next render.
+  it("a file that can't be read affects only its own image, in this and later documents", async () => {
+    const processor = shared();
+    const missing = `![a](./fixtures/nope.svg) ![b](./fixtures/circle.inline.svg)`;
+    const first = String(await processor.process({ value: missing, path }));
+    expect(first).toContain(`<img src="./fixtures/nope.svg" alt="a">`);
+    expect(first).toContain(`<svg`);
+    const second = String(
+      await processor.process({
+        value: `![b](./fixtures/circle.inline.svg)`,
+        path
+      })
+    );
+    expect(second).toContain(`<svg`);
+    expect(second).not.toContain(`<img`);
+  });
+
+  // Documents processed at once share the read of a file; each must wait for it rather than see a half-filled cache and drop its image.
+  it("documents processed concurrently each get their images", async () => {
+    const processor = shared();
+    const results = await Promise.all(
+      [`circle.inline`, `flower`, `flower`, `circle.inline`, `flower`].map(
+        async (name) =>
+          String(
+            await processor.process({
+              value: `![x](./fixtures/${name}.svg)`,
+              path
+            })
+          )
+      )
+    );
+    for (const html of results) {
+      expect(html).toMatch(/^<p><svg [^>]*aria-label="x">.+<\/svg><\/p>$/);
+    }
+  });
+
+  // Same as the markdown-it and Sätteri plugins without a document location: nothing to resolve against, so nothing is inlined, and nothing throws.
+  it("passes through without a file path", async () => {
+    const file = await shared().process(`![](./fixtures/test.svg)`);
+    expect(String(file)).toBe(`<p><img src="./fixtures/test.svg" alt=""></p>`);
+  });
+});

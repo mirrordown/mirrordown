@@ -21,3 +21,31 @@ Some *emphasized* text.
 # Title
 
 Body.
+
+<!-- @case: paragraph of only a space character reference is removed -->
+
+Before.
+
+&#32;
+
+After.
+
+<!-- @case: emptied blockquote is kept without its paragraph -->
+
+> &#32;
+
+<!-- @case: whitespace-only paragraph inside a loose list item is removed -->
+
+- First.
+
+  &#32;
+
+  Second.
+
+<!-- @case: adjacent whitespace-only paragraphs are all removed -->
+
+&#32;
+
+&#9;
+
+Text.

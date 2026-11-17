@@ -92,7 +92,7 @@ A caption written after a quote, without its `>`, attributes it.
 > ~: One plugin per engine
 > ````
 
-A table reads the caption line as a row of its own, so a table's caption can't contain a `|` (write `\|`).
+A table reads the caption line as a row of its own, so a table's caption can't contain a `|` (write `\|`): the caption ends at an unescaped one, and the text after it is dropped.
 
 ### Any other block
 
@@ -125,9 +125,13 @@ A caption goes on the block it's written after, at the level its `>` markers and
 
 The caption runs to the end of its paragraph, so a `~:` on a later line at the same level is part of it. A caption doesn't attach to a heading, a thematic break, raw HTML, or another caption, and a `~:` after a blank line is text, so a caption always touches its block.
 
+One case reads differently today: after a captioned code fence inside a quote or list item, a `~:` line written outside is taken as more of the fence's caption, not as a caption for the quote or the list.
+
+With [subscript](/guide/plugins/sub) on, a `~` later on the caption's line pairs with the marker's as a subscript, and the line stops being a caption. Escape it (`\~`) to keep the caption.
+
 ### Attributes
 
-With the [`attrs`](/guide/plugins/attrs) plugin, attributes written at the end of a caption go on the figure, which gives it an id to link to. A block keeps its own attributes.
+With the [`attrs`](/guide/plugins/attrs) plugin, attributes written at the end of a caption go on the figure, which gives it an id to link to. In a caption of several lines, that is the end of its last line; a block ending an earlier line stays text. A block keeps its own attributes.
 
 % Demo
 > ![Wild rice growing in a marsh](./assets/wild-rice.jpg){.photo}

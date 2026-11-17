@@ -13,3 +13,27 @@
     </tr>
   </tbody>
 </table>
+
+<!-- @case: emphasis opens against a subscript inside a word -->
+<p>x<em><sub>i</sub></em></p>
+
+<!-- @case: strong wraps a subscript inside a word -->
+<p>H<strong><sub>2</sub></strong>O</p>
+
+<!-- @case: emphasis closes against a subscript before a letter -->
+<p><em>a<sub>b</sub></em>c</p>
+
+<!-- @case: emphasis and strong together wrap a subscript inside a word -->
+<p>x<em><strong><sub>i</sub></strong></em></p>
+
+<!-- @case: emphasis beside a subscript inside a link label -->
+<p><a href="u">x<em><sub>i</sub></em></a></p>
+
+<!-- @case: underscores beside a subscript inside a word stay literal -->
+<p>x_<sub>i</sub>_</p>
+
+<!-- @case: a tilde that opens no subscript lets emphasis flank it the same way -->
+<p>x<em>~ y</em></p>
+
+<!-- @case: an escaped tilde lets emphasis close against it the same way -->
+<p><em>a~</em>c</p>

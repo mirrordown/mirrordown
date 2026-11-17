@@ -9,3 +9,9 @@
 <!-- @case: wrapping strong under gfm -->
 
 ||**bold spoiler**||
+
+<!-- @case: in a table cell, where a pipe is written with a backslash -->
+
+| who |
+| --- |
+| \|\|the butler\|\| did it |

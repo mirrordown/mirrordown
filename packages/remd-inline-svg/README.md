@@ -14,7 +14,7 @@ The `inline-svg` plugin replaces image references that point at `.svg` files wit
 
 renders the contents of `star.svg` inline rather than `<img src="./icons/star.svg">`.
 
-It operates on the hast tree, so it runs after `remark-rehype`.
+It operates on the hast tree, so it runs after `remark-rehype`. Image paths are resolved relative to the document, so the file being processed needs a `path` (`processor.process({ path, value })`, or a file read with `to-vfile`); without one, images are left as they are.
 
 ## Install
 
@@ -38,7 +38,7 @@ const processor = unified()
   .use(rehypeStringify, { allowDangerousHtml: true });
 ```
 
-`allowDangerousHtml: true` is required: the SVG is inserted as raw HTML (see [Output](#output)), which `rehype-stringify` drops otherwise.
+`allowDangerousHtml: true` is required: the SVG is inserted as raw HTML (see [Output](#output)), which `rehype-stringify` writes as escaped text otherwise.
 
 ### Output
 
@@ -49,13 +49,20 @@ The SVG file's markup is inserted verbatim as a `raw` node, with the image's alt
 
 ### Options
 
-| Option           | Default    | Description                                                  |
-| ---------------- | ---------- | ------------------------------------------------------------ |
-| `optimize`       | `true`     | Optimize SVGs with SVGO. Pass an SVGO `Config` to customize. |
-| `deduplication`  | `false`    | Reuse repeated icons via `<symbol>`/`<use>`.                 |
-| `maxImageSize`   | `3000`     | Skip inlining SVGs larger than this many bytes.              |
-| `maxOccurrences` | `Infinity` | Maximum number of images to inline per render.               |
-| `maxTotalSize`   | `10000`    | Maximum total inlined bytes per render.                      |
+| Option            | Default    | Description                                                  |
+| ----------------- | ---------- | ------------------------------------------------------------ |
+| `optimize`        | `true`     | Optimize SVGs with SVGO. Pass an SVGO `Config` to customize. |
+| `deduplication`   | `false`    | Reuse repeated icons via `<symbol>`/`<use>`.                 |
+| `maxImageSize`    | `3000`     | Skip an SVG larger than this many characters.                |
+| `maxOccurrences`  | `Infinity` | Skip an SVG referenced more than this many times.            |
+| `maxTotalSize`    | `10000`    | Skip an SVG whose occurrences total more characters.         |
+| `cacheEfficiency` | —          | Called with cache `{ hits, misses }` after a render reads.   |
+
+With `deduplication`, a sprite's id is a hash of the SVG's path relative to the document, so it is unique per document, not per page: two documents rendered into one page that reuse an SVG at the same relative path write the same id.
+
+## Security
+
+The markdown and the SVG files it references are treated as trusted input. An image path may name any `.svg` file the build can read (`../` is followed), and an inlined SVG becomes part of the page, where its scripts, event handlers and external references are live, which they are not behind an `<img>`. SVGO's default preset does not remove them, and with `optimize: false` the file is inserted as it is. Do not use this plugin on markdown or SVG files you do not control.
 
 ## Documentation
 

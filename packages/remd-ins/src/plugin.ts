@@ -28,7 +28,8 @@ export const remarkIns: Plugin<[], Root> = () => {
 
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it.
-    const restoreEscapes = maskTreeEscapes(tree, String(file));
+    const source = String(file);
+    const restoreEscapes = maskTreeEscapes(tree, source);
     const seen = new WeakSet<Parent>();
     visit(tree, `text`, (_node, _index, parent: Parent | undefined) => {
       // Spans the scan built have already had their content scanned.
@@ -37,7 +38,7 @@ export const remarkIns: Plugin<[], Root> = () => {
       // A text node's parent holds phrasing content.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion
       const children = parent.children as PhrasingContent[];
-      const next = transform(children, parent.type);
+      const next = transform(children, parent.type, source);
       if (next !== children) parent.children = [...next];
       // Walk the restructured children from the start; this parent is done.
       return 0;

@@ -146,26 +146,41 @@ export const mirrordown = (
   const gfm: Array<PluginEntry<MdastRoot>> =
     options.gfm === false ? [] : [[remarkGfm, { singleTilde: false }]];
 
+  // tab-icons finds the tabs plugin's groups by class, so it takes the tabs plugin's `containerClass` unless given its own.
+  const tabsClass =
+    typeof options.tabs === `object` ? options.tabs.containerClass : undefined;
+  const tabIconsSetting =
+    options.tabIcons === false || tabsClass === undefined
+      ? options.tabIcons
+      : {
+          containerClass: tabsClass,
+          ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
+        };
+
   return {
     remarkPlugins: [
       ...gfm,
       // First: the plugins after it see a prompt's preview as part of the page.
       ...on(options.prompt !== false, remarkPrompt),
-      ...on(options.abbr, remarkAbbr),
-      ...on(options.definitionList, remarkDefinitionList),
-      ...on(options.del, remarkDel),
-      ...configured(options.githubAlerts, remarkGithubAlerts),
-      ...on(options.ins, remarkIns),
-      ...on(options.kbd, remarkKbd),
-      ...on(options.mark, remarkMark),
+      // Before abbr and the delimiter plugins: it rebuilds each ruby from its source text, so what an earlier plugin did inside the braces would be lost.
       ...configured(options.ruby, remarkRuby),
+      ...on(options.definitionList, remarkDefinitionList),
+      // Before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it.
+      ...on(options.kbd, remarkKbd),
+      ...on(options.del, remarkDel),
+      ...on(options.ins, remarkIns),
+      ...on(options.mark, remarkMark),
       ...configured(options.steps, remarkSteps),
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),
       ...on(options.sup, remarkSup),
       ...configured(options.tabs, remarkTabs),
+      // After the inline plugins, whose output a title's `aria-label` is read from, and after steps and tabs, whose headers take the marker line directly under them as body text.
+      ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
+      // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
+      ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.
       ...on(options.caption, remarkCaption)
     ],
@@ -176,7 +191,7 @@ export const mirrordown = (
       ...configured(options.prompt, rehypePrompt),
       // After mermaid-pele, file-tree and prompt: a diagram, a tree or a prompt is no longer a code block.
       ...configured(options.copyCode, rehypeCopyCode),
-      ...configured(options.tabIcons, rehypeTabIcons),
+      ...configured(tabIconsSetting, rehypeTabIcons),
       ...on(options.sectionize, rehypeSectionize),
       ...configured(options.slug, rehypeSlug),
       ...configured(options.autolinkHeadings, rehypeAutolinkHeadings),

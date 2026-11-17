@@ -31,7 +31,7 @@ There is no special syntax — just write headings. Hover one to reveal its link
 ````
 
 > [!NOTE]
-> This is a rehype plugin (`rehype-*`), not a remark plugin. Add it **after** `remarkRehype`, and **after** [`slug`](/guide/plugins/slug), so the headings already have ids. Import the stylesheet to get the default `#` marker.
+> For remark, this is a rehype plugin (`rehype-*`), not a remark plugin: add it **after** `remarkRehype`. In remark and Sätteri, add it **after** [`slug`](/guide/plugins/slug), so the headings already have ids; listed before it, no heading is linked. In markdown-it the two can be listed in either order. Import the stylesheet to get the default `#` marker.
 
 ## Install
 
@@ -77,7 +77,8 @@ export default defineConfig({
 
 | Option      | Type                                            | Default     | Description                                              |
 | ----------- | ----------------------------------------------- | ----------- | ------------------------------------------------------- |
-| `behavior`  | `"prepend" \| "append" \| "wrap" \| "before" \| "after"` | `"prepend"` | Where the link is placed relative to the heading.       |
+| `behavior`  | `"prepend" \| "append" \| "wrap" \| "before" \| "after"` | `"prepend"` | Where the link is placed relative to the heading. Any other value throws. |
+| `class`     | `string`                                        | `"anchor"`  | The link's class. markdown-it only.                     |
 
 `behavior` controls the structure:
 
@@ -85,14 +86,18 @@ export default defineConfig({
 - **`wrap`** — the link wraps the heading's content.
 - **`before`** / **`after`** — the link is a sibling placed before / after the heading.
 
+With `wrap`, `before` and `after` the link carries only its class and `href`: it is focusable and not `aria-hidden`.
+
 ```ts
 rehypeAutolinkHeadings({ behavior: "append" });
 ```
 
-The markdown-it plugin accepts `behavior` plus a `class` option (default `"anchor"`) to rename the link's class.
+The markdown-it plugin accepts `behavior` plus a `class` option (default `"anchor"`) to rename the link's class. The rehype and Sätteri plugins have no `class` option: set the class with `properties`.
 
 > [!NOTE]
-> The rehype plugin additionally accepts `content`, `properties`, `headingProperties`, `group`, and `test` options for full control over the emitted link — see [`rehype-autolink-headings`](https://github.com/rehypejs/rehype-autolink-headings) for their semantics. These take **hast** nodes and callbacks, which have no markdown-it equivalent, so they are available only on the rehype (`remd-*`) side.
+> The rehype and Sätteri plugins additionally accept `content`, `properties`, `headingProperties`, `group`, and `test` options for full control over the emitted link — see [`rehype-autolink-headings`](https://github.com/rehypejs/rehype-autolink-headings) for their semantics. These take **hast** nodes and callbacks, which have no markdown-it equivalent: the markdown-it plugin ignores them.
+
+With GFM footnotes, remark and Sätteri generate a "Footnotes" heading with the id `footnote-label`, and today it gets a link like any other heading. To leave it out, pass `test: (heading) => heading.properties.id !== "footnote-label"`.
 
 ## Documentation
 

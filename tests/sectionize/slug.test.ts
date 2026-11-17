@@ -4,10 +4,13 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { markdownToHtml } from "satteri";
 import { sectionize } from "../../packages/mdit-sectionize/src";
 import { slug } from "../../packages/mdit-slug/src";
 import { rehypeSectionize } from "../../packages/remd-sectionize/src";
 import { rehypeSlug } from "../../packages/remd-slug/src";
+import { satteriSectionize } from "../../packages/sat-sectionize/src";
+import { satteriSlug } from "../../packages/sat-slug/src";
 import { normalizeHtml } from "../utils/index.js";
 
 // Recommended ordering: sectionize wraps first, slug adds ids afterwards. The
@@ -27,6 +30,14 @@ const remd = (src: string) =>
     )
   );
 
+const sat = (src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { frontmatter: false, smartPunctuation: false },
+      hastPlugins: [satteriSectionize(), satteriSlug()]
+    }).html
+  );
+
 describe("sectionize + slug", () => {
   it("headings inside sections still receive slug ids", () => {
     const input = "# Getting Started\n\nintro\n\n## Install\n\nsteps";
@@ -35,5 +46,6 @@ describe("sectionize + slug", () => {
       '<section data-depth="2"><h2 id="install">Install</h2><p>steps</p></section></section>';
     expect(normalizeHtml(md.render(input))).toBe(expected);
     expect(remd(input)).toBe(expected);
+    expect(sat(input)).toBe(expected);
   });
 });

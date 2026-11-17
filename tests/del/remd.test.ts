@@ -47,4 +47,17 @@ describe("del/remd", () => {
       expected
     );
   });
+
+  it("needs the file to honour an escape: a bare tree has no source to tell `\\--` from `--`", () => {
+    // The parser resolves escapes, so the plugin recovers them from the source in the VFile. `runSync(tree)` without a file is a documented limit, pinned here so a change to it is deliberate.
+    const input = String.raw`\--a-- --b--`;
+    expect(String(cmProcessor.processSync(input))).toBe(
+      "<p>--a-- <del>b</del></p>"
+    );
+    const tree = unified().use(remarkParse).parse(input);
+    const [paragraph] = unified().use(remarkDel).runSync(tree).children;
+    expect(paragraph?.type === "paragraph" && paragraph.children[0]?.type).toBe(
+      "delete"
+    );
+  });
 });

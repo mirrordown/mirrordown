@@ -33,6 +33,16 @@ describe("promptServiceTarget", () => {
     ).toMatchObject({ inputs: [[`q`, `Context: x`]] });
   });
 
+  // The reader's prompt is what the service must receive. A shell command or a regex in it has dollar signs, and they are text, not patterns for the replace that puts the prompt in.
+  it.each([`kill $$`, `echo $& done`, `a $' b`, "a $` b", `cost: $1`])(
+    "sends a prompt with dollar signs as written: %s",
+    (text) => {
+      expect(
+        promptServiceTarget(`https://example.com/?q={prompt}`, text)
+      ).toMatchObject({ kind: `form`, inputs: [[`q`, text]] });
+    }
+  );
+
   // A form can only fill in a query: a prompt in the path, or an app's own scheme, needs a link.
   it("falls back to a link with the prompt filled in where a form can't carry it", () => {
     expect(

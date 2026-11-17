@@ -11,3 +11,7 @@
 <!-- @case: single occurrence is fully inlined -->
 
 ![](./fixtures/flower.svg)
+
+<!-- @case: a repeated outline icon keeps the root attributes it is drawn with -->
+
+![check](./fixtures/outline.svg) ![check](./fixtures/outline.svg)

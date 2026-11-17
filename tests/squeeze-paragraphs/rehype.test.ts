@@ -41,9 +41,7 @@ describe("squeeze-paragraphs (rehype)", () => {
   );
 });
 
-// A prior transform that empties a paragraph's contents, leaving residue for
-// squeeze to remove. Raw markdown never produces an empty paragraph, so the
-// removal behaviour can only be exercised through such an interaction.
+// A prior transform that empties a paragraph's contents, leaving residue for squeeze to remove. Raw markdown only produces an empty paragraph from a whitespace character reference (the fixture covers that), so a paragraph with no children at all can only be exercised through such an interaction.
 const emptyOutParagraphs: Plugin<[], Root> = () => (tree) => {
   const walk = (node: { children?: Root["children"] }): void => {
     if (!node.children) return;

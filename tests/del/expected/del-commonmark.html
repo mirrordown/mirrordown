@@ -82,3 +82,45 @@
 
 <!-- @case: a run between spaces neither opens nor closes -->
 <p><del>a --- b</del></p>
+
+<!-- @case: a dash written as a character reference does not open a span -->
+<p>--a--</p>
+
+<!-- @case: a dash written as a character reference does not close a span -->
+<p>--a--</p>
+
+<!-- @case: referenced dashes are literal text -->
+<p>--a--</p>
+
+<!-- @case: a referenced dash between two runs is the span's content -->
+<p><del>-</del></p>
+
+<!-- @case: an escaped character after a run counts as punctuation -->
+<p>a--*b--</p>
+
+<!-- @case: an escaped character before a run counts as punctuation -->
+<p>--a*--b</p>
+
+<!-- @case: a character reference after a run counts as punctuation -->
+<p>a--éb--</p>
+
+<!-- @case: a character reference before a run counts as punctuation -->
+<p>--aé--b</p>
+
+<!-- @case: a referenced letter is still a reference beside a run -->
+<p>a--ab--</p>
+
+<!-- @case: an escape after an astral character reference is honoured -->
+<p>😀 --a--</p>
+
+<!-- @case: autolink text is literal -->
+<p><a href="http://x.com/--a--">http://x.com/--a--</a></p>
+
+<!-- @case: an astral symbol beside a run counts as punctuation -->
+<p>a--😀b--</p>
+
+<!-- @case: a line of dashes under text is a setext underline, not a delimiter -->
+<h2>--foo</h2>
+
+<!-- @case: a span on the line above a setext underline still forms -->
+<h2><del>a</del></h2>

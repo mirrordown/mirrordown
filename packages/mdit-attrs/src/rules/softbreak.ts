@@ -81,7 +81,15 @@ export const createSoftbreakRule = (options: DelimiterConfig): AttrRule => {
       let quotes = 0;
       for (let i = ancestors.length - 1; i >= 1; i--) {
         const open = ancestors[i];
-        if (open.type === "blockquote_open") {
+        // A container another plugin made from a blockquote (an alert) says so with `meta.attrsQuote`: its lines still carry the `>`.
+        const meta: unknown = open.meta;
+        if (
+          open.type === "blockquote_open" ||
+          (typeof meta === "object" &&
+            meta !== null &&
+            "attrsQuote" in meta &&
+            meta.attrsQuote === true)
+        ) {
           containers.push({
             open,
             target: open,

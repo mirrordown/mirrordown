@@ -76,7 +76,7 @@ node_modules/…
 
 ### Comments, highlights and placeholders
 
-After a name, ` # ` or ` // ` starts a comment. `**name**` highlights a row. A row of `...` or `…` stands for entries left out.
+After a name, ` # ` or ` // ` starts a comment. `**name**` highlights a row. A row of `...` or `…` stands for entries left out; a comment written after one is dropped.
 
 ````markdown
 ```filetree
@@ -141,7 +141,7 @@ export default defineConfig({
 
 ## The client script
 
-Without it, a tree is nested lists, and its folders open and close as `<details>` do. Import it once per page, from the package for your engine, to make each tree an [ARIA tree](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/): one tab stop, ↑ and ↓ between rows, → and ← to open and close folders or move into and out of them, Home and End, `*` to open a folder's siblings, and typing a name's first letters to jump to it.
+Without it, a tree is nested lists, and its folders open and close as `<details>` do. Import it once per page, from the package for your engine (a second copy leaves the trees the first one set up as they are), to make each tree an [ARIA tree](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/): one tab stop, ↑ and ↓ between rows, → and ← to open and close folders or move into and out of them, Home and End, `*` to open a folder's siblings, and typing a name's first letters to jump to it.
 
 ```ts
 import "@mirrordown/remd-file-tree/client";
@@ -164,7 +164,7 @@ rehypeFileTree({ theme: { light: githubLight, dark: githubDark } })
 
 ### Icons
 
-`icons` sets icons, as SVG markup, used before Seti's: `folder` for every folder, `file` for files nothing else matches, and `names` and `extensions` for files by name and extension (without its dot). The stylesheet sizes them to `1rem` and fills them with `currentColor`.
+`icons` sets icons, as SVG markup, used before Seti's: `folder` for every folder, `file` for files nothing else matches, and `names` and `extensions` for files by name and extension (without its dot). A longer match of Seti's still wins: with your own `ts` icon, `a.test.ts` keeps Seti's icon for `test.ts`. The stylesheet sizes them to `1rem` and fills them with `currentColor`.
 
 ```ts
 rehypeFileTree({ icons: { extensions: { astro: `<svg viewBox="0 0 24 24">...</svg>` } } })
