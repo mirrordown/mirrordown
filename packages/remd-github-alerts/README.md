@@ -6,7 +6,7 @@ A remark/rehype (unified) plugin for the `github-alerts` syntax extension.
 
 ## Overview
 
-The `github-alerts` plugin converts GitHub-style alert blockquotes (`> [!NOTE]`, `> [!WARNING]`, etc.) into styled `<div>` containers with an icon and title. Foldable alerts are rendered as `<details>` elements.
+The `github-alerts` plugin converts GitHub-style alert blockquotes (`> [!NOTE]`, `> [!WARNING]`, etc.) and Obsidian callouts of any type (`> [!custom-type]`) into styled `<div>` containers with an icon and title. Foldable alerts are rendered as `<details>` elements.
 
 ```html
 <div class="markdown-alert" data-alert="note">
@@ -36,7 +36,7 @@ Write a blockquote with a `[!TYPE]` marker on the first line:
 > Advises about risks or negative outcomes of certain actions.
 ````
 
-The keyword is read in any case (`[!note]` is a note). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
+The keyword is read in any case (`[!note]` is a note), without the spaces around it, and with each run of spaces inside it as a `-`, as Obsidian reads it: `[! NOTE ]` is a note, and `[!My type]` is the type `my-type`. A keyword can name any type, not only the built-in ones: see [undefined types](#undefined-types). A backslash before the marker (`> \[!NOTE]`) leaves the quote a quote, with the marker as text.
 
 ### Custom titles
 
@@ -58,6 +58,21 @@ Use `+` to make an alert open by default, or `-` to make it collapsed by default
 > [!WARNING]-
 > This warning is collapsed by default.
 ````
+
+### Metadata
+
+Text after a `|` in the marker is the alert's metadata, as in Obsidian. It goes on the container as `data-alert-metadata`, without the spaces around it, for a stylesheet to read; empty metadata (`[!info|]`) adds nothing. It works with every type, and with folding:
+
+````markdown
+> [!info|wide]+ Metadata
+> This alert carries `data-alert-metadata="wide"`.
+````
+
+```html
+<details class="markdown-alert" data-alert="info" data-alert-metadata="wide" open>
+```
+
+The stylesheet gives metadata no meaning of its own: style it with a selector such as `[data-alert-metadata~="wide"]`. The marker's text is read as written, so an escaped character or a character reference anywhere between its brackets (`[!info|a &amp; b]`) leaves the quote a quote.
 
 ### Attributes
 
@@ -124,11 +139,37 @@ remarkGithubAlerts({
 }
 ```
 
+A key of `types` is read as a keyword is: `"Release Notes"` matches `[!release notes]` and `[!RELEASE-NOTES]`. A type you register keeps the title it is given, or its name capitalised (`my-type` is "My-type"), and has no icon.
+
+### Undefined types
+
+A keyword that names no type, neither built-in (GitHub's five, and Obsidian's `abstract`, `info`, `todo`, `success`, `question`, `failure`, `danger`, `bug`, `example` and `quote`, with their aliases) nor registered with `types`, still makes an alert, as it does in Obsidian. The keyword is its type, in `data-alert` for a stylesheet to target. Its default title is the keyword with each `-` as a space and the first letter capitalised, unless `titles` names it; it takes the note's icon and the stylesheet's default colours. It folds and takes a title like any alert:
+
+````markdown
+> [!custom-type]
+> An alert of a type nothing defines.
+
+> [!recipe]- Pancakes
+> Folded, with a title of its own.
+````
+
+```css
+[data-alert="recipe"] {
+  --markdown-alert-color: oklch(0.55 0.15 60);
+}
+```
+
+Only a keyword made of letters, numbers, `_` and `-` falls back: with any other character (`[!a.b]`, `[!what?]`), the quote stays a quote. To keep to the built-in types and the ones you register, so that every other keyword leaves a quote, set `fallback: false`:
+
+```ts
+remarkGithubAlerts({ fallback: false })
+```
+
 ### Other options
 
 | Option | Default | |
 | --- | --- | --- |
-| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is an alert and `[!NOTE]` is not. |
+| `matchCaseInsensitive` | `true` | `false` reads a keyword only as it is registered: the built-in keywords are lowercase, so `[!note]` is a note and `[!NOTE]` is not. `[!NOTE]` is then an [undefined type](#undefined-types) of its own, `NOTE`, or a quote with `fallback: false`; an undefined type keeps its case. |
 | `containerClass` | `"markdown-alert"` | The alert's class, which also starts the title's (`-title`). The stylesheet targets the default. |
 
 ## Install
