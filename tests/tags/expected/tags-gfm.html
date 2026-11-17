@@ -1,0 +1,43 @@
+<!-- @case: a tag in a table cell -->
+
+<table>
+<thead>
+<tr>
+<th><a class="tag" href="#head">#head</a></th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="tag" href="#first">#first</a></td>
+<td>text <a class="tag" href="#after">#after</a></td>
+</tr>
+<tr>
+<td><code>#code</code></td>
+<td><a href="url">#link</a></td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: a tag after an escaped pipe in a table cell -->
+
+<table>
+<thead>
+<tr>
+<th>Cell</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="tag" href="#a">#a</a>|b and |#c</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: a bare url with a fragment is never a tag -->
+
+<p><a href="https://example.com/#fragment">https://example.com/#fragment</a> and <a href="http://www.example.com/#frag">www.example.com/#frag</a></p>
+
+<!-- @case: a tag beside a bare url -->
+
+<p><a class="tag" href="#before">#before</a> <a href="https://example.com">https://example.com</a> <a class="tag" href="#after">#after</a></p>
