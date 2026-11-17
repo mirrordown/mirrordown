@@ -65,9 +65,17 @@ const canonicalReferences = (html: string): string => {
 
 // Engines differ in the line breaks they put between block tags (markdown-it writes one after each block, hast writes none), so whitespace between two tags is dropped when it holds a line break. Nothing else is: a plain space between inline tags (`</em> <code>`) and a non-breaking space (`<li>&nbsp;</li>`, which `\s` would match) are content, and an engine that loses either must fail. A soft line break between two inline tags is the one case this still hides.
 export function normalizeHtml(html: string): string {
-  return canonicalReferences(html)
-    .replace(/>[ \t\f]*[\n\r][ \t\n\f\r]*</g, "><")
-    .replace(/^[ \t\n\f\r]+|[ \t\n\f\r]+$/g, "");
+  const joined = canonicalReferences(html).replace(
+    />[ \t\f]*[\n\r][ \t\n\f\r]*</g,
+    "><"
+  );
+  // The ends are trimmed with a scan, not with `/^[ \t\n\f\r]+|[ \t\n\f\r]+$/g`: that pattern tries the end of the text from every character of a long run of spaces inside it, which took seconds on a 50,000-space run and made every engine look slow.
+  const space = " \t\n\f\r";
+  let start = 0;
+  let end = joined.length;
+  while (start < end && space.includes(joined.charAt(start))) start++;
+  while (end > start && space.includes(joined.charAt(end - 1))) end--;
+  return joined.slice(start, end);
 }
 
 export function parseFixture(
