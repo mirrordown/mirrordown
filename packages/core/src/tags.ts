@@ -13,10 +13,11 @@ export type TagPart = { text: string } | { tag: string };
 
 // A letter, mark or number, `_`, `-`, `/`, the zero-width joiner inside an emoji sequence, or a symbol or pictograph outside ASCII. An ASCII symbol (`$`, `+`, `<`, `|`…) ends a tag as any other ASCII punctuation does.
 const TAG_CHARACTER =
-  /^(?:[\p{L}\p{M}\p{N}_\-/‍]|(?![\0-\x7f])[\p{S}\p{Extended_Pictographic}])$/u;
+  /^(?:[\p{L}\p{M}\p{N}_\-/\u200d]|(?![\0-\x7f])[\p{S}\p{Extended_Pictographic}])$/u;
 const DIGIT = /^\p{Nd}$/u;
 // markdown-it's isWhiteSpace, which the delimiter scans use too: the Unicode spaces, a tab and the line endings.
-const WHITESPACE = /^[\t\n\v\f\r    -   　]$/u;
+const WHITESPACE =
+  /^[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]$/u;
 
 /** The link target `options` give a tag, by its name. */
 export const tagHref =

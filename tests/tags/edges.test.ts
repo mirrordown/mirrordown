@@ -54,8 +54,8 @@ describe("tags: any line ending is whitespace before a tag", () => {
 // The zero-width joiner holds an emoji sequence together (the shared fixture has a family emoji), so it is a tag character. A zero-width space is a format character like any other, and ends a tag.
 describe("tags: the zero-width joiner is a tag character, a zero-width space is not", () => {
   it.each(engines)("%s", (_engine, render) => {
-    expect(normalizeHtml(render(`#a‍b #a​b`))).toBe(
-      `<p><a class="tag" href="#a‍b">#a‍b</a> <a class="tag" href="#a">#a</a>​b</p>`
+    expect(normalizeHtml(render(`#a\u200db #a\u200bb`))).toBe(
+      `<p><a class="tag" href="#a\u200db">#a\u200db</a> <a class="tag" href="#a">#a</a>\u200bb</p>`
     );
   });
 });
