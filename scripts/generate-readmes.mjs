@@ -53,6 +53,7 @@ const slugs = [
   "sup",
   "tab-icons",
   "tabs",
+  "tags",
   "unwrap-images"
 ];
 

@@ -67,7 +67,8 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
   // The link itself is CommonMark's; the internal-link class is optional.
   [`67`, { state: `conforms` }],
 
-  ...all([`51`, `53`, `54`, `55`], { state: `pending`, note: `Tags (W1-B).` }),
+  // Tags: the tags set emits the spec's own markup.
+  ...all([`51`, `53`, `54`, `55`], { state: `conforms` }),
   [`34`, { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }],
   [
     `34-minimal`,
