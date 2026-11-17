@@ -236,6 +236,18 @@ describe("tags: a long run is read in time proportional to its length", () => {
     scanTags(input, new Set(), true);
     expect(performance.now() - started).toBeLessThan(250);
   });
+
+  // markdown-it gives each character reference and each escape a token of its own, so one paragraph can be a run of thousands of tokens holding thousands of tags. Splitting that run has to walk it once, not once per tag: it took 2.6 seconds here when it did.
+  it.each([
+    [`character references`, `&amp; #a `],
+    [`escapes`, `\\* #a `]
+  ])("markdown-it: 10,000 tags among %s", (_name, unit) => {
+    const input = unit.repeat(10_000);
+    const started = performance.now();
+    const html = raw.mdit(input);
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(html.split(`<a class="tag" href="#a">#a</a>`)).toHaveLength(10_001);
+  });
 });
 
 // Smart punctuation rewrites `--` into a dash. markdown-it finds tags before its typographer runs, so the tag keeps `--` in its link and shows the dash in its text. Sätteri rewrites while parsing, before any plugin, and the dash (punctuation outside ASCII) ends the tag; remark with remark-smartypants ahead of it does the same. The guide says to turn smart punctuation off, as the presets do; this pins the difference so it can't drift unnoticed.
