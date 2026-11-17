@@ -81,6 +81,7 @@ md.use(mirrordown, {
 | `sub`               | `~subscript~`                               | `@mirrordown/mdit-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/mdit-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/mdit-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/mdit-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/mdit-tab-icons`          |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/mdit-unwrap-images`      |
 

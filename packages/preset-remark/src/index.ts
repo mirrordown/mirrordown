@@ -61,6 +61,7 @@ import {
   tabsHastHandlers,
   type TabsOptions
 } from "@mirrordown/remd-tabs";
+import { remarkTags, type TagsOptions } from "@mirrordown/remd-tags";
 import {
   rehypeTabIcons,
   type TabIconsOptions
@@ -95,6 +96,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
 }
@@ -179,6 +181,8 @@ export const mirrordown = (
       ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
+      // After attrs, so the `#id` of an attribute block is read as an id before tags are looked for, and after the plugins whose spans a tag can open. Before abbr, as in markdown-it.
+      ...configured(options.tags, remarkTags),
       // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
       ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.
