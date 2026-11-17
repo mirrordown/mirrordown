@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/remd-ins",
   "description": "A remark plugin for insertion syntax (++text++), rendering <ins> elements.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

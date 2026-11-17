@@ -4,6 +4,13 @@
 
 
 
+
+## 0.2.1
+<sub>2026-11-17</sub>
+
+- *(patch)*
+  No change to what `^superscript^` renders. The guide now states what Sätteri's built-in superscript does differently, and that a footnote-style reference with no definition (`[^1] x^2^`) opens a superscript in every engine.
+
 ## 0.2.0
 <sub>2026-10-28</sub>
 
