@@ -95,6 +95,7 @@ export const satteriGithubAlerts =
                 ...(Array.isArray(className) ? className : [])
               ],
               dataAlert: type,
+              ...(alert.metadata ? { dataAlertMetadata: alert.metadata } : {}),
               ...(alert.fold === "+" ? { open: true } : {}),
               ...attributes
             }

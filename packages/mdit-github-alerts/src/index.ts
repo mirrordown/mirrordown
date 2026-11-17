@@ -7,15 +7,13 @@ import {
   DEFAULT_TITLE,
   ICONS,
   createAlertResolver,
+  matchAlertMarker,
   type AlertOptions,
   type AlertType
 } from "@mirrordown/core";
 
 export type { AlertOptions, AlertType };
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
-
-// Groups: 1=type keyword, 2=foldable marker (+/-)
-const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
 
 const isLineBreak = (type: string): boolean =>
   type === "softbreak" || type === "hardbreak";
@@ -93,14 +91,14 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       const firstChild = firstInline.children[0];
       if (firstChild?.type !== "text") continue;
 
-      const match = MARKER_RE.exec(firstChild.content.trimStart());
-      if (!match) continue;
+      // The marker's grammar is shared with every engine.
+      const marker = matchAlertMarker(firstChild.content.trimStart());
+      if (!marker) continue;
 
-      const [marker, keyword, foldMarker] = match;
-      const type = resolve(keyword);
+      const type = resolve(marker.keyword);
       if (!type) continue;
 
-      const isFoldable = foldMarker === "+" || foldMarker === "-";
+      const isFoldable = marker.fold !== undefined;
 
       // The first line is the marker plus an optional title (inline content,
       // formatting included); everything after the first line break, soft or
@@ -169,7 +167,9 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       );
       containerOpen.attrSet("class", containerClass);
       containerOpen.attrSet("data-alert", type);
-      if (foldMarker === "+") containerOpen.attrSet("open", "");
+      if (marker.metadata)
+        containerOpen.attrSet("data-alert-metadata", marker.metadata);
+      if (marker.fold === "+") containerOpen.attrSet("open", "");
       containerOpen.map = tokens[i].map;
       containerOpen.block = true;
       // `attrsQuote` tells mdit-attrs the container's lines still carry a blockquote's `>`, so an attribute line written after the alert without one is the alert's.

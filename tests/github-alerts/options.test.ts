@@ -4,11 +4,13 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { githubAlerts } from "../../packages/mdit-github-alerts/src";
+import { markdownToHtml } from "satteri";
+import { ICONS, githubAlerts } from "../../packages/mdit-github-alerts/src";
 import {
   remarkGithubAlerts,
   githubAlertsHastHandlers
 } from "../../packages/remd-github-alerts/src";
+import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
 import { normalizeHtml } from "../utils/index.js";
 import type { AlertOptions } from "../../packages/mdit-github-alerts/src";
 
@@ -26,6 +28,26 @@ const remd = (options: AlertOptions | undefined, src: string) =>
         .processSync(src)
     )
   );
+
+const sat = (options: AlertOptions | undefined, src: string) =>
+  normalizeHtml(
+    markdownToHtml(src, {
+      features: { gfm: false, frontmatter: false, smartPunctuation: false },
+      mdastPlugins: [satteriGithubAlerts(options)]
+    }).html
+  );
+
+// Every engine's output, which the contract says is the same HTML.
+const all = (options: AlertOptions | undefined, src: string): string[] => [
+  mdit(options, src),
+  remd(options, src),
+  sat(options, src)
+];
+
+const inAll = (html: string): string[] => [html, html, html];
+
+const alertHtml = (type: string, title: string, extra = ""): string =>
+  `<div class="markdown-alert" data-alert="${type}"${extra}><p class="markdown-alert-title" aria-label="${title}">${title}</p><p>Body text.</p></div>`;
 
 const note = "> [!NOTE]\n> Body text.\n";
 const custom = "> [!CUSTOM]\n> Body text.\n";
@@ -105,12 +127,115 @@ describe("github-alerts/options", () => {
     expect(remd(opts, lower)).toContain('data-alert="note"');
   });
 
+  // With `fallback` on, the keyword would be an undefined type instead (see below).
   it("matchCaseInsensitive false: wrong-case keyword passes through", () => {
-    const opts: AlertOptions = { matchCaseInsensitive: false };
+    const opts: AlertOptions = { matchCaseInsensitive: false, fallback: false };
     expect(mdit(opts, note)).toContain("<blockquote>");
     expect(mdit(opts, note)).not.toContain("data-alert");
     expect(remd(opts, note)).toContain("<blockquote>");
     expect(remd(opts, note)).not.toContain("data-alert");
+  });
+
+  // A keyword in the wrong case names no type, so it falls back like any undefined type, case kept: `[!NOTE]` is not a note, and does not take the note's colours.
+  it("matchCaseInsensitive false: wrong-case built-in keyword is an undefined type", () => {
+    const opts: AlertOptions = { matchCaseInsensitive: false, icons: false };
+    expect(all(opts, note)).toStrictEqual(inAll(alertHtml("NOTE", "NOTE")));
+  });
+
+  it("matchCaseInsensitive false: an undefined type keeps its case", () => {
+    const opts: AlertOptions = { matchCaseInsensitive: false, icons: false };
+    expect(all(opts, "> [!Custom Type]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("Custom-Type", "Custom Type"))
+    );
+  });
+
+  // ── fallback ──
+
+  it("fallback false: an undefined type stays a blockquote", () => {
+    const opts: AlertOptions = { fallback: false };
+    expect(all(opts, "> [!custom-type]\n> Body text.\n")).toStrictEqual(
+      inAll("<blockquote><p>[!custom-type]\nBody text.</p></blockquote>")
+    );
+  });
+
+  it("fallback false: built-in and registered types are still alerts", () => {
+    const opts: AlertOptions = {
+      fallback: false,
+      icons: false,
+      types: { release: "release" }
+    };
+    expect(all(opts, note)).toStrictEqual(inAll(alertHtml("note", "Note")));
+    expect(all(opts, "> [!release]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("release", "Release"))
+    );
+  });
+
+  // A fallback type looks like a note, while a type `types` registers has no icon of its own, as before.
+  it("icons: a fallback type takes the note icon, a registered type none", () => {
+    const opts: AlertOptions = { types: { release: "release" } };
+    const [fallback] = all(opts, "> [!custom-type]\n> Body text.\n");
+    const [registered] = all(opts, "> [!release]\n> Body text.\n");
+    expect(fallback).toContain(ICONS.note);
+    expect(registered).not.toContain("<svg");
+    expect(all(opts, "> [!custom-type]\n> Body text.\n")).toStrictEqual(
+      inAll(fallback ?? "")
+    );
+  });
+
+  // ── fallback titles ──
+
+  it("titles: names a fallback type by its normalised identifier", () => {
+    const opts: AlertOptions = {
+      titles: { "custom-type": "My own" },
+      icons: false
+    };
+    expect(all(opts, "> [!custom-type]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("custom-type", "My own"))
+    );
+    expect(all(opts, "> [!Custom Type]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("custom-type", "My own"))
+    );
+  });
+
+  // Only a fallback type reads its dashes as spaces: a registered type keeps the title it had, the type capitalised. A fallback identifier that names a registered type is that type, title and all.
+  it("types: a registered type keeps its capitalised title", () => {
+    const opts: AlertOptions = { types: { x: "my-type" }, icons: false };
+    expect(all(opts, "> [!x]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("my-type", "My-type"))
+    );
+    expect(all(opts, "> [!my-type]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("my-type", "My-type"))
+    );
+    expect(all(opts, "> [!other-type]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("other-type", "Other type"))
+    );
+  });
+
+  // ── types keys ──
+
+  it("types: a key is normalised as a keyword is", () => {
+    const opts: AlertOptions = {
+      types: { " Release  Notes ": "release" },
+      icons: false
+    };
+    expect(all(opts, "> [!release notes]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("release", "Release"))
+    );
+    expect(all(opts, "> [!RELEASE-NOTES]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("release", "Release"))
+    );
+  });
+
+  // ── metadata ──
+
+  it("metadata: on a registered type", () => {
+    const opts: AlertOptions = { types: { release: "release" }, icons: false };
+    expect(all(opts, "> [!release|wide]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("release", "Release", ' data-alert-metadata="wide"'))
+    );
+    expect(all(opts, "> [!release|]\n> Body text.\n")).toStrictEqual(
+      inAll(alertHtml("release", "Release"))
+    );
   });
 
   // â”€â”€ icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

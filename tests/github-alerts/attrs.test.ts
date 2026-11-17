@@ -201,6 +201,15 @@ describe.each(engines)(
         alert(' foo" data-alert="note" id="bar"', "Note", "<p>body</p>")
       ],
       [
+        "with metadata, after the alert's metadata",
+        "> [!NOTE|wide]\n> body\n{.foo #bar}",
+        alert(
+          ' foo" data-alert="note" data-alert-metadata="wide" id="bar"',
+          "Note",
+          "<p>body</p>"
+        )
+      ],
+      [
         "after a body of several blocks",
         "> [!NOTE]\n> body\n>\n> more\n{.foo}",
         alert(' foo" data-alert="note"', "Note", "<p>body</p><p>more</p>")

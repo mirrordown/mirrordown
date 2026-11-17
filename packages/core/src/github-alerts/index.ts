@@ -10,8 +10,33 @@ import { carryEscapes, textEscapes, type TextLikeNode } from "../escapes.js";
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 export type { AlertOptions, AlertType };
 
-// Groups: 1=type keyword, 2=foldable marker (+/-)
-const MARKER_RE = /^\[!([^\]]+)\]([+-])?/;
+// Groups: 1=identifier, 2=metadata (after `|`), 3=foldable marker (+/-). Neither the identifier nor the metadata crosses a line ending: markdown-it ends its text token there, so a marker that did would be one in remark and Sätteri only.
+const MARKER_RE = /^\[!([^\]|\r\n]+)(?:\|([^\]\r\n]*))?\]([+-])?/;
+
+/** An alert marker (`[!TYPE|metadata]+`) at the start of a text, split into its parts. */
+export interface AlertMarker {
+  /** The marker's length in characters, its fold marker included. */
+  length: number;
+  /** The identifier as written, before it is normalised and resolved. */
+  keyword: string;
+  /** The text after `|`, trimmed: `""` when there is none. */
+  metadata: string;
+  /** `+` (open) or `-` (closed) for a foldable alert, else `undefined`. */
+  fold: `+` | `-` | undefined;
+}
+
+/** The alert marker at the very start of `text`, or `null` when it does not open with one. */
+export const matchAlertMarker = (text: string): AlertMarker | null => {
+  const match = MARKER_RE.exec(text);
+  if (!match) return null;
+  const [marker, keyword = ``, metadata = ``, fold] = match;
+  return {
+    length: marker.length,
+    keyword,
+    metadata: metadata.trim(),
+    fold: fold === `+` || fold === `-` ? fold : undefined
+  };
+};
 
 /** Whether a source line opens an alert (`> [!NOTE]`), after its `>` markers and indentation, whether or not the alerts plugin reads it: a block that takes the quote after it as more of its content (a step body) leaves an alert be. */
 export const isAlertMarkerLine = (line: string): boolean =>
@@ -19,6 +44,9 @@ export const isAlertMarkerLine = (line: string): boolean =>
 
 const capitalize = (s: string): string =>
   s.charAt(0).toUpperCase() + s.slice(1);
+
+// An identifier no type is registered for is still an alert when it is made only of letters, marks, numbers, `_` and `-`. It becomes the `data-alert` value, and this keeps the characters the engines escape differently out of that attribute.
+const FALLBACK_TYPE = /^[\p{L}\p{M}\p{N}_-]+$/u;
 
 /** How an alert keyword resolves under a plugin's options. */
 export interface AlertResolver {
@@ -41,38 +69,55 @@ export const createAlertResolver = (
     titles = {},
     matchCaseInsensitive = true,
     icons = true,
-    containerClass = `markdown-alert`
+    containerClass = `markdown-alert`,
+    fallback = true
   } = options;
-  // Own properties only, wherever a keyword or type from the document is the key: `constructor` and `toString` are members of every object, and are not alerts.
+  // Own properties only, wherever a keyword or type from the document is the key: `constructor` and `toString` are members of every object, and are not types anyone registered.
   const own = <V>(
     map: Partial<Record<string, V>>,
     key: string
   ): V | undefined => (Object.hasOwn(map, key) ? map[key] : undefined);
-  // A keyword is lowercased before the lookup, so the keys of `options.types` are too.
+  // As Obsidian reads a type: `[! My type ]` is `my-type`.
+  const normalise = (keyword: string): string => {
+    const id = keyword.trim().replace(/\s+/g, `-`);
+    return matchCaseInsensitive ? id.toLowerCase() : id;
+  };
+  // A keyword is normalised before the lookup, so the keys of `options.types` are too.
   const aliasMap: Record<string, string> = {
     ...ALERT_ALIASES,
-    ...(matchCaseInsensitive
-      ? Object.fromEntries(
-          Object.entries(extraTypes).map(([key, type]) => [
-            key.toLowerCase(),
-            type
-          ])
-        )
-      : extraTypes)
+    ...Object.fromEntries(
+      Object.entries(extraTypes).map(([key, type]) => [normalise(key), type])
+    )
   };
+  // A type that `options.types` adds keeps the title and the lack of an icon it had before undefined types fell back, and a fallback identifier that names such a type is that type, rendered the same.
+  const registered = new Set(Object.values(extraTypes));
   // Titles may name user-defined types from `options.types` too.
   const customTitles: Partial<Record<string, string>> = titles;
   const isAlertType = (type: string): type is AlertType =>
     Object.hasOwn(DEFAULT_TITLE, type);
   return {
-    resolve: (keyword) =>
-      own(aliasMap, matchCaseInsensitive ? keyword.toLowerCase() : keyword),
-    // A user-defined type may have no default title; capitalize the keyword as a last resort.
+    resolve: (keyword) => {
+      const id = normalise(keyword);
+      if (id === ``) return undefined;
+      return (
+        own(aliasMap, id) ??
+        (fallback && FALLBACK_TYPE.test(id) ? id : undefined)
+      );
+    },
+    // A user-defined type may have no default title; capitalize the type as a last resort, and a fallback type reads as words (`custom-type` is "Custom type").
     titleFor: (type) =>
       own(customTitles, type) ??
       (isAlertType(type) ? DEFAULT_TITLE[type] : undefined) ??
-      capitalize(type),
-    iconFor: (type) => (icons && isAlertType(type) ? ICONS[type] : ``),
+      capitalize(registered.has(type) ? type : type.replaceAll(`-`, ` `)),
+    // A fallback type looks like a note until a stylesheet says otherwise.
+    iconFor: (type) =>
+      !icons
+        ? ``
+        : isAlertType(type)
+          ? ICONS[type]
+          : registered.has(type)
+            ? ``
+            : ICONS.note,
     containerClass
   };
 };
@@ -91,6 +136,8 @@ export interface PhrasingLike {
 export interface AlertParagraph<N extends PhrasingLike> {
   /** The `[!KEYWORD]` text, before alias resolution. */
   keyword: string;
+  /** The text after `|` in the marker (`[!KEYWORD|metadata]`), trimmed: `""` when there is none. */
+  metadata: string;
   /** `+` (open) or `-` (closed) for a foldable alert, else `undefined`. */
   fold: `+` | `-` | undefined;
   /** The first line after the marker: the custom title, formatting included. */
@@ -159,18 +206,18 @@ export const splitAlertParagraph = <N extends PhrasingLike>(
   const [first, ...rest] = children;
   if (first?.type !== `text` || first.value === undefined) return null;
   const opening = first.value.trimStart();
-  const match = MARKER_RE.exec(opening);
-  if (!match) return null;
-  const [, keyword = ``, foldMarker] = match;
+  const marker = matchAlertMarker(opening);
+  if (!marker) return null;
+  const { keyword, metadata } = marker;
   const start = first.value.length - opening.length;
   const escaped =
     source === undefined ? new Set<number>() : textEscapes(first, source);
-  const bracketed = keyword.length + 3;
+  const bracketed = marker.length - (marker.fold ? 1 : 0);
   for (let i = 0; i < bracketed; i++) {
     if (escaped.has(start + i)) return null;
   }
   // An escaped `+` or `-` is the title's first character.
-  const fold = escaped.has(start + bracketed) ? undefined : foldMarker;
+  const fold = escaped.has(start + bracketed) ? undefined : marker.fold;
 
   const line: N[] = [];
   const body: N[] = [];
@@ -203,7 +250,8 @@ export const splitAlertParagraph = <N extends PhrasingLike>(
 
   return {
     keyword,
-    fold: fold === `+` || fold === `-` ? fold : undefined,
+    metadata,
+    fold,
     titleNodes,
     titleText: plainText(titleNodes).trim(),
     bodyNodes: body.filter((n) => n.type !== `text` || n.value !== ``)
