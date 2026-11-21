@@ -1,14 +1,12 @@
-import { parseImageSize } from "@mirrordown/core";
+import { parseImageSize, type ImageSize } from "@mirrordown/core";
 import {
   defineMdastPlugin,
   type MdastPluginInstance,
-  type MdastVisitorContext,
   type PluginFactoryContext
 } from "satteri";
 
 type ImageVisitor = NonNullable<MdastPluginInstance["image"]>;
 type ImageReferenceVisitor = NonNullable<MdastPluginInstance["imageReference"]>;
-type Image = Parameters<ImageVisitor>[0] | Parameters<ImageReferenceVisitor>[0];
 
 /**
  * The plugin's definition: only the keys it defines, with synchronous visitors, so `markdownToHtml` returns its result directly.
@@ -19,22 +17,22 @@ export interface ImageSizePlugin {
   imageReference: (...args: Parameters<ImageReferenceVisitor>) => void;
 }
 
-const size = (node: Image, ctx: MdastVisitorContext): void => {
-  const found = parseImageSize(node.alt ?? ``);
-  if (!found) return;
-  ctx.setField(node, `alt`, found.description);
-  const data: Record<string, unknown> = { ...node.data };
-  // The size goes before the attributes Sätteri's `attributes` feature read from a block, whose values win: the order markdown-it and remark write too.
+// An image's data with the size in its `hProperties`, before the attributes Sätteri's `attributes` feature read from a block, whose values win: the order markdown-it and remark write too.
+const sizedData = (
+  data: object | undefined,
+  size: ImageSize
+): Record<string, unknown> => {
+  const current: Record<string, unknown> = { ...data };
   const authored =
-    typeof data[`hProperties`] === `object` ? data[`hProperties`] : undefined;
-  ctx.setProperty(node, `data`, {
-    ...data,
+    typeof current.hProperties === `object` ? current.hProperties : undefined;
+  return {
+    ...current,
     hProperties: {
-      width: found.width,
-      ...(found.height === undefined ? {} : { height: found.height }),
+      width: size.width,
+      ...(size.height === undefined ? {} : { height: size.height }),
       ...authored
     }
-  });
+  };
 };
 
 /**
@@ -44,6 +42,17 @@ export const satteriImageSize =
   (): ((ctx: PluginFactoryContext) => ImageSizePlugin) => () =>
     defineMdastPlugin({
       name: `image-size`,
-      image: size,
-      imageReference: size
+      image(node, ctx) {
+        const size = parseImageSize(node.alt ?? ``);
+        if (!size) return;
+        ctx.setField(node, `alt`, size.description);
+        ctx.setField(node, `data`, sizedData(node.data, size));
+      },
+      // A reference keeps its own label and identifier, which find its definition.
+      imageReference(node, ctx) {
+        const size = parseImageSize(node.alt ?? ``);
+        if (!size) return;
+        ctx.setField(node, `alt`, size.description);
+        ctx.setField(node, `data`, sizedData(node.data, size));
+      }
     });

@@ -89,7 +89,7 @@ describe("image-size in Astro's processors: a remote image with a width alone", 
     expect(pipelineProps(code)).toEqual({ ...props, inferSize: true });
   });
 
-  it("Sätteri does not", async () => {
+  it("sätteri does not", async () => {
     const { code } = await (
       await processors[1][1]()
     ).render(input, {

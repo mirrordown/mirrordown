@@ -40,12 +40,12 @@ const remark = (plugins: Pluggable[], input: string): string =>
     )
   );
 const satteri = (
-  mdastPlugins: Array<
+  mdastPlugins: (
     | ReturnType<typeof satteriGithubAlerts>
     | ReturnType<typeof satteriImageSize>
     | ReturnType<typeof satteriPromptPreview>
     | ReturnType<typeof satteriRuby>
-  >,
+  )[],
   input: string
 ): string =>
   normalizeHtml(
@@ -134,7 +134,7 @@ describe("image-size before alerts", () => {
     );
   });
 
-  it("Sätteri labels it without the size listed before alerts, and with it listed after", () => {
+  it("sätteri labels it without the size listed before alerts, and with it listed after", () => {
     expect(
       label(satteri([satteriImageSize(), satteriGithubAlerts()], input))
     ).toBe("b");
