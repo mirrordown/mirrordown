@@ -52,6 +52,73 @@ Attribute blocks are read before tags. With the [`attrs`](/guide/plugins/attrs) 
 - Smart punctuation rewrites `--` as a dash, and Astro turns it on by default (`smartypants` for remark, `smartPunctuation` for Sätteri). markdown-it finds tags before its typographer runs, so `#a--b` keeps `--` in its link and shows a dash in its text; remark and Sätteri see the dash, which ends the tag at `#a`. Turn smart punctuation off, or use a Mirrordown preset, which does.
 - The remark plugin reads escapes from the source, so it needs the file: `processor.runSync(tree)` on a tree alone reads `\#tag` as a tag.
 
+## A document's tags
+
+Each plugin records the tags a document holds, for a site's tag pages or a list of tags beside a note. The list holds each tag's name without its `#`, once, in the order the tags first appear in the document. Two tags are the same tag when they are equal ignoring case, as Obsidian compares them, and the list keeps the casing written first: `#Inbox` and `#inbox` are one entry, `Inbox`. A `#` that renders as text (in code, in a link's text, escaped) is not in it. The list is always an array, empty for a document without tags, and is set afresh for every document. Each engine keeps it with the rest of a document's data:
+
+% Remark
+> `file.data.tags`, on the file the processor returns:
+>
+> ```ts
+> const file = await processor.process("Notes from the #meeting for #Inbox and #inbox.");
+> file.data.tags; // ["meeting", "Inbox"]
+> ```
+% Markdown-It
+> `env.tags`, on the `env` object passed to `md.render`:
+>
+> ```ts
+> const env = {};
+> md.render("Notes from the #meeting for #Inbox and #inbox.", env);
+> env.tags; // ["meeting", "Inbox"]
+> ```
+% Sätteri
+> `ctx.data.tags`, which `markdownToHtml` returns as `data.tags`:
+>
+> ```ts
+> const { data } = markdownToHtml("Notes from the #meeting for #Inbox and #inbox.", {
+>   mdastPlugins: [satteriTags()],
+> });
+> data.tags; // ["meeting", "Inbox"]
+> ```
+
+The list follows the document as each engine's plugins have built it by the time the tags plugin runs, so two combinations give the same links but different lists. markdown-it's and Sätteri's tabs plugins put every tab label before the panels, as the HTML does, so the tags of later labels come before those of earlier panels, while remark lists them as written. And an abbreviation's definition (`*[HTML]: Hyper #x`) is read before any tag in markdown-it, while in remark and Sätteri it is a paragraph until the abbr plugin, listed after the tags plugin, removes it, so the tag in it is listed there.
+
+Each of the three packages also exports two helpers for building tag pages from the list:
+
+- `tagKey(name)` says which tag a name is: the name in lower case, as Obsidian compares tags. Key a site's tag pages by it.
+- `tagAncestors(name)` gives a nested tag and the tags it is nested under, outermost first: `tagAncestors("inbox/to-read")` is `["inbox", "inbox/to-read"]`. Obsidian counts a note tagged `#inbox/to-read` under `inbox` too, so a site lists it on both pages. Empty segments are skipped, so `a//b` gives `["a", "a//b"]`.
+
+```ts
+// The tag pages a note tagged #Inbox/To-Read and #work is listed on.
+new Set(["Inbox/To-Read", "work"].flatMap(tagAncestors).map(tagKey));
+// Set { "inbox", "inbox/to-read", "work" }
+```
+
+### Astro
+
+In Astro, the remark and Sätteri plugins also keep the page's frontmatter `tags` up to date as the note's tags, the way Obsidian counts them: the tags the frontmatter lists, then the document's tags that are not among them. That frontmatter is the `remarkPluginFrontmatter` that `render(entry)` returns, so its `tags` holds the merged list:
+
+```md
+---
+title: Weekly notes
+tags: [work, "#project"]
+---
+
+Filed under #Work and #inbox/to-read.
+```
+
+```astro
+---
+import { getEntry, render } from "astro:content";
+
+const entry = await getEntry("notes", "weekly");
+const { Content, remarkPluginFrontmatter } = await render(entry);
+// remarkPluginFrontmatter.tags is ["work", "project", "inbox/to-read"]
+---
+```
+
+The frontmatter's `tags` is read as Obsidian reads the property: a list of strings or a single string, each with a leading `#` dropped. A frontmatter without `tags`, or with `tags:` left empty, gets the document's tags, an empty list when it has none. When `tags` holds anything else (a number, an object, a list with something other than a string in it), the frontmatter is left as it is. markdown-it has no frontmatter object, and records `env.tags` only.
+
 ## Usage
 
 % Remark
