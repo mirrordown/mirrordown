@@ -32,6 +32,7 @@ import { steps, type StepsOptions } from "@mirrordown/mdit-steps";
 import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
+import { tags, type TagsOptions } from "@mirrordown/mdit-tags";
 import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
 
@@ -61,6 +62,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
 }
@@ -115,6 +117,8 @@ export const mirrordown = (
   configured(options.tabs, tabs);
   // After tabs and attrs: it reads the labels they leave.
   configured(tabIconsSetting, tabIcons);
+  // Registered after abbr and alerts: each puts a core rule straight after `linkify`, where the one registered last runs first. Tags are read before abbreviations are marked, as in the other presets, and before an alert's title is labelled.
+  configured(options.tags, tags);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

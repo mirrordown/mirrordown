@@ -68,6 +68,11 @@ import {
   type TabsPlugin
 } from "@mirrordown/sat-tabs";
 import {
+  satteriTags,
+  type TagsOptions,
+  type TagsPlugin
+} from "@mirrordown/sat-tags";
+import {
   satteriTabIcons,
   type TabIconsOptions,
   type TabIconsPlugin
@@ -114,6 +119,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
@@ -141,6 +147,7 @@ export interface MirrordownPreset {
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
     | Factory<TabsPlugin>
+    | Factory<TagsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -203,6 +210,8 @@ export const mirrordown = (
         : [satteriSteps(settings(options.steps))]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.
+      ...(options.tags === false ? [] : [satteriTags(settings(options.tags))]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),
