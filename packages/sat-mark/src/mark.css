@@ -1,0 +1,159 @@
+/*
+  Highlight colours — default stylesheet
+  --------------------------------------
+  A highlight written with a colour emoji straight after its opening `==`
+  renders as <mark data-highlight="red"> (or orange, yellow, green, blue,
+  purple). These rules colour those six; a plain <mark>, and one with any
+  other data-highlight, keeps the browser's own style. All of them live
+  inside @layer markdown-mark, so any unlayered consumer CSS overrides them
+  without needing !important.
+
+  Each colour is a translucent tint behind the text, which keeps the color
+  of the text around it, so it reads on a light and on a dark page. The tint
+  is a light-dark() pair, so it follows the nearest `color-scheme`: set
+  `color-scheme: light dark` on :root (or a container) for the dark one.
+
+  Each colour comes from a public token set on the highlight or any ancestor
+  (--markdown-mark-<colour>), or else the default here. Each falls back on its
+  own, so overriding one keeps the rest, and an invalid value is ignored
+  rather than leaving the highlight without a background.
+
+    :root { --markdown-mark-red: oklch(0.7 0.2 25 / 40%); }
+*/
+
+/*
+  How an invalid value falls back: each default is the initial value of a
+  registered private property, one for the light side of the pair and one
+  for the dark, and the highlight reads its public token into both. A
+  registered color property given something that isn't a color, or nothing,
+  takes its initial value, so the highlight keeps the default pair. (With
+  var() alone, an invalid value would unset the background.) A token that is
+  itself a light-dark() pair resolves on the highlight, so it still follows
+  the color scheme. The registrations are global, so they're named after the
+  plugin.
+*/
+@property --_mark-red-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.82 0.14 25 / 45%);
+}
+@property --_mark-red-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.55 0.19 25 / 45%);
+}
+@property --_mark-orange-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.86 0.14 55 / 50%);
+}
+@property --_mark-orange-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0.16 55 / 45%);
+}
+@property --_mark-yellow-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.92 0.16 85 / 60%);
+}
+@property --_mark-yellow-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.68 0.15 85 / 40%);
+}
+@property --_mark-green-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.86 0.15 145 / 45%);
+}
+@property --_mark-green-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.58 0.15 145 / 45%);
+}
+@property --_mark-blue-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.82 0.11 255 / 45%);
+}
+@property --_mark-blue-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.55 0.17 255 / 50%);
+}
+@property --_mark-purple-light {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.82 0.12 295 / 45%);
+}
+@property --_mark-purple-dark {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.55 0.18 295 / 50%);
+}
+
+@layer markdown-mark {
+  /* red — ~25°, as the alerts' caution */
+  mark[data-highlight="red"] {
+    --_mark-red-light: var(--markdown-mark-red);
+    --_mark-red-dark: var(--markdown-mark-red);
+    background-color: light-dark(var(--_mark-red-light), var(--_mark-red-dark));
+    color: inherit;
+  }
+
+  /* orange — ~55°, between red and the alerts' amber warning */
+  mark[data-highlight="orange"] {
+    --_mark-orange-light: var(--markdown-mark-orange);
+    --_mark-orange-dark: var(--markdown-mark-orange);
+    background-color: light-dark(
+      var(--_mark-orange-light),
+      var(--_mark-orange-dark)
+    );
+    color: inherit;
+  }
+
+  /* yellow — ~85°, as the alerts' question */
+  mark[data-highlight="yellow"] {
+    --_mark-yellow-light: var(--markdown-mark-yellow);
+    --_mark-yellow-dark: var(--markdown-mark-yellow);
+    background-color: light-dark(
+      var(--_mark-yellow-light),
+      var(--_mark-yellow-dark)
+    );
+    color: inherit;
+  }
+
+  /* green — ~145°, as the alerts' tip */
+  mark[data-highlight="green"] {
+    --_mark-green-light: var(--markdown-mark-green);
+    --_mark-green-dark: var(--markdown-mark-green);
+    background-color: light-dark(
+      var(--_mark-green-light),
+      var(--_mark-green-dark)
+    );
+    color: inherit;
+  }
+
+  /* blue — ~255°, as the alerts' note */
+  mark[data-highlight="blue"] {
+    --_mark-blue-light: var(--markdown-mark-blue);
+    --_mark-blue-dark: var(--markdown-mark-blue);
+    background-color: light-dark(
+      var(--_mark-blue-light),
+      var(--_mark-blue-dark)
+    );
+    color: inherit;
+  }
+
+  /* purple — ~295°, as the alerts' important */
+  mark[data-highlight="purple"] {
+    --_mark-purple-light: var(--markdown-mark-purple);
+    --_mark-purple-dark: var(--markdown-mark-purple);
+    background-color: light-dark(
+      var(--_mark-purple-light),
+      var(--_mark-purple-dark)
+    );
+    color: inherit;
+  }
+}

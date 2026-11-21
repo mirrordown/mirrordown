@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/mirrordown/mirrordown.git"
   },
+  "style": "./dist/mark.css",
   "files": [
     "dist"
   ],
@@ -17,6 +18,10 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./styles": {
+      "development": "./src/mark.css",
+      "default": "./dist/mark.css"
     }
   },
   "dependencies": {
