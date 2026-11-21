@@ -1,7 +1,11 @@
 import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
-import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
+import {
+  createDelimitedTransform,
+  maskTreeEscapes,
+  takeHighlightColour
+} from "@mirrordown/core";
 
 /** Optional data carried by a {@link Mark} node. */
 export interface MarkData extends Data {}
@@ -21,11 +25,17 @@ export const remarkMark: Plugin<[], Root> = () => {
   // The scan is shared with the Sätteri plugin through @mirrordown/core.
   const transform = createDelimitedTransform<PhrasingContent>(`=`, {
     text: (value) => ({ type: `text`, value }),
-    wrap: (children): Mark => ({
-      type: `mark`,
-      children,
-      data: { hName: `mark` }
-    })
+    wrap: (children): Mark => {
+      // Under the key the attrs plugin writes, so a `data-highlight` in an attribute block replaces it.
+      const colour = takeHighlightColour(children);
+      return {
+        type: `mark`,
+        children,
+        data: colour
+          ? { hName: `mark`, hProperties: { "data-highlight": colour } }
+          : { hName: `mark` }
+      };
+    }
   });
 
   const transformer: Transformer<Root> = (tree, file) => {

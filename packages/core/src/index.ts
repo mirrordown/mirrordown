@@ -22,6 +22,12 @@ export {
   type PhrasingLike
 } from "./github-alerts/index.js";
 export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
+export {
+  HIGHLIGHT_COLOURS,
+  splitHighlightColour,
+  takeHighlightColour,
+  type HighlightColour
+} from "./highlight-colours.js";
 export { createKbdTransform } from "./kbd.js";
 export {
   scanSpans,

@@ -1,7 +1,8 @@
 import {
   createAttributeReader,
   createDelimitedTransform,
-  scanSpans
+  scanSpans,
+  takeHighlightColour
 } from "@mirrordown/core";
 import {
   defineMdastPlugin,
@@ -35,7 +36,17 @@ export const satteriMark =
         : undefined;
     const transform = createDelimitedTransform<MdastTarget>(`=`, {
       text: (value) => ({ type: `text`, value }),
-      wrap: (children) => ({ type: `mark`, data: { hName: `mark` }, children })
+      wrap: (children) => {
+        // Under the key Sätteri's attribute blocks write, so a `data-highlight` in one replaces it.
+        const colour = takeHighlightColour(children);
+        return {
+          type: `mark`,
+          data: colour
+            ? { hName: `mark`, hProperties: { "data-highlight": colour } }
+            : { hName: `mark` },
+          children
+        };
+      }
     });
     const seen = new WeakSet<object>();
     return defineMdastPlugin({

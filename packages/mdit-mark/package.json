@@ -19,6 +19,9 @@
       "import": "./dist/index.mjs"
     }
   },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
+  },
   "devDependencies": {
     "@types/markdown-it": "catalog:",
     "markdown-it": "catalog:"
