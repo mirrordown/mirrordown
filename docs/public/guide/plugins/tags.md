@@ -46,6 +46,7 @@ A backslash keeps a `#` as text (`\#tag`), and so does writing it as a character
 Attribute blocks are read before tags. With the [`attrs`](/guide/plugins/attrs) plugin or Sätteri's `attributes` feature on, `{.wide #intro}` gives an id and holds no tag, and a tag is plain text to a block: `#tag{.x}` is read the way `word{.x}` is, with the tag ending at the `{` and taking no attributes itself. Without attributes, a block is ordinary text and the `#intro` in it is a tag. A few things depend on the engine or the order of the plugins:
 
 - In remark, list `remarkTags` after `remarkAttrs`: listed before it, a tag inside a block breaks the block, which then stays text. markdown-it's plugin is a core rule after `linkify`, so it runs after attrs whichever is added first, and Sätteri reads attributes in its parser, before any plugin.
+- With the [`kbd`](/guide/plugins/kbd) plugin, a key's content does not open with a tag: `[[#heading]]` is how an Obsidian note links to one of its own headings, so it stays a key holding `#heading`, and adds no tag to the page. A tag after a space inside a key (`[[Fn #tag]]`) is still a tag.
 - In remark and Sätteri, list the tags plugin after the kbd, del, ins, mark and spoiler plugins. They build their elements after parsing; listed before them, the tags plugin reads `==#tag==` as text, where the `#` follows a `=`. In markdown-it the order doesn't matter.
 - The abbr plugins mark a defined term in any text, a tag's link included. Run the tags plugin first to keep every tag, and the term is marked inside its link: in markdown-it add `tags` after `abbr` (a core rule added later runs earlier), in remark and Sätteri list the tags plugin before the abbr plugin. In the other order a tag whose name holds a term is split at it, so `#HTML` becomes `#` and an abbreviation.
 - A tag can start an alert's title (`> [!NOTE] #tag`). In Sätteri, list the tags plugin before the alerts plugin: once an alert is built its icon starts the title, and a tag written after the marker is then text. markdown-it and remark give the tag in either order.
@@ -96,7 +97,7 @@ new Set(["Inbox/To-Read", "work"].flatMap(tagAncestors).map(tagKey));
 
 ### Astro
 
-In Astro, the remark and Sätteri plugins also keep the page's frontmatter `tags` up to date as the note's tags, the way Obsidian counts them: the tags the frontmatter lists, then the document's tags that are not among them. That frontmatter is the `remarkPluginFrontmatter` that `render(entry)` returns, so its `tags` holds the merged list:
+In Astro, the remark and Sätteri plugins also keep the page's frontmatter `tags` up to date as the note's tags, the way Obsidian counts them: the tags the frontmatter lists, then the document's tags that are not among them. A page whose text adds no tag keeps its frontmatter as written. That frontmatter is the `remarkPluginFrontmatter` that `render(entry)` returns, so its `tags` holds the merged list:
 
 ```md
 ---
