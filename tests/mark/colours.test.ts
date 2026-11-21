@@ -114,7 +114,7 @@ describe("highlight colours beside the other span sets: the colour is the highli
     ["in reverse order", true]
   ] as const;
   const inOrder = <T>(list: T[], reverse: boolean): T[] =>
-    reverse ? list.toReversed() : list;
+    reverse ? [...list].reverse() : list;
 
   describe.each(orders)("%s", (_order, reverse) => {
     const md = inOrder([kbd, del, ins, mark, spoiler], reverse).reduce(
