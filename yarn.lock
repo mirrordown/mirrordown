@@ -1518,7 +1518,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
+"@mirrordown/mdit-task-lists@workspace:^, @mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists"
   dependencies:
@@ -1570,6 +1570,7 @@ __metadata:
     "@mirrordown/mdit-sup": "workspace:^"
     "@mirrordown/mdit-tab-icons": "workspace:^"
     "@mirrordown/mdit-tabs": "workspace:^"
+    "@mirrordown/mdit-task-lists": "workspace:^"
     "@mirrordown/mdit-unwrap-images": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
@@ -1607,6 +1608,7 @@ __metadata:
     "@mirrordown/remd-sup": "workspace:^"
     "@mirrordown/remd-tab-icons": "workspace:^"
     "@mirrordown/remd-tabs": "workspace:^"
+    "@mirrordown/remd-task-lists": "workspace:^"
     "@mirrordown/remd-unwrap-images": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
@@ -1643,6 +1645,7 @@ __metadata:
     "@mirrordown/sat-steps": "workspace:^"
     "@mirrordown/sat-tab-icons": "workspace:^"
     "@mirrordown/sat-tabs": "workspace:^"
+    "@mirrordown/sat-task-lists": "workspace:^"
     "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
@@ -2003,7 +2006,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-task-lists@workspace:packages/remd-task-lists":
+"@mirrordown/remd-task-lists@workspace:^, @mirrordown/remd-task-lists@workspace:packages/remd-task-lists":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-task-lists@workspace:packages/remd-task-lists"
   dependencies:
@@ -2276,7 +2279,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/sat-task-lists@workspace:packages/sat-task-lists":
+"@mirrordown/sat-task-lists@workspace:^, @mirrordown/sat-task-lists@workspace:packages/sat-task-lists":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-task-lists@workspace:packages/sat-task-lists"
   dependencies:

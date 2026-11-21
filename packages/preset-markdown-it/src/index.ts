@@ -32,6 +32,7 @@ import { steps, type StepsOptions } from "@mirrordown/mdit-steps";
 import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
+import { taskLists, type TaskListsOptions } from "@mirrordown/mdit-task-lists";
 import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
 
@@ -62,6 +63,7 @@ export interface MirrordownOptions {
   sup?: boolean;
   tabs?: boolean | TabsOptions;
   tabIcons?: boolean | TabIconsOptions;
+  taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
 }
 
@@ -99,6 +101,8 @@ export const mirrordown = (
         };
 
   on(options.abbr, abbr);
+  // Before prompt: both read a list item's text right after inline parsing, and markdown-it runs the rules added there in the reverse of the order they were added, so prompt has to parse a preview's text before this looks for boxes in it. Its rule also runs before attrs and abbr wherever it is added, so they read an item's text without its box, as they read GFM's tasks in the other engines.
+  configured(options.taskLists, taskLists);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
   on(options.definitionList, dl);

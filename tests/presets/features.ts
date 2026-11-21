@@ -74,6 +74,7 @@ export const features: ReadonlyArray<{
     input: "% npm\n> a\n% pnpm\n> b",
     marker: "markdown-tab-icon"
   },
+  { key: "taskLists", input: "- [?] Question", marker: 'data-task="?"' },
   {
     key: "unwrapImages",
     input: "![Alt](pic.png)",
