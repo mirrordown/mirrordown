@@ -1,9 +1,17 @@
 import type { PluginWithOptions } from "markdown-it";
 import type StateCore from "markdown-it/lib/rules_core/state_core.mjs";
 import type Token from "markdown-it/lib/token.mjs";
-import { scanTags, tagHref, type TagsOptions } from "@mirrordown/core";
+import {
+  createTagCollector,
+  scanTags,
+  tagAncestors,
+  tagHref,
+  tagKey,
+  type TagsOptions
+} from "@mirrordown/core";
 
 export type { TagsOptions };
+export { tagAncestors, tagKey };
 
 // Until `text_join`, which runs after this rule, an escaped character or a character reference is a `text_special` token of its own, inside the run of text around it.
 const isText = (token: Token): boolean =>
@@ -26,12 +34,17 @@ const contentBefore = (
 };
 
 /**
- * markdown-it plugin for tags (`#tag`), rendering each as `<a class="tag" href="#tag">#tag</a>`. What a tag is and where one may start are shared with the remark and Sätteri plugins through `@mirrordown/core`. It is a core rule after `linkify`, so the attrs plugin has taken its blocks first, and a URL linkify found is a link a tag is never read in.
+ * markdown-it plugin for tags (`#tag`), rendering each as `<a class="tag" href="#tag">#tag</a>`. What a tag is and where one may start are shared with the remark and Sätteri plugins through `@mirrordown/core`. It is a core rule after `linkify`, so the attrs plugin has taken its blocks first, and a URL linkify found is a link a tag is never read in. The document's tags, in the order they first appear, are in `env.tags` after `md.render(source, env)`.
  */
 export const tags: PluginWithOptions<TagsOptions> = (md, options) => {
   const href = tagHref(options);
 
   md.core.ruler.after(`linkify`, `tags`, (state: StateCore) => {
+    const collector = createTagCollector();
+    // `md.parse(source)` called without an `env` has nowhere to keep them.
+    if (state.env) state.env.tags = collector.tags;
+    // Tokens come in document order, so a count of the tags is their place in it.
+    let count = 0;
     for (const block of state.tokens) {
       if (block.type !== `inline` || !block.children) continue;
       const children = block.children;
@@ -106,6 +119,7 @@ export const tags: PluginWithOptions<TagsOptions> = (md, options) => {
             offset += part.text.length;
             continue;
           }
+          collector.add(part.tag, count++);
           const open = new state.Token(`link_open`, `a`, 1);
           open.attrs = [
             [`class`, `tag`],

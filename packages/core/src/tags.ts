@@ -144,3 +144,117 @@ const runEscapes = <N extends TextLikeNode>(
   }
   return escaped;
 };
+
+/** What makes two tags the same tag: Obsidian compares them ignoring case. */
+export const tagKey = (name: string): string => name.toLowerCase();
+
+/** A nested tag and the tags it is nested under, outermost first: `inbox/to-read` gives `["inbox", "inbox/to-read"]`. Obsidian counts a note tagged `#inbox/to-read` under `inbox` too. Empty segments are skipped (`a//b` gives `["a", "a//b"]`), and a name is never listed twice. */
+export const tagAncestors = (name: string): string[] => {
+  const names: string[] = [];
+  // Each `/` that ends a segment that is not empty ends the name of a tag above this one.
+  let start = 0;
+  for (let slash = name.indexOf(`/`); slash >= 0;) {
+    if (slash > start) names.push(name.slice(0, slash));
+    start = slash + 1;
+    slash = name.indexOf(`/`, start);
+  }
+  names.push(name);
+  return names;
+};
+
+// Names kept in the order of the positions they were inserted at, in `names` from index `base` on.
+interface OrderedNames {
+  insert: (name: string, at: number) => void;
+  remove: (key: string, at: number) => void;
+}
+
+const orderedNames = (names: string[], base: number): OrderedNames => {
+  const positions: number[] = [];
+  // The index of the first position after `at`, or with `inclusive`, the first at or after it.
+  const search = (at: number, inclusive: boolean): number => {
+    let low = 0;
+    let high = positions.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      const position = positions[middle] ?? at;
+      if (position < at || (!inclusive && position === at)) low = middle + 1;
+      else high = middle;
+    }
+    return low;
+  };
+  return {
+    // A name given the same position as one already there goes after it.
+    insert: (name, at) => {
+      const index = search(at, false);
+      positions.splice(index, 0, at);
+      names.splice(base + index, 0, name);
+    },
+    remove: (key, at) => {
+      let index = search(at, true);
+      while (
+        index < positions.length &&
+        tagKey(names[base + index] ?? ``) !== key
+      )
+        index++;
+      positions.splice(index, 1);
+      names.splice(base + index, 1);
+    }
+  };
+};
+
+// The tags a frontmatter's `tags` property lists, read as Obsidian reads it: a list of strings or a single string, each without a leading `#`. A frontmatter without the property, or with it empty (`tags:` in YAML, which is `null`), lists none. `undefined` when it holds anything else.
+const listedTags = (value: unknown): string[] | undefined => {
+  const withoutHash = (name: string): string =>
+    name.startsWith(`#`) ? name.slice(1) : name;
+  if (value === undefined || value === null) return [];
+  if (typeof value === `string`) return [withoutHash(value)];
+  if (!Array.isArray(value)) return undefined;
+  const names: unknown[] = value;
+  return names.every((name): name is string => typeof name === `string`)
+    ? names.map(withoutHash)
+    : undefined;
+};
+
+/**
+ * Collects a document's tags in document order. `add` takes the tag's name and a number that grows with the tag's place in the document (its source offset); calls may come in any order. `tags` is the same array throughout, kept in order, one entry per tag by {@link tagKey}, with the casing of the earliest occurrence.
+ *
+ * Given a `frontmatter` object (Astro's, which it returns with the render), the collector also keeps its `tags` up to date as the note's tags the way Obsidian counts them: the tags the frontmatter already lists, then the document's tags that are not among them by {@link tagKey}. A frontmatter whose `tags` holds anything but a string or a list of strings is left as it is.
+ */
+export const createTagCollector = (
+  frontmatter?: unknown
+): { tags: string[]; add: (name: string, at: number) => void } => {
+  const tags: string[] = [];
+  const ordered = orderedNames(tags, 0);
+  // The position each tag's entry has, by its key. A Map, since the keys are the document's text (`constructor`, `__proto__`).
+  const entries = new Map<string, number>();
+  // The inline part of the frontmatter's list, and the keys of the tags the frontmatter lists itself.
+  let note: OrderedNames | undefined;
+  let listedKeys: ReadonlySet<string> = new Set();
+  if (typeof frontmatter === `object` && frontmatter !== null) {
+    const listed = listedTags(
+      `tags` in frontmatter ? frontmatter.tags : undefined
+    );
+    if (listed) {
+      listedKeys = new Set(listed.map(tagKey));
+      note = orderedNames(listed, listed.length);
+      Object.assign(frontmatter, { tags: listed });
+    }
+  }
+  return {
+    tags,
+    add: (name, at) => {
+      const key = tagKey(name);
+      const known = entries.get(key);
+      if (known !== undefined && known <= at) return;
+      // A tag seen again earlier in the document moves to that place and takes the casing written there.
+      entries.set(key, at);
+      const inline = listedKeys.has(key) ? undefined : note;
+      if (known !== undefined) {
+        ordered.remove(key, known);
+        inline?.remove(key, known);
+      }
+      ordered.insert(name, at);
+      inline?.insert(name, at);
+    }
+  };
+};

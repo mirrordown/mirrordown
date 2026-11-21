@@ -222,7 +222,12 @@ describe("tags: a long run is read in time proportional to its length", () => {
     [`50,000 hashes in a row`, `#`.repeat(50_000)],
     [`a hash and 50,000 letters`, `#${`a`.repeat(50_000)}`],
     [`50,000 spaces before a hash`, `x${` `.repeat(50_000)}#a`],
-    [`a hash and 50,000 digits`, `#${`1`.repeat(50_000)}`]
+    [`a hash and 50,000 digits`, `#${`1`.repeat(50_000)}`],
+    // Each one a new entry in the document's list of tags.
+    [
+      `10,000 different tags`,
+      Array.from({ length: 10_000 }, (_, i) => `#t${i}`).join(` `)
+    ]
   ] as const;
 
   describe.each(engines)("%s", (_engine, render) => {

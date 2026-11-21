@@ -57,9 +57,12 @@ export {
   type AbbreviationPart
 } from "./abbr.js";
 export {
+  createTagCollector,
   scanTags,
+  tagAncestors,
   tagChildren,
   tagHref,
+  tagKey,
   type TagNodes,
   type TagPart,
   type TagsOptions
