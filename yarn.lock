@@ -1518,6 +1518,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-unwrap-images@workspace:*, @mirrordown/mdit-unwrap-images@workspace:^, @mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images"
@@ -1991,6 +2003,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/remd-task-lists@workspace:packages/remd-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-task-lists@workspace:packages/remd-task-lists"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
+    "@types/mdast": "catalog:"
+    mdast-util-to-hast: "npm:^13.0.0"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-unwrap-images@workspace:^, @mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images"
@@ -2243,6 +2270,17 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-task-lists@workspace:packages/sat-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-task-lists@workspace:packages/sat-task-lists"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.11.3

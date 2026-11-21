@@ -115,3 +115,15 @@ export {
   type CopyCodeOptions,
   type CopyCodeState
 } from "./copy-code.js";
+export {
+  TASK_MARKERS,
+  createTaskResolver,
+  matchTaskBox,
+  startAfterBox,
+  type TaskBox,
+  type TaskBoxContext,
+  type TaskBoxMatch,
+  type TaskListsOptions,
+  type TaskMarkerResolver,
+  type TaskPoint
+} from "./task-lists.js";
