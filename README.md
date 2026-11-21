@@ -53,11 +53,12 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Images
 
-| Syntax             | HTML                                                                                      | markdown-it                                       | remark                                            | Sätteri                                         | VSCode                                                      |
-| ------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| `![](…img.svg)`    | inlined `<svg>`                                                                           | [mdit-inline-svg](packages/mdit-inline-svg)       | [remd-inline-svg](packages/remd-inline-svg)       | [sat-inline-svg](packages/sat-inline-svg)       | [markdown-inline-svg](extensions/markdown-inline-svg)       |
-| `!![](…img)`       | [`<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | [mdit-lightbox](packages/mdit-lightbox)           | [remd-lightbox](packages/remd-lightbox)           | [sat-lightbox](packages/sat-lightbox)           | [markdown-lightbox](extensions/markdown-lightbox)           |
-| standalone `![]()` | unwrapped `<img>`                                                                         | [mdit-unwrap-images](packages/mdit-unwrap-images) | [remd-unwrap-images](packages/remd-unwrap-images) | [sat-unwrap-images](packages/sat-unwrap-images) | [markdown-unwrap-images](extensions/markdown-unwrap-images) |
+| Syntax               | HTML                                                                                      | markdown-it                                       | remark                                            | Sätteri                                         | VSCode                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| `![](…img.svg)`      | inlined `<svg>`                                                                           | [mdit-inline-svg](packages/mdit-inline-svg)       | [remd-inline-svg](packages/remd-inline-svg)       | [sat-inline-svg](packages/sat-inline-svg)       | [markdown-inline-svg](extensions/markdown-inline-svg)       |
+| `!![](…img)`         | [`<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | [mdit-lightbox](packages/mdit-lightbox)           | [remd-lightbox](packages/remd-lightbox)           | [sat-lightbox](packages/sat-lightbox)           | [markdown-lightbox](extensions/markdown-lightbox)           |
+| standalone `![]()`   | unwrapped `<img>`                                                                         | [mdit-unwrap-images](packages/mdit-unwrap-images) | [remd-unwrap-images](packages/remd-unwrap-images) | [sat-unwrap-images](packages/sat-unwrap-images) | [markdown-unwrap-images](extensions/markdown-unwrap-images) |
+| `![alt\|100x145](…)` | `width` and `height` on the `<img>`                                                       | [mdit-image-size](packages/mdit-image-size)       | [remd-image-size](packages/remd-image-size)       | [sat-image-size](packages/sat-image-size)       | —                                                           |
 
 ### Diagrams
 
@@ -140,6 +141,7 @@ The plugins in this collection are forked and modernized from the following upst
 - [rehype-mermaid](https://github.com/remcohaszing/rehype-mermaid) — the API and test cases `mermaid-pele` follows; [Pele](https://pele.run) renders the diagrams
 - [Vocs](https://vocs.dev/writing/markdown-extensions#file-tree) — the File Tree `file-tree` ports, as a fence rather than a directive; its icons are [Seti UI](https://github.com/jesseweed/seti-ui)'s, and its design and Shiki theme support follow [Pierre's Trees](https://trees.software/)
 - [Vocs](https://vocs.dev/writing/markdown-extensions#prompts) — the Prompts `prompt` ports, as a fence rather than a directive; its service icons are [Lobe Icons](https://github.com/lobehub/lobe-icons)
+- [Obsidian](https://obsidian.md/help/syntax#External+images) — the image size syntax `image-size` reads
 
 ---
 

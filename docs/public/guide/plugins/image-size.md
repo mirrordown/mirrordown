@@ -94,7 +94,7 @@ With the [`attrs`](/guide/plugins/attrs) plugin, or Sätteri's `attributes` feat
 
 ### Other image plugins
 
-- A [lightbox](/guide/plugins/lightbox) image (`!![a|100](…)`) has the size in both places it shows: the thumbnail and the image in the dialog. Two sizes of one image share a dialog, which shows the first.
+- A [lightbox](/guide/plugins/lightbox) image (`!![a|100](…)`) has the size on the page, where it is the thumbnail, and not in the dialog, which shows the image at full size. A host that resizes images from these attributes then makes a small thumbnail and leaves the full-size view alone. Two sizes of one image share a dialog.
 - [Captions](/guide/plugins/caption), [spoilers](/guide/plugins/spoiler) and [unwrap-images](/guide/plugins/unwrap-images) take a sized image like any other.
 - [inline-svg](/guide/plugins/inline-svg) replaces an `.svg` image with the file's own `<svg>`, which keeps the size written in the file: the description's size is lost, and the alt text without it names the SVG.
 - A [spoiler](/guide/plugins/spoiler) written inside a description (`![a ||b|| c|100](…)`) differs by engine, as in any alt text: markdown-it drops its pipes and remark and Sätteri keep them. The size is read in all three.
