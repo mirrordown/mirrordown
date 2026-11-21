@@ -27,7 +27,7 @@ export const tagHref =
     options.href === undefined ? `#${name}` : options.href(name);
 
 /**
- * The pieces of `value`, a run of text, with each tag in it, or `undefined` when it holds none. `escaped` holds the indices of the characters written as a backslash escape or a character reference: a `#` written that way opens nothing, and a character written that way ends a tag before it. `opens` says whether a tag may start at the first character, because the text starts its parent's content or follows a line break; anywhere else, a `#` opens a tag only after whitespace or where another tag ends.
+ * The pieces of `value`, a run of text, with each tag in it, or `undefined` when it holds none. `escaped` holds the indices of the characters written as a backslash escape or a character reference: a `#` written that way opens nothing, a character written that way ends a tag before it, and whitespace written that way does not let a tag start after it. `opens` says whether a tag may start at the first character, because the text starts its parent's content or follows a line break; anywhere else, a `#` opens a tag only after whitespace or where another tag ends.
  */
 export const scanTags = (
   value: string,
@@ -39,8 +39,12 @@ export const scanTags = (
   let last = 0;
   for (let at = value.indexOf(`#`); at >= 0; at = value.indexOf(`#`, at + 1)) {
     if (escaped.has(at)) continue;
+    // Whitespace written as a character reference (`&nbsp;#tag`) is literal text to Obsidian, and no tag follows it.
     const starts =
-      at === 0 ? opens : at === last || WHITESPACE.test(value.charAt(at - 1));
+      at === 0
+        ? opens
+        : at === last ||
+          (WHITESPACE.test(value.charAt(at - 1)) && !escaped.has(at - 1));
     if (!starts) continue;
     // The run of tag characters is taken whole: a tag of digits alone is text, not a shorter tag.
     let end = at + 1;

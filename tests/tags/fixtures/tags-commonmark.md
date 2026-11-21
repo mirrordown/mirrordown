@@ -199,6 +199,6 @@ Setext #tag
 
 \(#tag\) \"#tag
 
-<!-- @case: whitespace written as a reference counts as whitespace -->
+<!-- @case: whitespace written as a reference does not start a tag -->
 
-a&#32;#tag a&nbsp;#tag
+&nbsp;#tag a&#32;#tag a&#x20;#tag a&nbsp;#tag #a&#32;#b and a #tag

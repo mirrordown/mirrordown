@@ -38,7 +38,7 @@ A `#` starts a tag only in three places: at the start of a paragraph, a heading,
 
 Tags are never read in code spans or code blocks, in the text of a link (written, an autolink, a bare URL that GFM or linkify makes a link, a footnote reference), in image alt text, or in raw HTML and HTML blocks. A URL's fragment, as in `https://example.com/#fragment`, is never a tag.
 
-A backslash keeps a `#` as text (`\#tag`), and so does writing it as a character reference (`&#35;tag`). A character written either way inside a name ends the tag before it: `#a\_b` is the tag `#a` and the text `_b`. Whitespace written as a reference (`&nbsp;`) is whitespace like any other.
+A backslash keeps a `#` as text (`\#tag`), and so does writing it as a character reference (`&#35;tag`). A character written either way inside a name ends the tag before it: `#a\_b` is the tag `#a` and the text `_b`. Whitespace written as a reference does not start a tag: to Obsidian a reference is literal text, so `&nbsp;#tag` and `a&#32;#tag` stay text.
 
 > [!NOTE]
 > Turning the plugin on changes prose that already holds such words: `#fff`, `#todo` or `#v2` after a space becomes a tag, while `#000` and `#1984` stay text. Write `\#fff` to keep one as text.

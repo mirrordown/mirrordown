@@ -200,6 +200,6 @@ and <a class="tag" href="#more">#more</a></p>
 
 <p>(#tag) &quot;#tag</p>
 
-<!-- @case: whitespace written as a reference counts as whitespace -->
+<!-- @case: whitespace written as a reference does not start a tag -->
 
-<p>a <a class="tag" href="#tag">#tag</a> a <a class="tag" href="#tag">#tag</a></p>
+<p> #tag a #tag a #tag a #tag <a class="tag" href="#a">#a</a> #b and a <a class="tag" href="#tag">#tag</a></p>
