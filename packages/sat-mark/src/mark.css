@@ -1,159 +1,190 @@
 /*
-  Highlight colours — default stylesheet
+  Highlight markers — default stylesheet
   --------------------------------------
-  A highlight written with a colour emoji straight after its opening `==`
-  renders as <mark data-highlight="red"> (or orange, yellow, green, blue,
-  purple). These rules colour those six; a plain <mark>, and one with any
-  other data-highlight, keeps the browser's own style. All of them live
-  inside @layer markdown-mark, so any unlayered consumer CSS overrides them
-  without needing !important.
+  A highlight written with a marker emoji straight after its opening `==` renders as <mark data-highlight="…">: one of the six colours (red, orange, yellow, green, blue, purple), one of the ten labels (bug, documentation, enhancement, question, help-wanted, good-first-issue, duplicate, invalid, wontfix, warning), or a variant a site configured. Every one of them is drawn as a pill; a plain <mark> keeps the browser's own style. All of it lives inside @layer markdown-mark, so any unlayered consumer CSS overrides it without needing !important.
 
-  Each colour is a translucent tint behind the text, which keeps the color
-  of the text around it, so it reads on a light and on a dark page. The tint
-  is a light-dark() pair, so it follows the nearest `color-scheme`: set
-  `color-scheme: light dark` on :root (or a container) for the dark one.
+  One rule draws every pill from a single colour, --markdown-mark-color: a pale tint of it behind a deep shade of it in a light scheme, a dark tint behind a light shade in a dark one. The pair follows the nearest `color-scheme`: set `color-scheme: light dark` on :root (or a container) for the dark one. The pill is an inline block, so it does not break across lines, and the space a removed colour emoji leaves at the start of the content collapses.
 
-  Each colour comes from a public token set on the highlight or any ancestor
-  (--markdown-mark-<colour>), or else the default here. Each falls back on its
-  own, so overriding one keeps the rest, and an invalid value is ignored
-  rather than leaving the highlight without a background.
+  Each default variant only sets that colour, from a public token set on the highlight or any ancestor (--markdown-mark-<variant>), or else the default here. Each falls back on its own, so overriding one keeps the rest, and an invalid value is ignored rather than leaving the pill without a colour. A variant this file doesn't know is grey until you give it a colour:
 
-    :root { --markdown-mark-red: oklch(0.7 0.2 25 / 40%); }
+    :root { --markdown-mark-bug: oklch(0.55 0.2 15); }
+    mark[data-highlight="release"] { --markdown-mark-color: oklch(0.6 0.15 300); }
 */
 
 /*
-  How an invalid value falls back: each default is the initial value of a
-  registered private property, one for the light side of the pair and one
-  for the dark, and the highlight reads its public token into both. A
-  registered color property given something that isn't a color, or nothing,
-  takes its initial value, so the highlight keeps the default pair. (With
-  var() alone, an invalid value would unset the background.) A token that is
-  itself a light-dark() pair resolves on the highlight, so it still follows
-  the color scheme. The registrations are global, so they're named after the
-  plugin.
+  How an invalid value falls back: each default is the initial value of a registered private property, and the highlight reads its public token into it. A registered color property given something that isn't a color, or nothing, takes its initial value, so the highlight keeps the default. (With var() alone, an invalid value would leave the pill without a colour.) --markdown-mark-color is registered the same way, with grey as its initial value, and doesn't inherit, so a variant this file doesn't know is grey even inside a coloured highlight. The registrations are global, so they're named after the plugin.
 */
-@property --_mark-red-light {
+@property --markdown-mark-color {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.82 0.14 25 / 45%);
+  initial-value: oklch(0.6 0 0);
 }
-@property --_mark-red-dark {
+
+/* The six colours, in the hue family the alerts stylesheet uses for the same names. */
+@property --_mark-red {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.55 0.19 25 / 45%);
+  initial-value: oklch(0.6 0.19 25);
 }
-@property --_mark-orange-light {
+@property --_mark-orange {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.86 0.14 55 / 50%);
+  initial-value: oklch(0.6 0.14 55);
 }
-@property --_mark-orange-dark {
+@property --_mark-yellow {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.6 0.16 55 / 45%);
+  initial-value: oklch(0.6 0.12 85);
 }
-@property --_mark-yellow-light {
+@property --_mark-green {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.92 0.16 85 / 60%);
+  initial-value: oklch(0.6 0.16 145);
 }
-@property --_mark-yellow-dark {
+@property --_mark-blue {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.68 0.15 85 / 40%);
+  initial-value: oklch(0.6 0.17 255);
 }
-@property --_mark-green-light {
+@property --_mark-purple {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.86 0.15 145 / 45%);
+  initial-value: oklch(0.6 0.2 295);
 }
-@property --_mark-green-dark {
+
+/* The labels, at the hues of GitHub's default label colours. */
+@property --_mark-bug {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.58 0.15 145 / 45%);
+  initial-value: oklch(0.6 0.19 20);
 }
-@property --_mark-blue-light {
+@property --_mark-documentation {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.82 0.11 255 / 45%);
+  initial-value: oklch(0.6 0.15 250);
 }
-@property --_mark-blue-dark {
+@property --_mark-enhancement {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.55 0.17 255 / 50%);
+  initial-value: oklch(0.6 0.1 197);
 }
-@property --_mark-purple-light {
+@property --_mark-question {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.82 0.12 295 / 45%);
+  initial-value: oklch(0.6 0.2 323);
 }
-@property --_mark-purple-dark {
+@property --_mark-help-wanted {
   syntax: "<color>";
   inherits: false;
-  initial-value: oklch(0.55 0.18 295 / 50%);
+  initial-value: oklch(0.6 0.11 177);
+}
+@property --_mark-good-first-issue {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0.19 283);
+}
+@property --_mark-duplicate {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0.03 248);
+}
+@property --_mark-invalid {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0.13 110);
+}
+@property --_mark-wontfix {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0 0);
+}
+@property --_mark-warning {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(0.6 0.13 68);
 }
 
 @layer markdown-mark {
-  /* red — ~25°, as the alerts' caution */
+  /* The pill, in the style of Vocs' badges. White and black are written with no hue, so a mix keeps the variant's hue and only its lightness and chroma move. Every default reaches a contrast of at least 5.5:1, text on pill, in both schemes. */
+  mark[data-highlight] {
+    display: inline-block;
+    padding: 0.125em 0.6em;
+    border-radius: 9999px;
+    font-size: 0.85em;
+    font-weight: 500;
+    line-height: 1.4;
+    background-color: light-dark(
+      color-mix(in oklch, var(--markdown-mark-color) 14%, oklch(1 0 none)),
+      color-mix(in oklch, var(--markdown-mark-color) 45%, oklch(0 0 none))
+    );
+    color: light-dark(
+      color-mix(in oklch, var(--markdown-mark-color) 78%, oklch(0 0 none)),
+      color-mix(in oklch, var(--markdown-mark-color) 52%, oklch(1 0 none))
+    );
+  }
+
   mark[data-highlight="red"] {
-    --_mark-red-light: var(--markdown-mark-red);
-    --_mark-red-dark: var(--markdown-mark-red);
-    background-color: light-dark(var(--_mark-red-light), var(--_mark-red-dark));
-    color: inherit;
+    --_mark-red: var(--markdown-mark-red);
+    --markdown-mark-color: var(--_mark-red);
   }
-
-  /* orange — ~55°, between red and the alerts' amber warning */
   mark[data-highlight="orange"] {
-    --_mark-orange-light: var(--markdown-mark-orange);
-    --_mark-orange-dark: var(--markdown-mark-orange);
-    background-color: light-dark(
-      var(--_mark-orange-light),
-      var(--_mark-orange-dark)
-    );
-    color: inherit;
+    --_mark-orange: var(--markdown-mark-orange);
+    --markdown-mark-color: var(--_mark-orange);
   }
-
-  /* yellow — ~85°, as the alerts' question */
   mark[data-highlight="yellow"] {
-    --_mark-yellow-light: var(--markdown-mark-yellow);
-    --_mark-yellow-dark: var(--markdown-mark-yellow);
-    background-color: light-dark(
-      var(--_mark-yellow-light),
-      var(--_mark-yellow-dark)
-    );
-    color: inherit;
+    --_mark-yellow: var(--markdown-mark-yellow);
+    --markdown-mark-color: var(--_mark-yellow);
   }
-
-  /* green — ~145°, as the alerts' tip */
   mark[data-highlight="green"] {
-    --_mark-green-light: var(--markdown-mark-green);
-    --_mark-green-dark: var(--markdown-mark-green);
-    background-color: light-dark(
-      var(--_mark-green-light),
-      var(--_mark-green-dark)
-    );
-    color: inherit;
+    --_mark-green: var(--markdown-mark-green);
+    --markdown-mark-color: var(--_mark-green);
   }
-
-  /* blue — ~255°, as the alerts' note */
   mark[data-highlight="blue"] {
-    --_mark-blue-light: var(--markdown-mark-blue);
-    --_mark-blue-dark: var(--markdown-mark-blue);
-    background-color: light-dark(
-      var(--_mark-blue-light),
-      var(--_mark-blue-dark)
-    );
-    color: inherit;
+    --_mark-blue: var(--markdown-mark-blue);
+    --markdown-mark-color: var(--_mark-blue);
   }
-
-  /* purple — ~295°, as the alerts' important */
   mark[data-highlight="purple"] {
-    --_mark-purple-light: var(--markdown-mark-purple);
-    --_mark-purple-dark: var(--markdown-mark-purple);
-    background-color: light-dark(
-      var(--_mark-purple-light),
-      var(--_mark-purple-dark)
-    );
-    color: inherit;
+    --_mark-purple: var(--markdown-mark-purple);
+    --markdown-mark-color: var(--_mark-purple);
+  }
+  mark[data-highlight="bug"] {
+    --_mark-bug: var(--markdown-mark-bug);
+    --markdown-mark-color: var(--_mark-bug);
+  }
+  mark[data-highlight="documentation"] {
+    --_mark-documentation: var(--markdown-mark-documentation);
+    --markdown-mark-color: var(--_mark-documentation);
+  }
+  mark[data-highlight="enhancement"] {
+    --_mark-enhancement: var(--markdown-mark-enhancement);
+    --markdown-mark-color: var(--_mark-enhancement);
+  }
+  mark[data-highlight="question"] {
+    --_mark-question: var(--markdown-mark-question);
+    --markdown-mark-color: var(--_mark-question);
+  }
+  mark[data-highlight="help-wanted"] {
+    --_mark-help-wanted: var(--markdown-mark-help-wanted);
+    --markdown-mark-color: var(--_mark-help-wanted);
+  }
+  mark[data-highlight="good-first-issue"] {
+    --_mark-good-first-issue: var(--markdown-mark-good-first-issue);
+    --markdown-mark-color: var(--_mark-good-first-issue);
+  }
+  mark[data-highlight="duplicate"] {
+    --_mark-duplicate: var(--markdown-mark-duplicate);
+    --markdown-mark-color: var(--_mark-duplicate);
+  }
+  mark[data-highlight="invalid"] {
+    --_mark-invalid: var(--markdown-mark-invalid);
+    --markdown-mark-color: var(--_mark-invalid);
+  }
+  mark[data-highlight="wontfix"] {
+    --_mark-wontfix: var(--markdown-mark-wontfix);
+    --markdown-mark-color: var(--_mark-wontfix);
+  }
+  mark[data-highlight="warning"] {
+    --_mark-warning: var(--markdown-mark-warning);
+    --markdown-mark-color: var(--_mark-warning);
   }
 }
