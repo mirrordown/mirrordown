@@ -245,3 +245,7 @@ text==
 <!-- @case: colour: text naming an inherited object member is not a colour -->
 
 ==constructor== ==__proto__== ==toString==
+
+<!-- @case: colour: a marker is punctuation to the delimiter, so a run straight after a letter does not open -->
+
+foo==🔴bar== and foo ==🔴bar==baz
