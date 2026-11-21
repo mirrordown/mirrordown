@@ -24,7 +24,7 @@ export interface MarkPlugin {
 }
 
 /**
- * Sätteri plugin for highlight syntax (`==text==`), wrapping each match in a custom `mark` node that renders as a `<mark>` element. The scan is shared with the remark plugin and markdown-it's pairing rules through `@mirrordown/core`; it runs once per parent, the first time one of the parent's text nodes is visited.
+ * Sätteri plugin for highlight syntax (`==text==`), wrapping each match in a custom `mark` node that renders as a `<mark>` element. A highlight that starts with a colour emoji (`==🔴text==`) loses the emoji and renders with `data-highlight="red"`. The scan is shared with the remark plugin and markdown-it's pairing rules through `@mirrordown/core`; it runs once per parent, the first time one of the parent's text nodes is visited.
  */
 export const satteriMark =
   (): ((ctx: PluginFactoryContext) => MarkPlugin) =>

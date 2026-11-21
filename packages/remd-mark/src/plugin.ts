@@ -19,7 +19,7 @@ export interface Mark extends Parent {
 
 /**
  * remark plugin for highlight syntax (`==text==`), wrapping each match in a
- * {@link Mark} node that renders as a `<mark>` element.
+ * {@link Mark} node that renders as a `<mark>` element. A highlight that starts with a colour emoji (`==🔴text==`) loses the emoji and renders with `data-highlight="red"`.
  */
 export const remarkMark: Plugin<[], Root> = () => {
   // The scan is shared with the Sätteri plugin through @mirrordown/core.

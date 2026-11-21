@@ -9,7 +9,7 @@ import { splitHighlightColour } from "@mirrordown/core";
 // A pair nested deeper than this stays text, as in the remark and Sätteri plugins (the scan in `@mirrordown/core`): Sätteri rejects a document whose content nests deeper than 128 levels, and markdown-it's own `maxNesting` is 100.
 const MAX_DEPTH = 100;
 
-/** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. */
+/** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. A highlight that starts with a colour emoji (`==🔴text==`) loses the emoji and renders with `data-highlight="red"`. */
 export function mark(md: MDit): void {
   md.inline.ruler.before(`emphasis`, `mark`, (state, silent) => {
     const marker = state.src.charCodeAt(state.pos);
