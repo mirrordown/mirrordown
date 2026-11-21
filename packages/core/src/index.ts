@@ -23,11 +23,13 @@ export {
 } from "./github-alerts/index.js";
 export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
 export {
-  HIGHLIGHT_COLOURS,
-  splitHighlightColour,
-  takeHighlightColour,
-  type HighlightColour
-} from "./highlight-colours.js";
+  HIGHLIGHT_MARKERS,
+  createHighlightMarkers,
+  type HighlightMarker,
+  type HighlightMarkers,
+  type HighlightVariant,
+  type MarkOptions
+} from "./highlight-markers.js";
 export { createKbdTransform } from "./kbd.js";
 export {
   scanSpans,

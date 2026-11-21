@@ -249,3 +249,84 @@ text==
 <!-- @case: colour: a marker is punctuation to the delimiter, so a run straight after a letter does not open -->
 
 foo==🔴bar== and foo ==🔴bar==baz
+
+<!-- @case: label: each of the ten labels names its variant and keeps its emoji -->
+
+==🐛 Bug== ==📖 Docs== ==✨ New== ==❓ Why== ==🙋 Help== ==🌱 Start== ==👯 Again== ==🚫 No== ==⛔ Never== ==⚠️ Careful==
+
+<!-- @case: label: the warning sign is one marker with or without its variation selector -->
+
+==⚠ bare== ==⚠️ selected==
+
+<!-- @case: label: a label straight before text -->
+
+==🐛Bug==
+
+<!-- @case: label: a label before formatting -->
+
+==🐛**Bug** here==
+
+<!-- @case: label: a highlight of only a label keeps it -->
+
+==🐛==
+
+<!-- @case: label: a label not at the start is text -->
+
+==a 🐛== ==a⚠️==
+
+<!-- @case: label: a label written as a character reference is text -->
+
+==&#x1F41B; Bug== ==&#x26A0;&#xFE0F; Careful==
+
+<!-- @case: label: the warning sign before a variation selector written as a character reference -->
+
+==⚠&#xFE0F; Careful==
+
+<!-- @case: label: a variation selector before the marker is not passed over -->
+
+==️🐛 Bug==
+
+<!-- @case: label: a variation selector after a label stays with it -->
+
+==🐛️ Bug==
+
+<!-- @case: label: only the first marker is read, colour or label -->
+
+==🔴🐛 a== ==🐛🔴 b==
+
+<!-- @case: label: an emoji that is not a marker is text -->
+
+==🐜 ant== ==📕 book==
+
+<!-- @case: label: inside a link -->
+
+[==🐛 Bug==](https://example.com)
+
+<!-- @case: label: in a heading -->
+
+## ==⚠️ Careful==
+
+<!-- @case: label: in list items -->
+
+- ==🐛 Bug==
+- ==✨ New==
+
+<!-- @case: label: in a blockquote -->
+
+> ==❓ Why==
+
+<!-- @case: label: a code span is code -->
+
+`==🐛 Bug==` ==`🐛`==
+
+<!-- @case: label: an escaped opening delimiter is text, and so is the label -->
+
+\==🐛 Bug==
+
+<!-- @case: label: a highlight that opens with another highlight has no variant of its own -->
+
+====🐛a==b==
+
+<!-- @case: label: nested highlights each take their own variant -->
+
+==🐛a ==⚠️b== c==

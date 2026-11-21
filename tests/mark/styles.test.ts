@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
-import { HIGHLIGHT_COLOURS } from "../../packages/core/src";
+import { HIGHLIGHT_MARKERS } from "../../packages/core/src";
+
+const HIGHLIGHT_COLOURS = new Map(
+  [...HIGHLIGHT_MARKERS]
+    .filter(([, variant]) => !variant.keep)
+    .map(([key, { name }]) => [key, name])
+);
 
 const packages = join(import.meta.dirname, "../../packages");
 const read = (name: string): string =>

@@ -201,3 +201,63 @@ text</mark></p>
 
 <!-- @case: colour: a marker is punctuation to the delimiter, so a run straight after a letter does not open -->
 <p>foo==🔴bar== and foo <mark data-highlight="red">bar</mark>baz</p>
+
+<!-- @case: label: each of the ten labels names its variant and keeps its emoji -->
+<p><mark data-highlight="bug">🐛 Bug</mark> <mark data-highlight="documentation">📖 Docs</mark> <mark data-highlight="enhancement">✨ New</mark> <mark data-highlight="question">❓ Why</mark> <mark data-highlight="help-wanted">🙋 Help</mark> <mark data-highlight="good-first-issue">🌱 Start</mark> <mark data-highlight="duplicate">👯 Again</mark> <mark data-highlight="invalid">🚫 No</mark> <mark data-highlight="wontfix">⛔ Never</mark> <mark data-highlight="warning">⚠️ Careful</mark></p>
+
+<!-- @case: label: the warning sign is one marker with or without its variation selector -->
+<p><mark data-highlight="warning">⚠ bare</mark> <mark data-highlight="warning">⚠️ selected</mark></p>
+
+<!-- @case: label: a label straight before text -->
+<p><mark data-highlight="bug">🐛Bug</mark></p>
+
+<!-- @case: label: a label before formatting -->
+<p><mark data-highlight="bug">🐛<strong>Bug</strong> here</mark></p>
+
+<!-- @case: label: a highlight of only a label keeps it -->
+<p><mark data-highlight="bug">🐛</mark></p>
+
+<!-- @case: label: a label not at the start is text -->
+<p><mark>a 🐛</mark> <mark>a⚠️</mark></p>
+
+<!-- @case: label: a label written as a character reference is text -->
+<p><mark>🐛 Bug</mark> <mark>⚠️ Careful</mark></p>
+
+<!-- @case: label: the warning sign before a variation selector written as a character reference -->
+<p><mark data-highlight="warning">⚠️ Careful</mark></p>
+
+<!-- @case: label: a variation selector before the marker is not passed over -->
+<p><mark>️🐛 Bug</mark></p>
+
+<!-- @case: label: a variation selector after a label stays with it -->
+<p><mark data-highlight="bug">🐛️ Bug</mark></p>
+
+<!-- @case: label: only the first marker is read, colour or label -->
+<p><mark data-highlight="red">🐛 a</mark> <mark data-highlight="bug">🐛🔴 b</mark></p>
+
+<!-- @case: label: an emoji that is not a marker is text -->
+<p><mark>🐜 ant</mark> <mark>📕 book</mark></p>
+
+<!-- @case: label: inside a link -->
+<p><a href="https://example.com"><mark data-highlight="bug">🐛 Bug</mark></a></p>
+
+<!-- @case: label: in a heading -->
+<h2><mark data-highlight="warning">⚠️ Careful</mark></h2>
+
+<!-- @case: label: in list items -->
+<ul><li><mark data-highlight="bug">🐛 Bug</mark></li><li><mark data-highlight="enhancement">✨ New</mark></li></ul>
+
+<!-- @case: label: in a blockquote -->
+<blockquote><p><mark data-highlight="question">❓ Why</mark></p></blockquote>
+
+<!-- @case: label: a code span is code -->
+<p><code>==🐛 Bug==</code> <mark><code>🐛</code></mark></p>
+
+<!-- @case: label: an escaped opening delimiter is text, and so is the label -->
+<p>==🐛 Bug==</p>
+
+<!-- @case: label: a highlight that opens with another highlight has no variant of its own -->
+<p><mark><mark data-highlight="bug">🐛a</mark>b</mark></p>
+
+<!-- @case: label: nested highlights each take their own variant -->
+<p><mark data-highlight="bug">🐛a <mark data-highlight="warning">⚠️b</mark> c</mark></p>

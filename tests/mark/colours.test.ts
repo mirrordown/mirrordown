@@ -30,6 +30,7 @@ import { HOSTILE_TIME_LIMIT } from "../utils/hostile.js";
 
 const RED = "\u{1F534}";
 const GREEN = "\u{1F7E2}";
+const BUG = "\u{1F41B}";
 
 const satFeatures = { gfm: false, frontmatter: false, smartPunctuation: false };
 
@@ -181,6 +182,11 @@ describe("highlight colours and line endings: a CRLF or a lone CR document colou
       "a CRLF hard break straight after the marker",
       `==${RED}\\\r\ntext==`,
       `<p><mark data-highlight="red"><br>\ntext</mark></p>`
+    ],
+    [
+      "a label in a CRLF document, between blocks and before a hard break",
+      `==${BUG} a==\r\n\r\n> ==${BUG}\\\r\nb==\r\n`,
+      `<p><mark data-highlight="bug">${BUG} a</mark></p><blockquote><p><mark data-highlight="bug">${BUG}<br>\nb</mark></p></blockquote>`
     ]
   ];
 
