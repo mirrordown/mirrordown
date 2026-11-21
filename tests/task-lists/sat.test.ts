@@ -39,7 +39,10 @@ describe("task-lists/sat", () => {
     }
   );
 
-  it.each(gfmCases)("task-lists (sätteri) gfm: $name", ({ input, expected }) => {
-    expect(render(input, true)).toBe(expected);
-  });
+  it.each(gfmCases)(
+    "task-lists (sätteri) gfm: $name",
+    ({ input, expected }) => {
+      expect(render(input, true)).toBe(expected);
+    }
+  );
 });

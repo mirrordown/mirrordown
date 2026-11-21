@@ -19,11 +19,7 @@ describe.each(pipelines())("task-lists: line endings (%s)", (_name, render) => {
         `<li class="task-list-item"><input type="checkbox" disabled> a</li>${done(" b")}${question(" c")}`
       )
     ],
-    [
-      "keeps a CRLF inside the text",
-      "- [?] a\r\n  b",
-      list(question(" a\nb"))
-    ],
+    ["keeps a CRLF inside the text", "- [?] a\r\n  b", list(question(" a\nb"))],
     [
       // Sätteri reads `[x]` directly followed by CRLF as text, so every marker is, in every engine.
       "reads a box directly followed by CRLF as text",
@@ -40,7 +36,11 @@ describe.each(pipelines())("task-lists: line endings (%s)", (_name, render) => {
       "- [?]\r  text",
       list(question(" text"))
     ],
-    ["reads `[x]` followed by a lone CR as a task", "- [x]\r  text", list(done(" text"))],
+    [
+      "reads `[x]` followed by a lone CR as a task",
+      "- [x]\r  text",
+      list(done(" text"))
+    ],
     [
       "keeps a hard break of trailing spaces after the box",
       "- [?]  \n  text",
@@ -92,7 +92,8 @@ describe("task-lists: where remark-gfm and Sätteri read `[x]` differently", () 
 
   it("a space and CRLF after the box: remark-gfm keeps the LF, Sätteri's GFM the next line's indent", () => {
     const input = "- [x] \r\n  text";
-    for (const render of plugin) expect(render(input)).toBe(list(done(" text")));
+    for (const render of plugin)
+      expect(render(input)).toBe(list(done(" text")));
     expect(remarkGfm(input)).toBe(list(done(" \ntext")));
     expect(satteriGfm(input)).toBe(list(done("   text")));
   });

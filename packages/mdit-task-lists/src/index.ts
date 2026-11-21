@@ -144,7 +144,8 @@ export const taskLists: PluginWithOptions<TaskListsOptions> = (
 
   // attrs adds its classes after this plugin has run (it runs right before `linkify`, wherever it is added): put the task's class back after them.
   md.core.ruler.after(`linkify`, `task_lists_classes`, (state) => {
-    for (const [token, name] of classed.get(state) ?? []) classLast(token, name);
+    for (const [token, name] of classed.get(state) ?? [])
+      classLast(token, name);
   });
 
   md.renderer.rules[`task_list_item_checkbox`] = (tokens, idx): string =>

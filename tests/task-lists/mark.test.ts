@@ -22,7 +22,7 @@ import { normalizeHtml } from "../utils/index.js";
 // An inline plugin listed after task-lists reads the item's text without its box. That text must still line up with the source, or a plugin that reads escapes from it (mark here) takes an escaped delimiter for a real one.
 const engines = (
   options: TaskListsOptions = {}
-): Array<[string, (src: string) => string]> => {
+): [string, (src: string) => string][] => {
   const md = new MarkdownIt().use(taskLists, options).use(mark);
   const processor = unified()
     .use(remarkParse)
@@ -38,7 +38,11 @@ const engines = (
       (src) =>
         normalizeHtml(
           markdownToHtml(src, {
-            features: { gfm: false, frontmatter: false, smartPunctuation: false },
+            features: {
+              gfm: false,
+              frontmatter: false,
+              smartPunctuation: false
+            },
             mdastPlugins: [satteriTaskLists(options), satteriMark()]
           }).html
         )

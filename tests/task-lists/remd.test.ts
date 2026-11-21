@@ -55,12 +55,24 @@ describe("task-lists/remd", () => {
     }
   );
 
-  it.each(gfmCases)(
-    "task-lists (remark) gfm: $name",
-    ({ input, expected }) => {
-      expect(normalizeHtml(String(gfmProcessor.processSync(input)))).toBe(
-        expected
-      );
-    }
-  );
+  it.each(gfmCases)("task-lists (remark) gfm: $name", ({ input, expected }) => {
+    expect(normalizeHtml(String(gfmProcessor.processSync(input)))).toBe(
+      expected
+    );
+  });
+});
+
+// mdast-util-to-hast draws the box from `checked` and gives it no name: the handlers add the label. Without them a task still renders, unlabelled, so a screen reader announces only a checkbox.
+describe("task-lists/remd without taskListsHastHandlers", () => {
+  it("renders every task, with no label on the box", () => {
+    const html = unified()
+      .use(remarkParse)
+      .use(remarkTaskLists)
+      .use(remarkRehype)
+      .use(rehypeStringify)
+      .processSync("- [?] a\n- [x] b");
+    expect(normalizeHtml(String(html))).toBe(
+      '<ul class="contains-task-list"><li class="task-list-item" data-task="?"><input type="checkbox" disabled> a</li><li class="task-list-item"><input type="checkbox" checked disabled> b</li></ul>'
+    );
+  });
 });

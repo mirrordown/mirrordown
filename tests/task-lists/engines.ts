@@ -17,6 +17,7 @@ import { satteriTaskLists } from "../../packages/sat-task-lists/src";
 import { normalizeHtml } from "../utils/index.js";
 
 type Render = (input: string) => string;
+type Pipeline = readonly [string, Render];
 
 export const markdownIt = (options?: TaskListsOptions): Render => {
   const md = new MarkdownIt().use(taskLists, options);
@@ -44,9 +45,7 @@ export const satteri =
     );
 
 /** Every pipeline a document must render the same in: each engine, and remark and Sätteri with GFM off and on. */
-export const pipelines = (
-  options?: TaskListsOptions
-): ReadonlyArray<readonly [string, Render]> => [
+export const pipelines = (options?: TaskListsOptions): Pipeline[] => [
   [`markdown-it`, markdownIt(options)],
   [`remark`, remark(false, options)],
   [`remark with GFM`, remark(true, options)],

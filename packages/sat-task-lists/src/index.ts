@@ -16,7 +16,7 @@ import {
 export type { TaskListsOptions };
 export { TASK_MARKERS };
 
-type ListVisitor = NonNullable<MdastPluginInstance["list"]>;
+type TextVisitor = NonNullable<MdastPluginInstance["text"]>;
 
 /**
  * The plugin's definition: only the keys it defines, with a synchronous visitor, so `markdownToHtml` returns its result directly.
@@ -24,7 +24,7 @@ type ListVisitor = NonNullable<MdastPluginInstance["list"]>;
 export interface TaskListsPlugin {
   name: string;
   options: { position: boolean };
-  list: (...args: Parameters<ListVisitor>) => void;
+  text: (...args: Parameters<TextVisitor>) => void;
 }
 
 type Properties = Record<string, unknown>;
@@ -58,85 +58,92 @@ export const satteriTaskLists = (
 ): ((ctx: PluginFactoryContext) => TaskListsPlugin) => {
   // Resolved here, so an invalid marker throws when the plugin is set up.
   const resolve = createTaskResolver(options);
-  return ({ source }) =>
-    defineMdastPlugin({
+  return ({ source }) => {
+    // The lists given their class already: Sätteri hands every visitor of a pass the same parent object.
+    const lists = new Set<object>();
+    return defineMdastPlugin({
       name: `task-lists`,
       // Positions and the source tell an escaped box (`\[x]`) from a real one, and the line a box is on.
       options: { position: true },
-      list(list, ctx) {
-        // Whether this plugin made a task of an item: a list whose tasks are all GFM's is left as GFM rendered it.
-        let tasks = false;
-        for (const item of list.children) {
-          if (typeof item.checked === `boolean`) continue;
-          const [paragraph, ...blocks] = item.children;
-          if (paragraph?.type !== `paragraph`) continue;
+      // A text visitor, not a list one: reading a list's items costs far more in Sätteri than reading a text, and almost every text is turned away by its first and third characters.
+      text(head, ctx) {
+        const { value } = head;
+        if (!value.startsWith(`[`) || value.charAt(2) !== `]`) return;
+        const paragraph = ctx.parent(head);
+        if (paragraph.type !== `paragraph` || ctx.indexOf(head) !== 0) return;
+        const item = ctx.parent(paragraph);
+        if (
+          item.type !== `listItem` ||
+          // GFM has read it already.
+          typeof item.checked === `boolean` ||
+          ctx.indexOf(paragraph) !== 0 ||
           // Sätteri reads `[x]` only on the line the item starts on, so every marker is read there.
-          if (paragraph.position?.start.line !== item.position?.start.line)
-            continue;
-          const [head, next, ...phrasing] = paragraph.children;
-          if (head?.type !== `text`) continue;
-          const start = head.position?.start;
-          const box = matchTaskBox(
-            head.value,
-            {
-              escaped: textEscapes(head, source),
-              more: next !== undefined,
-              breakAfter: next?.type === `break`,
-              sourceAfter:
-                start?.offset === undefined
-                  ? undefined
-                  : source.slice(start.offset + 3, start.offset + 5)
-            },
-            resolve
-          );
-          if (!box) continue;
-          tasks = true;
+          paragraph.position?.start.line !== item.position?.start.line
+        )
+          return;
+        const [, next, ...phrasing] = paragraph.children;
+        const start = head.position?.start;
+        const box = matchTaskBox(
+          value,
+          {
+            escaped: textEscapes(head, source),
+            more: next !== undefined,
+            breakAfter: next?.type === `break`,
+            sourceAfter:
+              start?.offset === undefined
+                ? undefined
+                : source.slice(start.offset + 3, start.offset + 5)
+          },
+          resolve
+        );
+        if (!box) return;
 
-          const value = head.value.slice(box.length);
-          const text =
-            value === ``
-              ? []
-              : [
-                  {
-                    type: `text` as const,
-                    value,
-                    ...(start && head.position
-                      ? {
-                          position: {
-                            ...head.position,
-                            start: startAfterBox(
-                              start,
-                              head.value,
-                              box.length,
-                              source
-                            )
-                          }
+        const rest = value.slice(box.length);
+        const text =
+          rest === ``
+            ? []
+            : [
+                {
+                  type: `text` as const,
+                  value: rest,
+                  ...(start
+                    ? {
+                        position: {
+                          ...head.position,
+                          start: startAfterBox(start, value, box.length, source)
                         }
-                      : {})
-                  }
-                ];
-          const after = [...text, ...(next ? [next] : []), ...phrasing];
-          const { classes, others } = written(item);
-          if (box.marker === undefined) {
-            // To-do and done are GFM's: Sätteri draws the box from `checked`. Its class goes after a block's, as when GFM reads the box.
-            ctx.replaceNode(item, {
-              ...item,
-              checked: box.checked,
-              ...(classes.length > 0
-                ? {
-                    data: {
-                      ...item.data,
-                      hProperties: {
-                        className: withClass(classes, `task-list-item`),
-                        ...others
                       }
+                    : {})
+                }
+              ];
+        const { classes, others } = written(item);
+        if (box.marker === undefined) {
+          // To-do and done are GFM's: Sätteri draws the box from `checked`, which only a new item can carry. Its class goes after a block's, as when GFM reads the box.
+          const [, ...blocks] = item.children;
+          ctx.replaceNode(item, {
+            ...item,
+            checked: box.checked,
+            ...(classes.length > 0
+              ? {
+                  data: {
+                    ...item.data,
+                    hProperties: {
+                      className: withClass(classes, `task-list-item`),
+                      ...others
                     }
                   }
-                : {}),
-              children: [{ ...paragraph, children: after }, ...blocks]
-            });
-            continue;
-          }
+                }
+              : {}),
+            children: [
+              {
+                ...paragraph,
+                children: [...text, ...(next ? [next] : []), ...phrasing]
+              },
+              ...blocks
+            ]
+          });
+        } else {
+          // Sätteri cannot label the box it draws, so the other markers draw their own.
           const checkbox: Custom = {
             type: `taskListCheckbox`,
             data: {
@@ -148,39 +155,35 @@ export const satteriTaskLists = (
               }
             }
           };
-          // A paragraph and an item holding a node of this plugin's own, which mdast's types do not allow in them.
-          const boxed: Custom = {
-            type: `paragraph`,
-            ...(paragraph.position ? { position: paragraph.position } : {}),
-            ...(paragraph.data ? { data: paragraph.data } : {}),
-            children: [checkbox, { type: `text`, value: ` ` }, ...after]
-          };
-          const { position, ...fields } = item;
-          ctx.replaceNode(item, {
-            ...fields,
-            ...(position ? { position } : {}),
-            data: {
-              ...item.data,
-              // Under the attribute's own name, which Sätteri's attributes use too: a `data-task` the author gives the item replaces this one rather than being a second.
-              hProperties: {
-                className: withClass(classes, `task-list-item`),
-                "data-task": box.marker,
-                ...others
-              }
-            },
-            children: [boxed, ...blocks]
+          ctx.replaceNode(head, [
+            checkbox,
+            { type: `text`, value: ` ` },
+            ...text
+          ]);
+          ctx.setField(item, `data`, {
+            ...item.data,
+            // Under the attribute's own name, which Sätteri's attributes use too: a `data-task` the author gives the item replaces this one rather than being a second.
+            hProperties: {
+              className: withClass(classes, `task-list-item`),
+              "data-task": box.marker,
+              ...others
+            }
           });
         }
-        if (!tasks) return;
+
         // Sätteri gives a list holding a task its class only for the tasks GFM read, and a block's classes on the list replace it.
-        const { classes, others } = written(list);
+        const list = ctx.parent(item);
+        if (list.type !== `list` || lists.has(list)) return;
+        lists.add(list);
+        const listed = written(list);
         ctx.setField(list, `data`, {
           ...list.data,
           hProperties: {
-            className: withClass(classes, `contains-task-list`),
-            ...others
+            className: withClass(listed.classes, `contains-task-list`),
+            ...listed.others
           }
         });
       }
     });
+  };
 };

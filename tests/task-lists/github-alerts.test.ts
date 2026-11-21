@@ -20,9 +20,7 @@ import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
 import { normalizeHtml } from "../utils/index.js";
 
 // A task list inside an alert: both plugins rebuild what they read, so neither may lose the other's work, whichever runs first.
-const md = new MarkdownIt()
-  .use(githubAlerts, { icons: false })
-  .use(taskLists);
+const md = new MarkdownIt().use(githubAlerts, { icons: false }).use(taskLists);
 const processor = unified()
   .use(remarkParse)
   .use(remarkTaskLists)
@@ -32,7 +30,7 @@ const processor = unified()
   })
   .use(rehypeStringify);
 
-const engines: Array<[string, (src: string) => string]> = [
+const engines: [string, (src: string) => string][] = [
   ["markdown-it", (src) => normalizeHtml(md.render(src))],
   ["remark", (src) => normalizeHtml(String(processor.processSync(src)))],
   [

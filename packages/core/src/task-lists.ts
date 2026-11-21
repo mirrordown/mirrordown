@@ -131,11 +131,10 @@ export const startAfterBox = (
   if (!/[\n\r]/.test(value.slice(0, length))) {
     return { line: start.line, column: start.column + length, offset };
   }
-  const lineStart =
-    Math.max(
-      source.lastIndexOf(`\n`, offset - 1),
-      source.lastIndexOf(`\r`, offset - 1)
-    ) + 1;
+  // Back to the line ending, one character at a time: `lastIndexOf` for a `\r` the document does not hold would read back to its start for every task.
+  let lineStart = offset;
+  while (lineStart > 0 && !/[\n\r]/.test(source.charAt(lineStart - 1)))
+    lineStart--;
   return { line: start.line + 1, column: offset - lineStart + 1, offset };
 };
 
