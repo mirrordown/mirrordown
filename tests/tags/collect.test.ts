@@ -191,30 +191,19 @@ describe("tagAncestors", () => {
 });
 
 describe("createTagCollector", () => {
-  // The engines may meet tags in any order; the list follows the positions given.
-  it("keeps the tags in the order of their positions, whatever order they come in", () => {
+  it("lists each tag once, in the order given, with the casing first given", () => {
     const { tags: list, add } = createTagCollector();
     const before = list;
-    add(`c`, 30);
-    add(`a`, 10);
-    add(`b`, 20);
-    expect(list).toEqual([`a`, `b`, `c`]);
+    for (const name of [`Tag`, `x`, `TAG`, `tag`, `y`]) add(name);
+    expect(list).toEqual([`Tag`, `x`, `y`]);
     expect(list).toBe(before);
   });
 
-  it("moves a tag met again earlier in the document there, with the casing written there", () => {
-    const { tags: list, add } = createTagCollector();
-    add(`TAG`, 50);
-    add(`x`, 10);
-    add(`Tag`, 5);
-    add(`tag`, 60);
-    expect(list).toEqual([`Tag`, `x`]);
-  });
-
+  // The names are the document's text, and these are members of every object.
   it("collects names that are members of every object", () => {
     const { tags: list, add } = createTagCollector();
     const names = [`constructor`, `__proto__`, `toString`, `hasOwnProperty`];
-    names.forEach((name, at) => add(name, at));
+    names.forEach((name) => add(name));
     expect(list).toEqual(names);
   });
 
@@ -223,35 +212,45 @@ describe("createTagCollector", () => {
     it("lists the frontmatter's tags, then the document's that are not among them", () => {
       const frontmatter = { title: `Note`, tags: [`#Inbox`, `work`] };
       const { tags: list, add } = createTagCollector(frontmatter);
-      add(`later`, 20);
-      add(`inbox`, 5);
-      add(`early`, 10);
+      for (const name of [`inbox`, `early`, `later`]) add(name);
       expect(frontmatter.tags).toEqual([`Inbox`, `work`, `early`, `later`]);
       expect(list).toEqual([`inbox`, `early`, `later`]);
     });
 
     it("reads a single string as one tag", () => {
       const frontmatter = { tags: `#solo` };
-      createTagCollector(frontmatter).add(`more`, 0);
+      createTagCollector(frontmatter).add(`more`);
       expect(frontmatter.tags).toEqual([`solo`, `more`]);
     });
 
     it("gives a frontmatter without tags the document's", () => {
       const frontmatter: Record<string, unknown> = { title: `Note` };
-      createTagCollector(frontmatter).add(`a`, 0);
+      createTagCollector(frontmatter).add(`a`);
       expect(frontmatter).toEqual({ title: `Note`, tags: [`a`] });
     });
 
-    it("gives a frontmatter without tags an empty list for a document without tags", () => {
-      const frontmatter: Record<string, unknown> = {};
-      createTagCollector(frontmatter);
-      expect(frontmatter.tags).toEqual([]);
-    });
+    // A layout that shows a tag list when `frontmatter.tags` is there must not start showing an empty one on every page, and a page's own spelling of its tags is not rewritten for nothing.
+    it.each([
+      [`a document without tags`, {}, [], {}],
+      [
+        `a document whose tags the frontmatter all lists`,
+        { tags: [`#Inbox`] },
+        [`inbox`],
+        { tags: [`#Inbox`] }
+      ]
+    ])(
+      "leaves the frontmatter as written for %s",
+      (_name, frontmatter: Record<string, unknown>, names, expected) => {
+        const { add } = createTagCollector(frontmatter);
+        names.forEach((name) => add(name));
+        expect(frontmatter).toEqual(expected);
+      }
+    );
 
     // YAML `tags:` with nothing after it is null: the property is there and empty.
     it("reads an empty property as listing none", () => {
       const frontmatter = { tags: null };
-      createTagCollector(frontmatter).add(`a`, 0);
+      createTagCollector(frontmatter).add(`a`);
       expect(frontmatter.tags).toEqual([`a`]);
     });
 
@@ -263,7 +262,7 @@ describe("createTagCollector", () => {
     ])("leaves tags that are %s alone", (_name, value) => {
       const frontmatter = { tags: value };
       const { tags: list, add } = createTagCollector(frontmatter);
-      add(`a`, 0);
+      add(`a`);
       expect(frontmatter.tags).toBe(value);
       expect(list).toEqual([`a`]);
     });
@@ -275,7 +274,7 @@ describe("createTagCollector", () => {
       [`undefined`, undefined]
     ])("collects as usual when the frontmatter is %s", (_name, frontmatter) => {
       const { tags: list, add } = createTagCollector(frontmatter);
-      add(`a`, 0);
+      add(`a`);
       expect(list).toEqual([`a`]);
     });
   });

@@ -39,8 +39,6 @@ export const remarkTags: Plugin<[TagsOptions?], Root> = (options) => {
         : undefined
     );
     file.data.tags = collector.tags;
-    // A count of the tags met so far. The walk meets them in document order, which their source offsets can't give: a span plugin listed before this one (mark, del, kbd…) rebuilds a paragraph's text nodes without positions.
-    let count = 0;
     // Escapes are resolved before this runs: the source tells `\#tag` from `#tag`.
     const source = String(file);
     const walk = (node: Parent, inTableCell: boolean): void => {
@@ -66,14 +64,17 @@ export const remarkTags: Plugin<[TagsOptions?], Root> = (options) => {
             }
           })
         },
-        href
+        href,
+        // A key's content does not open with a tag: `[[#heading]]` is a link to a heading in Obsidian.
+        node.type !== `kbd`
       );
       if (children) node.children = children;
       for (const child of node.children) {
         if (child.type === `tag`) {
           const [text] = child.children;
           if (text?.type === `text`)
-            collector.add(text.value.slice(1), count++);
+            // The walk meets the tags in document order.
+            collector.add(text.value.slice(1));
           continue;
         }
         // A link's text is the link's: a tag is never read in it.

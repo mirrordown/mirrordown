@@ -125,7 +125,7 @@ describe("tags + mark and del", () => {
   });
 });
 
-// A key is an element too. `[[#]]` is a key holding a lone `#`, which is no tag; a key holding a tag holds its link.
+// `[[#heading]]` is how an Obsidian author links to a heading of the same note, far more often than anyone names a key `#tag`: read as a tag it would put a bogus tag on the page and in the document's list. So a key's content does not open with a tag, while a tag after a space inside a key is still one.
 describe("tags + kbd", () => {
   const engines = [
     [`markdown-it`, mdit(new MarkdownIt().use(kbd).use(tags))],
@@ -146,9 +146,14 @@ describe("tags + kbd", () => {
       `<p><kbd>Ctrl</kbd>#tag</p>`
     ],
     [
-      `a tag opens a key's content`,
-      `[[#tag]]`,
-      `<p><kbd><a class="tag" href="#tag">#tag</a></kbd></p>`
+      `a hash that opens a key's content is text`,
+      `[[#Heading in this note]]`,
+      `<p><kbd>#Heading in this note</kbd></p>`
+    ],
+    [
+      `a tag after a space inside a key`,
+      `[[Fn #tag]]`,
+      `<p><kbd>Fn <a class="tag" href="#tag">#tag</a></kbd></p>`
     ]
   ];
 
@@ -156,12 +161,6 @@ describe("tags + kbd", () => {
     it.each(cases)("%s", (_name, input, expected) => {
       expect(render(input)).toBe(expected);
     });
-  });
-
-  it("remark: listed before the kbd plugin, a key's opening tag is text", () => {
-    expect(remark([remarkTags, remarkKbd])(`[[#tag]]`)).toBe(
-      `<p><kbd>#tag</kbd></p>`
-    );
   });
 });
 

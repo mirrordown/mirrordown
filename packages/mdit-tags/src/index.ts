@@ -17,10 +17,10 @@ export { tagAncestors, tagKey };
 const isText = (token: Token): boolean =>
   token.type === `text` || token.type === `text_special`;
 
-// What can come before a run of text so that a `#` at its start opens a tag: nothing (the run starts the inline content), an opening token (the run starts an element's content: emphasis, a highlight), or a line break.
+// What can come before a run of text so that a `#` at its start opens a tag: nothing (the run starts the inline content), an opening token (the run starts an element's content: emphasis, a highlight), or a line break. Not a key's opening token: `[[#heading]]` is a link to a heading in Obsidian, so a key's content does not open with a tag.
 const opens = (before: Token | undefined): boolean =>
   before === undefined ||
-  before.nesting === 1 ||
+  (before.nesting === 1 && before.type !== `kbd_open`) ||
   before.type === `softbreak` ||
   before.type === `hardbreak`;
 
@@ -43,8 +43,6 @@ export const tags: PluginWithOptions<TagsOptions> = (md, options) => {
     const collector = createTagCollector();
     // `md.parse(source)` called without an `env` has nowhere to keep them.
     if (state.env) state.env.tags = collector.tags;
-    // Tokens come in document order, so a count of the tags is their place in it.
-    let count = 0;
     for (const block of state.tokens) {
       if (block.type !== `inline` || !block.children) continue;
       const children = block.children;
@@ -119,7 +117,8 @@ export const tags: PluginWithOptions<TagsOptions> = (md, options) => {
             offset += part.text.length;
             continue;
           }
-          collector.add(part.tag, count++);
+          // Tokens come in document order.
+          collector.add(part.tag);
           const open = new state.Token(`link_open`, `a`, 1);
           open.attrs = [
             [`class`, `tag`],
