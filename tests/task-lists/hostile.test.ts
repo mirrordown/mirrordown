@@ -90,7 +90,7 @@ describe.each([
   );
 });
 
-// What a scan for a box would restart on: a long run of the box's characters and of whitespace, and long lists of boxes.
+// What a scan for a box would restart on: a long run of the box's characters and of whitespace, and long lists of boxes. The lists are a few thousand items, not tens of thousands: remark alone takes four to five seconds on a list of 20,000 items, with no plugin, and a scan that restarts shows at this size as well.
 describe("hostile input through task-lists: long runs", () => {
   it.each([
     [`50,000 \`[\``, `- ${`[`.repeat(50_000)}`],
@@ -99,7 +99,7 @@ describe("hostile input through task-lists: long runs", () => {
       `50,000 tabs after the box, then a line ending`,
       `- [?]${`\t`.repeat(50_000)}\nx`
     ],
-    [`16,000 boxes in a row`, `- ${`[?]`.repeat(16_000)}`],
+    [`4,000 boxes in a row`, `- ${`[?]`.repeat(4_000)}`],
     [`20,000 characters after the box`, `- [?] ${`x`.repeat(20_000)}`],
     [`2,000 nested items`, `- [?] a\n  `.repeat(2_000)]
   ])("%s", { timeout: 60_000 }, (_name, input) => {
@@ -109,14 +109,14 @@ describe("hostile input through task-lists: long runs", () => {
   });
 
   it.each([
-    [`20,000 items with a box`, `- [?] a\n`],
-    [`20,000 done items`, `- [x] a\n`],
-    [`20,000 items with a box alone on its line`, `- [?]\n  a\n`],
-    [`20,000 such items with CRLF`, `- [?] \r\n  a\r\n`]
+    [`3,000 items with a box`, `- [?] a\n`],
+    [`3,000 done items`, `- [x] a\n`],
+    [`3,000 items with a box alone on its line`, `- [?]\n  a\n`],
+    [`3,000 such items with CRLF`, `- [?] \r\n  a\r\n`]
   ])("%s", { timeout: 120_000 }, (_name, item) => {
     const { html, slowest } = measure(
       {},
-      item.repeat(20_000),
+      item.repeat(3_000),
       item.repeat(1_000)
     );
     expect(html).toStrictEqual(html.map(() => html[0]));
