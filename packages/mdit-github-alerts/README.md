@@ -40,7 +40,7 @@ The keyword is read in any case (`[!note]` is a note), without the spaces around
 
 ### Custom titles
 
-Override the default title by adding text after the type marker. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
+Override the default title by adding a space and text after the type marker. Text written straight against the marker (`> [!NOTE]Title`, `> [!NOTE]-Title`) leaves the quote a quote, as it does in Obsidian and on GitHub. Everything after the marker on that line is the title, and it can use inline formatting; the body starts on the next line. Emphasis, a code span or a link that opens in the title and closes on a later line takes the title with it, to the end of the line it closes on:
 
 ````markdown
 > [!NOTE] Custom *Title*

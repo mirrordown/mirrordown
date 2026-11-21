@@ -435,10 +435,28 @@ Second line</p>
 <p>See [!info] here</p>
 </blockquote>
 
-<!-- @case: spec 33: text right after the marker is the title here, where the spec has a quote -->
+<!-- @case: spec 33: text right after the marker leaves a quote -->
+
+<blockquote>
+<p>[!info]nospace</p>
+</blockquote>
+
+<!-- @case: a fold marker with text right after it leaves a quote -->
+
+<blockquote>
+<p>[!info]-nospace</p>
+</blockquote>
+
+<!-- @case: formatting right after the marker leaves a quote -->
+
+<blockquote>
+<p>[!info]<em>nospace</em></p>
+</blockquote>
+
+<!-- @case: a title after a space, with formatting -->
 
 <div class="markdown-alert" data-alert="info">
-<p class="markdown-alert-title" aria-label="nospace"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>nospace</p></div>
+<p class="markdown-alert-title" aria-label="spaced"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg><em>spaced</em></p></div>
 
 <!-- @case: fallback type with a hyphen reads as words in its title -->
 

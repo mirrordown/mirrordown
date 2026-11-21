@@ -94,6 +94,14 @@ export const githubAlerts: PluginWithOptions<AlertOptions> = (
       // The marker's grammar is shared with every engine.
       const marker = matchAlertMarker(firstChild.content.trimStart());
       if (!marker) continue;
+      // A title needs whitespace before it. When the marker ends its text token, what follows on the line (formatting, an escaped character, a character reference) is written straight against the bracket, and the quote stays a quote.
+      const afterText = firstInline.children[1];
+      if (
+        marker.length === firstChild.content.trimStart().length &&
+        afterText !== undefined &&
+        !isLineBreak(afterText.type)
+      )
+        continue;
 
       const type = resolve(marker.keyword);
       if (!type) continue;

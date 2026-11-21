@@ -10,8 +10,9 @@ import { carryEscapes, textEscapes, type TextLikeNode } from "../escapes.js";
 export { ALERT_ALIASES, DEFAULT_TITLE, ICONS };
 export type { AlertOptions, AlertType };
 
-// Groups: 1=identifier, 2=metadata (after `|`), 3=foldable marker (+/-). Neither the identifier nor the metadata crosses a line ending: markdown-it ends its text token there, so a marker that did would be one in remark and Sätteri only.
-const MARKER_RE = /^\[!([^\]|\r\n]+)(?:\|([^\]\r\n]*))?\]([+-])?/;
+// Groups: 1=identifier, 2=metadata (after `|`), 3=foldable marker (+/-). Neither the identifier nor the metadata crosses a line ending: markdown-it ends its text token there, so a marker that did would be one in remark and Sätteri only. After the marker comes whitespace or the end of the text: `[!NOTE]x` and `[!NOTE]-x` are no markers, and the quote stays a quote, as it does in Obsidian and on GitHub.
+const MARKER_RE =
+  /^\[!([^\]|\r\n]+)(?:\|([^\]\r\n]*))?\]([+-])?(?=[ \t\r\n]|$)/;
 
 /** An alert marker (`[!TYPE|metadata]+`) at the start of a text, split into its parts. */
 export interface AlertMarker {
@@ -208,23 +209,26 @@ export const splitAlertParagraph = <N extends PhrasingLike>(
   const opening = first.value.trimStart();
   const marker = matchAlertMarker(opening);
   if (!marker) return null;
-  const { keyword, metadata } = marker;
+  const { keyword, metadata, fold } = marker;
+  // A title needs whitespace before it. When the marker ends its text node, what follows on the line (`[!NOTE]*title*`) is written straight against the bracket.
+  if (
+    marker.length === opening.length &&
+    rest[0] !== undefined &&
+    rest[0].type !== `break`
+  ) {
+    return null;
+  }
   const start = first.value.length - opening.length;
   const escaped =
     source === undefined ? new Set<number>() : textEscapes(first, source);
-  const bracketed = marker.length - (marker.fold ? 1 : 0);
-  for (let i = 0; i < bracketed; i++) {
+  // An escaped character in the marker makes it text. So does an escaped `+` or `-` after it, and whitespace after it written as a character reference: each is text straight against the bracket, as markdown-it reads it.
+  for (let i = 0; i <= marker.length; i++) {
     if (escaped.has(start + i)) return null;
   }
-  // An escaped `+` or `-` is the title's first character.
-  const fold = escaped.has(start + bracketed) ? undefined : marker.fold;
 
   const line: N[] = [];
   const body: N[] = [];
-  for (const child of [
-    slice(first, source, start + bracketed + (fold ? 1 : 0)),
-    ...rest
-  ]) {
+  for (const child of [slice(first, source, start + marker.length), ...rest]) {
     const ending =
       child.type === `text` ? LINE_ENDING.exec(child.value ?? ``) : null;
     if (body.length > 0 || line.at(-1)?.type === `break`) {

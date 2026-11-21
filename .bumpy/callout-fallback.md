@@ -33,6 +33,15 @@ A callout whose type nobody defined is now a callout, as it is in Obsidian, and 
 
   Was a plain quote for both. Now a note, and an alert of the type `my-type`. Keys of the `types` option are read the same way, so `types: { "Release Notes": "release" }` matches `[!release-notes]`.
 
+- **A title needs a space before it** (all engines), as in Obsidian and on GitHub.
+
+  ```markdown
+  > [!NOTE]Title
+  > Body.
+  ```
+
+  Was an alert titled "Title". Now a plain quote: write `> [!NOTE] Title`. The same goes for a fold marker (`> [!NOTE]-Title`), an escaped one (`> [!NOTE]\+ Title`), formatting (`> [!NOTE]*Title*`) and an attribute block (`> [!NOTE]{.wide}`) written straight against the marker. The last of these rendered three different ways in the three engines and is now a quote in each.
+
 - **Text after `|` in the marker is the alert's metadata** (all engines), for a stylesheet to use.
 
   ```markdown

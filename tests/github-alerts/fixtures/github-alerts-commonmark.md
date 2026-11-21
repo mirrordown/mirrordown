@@ -289,8 +289,17 @@ Paragraph
 <!-- @case: spec 33: marker not at the start of the line stays a quote -->
 > See [!info] here
 
-<!-- @case: spec 33: text right after the marker is the title here, where the spec has a quote -->
+<!-- @case: spec 33: text right after the marker leaves a quote -->
 > [!info]nospace
+
+<!-- @case: a fold marker with text right after it leaves a quote -->
+> [!info]-nospace
+
+<!-- @case: formatting right after the marker leaves a quote -->
+> [!info]*nospace*
+
+<!-- @case: a title after a space, with formatting -->
+> [!info] *spaced*
 
 <!-- @case: fallback type with a hyphen reads as words in its title -->
 > [!custom-type]

@@ -198,9 +198,17 @@ describe("github-alerts: escapes and character references on the marker line", (
     );
   });
 
-  it("reads an escaped fold marker as the title's first character", () => {
+  // A title needs whitespace before it, and an escaped `+` is text written straight against the bracket: it once became the title's first character.
+  it("leaves a quote when an escaped fold marker follows the marker", () => {
     expect(renderAll("> [!NOTE]\\+ plus\n> body")).toStrictEqual(
-      inAll(alert("+ plus", "<p>body</p>"))
+      inAll("<blockquote><p>[!NOTE]+ plus\nbody</p></blockquote>")
+    );
+  });
+
+  // Whitespace written as a character reference is text to markdown-it, so it is no separator in any engine.
+  it("leaves a quote when the space after the marker is a character reference", () => {
+    expect(renderAll("> [!NOTE]&#32;title\n> body")).toStrictEqual(
+      inAll("<blockquote><p>[!NOTE] title\nbody</p></blockquote>")
     );
   });
 });
@@ -376,11 +384,9 @@ describe("github-alerts: metadata", () => {
     );
   });
 
-  it("reads an escaped fold marker after metadata as the title's first character", () => {
+  it("leaves a quote when an escaped fold marker follows the metadata", () => {
     expect(renderAll("> [!custom-type|wide]\\+ plus\n> body")).toStrictEqual(
-      inAll(
-        '<div class="markdown-alert" data-alert="custom-type" data-alert-metadata="wide"><p class="markdown-alert-title" aria-label="+ plus">+ plus</p><p>body</p></div>'
-      )
+      inAll("<blockquote><p>[!custom-type|wide]+ plus\nbody</p></blockquote>")
     );
   });
 });
