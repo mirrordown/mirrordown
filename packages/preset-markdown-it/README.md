@@ -69,7 +69,7 @@ md.use(mirrordown, {
 | `ins`               | `++inserted++`                              | `@mirrordown/mdit-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/mdit-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/mdit-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/mdit-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/mdit-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/mdit-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/mdit-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/mdit-ruby`               |

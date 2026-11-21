@@ -18,7 +18,7 @@ import {
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
-import { mark } from "@mirrordown/mdit-mark";
+import { mark, type MarkOptions } from "@mirrordown/mdit-mark";
 import {
   mermaidPele,
   type MermaidPeleOptions
@@ -50,7 +50,7 @@ export interface MirrordownOptions {
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | MermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
@@ -108,7 +108,7 @@ export const mirrordown = (
   configured(options.githubAlerts, githubAlerts);
   on(options.ins, ins);
   on(options.kbd, kbd);
-  on(options.mark, mark);
+  configured(options.mark, mark);
   configured(options.ruby, ruby);
   configured(options.steps, steps);
   on(options.spoiler, spoiler);
