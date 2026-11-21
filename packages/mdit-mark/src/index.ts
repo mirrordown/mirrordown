@@ -150,17 +150,22 @@ export function mark(md: MDit): void {
   // A highlight's colour, read once every delimiter rule has run and adjacent text has been joined, so the token after `mark_open` is the highlight's first child as it renders. A character reference is still its own `text_special` token here (markdown-it joins those in later, in `text_join`), so a marker written as one is not plain text and colours nothing, as in remark and Sätteri. It runs before attrs, a core rule, so a `data-highlight` written in an attribute block replaces this one.
   md.inline.ruler2.after(`fragments_join`, `mark_colour`, (state) => {
     const { tokens } = state;
-    for (let i = 0; i < tokens.length; i++) {
-      if (tokens[i].type !== `mark_open`) continue;
-      const first = tokens[i + 1];
-      if (first?.type !== `text`) continue;
-      const split = splitHighlightColour(first.content);
-      if (!split) continue;
-      tokens[i].attrSet(`data-highlight`, split.colour);
-      // An emptied text token is dropped, as remark and Sätteri drop the emptied node, so the highlight is as empty to a later plugin as it renders.
-      if (split.rest) first.content = split.rest;
-      else tokens.splice(i + 1, 1);
+    // An emptied text token is dropped, as remark and Sätteri drop the emptied node, so the highlight is as empty to a later plugin as it renders. The list is compacted in one pass, as `fragments_join` does: removing each token on its own is quadratic on a line of many highlights.
+    let kept = 0;
+    let previous: Token | undefined;
+    for (const token of tokens) {
+      const split =
+        previous?.type === `mark_open` && token.type === `text`
+          ? splitHighlightColour(token.content)
+          : undefined;
+      if (split) {
+        previous?.attrSet(`data-highlight`, split.colour);
+        token.content = split.rest;
+      }
+      if (!split || split.rest) tokens[kept++] = token;
+      previous = token;
     }
+    tokens.length = kept;
     return true;
   });
 }
