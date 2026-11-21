@@ -1,0 +1,505 @@
+{
+ "agree": 3413,
+ "differ": {
+  "highlight/triple": {
+   "markdown": "===text==\n",
+   "obsidian": [
+    "=text"
+   ],
+   "ours": [
+    "text"
+   ]
+  },
+  "probe/html-markdown/item-inline-and-block": {
+   "markdown": "- <mark>*e*</mark> and <div>**b**</div>\n",
+   "obsidian": [
+    "e"
+   ],
+   "ours": {
+    "mdit": [],
+    "remd": [],
+    "sat": [
+     "e"
+    ]
+   }
+  },
+  "fuzz/embed/74": {
+   "markdown": "est> | ![[==[[a#^blk]]==]]\n",
+   "obsidian": [
+    "a > ^blk"
+   ],
+   "ours": [
+    "a#^blk"
+   ]
+  },
+  "fuzz/embed/89": {
+   "markdown": "  [[a|b]]](<mailto:a@e.test>\t![[==mark==]]\n",
+   "obsidian": [],
+   "ours": [
+    "mark"
+   ]
+  },
+  "fuzz/footnote/38": {
+   "markdown": "1. [^==mark==]\n",
+   "obsidian": [],
+   "ours": [
+    "mark"
+   ]
+  },
+  "fuzz/embed/100": {
+   "markdown": "==![[$x^2$]]==\n",
+   "obsidian": [
+    "$x^2$"
+   ],
+   "ours": [
+    "!$x^2$"
+   ]
+  },
+  "fuzz/embed/106": {
+   "markdown": "# ![[==[[a|b]]==\n",
+   "obsidian": [
+    "b"
+   ],
+   "ours": [
+    "a|b"
+   ]
+  },
+  "fuzz/highlight/58": {
+   "markdown": "> > ==[[a#h]]]]== | <http\n",
+   "obsidian": [
+    "a > h]]"
+   ],
+   "ours": [
+    "a#h]]"
+   ]
+  },
+  "fuzz/comment/2": {
+   "markdown": "> %%note%% \\ [[a#^blk](target]] %%==mark==%%\n",
+   "obsidian": [],
+   "ours": [
+    "mark"
+   ]
+  },
+  "fuzz/embed/24": {
+   "markdown": "%% | ![[==mark==]], [[target]]\n",
+   "obsidian": [],
+   "ours": [
+    "mark"
+   ]
+  },
+  "highlight/fam-circle-red-vs": {
+   "markdown": "==🔴️ text==\n",
+   "obsidian": [
+    "️ text"
+   ],
+   "ours": [
+    "🔴️ text"
+   ]
+  },
+  "highlight/emoji-nested": {
+   "markdown": "==🔴 a ==🟢 b== c==\n",
+   "obsidian": [
+    " a ==🟢 b"
+   ],
+   "ours": [
+    "🔴 a 🟢 b"
+   ]
+  },
+  "highlight/emoji-in-comment": {
+   "markdown": "%%==🔴 text==%%\n",
+   "obsidian": [],
+   "ours": [
+    "🔴 text"
+   ]
+  },
+  "highlight/emoji-tab-after": {
+   "markdown": "==🔴\ttext==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🔴 text"
+   ]
+  },
+  "highlight/emoji-newline-after": {
+   "markdown": "==🔴\ntext==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🔴 text"
+   ]
+  },
+  "highlight/set-circle-orange": {
+   "markdown": "==🟠 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟠 text"
+   ]
+  },
+  "highlight/set-circle-yellow": {
+   "markdown": "==🟡 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟡 text"
+   ]
+  },
+  "highlight/set-circle-green": {
+   "markdown": "==🟢 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟢 text"
+   ]
+  },
+  "highlight/set-circle-blue": {
+   "markdown": "==🔵 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🔵 text"
+   ]
+  },
+  "highlight/set-circle-purple": {
+   "markdown": "==🟣 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟣 text"
+   ]
+  },
+  "highlight/set-square-orange": {
+   "markdown": "==🟧 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟧 text"
+   ]
+  },
+  "highlight/set-square-purple": {
+   "markdown": "==🟪 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟪 text"
+   ]
+  },
+  "highlight/emoji-space-text": {
+   "markdown": "==🔴 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🔴 text"
+   ]
+  },
+  "highlight/emoji-text-nospace": {
+   "markdown": "==🔴text==\n",
+   "obsidian": [
+    "text"
+   ],
+   "ours": [
+    "🔴text"
+   ]
+  },
+  "highlight/square-red": {
+   "markdown": "==🟥text==\n",
+   "obsidian": [
+    "text"
+   ],
+   "ours": [
+    "🟥text"
+   ]
+  },
+  "highlight/square-yellow": {
+   "markdown": "==🟨 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟨 text"
+   ]
+  },
+  "highlight/square-green": {
+   "markdown": "==🟩 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟩 text"
+   ]
+  },
+  "highlight/square-blue": {
+   "markdown": "==🟦 text==\n",
+   "obsidian": [
+    " text"
+   ],
+   "ours": [
+    "🟦 text"
+   ]
+  },
+  "highlight/emoji-only-body": {
+   "markdown": "==🔴==\n",
+   "obsidian": [
+    ""
+   ],
+   "ours": [
+    "🔴"
+   ]
+  },
+  "highlight/emoji-doubled": {
+   "markdown": "==🔴🟩text==\n",
+   "obsidian": [
+    "🟩text"
+   ],
+   "ours": [
+    "🔴🟩text"
+   ]
+  },
+  "highlight/emoji-in-callout-title": {
+   "markdown": "> [!note] ==🔴 T==\n",
+   "obsidian": [
+    " T"
+   ],
+   "ours": [
+    "🔴 T"
+   ]
+  },
+  "highlight/emoji-in-table-cell": {
+   "markdown": "| a |\n| --- |\n| ==🔴 t== |\n",
+   "obsidian": [
+    " t"
+   ],
+   "ours": [
+    "🔴 t"
+   ]
+  },
+  "probe/math/in-highlight": {
+   "markdown": "==$x^2$==\n",
+   "obsidian": [
+    "⟨math⟩"
+   ],
+   "ours": [
+    "$x^2$"
+   ]
+  },
+  "probe/footnote-content/inline-highlight": {
+   "markdown": "^[==mark==]\n",
+   "obsidian": [],
+   "ours": [
+    "mark"
+   ]
+  },
+  "probe/block-id-inline/highlight-wraps": {
+   "markdown": "==^blk==\n",
+   "obsidian": [
+    ""
+   ],
+   "ours": [
+    "^blk"
+   ]
+  },
+  "probe/block-id-inline/in-list": {
+   "markdown": "1. ==^blk==\n",
+   "obsidian": [
+    ""
+   ],
+   "ours": [
+    "^blk"
+   ]
+  },
+  "probe/straddle/callout-highlight": {
+   "markdown": "> [!note] ==a\nb==\n",
+   "obsidian": [],
+   "ours": [
+    "a b"
+   ]
+  },
+  "probe/straddle/indent-tab-highlight": {
+   "markdown": "  \t==a==\n",
+   "obsidian": [
+    "a"
+   ],
+   "ours": []
+  },
+  "probe/straddle/table-interrupt-highlight": {
+   "markdown": "| a |\n| --- |\n==b\nc==\n",
+   "obsidian": [
+    "b c"
+   ],
+   "ours": []
+  },
+  "probe/straddle/highlight-crosses-comment": {
+   "markdown": "%%a ==b%% c==\n",
+   "obsidian": [],
+   "ours": [
+    "b%% c"
+   ]
+  },
+  "probe/straddle/html-setext-highlight": {
+   "markdown": "<br>\n==a==\n===\n",
+   "obsidian": [],
+   "ours": {
+    "mdit": [
+     "a"
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "probe/straddle-fold/paragraph-merge": {
+   "markdown": "==a\n  ===\n[^1]: b==\n",
+   "obsidian": [
+    "a ="
+   ],
+   "ours": []
+  },
+  "probe/straddle-fold/inline-refold": {
+   "markdown": "H\n  ===\n[^1]: ==a==\n",
+   "obsidian": [
+    "= 1: ==a"
+   ],
+   "ours": []
+  },
+  "probe/straddle-fold/quote-indented-code": {
+   "markdown": "> ==a\n> b\n    c==\n",
+   "obsidian": [],
+   "ours": [
+    "a b c"
+   ]
+  },
+  "probe/straddle-fold/html-setext-span": {
+   "markdown": "<br>\n==a\nb==\n===\n",
+   "obsidian": [],
+   "ours": {
+    "mdit": [
+     "a b"
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "probe/straddle-fold/footnote-interrupt": {
+   "markdown": "a==b\n[^1]: c==\n",
+   "obsidian": [
+    "b 1: c"
+   ],
+   "ours": {
+    "mdit": [
+     "b [^1]: c"
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "probe/cross/math-highlight": {
+   "markdown": "$a==b$c==\n",
+   "obsidian": [],
+   "ours": [
+    "b$c"
+   ]
+  },
+  "probe/cross/highlight-code": {
+   "markdown": "==a`b==c`\n",
+   "obsidian": [
+    "a`b"
+   ],
+   "ours": []
+  },
+  "probe/cross/highlight-wikilink": {
+   "markdown": "==a[[b==c]]\n",
+   "obsidian": [
+    "a[[b"
+   ],
+   "ours": []
+  },
+  "probe/cross/comment-highlight": {
+   "markdown": "%%a==b%%c==\n",
+   "obsidian": [],
+   "ours": [
+    "b%%c"
+   ]
+  },
+  "probe/cross/highlight-strong": {
+   "markdown": "==a**b==c**\n",
+   "obsidian": [
+    "a**b"
+   ],
+   "ours": {
+    "mdit": [
+     "a**b"
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "probe/heading-highlight-footnote/inline-note": {
+   "markdown": "# ==^[inline]==\n",
+   "obsidian": [
+    "⟨fn⟩"
+   ],
+   "ours": [
+    "^[inline]"
+   ]
+  },
+  "token/highlight/doubled-open": {
+   "markdown": "====text==\n",
+   "obsidian": [
+    "=text"
+   ],
+   "ours": [
+    "text"
+   ]
+  },
+  "token/highlight/nested": {
+   "markdown": "====text====\n",
+   "obsidian": [
+    "=text"
+   ],
+   "ours": [
+    "text"
+   ]
+  },
+  "token/highlight/escaped-close": {
+   "markdown": "==text\\==\n",
+   "obsidian": [
+    "text\\"
+   ],
+   "ours": []
+  },
+  "token/highlight/newline-escaped-close": {
+   "markdown": "==text\ntext\\==\n",
+   "obsidian": [
+    "text text\\"
+   ],
+   "ours": []
+  },
+  "context/html-block/highlight": {
+   "markdown": "<div>\n==text==\n</div>\n",
+   "obsidian": [],
+   "ours": {
+    "mdit": [
+     "text"
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "hunt/fix-lazy-setext-chain-not-idempotent/1": {
+   "markdown": "para\n[^1]: a\n===\n[^2]: b\n===\n[^3]: c\n\nx[^1] y[^2] z[^3]\n",
+   "obsidian": [
+    "= 2: b ="
+   ],
+   "ours": []
+  }
+ }
+}
