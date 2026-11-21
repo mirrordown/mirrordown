@@ -197,7 +197,13 @@ export const lightbox: PluginWithOptions<LightboxOptions> = (
         const id = md.utils.escapeHtml(
           (image.meta as Required<ImageMeta>).lightboxId
         );
+        // The dialog shows the image at full size, so its copy has no `width` or `height`: those size the image on the page, and a host that resizes images from them would shrink the dialog's image too. The token is the trigger's own, already rendered, so its attributes are put back.
+        const { attrs } = image;
+        image.attrs =
+          attrs?.filter(([name]) => name !== "width" && name !== "height") ??
+          null;
         const img = renderImage([image], 0, opts, env, self);
+        image.attrs = attrs;
         // A caption that renders only HTML whitespace shows nothing, so it gets no `<p>`: this string is written at render time, where squeeze-paragraphs cannot remove an empty one. `lightboxDialog` in `@mirrordown/core` applies the same rule for the other engines.
         const rendered = caption ? self.renderInline(caption, opts, env) : "";
         const text = /^[ \t\n\f\r]*$/.test(rendered)

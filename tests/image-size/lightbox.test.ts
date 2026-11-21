@@ -10,30 +10,28 @@ const trigger = (target: string, img: string) =>
 const dialog = (target: string, img: string) =>
   `<dialog id="${target}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${target}" aria-label="Close image">${img}</button></dialog>`;
 
-// The lightbox shows the image twice, as the trigger's thumbnail and in the dialog. Both are copies of the one image, so both have its size and its alt without it: the size is the image's, written once by the author, and a host resizes the dialog's image to it as well.
+// The lightbox shows the image twice: on the page, as the trigger's thumbnail, and in the dialog, at full size. The size the author wrote is for the page. If the dialog's image carried it too, a host that resizes images from `width` and `height` (Astro's image pipeline) would shrink the full-size view to the thumbnail's.
 describe.each(engines)("image-size + lightbox (%s)", (_engine, render) => {
   const html = render(only(`imageSize`, `lightbox`));
 
-  it("sizes the trigger's image and the dialog's alike", () => {
-    const img = '<img src="u.jpg" alt="a" width="100" height="145">';
+  it("sizes the trigger's image and leaves the dialog's at full size", () => {
     expect(html("Look: !![a|100x145](u.jpg)")).toBe(
-      `<p>Look: ${trigger(id, img)}</p>${dialog(id, img)}`
+      `<p>Look: ${trigger(id, '<img src="u.jpg" alt="a" width="100" height="145">')}</p>${dialog(id, '<img src="u.jpg" alt="a">')}`
     );
   });
 
-  it("keeps a title on both", () => {
-    const img = '<img src="u.jpg" alt="a" title="T" width="100">';
+  it("keeps the alt without the size, and the title, on both", () => {
     expect(html('Look: !![a|100](u.jpg "T")')).toBe(
-      `<p>Look: ${trigger(id, img)}</p>${dialog(id, img)}`
+      `<p>Look: ${trigger(id, '<img src="u.jpg" alt="a" title="T" width="100">')}</p>${dialog(id, '<img src="u.jpg" alt="a" title="T">')}`
     );
   });
 
-  // The dialog's id is the src's, and the size is not part of the src: two sizes of one image share a dialog, which shows the first.
+  // The dialog's id is the src's, and the size is not part of the src: two sizes of one image share a dialog, which shows the first image's alt.
   it("shares one dialog between two sizes of one image", () => {
     const small = '<img src="u.jpg" alt="a" width="100">';
     const large = '<img src="u.jpg" alt="b" width="400">';
     expect(html("!![a|100](u.jpg) and !![b|400](u.jpg)")).toBe(
-      `<p>${trigger(id, small)} and ${trigger(id, large)}</p>${dialog(id, small)}`
+      `<p>${trigger(id, small)} and ${trigger(id, large)}</p>${dialog(id, '<img src="u.jpg" alt="a">')}`
     );
   });
 });
@@ -42,12 +40,13 @@ describe.each(engines)(
   "image-size + lightbox + unwrap-images (%s)",
   (_engine, render) => {
     it("unwraps a sized lightbox image", () => {
-      const img = '<img src="u.jpg" alt="a" width="100">';
       expect(
         render(only(`imageSize`, `lightbox`, `unwrapImages`))(
           "!![a|100](u.jpg)"
         )
-      ).toBe(`${trigger(id, img)}${dialog(id, img)}`);
+      ).toBe(
+        `${trigger(id, '<img src="u.jpg" alt="a" width="100">')}${dialog(id, '<img src="u.jpg" alt="a">')}`
+      );
     });
   }
 );

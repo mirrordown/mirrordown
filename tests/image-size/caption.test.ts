@@ -24,7 +24,7 @@ describe.each(engines)("image-size + caption (%s)", (_engine, render) => {
     const withLightbox = render(only(`imageSize`, `caption`, `lightbox`));
     const img = '<img src="e.jpg" alt="Engelbart" width="100">';
     expect(withLightbox("!![Engelbart|100](e.jpg)\n~: A portrait")).toBe(
-      `<figure class="markdown-caption"><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="${id}">${img}</button><figcaption>A portrait</figcaption></figure><dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image">${img}</button></dialog>`
+      `<figure class="markdown-caption"><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="${id}">${img}</button><figcaption>A portrait</figcaption></figure><dialog id="${id}" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="${id}" aria-label="Close image"><img src="e.jpg" alt="Engelbart"></button></dialog>`
     );
   });
 });
