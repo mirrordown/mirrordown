@@ -15,6 +15,7 @@ import {
   githubAlerts,
   type AlertOptions
 } from "@mirrordown/mdit-github-alerts";
+import { imageSize } from "@mirrordown/mdit-image-size";
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
@@ -46,6 +47,7 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
@@ -109,6 +111,8 @@ export const mirrordown = (
   on(options.mark, mark);
   configured(options.ruby, ruby);
   configured(options.steps, steps);
+  // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Listed where the remark and Sätteri presets need it.
+  on(options.imageSize, imageSize);
   on(options.spoiler, spoiler);
   on(options.sub, sub);
   on(options.sup, sup);

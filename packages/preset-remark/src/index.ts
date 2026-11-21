@@ -33,6 +33,7 @@ import {
   githubAlertsHastHandlers,
   type AlertOptions
 } from "@mirrordown/remd-github-alerts";
+import { remarkImageSize } from "@mirrordown/remd-image-size";
 import { remarkIns } from "@mirrordown/remd-ins";
 import { remarkKbd } from "@mirrordown/remd-kbd";
 import {
@@ -80,6 +81,7 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
@@ -171,6 +173,8 @@ export const mirrordown = (
       ...on(options.ins, remarkIns),
       ...on(options.mark, remarkMark),
       ...configured(options.steps, remarkSteps),
+      // After prompt and ruby, which make image nodes (a prompt's preview, a ruby rebuilt from its source), so it sizes theirs too. Before the plugins that wrap an image or read its alt (spoiler, caption, and lightbox and unwrap-images among the rehype plugins), so they find it sized and without the size in its alt. Attrs may come after: its `width` and `height` win either way.
+      ...on(options.imageSize, remarkImageSize),
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),
       ...on(options.sup, remarkSup),

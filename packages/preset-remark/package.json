@@ -30,6 +30,7 @@
     "@mirrordown/remd-del": "workspace:^",
     "@mirrordown/remd-file-tree": "workspace:^",
     "@mirrordown/remd-github-alerts": "workspace:^",
+    "@mirrordown/remd-image-size": "workspace:^",
     "@mirrordown/remd-ins": "workspace:^",
     "@mirrordown/remd-kbd": "workspace:^",
     "@mirrordown/remd-lightbox": "workspace:^",
