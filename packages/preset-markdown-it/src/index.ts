@@ -101,6 +101,8 @@ export const mirrordown = (
         };
 
   on(options.abbr, abbr);
+  // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Before attrs, whose rule sits there too: an attribute block's `title` then follows the size, as in remark and Sätteri.
+  on(options.imageSize, imageSize);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
   on(options.definitionList, dl);
@@ -111,8 +113,6 @@ export const mirrordown = (
   on(options.mark, mark);
   configured(options.ruby, ruby);
   configured(options.steps, steps);
-  // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Listed where the remark and Sätteri presets need it.
-  on(options.imageSize, imageSize);
   on(options.spoiler, spoiler);
   on(options.sub, sub);
   on(options.sup, sup);
