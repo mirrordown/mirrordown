@@ -115,3 +115,4 @@ export {
   type CopyCodeOptions,
   type CopyCodeState
 } from "./copy-code.js";
+export { parseImageSize, type ImageSize } from "./image-size.js";
