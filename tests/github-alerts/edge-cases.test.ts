@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import MarkdownIt from "markdown-it";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
@@ -11,6 +12,12 @@ import {
   githubAlertsHastHandlers
 } from "../../packages/remd-github-alerts/src";
 import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
+import {
+  ICONS,
+  createAlertResolver,
+  isAlertMarkerLine,
+  matchAlertMarker
+} from "../../packages/core/src";
 import { normalizeHtml } from "../utils/index.js";
 import type { AlertOptions } from "../../packages/mdit-github-alerts/src";
 
@@ -45,24 +52,48 @@ const alert = (title: string, rest: string, label = title): string =>
   `<div class="markdown-alert" data-alert="note"><p class="markdown-alert-title" aria-label="${label}">${title}</p>${rest}</div>`;
 
 describe("github-alerts: keywords that name Object.prototype members", () => {
-  // The alias table is a plain object, so an inherited member must never count as an alias: it resolved to a function, and building the title from it threw on plain input.
-  it.each(["constructor", "toString", "hasOwnProperty", "valueOf"])(
-    "leaves `[!%s]` a blockquote",
-    (keyword) => {
-      const html = `<blockquote><p>[!${keyword}]\nbody</p></blockquote>`;
-      expect(renderAll(`> [!${keyword}]\n> body`)).toStrictEqual(inAll(html));
-      expect(
-        renderAll(`> [!${keyword}]\n> body`, { matchCaseInsensitive: false })
-      ).toStrictEqual(inAll(html));
-    }
-  );
+  // The alias table is a plain object, so an inherited member must never count as an alias: it resolved to a function, and building the title from it threw on plain input. Such a keyword is an undefined type like any other word, and falls back to an alert of its own.
+  it.each([
+    ["constructor", "constructor", "Constructor", "Constructor"],
+    ["toString", "tostring", "Tostring", "ToString"],
+    ["hasOwnProperty", "hasownproperty", "Hasownproperty", "HasOwnProperty"],
+    ["valueOf", "valueof", "Valueof", "ValueOf"]
+  ])("makes `[!%s]` a fallback alert", (keyword, type, title, exactTitle) => {
+    const html = (type: string, title: string): string =>
+      `<div class="markdown-alert" data-alert="${type}"><p class="markdown-alert-title" aria-label="${title}">${title}</p><p>body</p></div>`;
+    const src = `> [!${keyword}]\n> body`;
+    expect(renderAll(src)).toStrictEqual(inAll(html(type, title)));
+    expect(renderAll(src, { matchCaseInsensitive: false })).toStrictEqual(
+      inAll(html(keyword, exactTitle))
+    );
+    expect(renderAll(src, { fallback: false })).toStrictEqual(
+      inAll(`<blockquote><p>[!${keyword}]\nbody</p></blockquote>`)
+    );
+  });
 
-  it("leaves `[!__proto__]` a blockquote", () => {
+  // A document can't name `__proto__` as plain text: `__proto__` is strong emphasis in every engine, and an escaped marker is no marker. The resolver can still be handed it, and must not read the member every object inherits by that name.
+  it("leaves `[!\\_\\_proto\\_\\_]` a blockquote", () => {
     const [mdit, remd, sat] = renderAll("> [!\\_\\_proto\\_\\_]\n> body");
     expect(mdit).toContain("<blockquote>");
     expect(remd).toContain("<blockquote>");
     expect(sat).toContain("<blockquote>");
   });
+
+  it.each([
+    ["__proto__", "__proto__"],
+    ["constructor", "Constructor"],
+    ["toString", "ToString"]
+  ])(
+    "resolves %s to a fallback type of that name, with its own title and the note icon",
+    (keyword, title) => {
+      const { resolve, titleFor, iconFor } = createAlertResolver({
+        matchCaseInsensitive: false
+      });
+      expect(resolve(keyword)).toBe(keyword);
+      expect(titleFor(keyword)).toBe(title);
+      expect(iconFor(keyword)).toBe(ICONS.note);
+    }
+  );
 
   it("titles a custom type named like an inherited member from its keyword, with icons on", () => {
     const html = `<div class="markdown-alert" data-alert="constructor"><p class="markdown-alert-title" aria-label="Constructor">Constructor</p><p>body</p></div>`;
@@ -85,10 +116,12 @@ describe("github-alerts: `types` keys", () => {
     expect([remd, sat]).toStrictEqual([mdit, mdit]);
   });
 
+  // With `fallback` on, `[!spoiler]` would be an alert of the undefined type `spoiler` instead, which looks the same.
   it("match exactly when matching is case-sensitive", () => {
     const options = {
       types: { Spoiler: "spoiler" },
-      matchCaseInsensitive: false
+      matchCaseInsensitive: false,
+      fallback: false
     };
     expect(renderAll("> [!Spoiler]\n> body", options)[0]).toContain(
       'data-alert="spoiler"'
@@ -165,9 +198,17 @@ describe("github-alerts: escapes and character references on the marker line", (
     );
   });
 
-  it("reads an escaped fold marker as the title's first character", () => {
+  // A title needs whitespace before it, and an escaped `+` is text written straight against the bracket: it once became the title's first character.
+  it("leaves a quote when an escaped fold marker follows the marker", () => {
     expect(renderAll("> [!NOTE]\\+ plus\n> body")).toStrictEqual(
-      inAll(alert("+ plus", "<p>body</p>"))
+      inAll("<blockquote><p>[!NOTE]+ plus\nbody</p></blockquote>")
+    );
+  });
+
+  // Whitespace written as a character reference is text to markdown-it, so it is no separator in any engine.
+  it("leaves a quote when the space after the marker is a character reference", () => {
+    expect(renderAll("> [!NOTE]&#32;title\n> body")).toStrictEqual(
+      inAll("<blockquote><p>[!NOTE] title\nbody</p></blockquote>")
     );
   });
 });
@@ -178,6 +219,15 @@ describe("github-alerts: a title with no plain text", () => {
     expect(renderAll("> [!NOTE] ![](x.png)\n> body")).toStrictEqual(
       inAll(alert('<img src="x.png" alt="">', "<p>body</p>", "Note"))
     );
+  });
+});
+
+describe("github-alerts: a default title with spaces around it", () => {
+  // markdown-it and remark label a title by its text without the spaces around it, and Sätteri labelled a default title as the `titles` option gave it, so the engines disagreed.
+  it("is labelled without them, in every engine", () => {
+    expect(
+      renderAll("> [!NOTE]\n> body", { titles: { note: " Hinweis " } })
+    ).toStrictEqual(inAll(alert(" Hinweis ", "<p>body</p>", "Hinweis")));
   });
 });
 
@@ -230,5 +280,187 @@ describe("github-alerts: a title for a custom type", () => {
     expect(renderAll("> [!TIP]\n> body", options)).toStrictEqual(
       inAll(html("tip", "Pro tip"))
     );
+  });
+});
+
+// An undefined type falls back to an alert of its own, and only when its identifier could be a `data-alert` value that reads the same in every engine.
+describe("github-alerts: undefined types", () => {
+  const quote = (text: string): string =>
+    `<blockquote><p>${text}\nbody</p></blockquote>`;
+
+  it.each(["a.b", 'x"y', "what?", "a/b", "my type.v2"])(
+    "leaves `[!%s]` a blockquote: a character outside letters, numbers, `_` and `-`",
+    (keyword) => {
+      expect(renderAll(`> [!${keyword}]\n> body`)).toStrictEqual(
+        inAll(quote(`[!${keyword}]`))
+      );
+    }
+  );
+
+  // markdown-it ends its text token at a line ending, so a marker that crossed one would be read in remark and Sätteri only.
+  it.each([
+    ["> [!my\n> type]\n> body", "[!my\ntype]"],
+    ["> [!info|a\n> b]\n> body", "[!info|a\nb]"]
+  ])("does not read a marker across a line ending: %j", (src, text) => {
+    expect(renderAll(src)).toStrictEqual(inAll(quote(text)));
+  });
+
+  // The marker has to be plain text at the start of the quote's first paragraph, as for a built-in type.
+  it.each([
+    [
+      "> `[!custom-type]`\n> body",
+      "<blockquote><p><code>[!custom-type]</code>\nbody</p></blockquote>"
+    ],
+    [
+      "> [[!custom-type]](http://x)\n> body",
+      '<blockquote><p><a href="http://x">[!custom-type]</a>\nbody</p></blockquote>'
+    ],
+    [
+      "> # [!custom-type]\n> body",
+      "<blockquote><h1>[!custom-type]</h1><p>body</p></blockquote>"
+    ],
+    [
+      "> - [!custom-type]\n> body",
+      "<blockquote><ul><li>[!custom-type]\nbody</li></ul></blockquote>"
+    ],
+    [
+      "> See [!custom-type] here\n> body",
+      "<blockquote><p>See [!custom-type] here\nbody</p></blockquote>"
+    ]
+  ])("leaves a marker that is not plain text at the start: %j", (src, html) => {
+    expect(renderAll(src)).toStrictEqual(inAll(html));
+  });
+
+  // A dash at either end of the identifier gives a default title with a space at that end, which the label leaves out in every engine. Visually the title reads the same.
+  it.each([
+    ["custom-", "Custom ", "Custom"],
+    ["-custom", " custom", "custom"],
+    ["-", " ", " "]
+  ])("titles `[!%s]` %j, labelled %j", (keyword, title, label) => {
+    expect(renderAll(`> [!${keyword}]\n> body`)).toStrictEqual(
+      inAll(
+        `<div class="markdown-alert" data-alert="${keyword}"><p class="markdown-alert-title" aria-label="${label}">${title}</p><p>body</p></div>`
+      )
+    );
+  });
+
+  it.each(["\r", "\r\n", "\n"])("ends the marker line at %j", (eol) => {
+    expect(
+      renderAll(`> [!custom-type|wide] Title${eol}> body${eol}`)
+    ).toStrictEqual(
+      inAll(
+        '<div class="markdown-alert" data-alert="custom-type" data-alert-metadata="wide"><p class="markdown-alert-title" aria-label="Title">Title</p><p>body</p></div>'
+      )
+    );
+  });
+});
+
+describe("github-alerts: metadata", () => {
+  // Free text in an attribute: each engine escapes it in its own spelling, which the comparison unifies, and none leaves a raw `&` or `"`. A `$` pattern is text, not a replacement pattern.
+  it.each([
+    [
+      '> [!info|a < b > c & "d" $& $$]\n> body',
+      '<div class="markdown-alert" data-alert="info" data-alert-metadata="a < b > c &amp; &quot;d&quot; $&amp; $$"><p class="markdown-alert-title" aria-label="Info">Info</p><p>body</p></div>'
+    ],
+    [
+      "> [!custom-type|R&D]- T\n> body",
+      '<details class="markdown-alert" data-alert="custom-type" data-alert-metadata="R&amp;D"><summary class="markdown-alert-title" aria-label="T">T</summary><p>body</p></details>'
+    ]
+  ])("escapes it in its attribute: %j", (src, html) => {
+    expect(renderAll(src)).toStrictEqual(inAll(html));
+  });
+
+  // An escaped character or a character reference anywhere in the brackets makes the marker text, as it does in the identifier: markdown-it splits the text there, so no engine could read on.
+  it.each([
+    ["> [!info\\|wide]\n> body", "[!info|wide]"],
+    ["> [!info|a &amp; b]\n> body", "[!info|a &amp; b]"],
+    ["> [!info|a\\]b]\n> body", "[!info|a]b]"],
+    ["> [!custom\\-type|wide]\n> body", "[!custom-type|wide]"],
+    ["> \\[!custom-type|wide]\n> body", "[!custom-type|wide]"],
+    ["> &#91;!custom-type|wide]\n> body", "[!custom-type|wide]"]
+  ])("leaves an escaped marker a blockquote: %j", (src, text) => {
+    expect(renderAll(src)).toStrictEqual(
+      inAll(`<blockquote><p>${text}\nbody</p></blockquote>`)
+    );
+  });
+
+  it("leaves a quote when an escaped fold marker follows the metadata", () => {
+    expect(renderAll("> [!custom-type|wide]\\+ plus\n> body")).toStrictEqual(
+      inAll("<blockquote><p>[!custom-type|wide]+ plus\nbody</p></blockquote>")
+    );
+  });
+});
+
+describe("github-alerts: a marker in a GFM table cell", () => {
+  // A cell holds no blockquote, so a marker there is only text.
+  it("stays text", () => {
+    const src = "| a |\n| - |\n| [!custom-type] |";
+    const html = [
+      new MarkdownIt().use(githubAlerts).render(src),
+      String(
+        unified()
+          .use(remarkParse)
+          .use(remarkGfm)
+          .use(remarkGithubAlerts)
+          .use(remarkRehype, { handlers: githubAlertsHastHandlers })
+          .use(rehypeStringify)
+          .processSync(src)
+      ),
+      markdownToHtml(src, {
+        features: { gfm: true, frontmatter: false, smartPunctuation: false },
+        mdastPlugins: [satteriGithubAlerts()]
+      }).html
+    ].map(normalizeHtml);
+    expect(html).toStrictEqual(
+      inAll(
+        "<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>[!custom-type]</td></tr></tbody></table>"
+      )
+    );
+  });
+});
+
+// Steps, tabs and caption read a source line with `isAlertMarkerLine` to tell an alert's line, so it has to take every marker the plugins read.
+describe("github-alerts: the marker grammar", () => {
+  it("splits a marker into its identifier, metadata and fold", () => {
+    expect(matchAlertMarker("[!My type| wide ]- Title")).toStrictEqual({
+      length: 18,
+      keyword: "My type",
+      metadata: "wide",
+      fold: "-"
+    });
+  });
+
+  it.each([
+    "> [!custom-type]",
+    "> [!info|wide]+ Title",
+    "> > [!重要|]",
+    ">[!My type]"
+  ])("knows %j for an alert's line", (line) => {
+    expect(isAlertMarkerLine(line)).toBe(true);
+  });
+
+  it.each(["> [!|wide]", "> [!]", "> See [!info]"])(
+    "knows %j is not one",
+    (line) => {
+      expect(isAlertMarkerLine(line)).toBe(false);
+    }
+  );
+
+  // A pattern that started again from every character of a long run would take seconds here. The bound is far above what linear work takes and far below that.
+  it.each([
+    ["an identifier", `[!${"a".repeat(50_000)}`],
+    ["metadata", `[!a|${"b".repeat(50_000)}`],
+    ["spaces", `[!${" ".repeat(50_000)}]`],
+    ["spaces in an identifier", `[!a${" ".repeat(50_000)}b]`],
+    ["markers", "[!".repeat(50_000)],
+    ["pipes", `[!a${"|".repeat(50_000)}`],
+    ["dashes", `[!${"-".repeat(50_000)}]`]
+  ])("reads a run of %s in linear time", (_name, text) => {
+    const { resolve } = createAlertResolver();
+    const started = performance.now();
+    isAlertMarkerLine(`> ${text}`);
+    const marker = matchAlertMarker(text);
+    if (marker) resolve(marker.keyword);
+    expect(performance.now() - started).toBeLessThan(1000);
   });
 });

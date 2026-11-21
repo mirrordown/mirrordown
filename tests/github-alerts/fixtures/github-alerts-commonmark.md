@@ -185,9 +185,9 @@ a
 >     [!NOTE]
 > Body text.
 
-<!-- @case: unknown type passthrough -->
+<!-- @case: unknown type falls back to an alert of its own type -->
 > [!UNKNOWN]
-> Not an alert.
+> Body text.
 
 <!-- @case: regular blockquote -->
 > Just a regular blockquote.
@@ -266,3 +266,130 @@ Paragraph
 <!-- @case: marker line ending in a hard break -->
 > [!NOTE]\
 > After a hard break.
+
+<!-- @case: spec 28: callout with a title and a body -->
+> [!info] Here's a callout title
+> Here's a callout block.
+
+<!-- @case: spec 29: default title -->
+> [!WARNING]
+> Careful.
+
+<!-- @case: spec 30: title-only callout -->
+> [!tip] Title-only callout
+
+<!-- @case: spec 31: folded closed alias -->
+> [!faq]- Are callouts foldable?
+> Yes!
+
+<!-- @case: spec 32: nested callouts -->
+> [!question] Can callouts be nested?
+> > [!todo] Yes!, they can.
+
+<!-- @case: spec 33: marker not at the start of the line stays a quote -->
+> See [!info] here
+
+<!-- @case: spec 33: text right after the marker leaves a quote -->
+> [!info]nospace
+
+<!-- @case: a fold marker with text right after it leaves a quote -->
+> [!info]-nospace
+
+<!-- @case: formatting right after the marker leaves a quote -->
+> [!info]*nospace*
+
+<!-- @case: a title after a space, with formatting -->
+> [!info] *spaced*
+
+<!-- @case: fallback type with a hyphen reads as words in its title -->
+> [!custom-type]
+> Body text.
+
+<!-- @case: fallback type with spaces is normalised to hyphens -->
+> [!My  custom type]
+> Body text.
+
+<!-- @case: fallback type in mixed case is lowercased -->
+> [!CuStOm]
+> Body text.
+
+<!-- @case: fallback type with a non-ASCII letter -->
+> [!重要]
+> Body text.
+
+<!-- @case: fallback type with a custom title -->
+> [!custom-type] My *own* title
+> Body text.
+
+<!-- @case: fallback type title only -->
+> [!custom-type] Title only
+
+<!-- @case: fallback type folded open -->
+> [!custom-type]+
+> Body text.
+
+<!-- @case: fallback type folded closed -->
+> [!custom-type]- Closed
+> Body text.
+
+<!-- @case: fallback type nested in an alert -->
+> [!NOTE]
+> > [!custom-type]
+> > Body text.
+
+<!-- @case: alert nested in a fallback type -->
+> [!custom-type]
+> > [!other-type]
+> > Body text.
+
+<!-- @case: fallback type inside list item -->
+- > [!custom-type]
+  > Body inside list.
+
+<!-- @case: identifier with a dot is not an alert -->
+> [!a.b]
+> Not an alert.
+
+<!-- @case: whitespace-only identifier is not an alert -->
+> [! ]
+> Not an alert.
+
+<!-- @case: identifier with spaces around it is trimmed -->
+> [! NOTE ]
+> Body text.
+
+<!-- @case: metadata on a built-in type -->
+> [!info|wide]
+> Body text.
+
+<!-- @case: empty metadata on a built-in type -->
+> [!info|]
+> Body text.
+
+<!-- @case: metadata on a fallback type -->
+> [!custom-type|wide]
+> Body text.
+
+<!-- @case: empty metadata on a fallback type -->
+> [!custom-type|]
+> Body text.
+
+<!-- @case: metadata is trimmed and keeps its inner spaces -->
+> [!note|  wide  left ]
+> Body text.
+
+<!-- @case: whitespace-only metadata adds nothing -->
+> [!note|   ]
+> Body text.
+
+<!-- @case: metadata keeps a second pipe -->
+> [!note|a|b]
+> Body text.
+
+<!-- @case: metadata on a foldable alert -->
+> [!note|wide]+ Title
+> Body text.
+
+<!-- @case: metadata on an alias -->
+> [!faq|wide]- Title
+> Body text.
