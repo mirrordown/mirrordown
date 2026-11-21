@@ -1,0 +1,38 @@
+<!-- @case: a box in a table cell is text -->
+
+<table>
+<thead>
+<tr>
+<th>task</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[x] done</td>
+</tr>
+<tr>
+<td>[?] question</td>
+</tr>
+<tr>
+<td>- [?] question</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: a task list next to a table -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>

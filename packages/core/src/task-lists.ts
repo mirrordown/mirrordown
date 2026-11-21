@@ -46,8 +46,10 @@ export interface TaskBoxContext {
   more: boolean;
   /** The next node is a hard line break. */
   breakAfter: boolean;
-  /** In the source, the box's `]` is directly followed by CRLF. Sätteri reads `[x]` there as text, so every marker does (with whitespace between, the box is a task). */
-  crlfAfter: boolean;
+  /**
+   * The source right after the box's `]` (two characters are enough), or `undefined` when it cannot be told. The parsed text no longer shows what was written there, and GFM reads the box by it: a hard line break written with a backslash right after the box is not whitespace, so `[x]\` is text; and Sätteri reads `[x]` directly followed by CRLF as text, so every marker does (with whitespace between, the box is a task).
+   */
+  sourceAfter: string | undefined;
 }
 
 /** Reads a box's marker, under a plugin's options. */
@@ -145,7 +147,7 @@ export const matchTaskBox = (
   context: TaskBoxContext,
   resolve: TaskMarkerResolver
 ): TaskBoxMatch | undefined => {
-  const { escaped, more, breakAfter, crlfAfter } = context;
+  const { escaped, more, breakAfter, sourceAfter } = context;
   if (!value.startsWith(`[`) || value.charAt(2) !== `]`) return undefined;
   for (let i = 0; i < 4; i++) if (escaped?.has(i)) return undefined;
   const box = resolve(value.charAt(1));
@@ -153,13 +155,15 @@ export const matchTaskBox = (
   const after = value.charAt(3);
   let length: number;
   if (after === ``) {
-    // The box ends its text: a task only before a hard line break, which stays.
+    // The box ends its text: a task only before a hard line break made of trailing whitespace, which stays.
     if (!breakAfter) return undefined;
+    if (sourceAfter !== undefined && !/^[\t ]/.test(sourceAfter))
+      return undefined;
     length = 3;
   } else if (after === ` ` || after === `\t`) {
     length = 4;
   } else if (after === `\n` || after === `\r`) {
-    if (crlfAfter) return undefined;
+    if ((sourceAfter ?? value.slice(3)).startsWith(`\r\n`)) return undefined;
     // A line ending is one whitespace character, CRLF included.
     length = after === `\r` && value.charAt(4) === `\n` ? 5 : 4;
   } else {

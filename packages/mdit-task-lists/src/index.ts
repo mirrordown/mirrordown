@@ -11,19 +11,10 @@ import {
 export type { TaskListsOptions };
 export { TASK_MARKERS };
 
-const LINE_ENDING = /\r\n?|\n/g;
-
-// The lines of a document that end in `]` and CRLF. markdown-it turns every line ending into `\n` before it parses; Sätteri reads `[x]` directly followed by CRLF as text, so every engine does, and this is how markdown-it still tells.
-const crlfAfterBracket = (source: string): Set<number> => {
-  const lines = new Set<number>();
-  let line = 0;
-  for (const ending of source.matchAll(LINE_ENDING)) {
-    if (ending[0] === `\r\n` && source.charAt(ending.index - 1) === `]`)
-      lines.add(line);
-    line++;
-  }
-  return lines;
-};
+// A document's lines as written, each with its line ending: markdown-it turns every line ending into `\n` and drops a hard break's backslash or spaces before a plugin sees the text, and GFM reads a box by them.
+const LINE = /[^\n\r]*(?:\r\n|\r|\n|$)/g;
+const linesOf = (source: string): string[] =>
+  Array.from(source.matchAll(LINE), ([line]) => line);
 
 const isListOpen = (token: Token): boolean =>
   token.type === `bullet_list_open` || token.type === `ordered_list_open`;
@@ -48,15 +39,18 @@ export const taskLists: PluginWithOptions<TaskListsOptions> = (
   const resolve = createTaskResolver(options);
   // Each document's source as it was written, before markdown-it normalises its line endings.
   const written = new WeakMap<StateCore, string>();
-  const crlfLines = new WeakMap<StateCore, Set<number>>();
-  // Read once per document, and only when a box ends its line.
-  const crlfLinesOf = (state: StateCore): Set<number> => {
-    let lines = crlfLines.get(state);
-    if (!lines) {
-      lines = crlfAfterBracket(written.get(state) ?? state.src);
-      crlfLines.set(state, lines);
+  const lines = new WeakMap<StateCore, string[]>();
+  // What follows a box that ends its line, read from the line as written: split once per document, and only when a box ends its line.
+  const afterBox = (state: StateCore, line: number): string => {
+    let all = lines.get(state);
+    if (!all) {
+      all = linesOf(written.get(state) ?? state.src);
+      lines.set(state, all);
     }
-    return lines;
+    const text = all[line] ?? ``;
+    // The box is all the line holds but whitespace, a backslash and the line ending, none of them a `]`.
+    const close = text.lastIndexOf(`]`);
+    return text.slice(close + 1, close + 3);
   };
 
   // The items and lists this plugin made tasks of, with the class each one got.
@@ -97,19 +91,23 @@ export const taskLists: PluginWithOptions<TaskListsOptions> = (
       }
       const next = children[count];
       const soft = next?.type === `softbreak`;
+      // The box is all its line holds. markdown-it keeps a tab before a soft line break, which the other engines drop with the spaces there: the box is then followed by the line ending, as it is in theirs.
+      const alone =
+        (soft && /^\[[\s\S]\][\t ]*$/.test(lead)) ||
+        (lead.length === 3 && next?.type === `hardbreak`);
       const box = matchTaskBox(
-        soft ? `${lead}\n` : lead,
+        soft ? `${lead.slice(0, alone ? 3 : undefined)}\n` : lead,
         {
           more: count < children.length,
           breakAfter: next?.type === `hardbreak`,
-          crlfAfter: soft && lead.length === 3 && crlfLinesOf(state).has(line)
+          sourceAfter: alone ? afterBox(state, line) : undefined
         },
         resolve
       );
       if (!box) continue;
 
       // Take the box and the whitespace after it off the leading text, and the soft line break when that is the whitespace.
-      let remove = box.length;
+      let remove = alone && soft ? lead.length + 1 : box.length;
       const kept: Token[] = [];
       for (const child of children) {
         if (remove > 0 && child.type === `text`) {

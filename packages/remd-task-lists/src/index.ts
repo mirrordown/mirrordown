@@ -46,10 +46,10 @@ export const remarkTaskLists: Plugin<[TaskListsOptions?], Root> = (
           escaped: textEscapes(head, source),
           more: next !== undefined,
           breakAfter: next?.type === `break`,
-          crlfAfter:
+          sourceAfter:
             start?.offset === undefined
-              ? head.value.startsWith(`\r\n`, 3)
-              : source.startsWith(`\r\n`, start.offset + 3)
+              ? undefined
+              : source.slice(start.offset + 3, start.offset + 5)
         },
         resolve
       );
