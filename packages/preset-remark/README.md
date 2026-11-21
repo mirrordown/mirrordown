@@ -88,6 +88,7 @@ mirrordown({
 | `del`               | `--deleted--`                               | `@mirrordown/remd-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/remd-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/remd-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/remd-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/remd-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/remd-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/remd-lightbox`           |

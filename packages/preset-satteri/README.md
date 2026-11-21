@@ -74,6 +74,7 @@ mirrordown({
 | `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/sat-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/sat-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
