@@ -68,12 +68,11 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
   [`67`, { state: `conforms` }],
 
   ...all([`51`, `53`, `54`, `55`], { state: `pending`, note: `Tags (W1-B).` }),
-  [`34`, { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }],
-  [
-    `34-minimal`,
-    { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }
-  ],
-  [`35`, { state: `pending`, note: `Task lists (W2-A).` }],
+  ...all([`34`, `34-minimal`], {
+    state: `diverges`,
+    note: `Only "x" is a done task. The spec checks every marker but a space; the task-lists set follows the community's status markers instead, so "?" and "-" are unchecked boxes that say what they mean (data-task, a label, an icon).`
+  }),
+  [`35`, { state: `conforms` }],
   [`41`, { state: `pending`, note: `Highlight colours (W2-B).` }],
   [`66`, { state: `pending`, note: `Image sizes (W2-B).` }],
   [
