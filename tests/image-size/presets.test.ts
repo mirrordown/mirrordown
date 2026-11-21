@@ -29,4 +29,11 @@ describe.each(engines)("image-size in the %s preset", (_engine, render) => {
       '<img src="u.jpg" alt="a" width="100" title="x" class="wide">'
     );
   });
+
+  // Not an order: ruby reads the first `|` inside its braces as its separator, before an image is parsed there, so a sized image cannot be a ruby's base in any engine. The guide states it.
+  it("leaves a sized image as a ruby's base to the ruby", () => {
+    expect(html("{![a|100](u.jpg)|r} x")).toBe(
+      "<p><ruby>![a<rt>100](u.jpg)|r</rt></ruby> x</p>"
+    );
+  });
 });

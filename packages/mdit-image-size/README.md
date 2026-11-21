@@ -81,6 +81,7 @@ With the [`attrs`](/guide/plugins/attrs) plugin, or Sätteri's `attributes` feat
 - [Captions](/guide/plugins/caption), [spoilers](/guide/plugins/spoiler) and [unwrap-images](/guide/plugins/unwrap-images) take a sized image like any other.
 - [inline-svg](/guide/plugins/inline-svg) replaces an `.svg` image with the file's own `<svg>`, which keeps the size written in the file: the description's size is lost, and the alt text without it names the SVG.
 - A [spoiler](/guide/plugins/spoiler) written inside a description (`![a ||b|| c|100](…)`) differs by engine, as in any alt text: markdown-it drops its pipes and remark and Sätteri keep them. The size is read in all three.
+- With the [ruby](/guide/plugins/ruby) plugin, a sized image cannot be a ruby's base: the ruby reads the first `|` inside its braces as its separator, so `{![a|100](…)|reading}` splits inside the image. A sized image in a ruby's reading (`{base|![a|100](…)}`) is sized.
 
 Obsidian's embeds, `![[image.png|100]]`, are a different syntax and not part of this plugin.
 
