@@ -51,11 +51,13 @@ describe("tags: any line ending is whitespace before a tag", () => {
   });
 });
 
-// The zero-width joiner holds an emoji sequence together (the shared fixture has a family emoji), so it is a tag character. A zero-width space is a format character like any other, and ends a tag.
-describe("tags: the zero-width joiner is a tag character, a zero-width space is not", () => {
+// Invisible characters, so they are written here as escapes rather than in the shared fixture. Obsidian ends a tag at each: the zero-width joiner and the zero-width space are General Punctuation, the non-breaking and the ideographic space are whitespace. Ending at the joiner splits an emoji sequence (the shared fixture has a family emoji), as Obsidian does, so a site's tags match the vault's.
+describe("tags: a zero-width joiner or space, a non-breaking space and an ideographic space end a tag", () => {
   it.each(engines)("%s", (_engine, render) => {
-    expect(normalizeHtml(render(`#a\u200db #a\u200bb`))).toBe(
-      `<p><a class="tag" href="#a\u200db">#a\u200db</a> <a class="tag" href="#a">#a</a>\u200bb</p>`
+    expect(
+      normalizeHtml(render(`#a\u200db #a\u200bb #a\u00a0b #a\u3000b`))
+    ).toBe(
+      `<p><a class="tag" href="#a">#a</a>\u200db <a class="tag" href="#a">#a</a>\u200bb <a class="tag" href="#a">#a</a>\u00a0b <a class="tag" href="#a">#a</a>\u3000b</p>`
     );
   });
 });

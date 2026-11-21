@@ -20,9 +20,9 @@
 <p><a class="tag" href="#notheading">#notheading</a></p>
 <h1>heading <a class="tag" href="#tagged">#tagged</a></h1>
 
-<!-- @case: a tag needs one character that is not a decimal digit -->
+<!-- @case: a tag needs one character that is not an ascii digit -->
 
-<p>#1984 <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#1984y">#1984y</a> <a class="tag" href="#1/2">#1/2</a> <a class="tag" href="#12-34">#12-34</a> <a class="tag" href="#12_34">#12_34</a> <a class="tag" href="#²">#²</a> #١٢٣</p>
+<p>#1984 <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#1984y">#1984y</a> <a class="tag" href="#1/2">#1/2</a> <a class="tag" href="#12-34">#12-34</a> <a class="tag" href="#12_34">#12_34</a> <a class="tag" href="#²">#²</a> <a class="tag" href="#١٢٣">#١٢٣</a> <a class="tag" href="#１２３">#１２３</a></p>
 
 <!-- @case: the run of tag characters is taken whole -->
 
@@ -42,7 +42,19 @@
 
 <!-- @case: emoji and symbols outside ascii are tag characters -->
 
-<p><a class="tag" href="#🎉">#🎉</a> <a class="tag" href="#fam👨‍👩‍👧">#fam👨‍👩‍👧</a> <a class="tag" href="#❤️">#❤️</a> <a class="tag" href="#🇯🇵">#🇯🇵</a> <a class="tag" href="#©2024">#©2024</a> <a class="tag" href="#€">#€</a> <a class="tag" href="#a→b">#a→b</a> <a class="tag" href="#✓done">#✓done</a></p>
+<p><a class="tag" href="#🎉">#🎉</a> <a class="tag" href="#❤️">#❤️</a> <a class="tag" href="#🇯🇵">#🇯🇵</a> <a class="tag" href="#©2024">#©2024</a> <a class="tag" href="#€">#€</a> <a class="tag" href="#a→b">#a→b</a> <a class="tag" href="#✓done">#✓done</a></p>
+
+<!-- @case: punctuation outside ascii continues a tag -->
+
+<p><a class="tag" href="#a，b">#a，b</a> <a class="tag" href="#a「b」">#a「b」</a> <a class="tag" href="#a§b">#a§b</a> <a class="tag" href="#a、b">#a、b</a> <a class="tag" href="#a。b">#a。b</a> <a class="tag" href="#a！b">#a！b</a> <a class="tag" href="#a¶b">#a¶b</a> <a class="tag" href="#a·b">#a·b</a></p>
+
+<!-- @case: general and supplemental punctuation end a tag -->
+
+<p><a class="tag" href="#a">#a</a>’b <a class="tag" href="#a">#a</a>…b <a class="tag" href="#a">#a</a>‐b <a class="tag" href="#a">#a</a>—b <a class="tag" href="#a">#a</a>“b” <a class="tag" href="#a">#a</a>‰b <a class="tag" href="#a">#a</a>⁂b <a class="tag" href="#a">#a</a>⸮b <a class="tag" href="#a">#a</a>⸺b</p>
+
+<!-- @case: a zero-width joiner ends a tag -->
+
+<p><a class="tag" href="#👨">#👨</a>‍👩‍👧 <a class="tag" href="#fam👨">#fam👨</a>‍👩‍👧</p>
 
 <!-- @case: case is kept -->
 

@@ -1,4 +1,4 @@
-// What a tag is and where one may start, shared by the markdown-it, remark and Sätteri plugins. A tag is `#` and a run of tag characters, at least one of them not a decimal digit. A `#` opens one only at the start of its parent's content, after whitespace, or where another tag ends, so `abc#def`, `(#tag)` and a URL's fragment stay text. Each engine hands the scan a run of text and which of its characters were escaped.
+// What a tag is and where one may start, shared by the markdown-it, remark and Sätteri plugins. A tag is `#` and a run of tag characters, at least one of them not an ASCII digit. A `#` opens one only at the start of its parent's content, after whitespace, or where another tag ends, so `abc#def`, `(#tag)` and a URL's fragment stay text. Each engine hands the scan a run of text and which of its characters were escaped.
 
 import { carryEscapes, type TextLikeNode } from "./escapes.js";
 
@@ -11,10 +11,11 @@ export interface TagsOptions {
 /** A piece of a run of text: plain text, or a tag by its name (without the `#`). */
 export type TagPart = { text: string } | { tag: string };
 
-// A letter, mark or number, `_`, `-`, `/`, the zero-width joiner inside an emoji sequence, or a symbol or pictograph outside ASCII. An ASCII symbol (`$`, `+`, `<`, `|`…) ends a tag as any other ASCII punctuation does.
-const TAG_CHARACTER =
-  /^(?:[\p{L}\p{M}\p{N}_\-/\u200d]|(?![\0-\x7f])[\p{S}\p{Extended_Pictographic}])$/u;
-const DIGIT = /^\p{Nd}$/u;
+// What ends a tag, as Obsidian 1.15.0 reads it, measured character by character by `quartz-community/remark-obsidian`: whitespace, ASCII punctuation other than `_`, `-` and `/`, and the Unicode blocks General Punctuation (U+2000 to U+206F) and Supplemental Punctuation (U+2E00 to U+2E7F). Every other character continues a tag: CJK punctuation (`，`, `「`), `§` and emoji do, and the zero-width joiner, in General Punctuation, ends one. None of these is outside the Basic Multilingual Plane.
+const TAG_END =
+  /^[\s!"#$%&'()*+,.:;<=>?@[\\\]^`{|}~\u2000-\u206f\u2e00-\u2e7f]$/u;
+// A digit is ASCII `0` to `9` only, so `#１２３` (full-width) and `#١٢٣` (Arabic-Indic) are tags.
+const DIGIT = /^[0-9]$/;
 // markdown-it's isWhiteSpace, which the delimiter scans use too: the Unicode spaces, a tab and the line endings.
 const WHITESPACE =
   /^[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]$/u;
@@ -46,7 +47,7 @@ export const scanTags = (
     let named = false;
     while (end < value.length && !escaped.has(end)) {
       const char = String.fromCodePoint(value.codePointAt(end) ?? 0);
-      if (!TAG_CHARACTER.test(char)) break;
+      if (TAG_END.test(char)) break;
       named ||= !DIGIT.test(char);
       end += char.length;
     }

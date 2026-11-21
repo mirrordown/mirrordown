@@ -22,9 +22,9 @@ abc#def is not a tag.
 
 # heading #tagged
 
-<!-- @case: a tag needs one character that is not a decimal digit -->
+<!-- @case: a tag needs one character that is not an ascii digit -->
 
-#1984 #y1984 #1984y #1/2 #12-34 #12_34 #² #١٢٣
+#1984 #y1984 #1984y #1/2 #12-34 #12_34 #² #١٢٣ #１２３
 
 <!-- @case: the run of tag characters is taken whole -->
 
@@ -44,7 +44,19 @@ abc#def is not a tag.
 
 <!-- @case: emoji and symbols outside ascii are tag characters -->
 
-#🎉 #fam👨‍👩‍👧 #❤️ #🇯🇵 #©2024 #€ #a→b #✓done
+#🎉 #❤️ #🇯🇵 #©2024 #€ #a→b #✓done
+
+<!-- @case: punctuation outside ascii continues a tag -->
+
+#a，b #a「b」 #a§b #a、b #a。b #a！b #a¶b #a·b
+
+<!-- @case: general and supplemental punctuation end a tag -->
+
+#a’b #a…b #a‐b #a—b #a“b” #a‰b #a⁂b #a⸮b #a⸺b
+
+<!-- @case: a zero-width joiner ends a tag -->
+
+#👨‍👩‍👧 #fam👨‍👩‍👧
 
 <!-- @case: case is kept -->
 
