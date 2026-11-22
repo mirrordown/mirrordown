@@ -337,8 +337,12 @@ export const processBlockIds = (
       // A title left empty is the type's own, as the alert gives a title with no text; its label is its text now.
       const visible = content.filter((child) => child.type !== `html`);
       if (visible.length === 0) {
+        // remark's alert leaves the title its options give the type; without one it is the type's default.
+        const configured = block.data?.defaultTitle;
         const type = alertTypeOf(parent);
-        if (type !== undefined)
+        if (typeof configured === `string`)
+          content.push({ type: `text`, value: configured });
+        else if (type !== undefined)
           content.push({
             type: `text`,
             value: createAlertResolver().titleFor(type)

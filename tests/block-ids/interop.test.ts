@@ -122,7 +122,7 @@ describe("block-ids with github-alerts", () => {
   });
 });
 
-// An engine difference, handed on: remark's alert title doesn't keep the type's own title, so when a marker was a title's only text, block-ids puts back the type's default title, and a `titles` option for it is lost. markdown-it's title keeps it (`meta.githubAlertTitle`), and Sätteri's block-ids runs before github-alerts, which then titles the alert itself.
+// A title that was only a marker is the type's own title, and a site that translated its titles gets its translation. Each engine finds it differently: markdown-it's title keeps it (`meta.githubAlertTitle`), remark's alert leaves it on the title node (`data.defaultTitle`) because block-ids runs after the alert is built there, and Sätteri's block-ids runs before github-alerts, which then titles the alert itself.
 describe("block-ids with github-alerts' titles option", () => {
   const [mdit, remark, satteri] = engines.map(([, make]) =>
     make({
@@ -137,15 +137,13 @@ describe("block-ids with github-alerts' titles option", () => {
     })
   );
 
-  it("loses a custom title in remark when the title was only a marker", () => {
+  it("keeps a custom title when the title was only a marker", () => {
     const input = "> [!note] ^blk";
     const titled =
       '<div class="markdown-alert" data-alert="note" id="^blk"><p class="markdown-alert-title" aria-label="Hinweis">Hinweis</p></div>';
     expect(mdit(input)).toBe(titled);
+    expect(remark(input)).toBe(titled);
     expect(satteri(input)).toBe(titled);
-    expect(remark(input)).toBe(
-      '<div class="markdown-alert" data-alert="note" id="^blk"><p class="markdown-alert-title" aria-label="Note">Note</p></div>'
-    );
   });
 });
 

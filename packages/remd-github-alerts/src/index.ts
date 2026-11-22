@@ -65,6 +65,8 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
       const titleNode = {
         type: "alertTitle",
         data: {
+          // The type's own title as configured, for a plugin that later empties the title (block-ids, taking a marker off it).
+          defaultTitle: titleFor(type),
           hName: alert.fold ? "summary" : "p",
           hProperties: {
             class: `${containerClass}-title`,
