@@ -60,6 +60,7 @@ md.use(mirrordown, {
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/mdit-abbr`               |
 | `attrs`             | `{.class #id}`                              | `@mirrordown/mdit-attrs`              |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/mdit-autolink-headings`  |
+| `blockIds`          | `^id` at the end of a block                 | `@mirrordown/mdit-block-ids`          |
 | `caption`           | `~: caption` after a block                  | `@mirrordown/mdit-caption`            |
 | `copyCode`          | a copy button on code blocks                | `@mirrordown/mdit-copy-code`          |
 | `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/mdit-definition-list`    |

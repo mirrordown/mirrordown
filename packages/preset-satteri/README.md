@@ -68,6 +68,7 @@ mirrordown({
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/sat-abbr`               |
 | `attrs`             | `{.class #id}`                              | Sätteri's `attributes` feature       |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/sat-autolink-headings`  |
+| `blockIds`          | `^id` at the end of a block                 | `@mirrordown/sat-block-ids`          |
 | `caption`           | `~: caption` after a block                  | `@mirrordown/sat-caption`            |
 | `copyCode`          | a copy button on code blocks                | `@mirrordown/sat-copy-code`          |
 | `definitionList`    | `Term` / `: Definition`                     | Sätteri's `definitionList` feature   |

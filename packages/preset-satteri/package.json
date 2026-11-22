@@ -23,6 +23,7 @@
   "dependencies": {
     "@mirrordown/sat-abbr": "workspace:^",
     "@mirrordown/sat-autolink-headings": "workspace:^",
+    "@mirrordown/sat-block-ids": "workspace:^",
     "@mirrordown/sat-caption": "workspace:^",
     "@mirrordown/sat-copy-code": "workspace:^",
     "@mirrordown/sat-del": "workspace:^",

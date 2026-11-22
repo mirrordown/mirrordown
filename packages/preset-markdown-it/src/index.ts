@@ -5,6 +5,7 @@ import {
   autolinkHeadings,
   type AutolinkHeadingsOptions
 } from "@mirrordown/mdit-autolink-headings";
+import { blockIds } from "@mirrordown/mdit-block-ids";
 import { caption } from "@mirrordown/mdit-caption";
 import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
@@ -40,6 +41,7 @@ export interface MirrordownOptions {
   abbr?: boolean;
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  blockIds?: boolean;
   caption?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
@@ -115,6 +117,8 @@ export const mirrordown = (
   configured(options.tabs, tabs);
   // After tabs and attrs: it reads the labels they leave.
   configured(tabIconsSetting, tabIcons);
+  // After github-alerts and abbr: all three add a rule right after `linkify`, and the one added last runs first, so block-ids takes a marker off an alert's title before the alert's label is read from it, and before abbr reads the text. Its rule runs after attrs whatever the order (an id written with `{#name}` is the block's), and before caption and slug, which add theirs at the end of the chain (a heading a marker names keeps that id).
+  on(options.blockIds, blockIds);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

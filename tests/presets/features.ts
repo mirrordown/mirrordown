@@ -19,6 +19,7 @@ export const features: ReadonlyArray<{
   },
   { key: "attrs", input: "Text {.note}", marker: 'class="note"' },
   { key: "autolinkHeadings", input: "# Title", marker: 'class="anchor"' },
+  { key: "blockIds", input: "Text ^blk", marker: 'id="^blk"' },
   {
     key: "caption",
     input: "```\ncode\n```\n~: A caption",

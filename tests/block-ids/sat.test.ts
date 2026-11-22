@@ -17,8 +17,8 @@ const gfmCases = parseFixture(
   read("expected/block-ids-gfm.html")
 );
 const extensionCases = parseFixture(
-  read("fixtures/block-ids-gfm-extensions.md"),
-  read("expected/block-ids-gfm-extensions.html")
+  read("fixtures/block-ids-extensions-gfm.md"),
+  read("expected/block-ids-extensions-gfm.html")
 );
 
 const render = (input: string, gfm: boolean): string =>

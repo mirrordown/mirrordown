@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import type { Plugin } from "unified";
 import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs, type AttrsOptions } from "@mirrordown/remd-attrs";
+import { remarkBlockIds } from "@mirrordown/remd-block-ids";
 import { remarkCaption } from "@mirrordown/remd-caption";
 import {
   rehypeCopyCode,
@@ -74,6 +75,7 @@ export interface MirrordownOptions {
   abbr?: boolean;
   attrs?: boolean | AttrsOptions;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  blockIds?: boolean;
   caption?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
@@ -179,6 +181,8 @@ export const mirrordown = (
       ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
+      // After tabs and steps, whose bodies are written as quotes but are not quotes to a marker; after attrs, whose attribute blocks end a block before a marker does (an id written with `{#name}` is the block's); before abbr, which could take an identifier as a term, and before caption, which moves a named paragraph's id onto its figure. As a remark plugin it runs before rehype-slug whatever the order: a heading a marker names keeps that id.
+      ...on(options.blockIds, remarkBlockIds),
       // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
       ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.
