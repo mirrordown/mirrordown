@@ -133,7 +133,7 @@ A marker anywhere inside a block quote or an alert names the **outermost** quote
 > [Back to the tip](#^gem-tip)
 > ````
 
-A marker that ends an alert's title line names the alert when the title line is the whole of its paragraph; one followed by body lines in the same paragraph is text. A title that held only a marker is the type's own (`> [!note] ^blk` is titled "Note").
+A marker that ends an alert's title line names the alert when the title line is the whole of its paragraph; one followed by body lines in the same paragraph is text. A title that held only a marker is the type's own (`> [!note] ^blk` is titled "Note"). With remark that is the type's default title, even where github-alerts' `titles` option names another: remark's alert doesn't keep the title it would have given.
 
 A tab panel or a step is written with `>` but is not a quote: a marker there names its own paragraph or list item, and a real quote inside a panel is named as a quote. A marker on a step's title or a tab's label is text, as a title is not a paragraph.
 

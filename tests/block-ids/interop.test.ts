@@ -122,6 +122,33 @@ describe("block-ids with github-alerts", () => {
   });
 });
 
+// An engine difference, handed on: remark's alert title doesn't keep the type's own title, so when a marker was a title's only text, block-ids puts back the type's default title, and a `titles` option for it is lost. markdown-it's title keeps it (`meta.githubAlertTitle`), and Sätteri's block-ids runs before github-alerts, which then titles the alert itself.
+describe("block-ids with github-alerts' titles option", () => {
+  const [mdit, remark, satteri] = engines.map(([, make]) =>
+    make({
+      ...Object.fromEntries(
+        features
+          .filter(
+            (feature) => ![`blockIds`, `githubAlerts`].includes(feature.key)
+          )
+          .map((feature) => [feature.key, false])
+      ),
+      githubAlerts: { icons: false, titles: { note: `Hinweis` } }
+    })
+  );
+
+  it("loses a custom title in remark when the title was only a marker", () => {
+    const input = "> [!note] ^blk";
+    const titled =
+      '<div class="markdown-alert" data-alert="note" id="^blk"><p class="markdown-alert-title" aria-label="Hinweis">Hinweis</p></div>';
+    expect(mdit(input)).toBe(titled);
+    expect(satteri(input)).toBe(titled);
+    expect(remark(input)).toBe(
+      '<div class="markdown-alert" data-alert="note" id="^blk"><p class="markdown-alert-title" aria-label="Note">Note</p></div>'
+    );
+  });
+});
+
 // A tab panel or a step is written with `>` but is not a quote: a marker in one names its own paragraph or item, and a real quote inside is named as a quote. A marker alone after the container names the container.
 describe("block-ids with tabs and steps", () => {
   const render = renderAll([`blockIds`, `tabs`, `steps`]);
