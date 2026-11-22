@@ -115,3 +115,13 @@ export {
   type CopyCodeOptions,
   type CopyCodeState
 } from "./copy-code.js";
+export {
+  blankAfterMarker,
+  cutMarker,
+  processBlockIds,
+  resolveBlockIds,
+  titleMarkerWritten,
+  trailingMarker,
+  trimBlankEnd,
+  type BlockMarker
+} from "./block-ids.js";
