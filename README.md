@@ -47,9 +47,10 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Attributes
 
-| Syntax         | HTML               | markdown-it                       | remark                            | Sätteri               | VSCode                                      |
-| -------------- | ------------------ | --------------------------------- | --------------------------------- | --------------------- | ------------------------------------------- |
-| `{.class #id}` | Element attributes | [mdit-attrs](packages/mdit-attrs) | [remd-attrs](packages/remd-attrs) | built-in `attributes` | [markdown-attrs](extensions/markdown-attrs) |
+| Syntax         | HTML                        | markdown-it                               | remark                                    | Sätteri                                 | VSCode                                      |
+| -------------- | --------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | ------------------------------------------- |
+| `{.class #id}` | Element attributes          | [mdit-attrs](packages/mdit-attrs)         | [remd-attrs](packages/remd-attrs)         | built-in `attributes`                   | [markdown-attrs](extensions/markdown-attrs) |
+| `text ^id`     | block `id` (`<p id="^id">`) | [mdit-block-ids](packages/mdit-block-ids) | [remd-block-ids](packages/remd-block-ids) | [sat-block-ids](packages/sat-block-ids) | —                                           |
 
 ### Images
 
@@ -134,6 +135,7 @@ The plugins in this collection are forked and modernized from the following upst
 - [remark-supersub](https://github.com/domdomegg/remark-supersub) — `<sup>`/`<sub>` plugins for remark
 - [remd-ruby](https://github.com/lostandfound/remd-ruby) — `<ruby>` plugin for remark
 - [rehype-slug](https://github.com/rehypejs/rehype-slug) — heading `id` slugs for rehype
+- [Obsidian](https://obsidian.md/help/links) — the `^id` block identifier `block-ids` reads, measured against the [recordings of Obsidian's own output](https://github.com/quartz-community/remark-obsidian) that remark-obsidian keeps
 - [rehype-autolink-headings](https://github.com/rehypejs/rehype-autolink-headings) — heading anchor links for rehype
 - [remark-sectionize](https://github.com/jake-low/remark-sectionize) — `<section>` heading wrappers for remark
 - [remark-squeeze-paragraphs](https://github.com/remarkjs/remark-squeeze-paragraphs) — empty-paragraph removal for remark
