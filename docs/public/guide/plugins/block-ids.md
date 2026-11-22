@@ -230,7 +230,7 @@ A paragraph, a heading or a list item can't end in a space and `^word` without b
 - **Captions.** A caption line is the paragraph's last line when block-ids reads it, so a marker ending a caption (`~: A caption ^fig`) names the figure: caption moves the paragraph's id onto it, as it moves attributes. A marker before the caption line (`Para ^x` / `~: A caption`) is not at the end of the paragraph, and stays text, as in Obsidian.
 - **Definition lists.** A marker in a definition names its `<dd>`, as a list item's names the item; a tight definition renders no `<p>` to carry it. A marker on a term is text.
 - **Footnotes.** A marker at the end of a footnote's definition names its paragraph; a paragraph ending in a footnote reference has no marker.
-- **unwrap-images.** An image alone in a named paragraph is taken out of the paragraph, and the paragraph's id goes with it, as an id written with attrs does.
+- **unwrap-images.** An image alone in a named paragraph is taken out of the paragraph and takes its id, as it takes an id written with attrs, so a link to the marker still reaches the image; a named paragraph of several images is not unwrapped.
 - **Superscript.** `^st^` is a superscript, not a marker, and a marker after one is still read: `31^st^ of May ^date`.
 - **Smart punctuation.** A host's smart punctuation can turn `--` in an identifier into a dash before the marker is read, which leaves it text: Sätteri's `smartPunctuation` feature does (Astro turns it on). markdown-it's typographer runs after this plugin. The presets turn smart punctuation off.
 

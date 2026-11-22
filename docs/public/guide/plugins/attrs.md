@@ -60,6 +60,8 @@ Braces that set nothing stay text: `{}`, `{ }`, `{x}` and `{a, b}` are left alon
 > {.note}
 > ````
 
+With [unwrap-images](/guide/plugins/unwrap-images), a block on the line after an image that stands alone in its paragraph goes on the `<img>` when the paragraph is unwrapped, and a paragraph of several images keeps its block and is not unwrapped.
+
 ### Inline elements
 
 % Demo
