@@ -41,6 +41,17 @@ describe("block-ids/mdit", () => {
     );
   });
 
+  // With `linkify`, a bare URL becomes a link before the plugin reads the text after it, as GFM's autolink literals do in remark and Sätteri (the shared `block-ids-extensions-gfm` case).
+  it("reads a marker after a link linkify made", () => {
+    const linkify = new MarkdownIt({ linkify: true }).use(blockIds);
+    expect(normalizeHtml(linkify.render("See https://example.com ^url"))).toBe(
+      '<p id="^url">See <a href="https://example.com">https://example.com</a></p>'
+    );
+    expect(normalizeHtml(linkify.render("See https://example.com/^url"))).toBe(
+      '<p>See <a href="https://example.com/%5Eurl">https://example.com/^url</a></p>'
+    );
+  });
+
   // Typographer replacements run after the plugin, so an identifier written with `--` is read before it becomes a dash.
   it("reads a marker before the typographer rewrites it", () => {
     const typographer = new MarkdownIt({ typographer: true }).use(blockIds);

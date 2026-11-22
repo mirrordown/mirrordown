@@ -187,6 +187,27 @@ describe("block-ids with tabs and steps", () => {
   });
 });
 
+// A tab or step header lazily continues the body's last paragraph in CommonMark, so Sätteri, which reads attribute blocks while it parses, finds that paragraph's block mid-paragraph; tabs and steps cut the header off and place the block (`placeCutAttributes`) before block-ids reads the paragraph. Its marker then ends the paragraph, as in the engines whose attrs run after recognition.
+describe("block-ids with tabs, steps and attrs", () => {
+  const render = renderAll([`blockIds`, `tabs`, `steps`, `attrs`]);
+
+  it("names a paragraph whose attribute block a tab header cut off", () => {
+    expect(render("% A\n> body ^m\n> {.c}\n% B\n> more")).toStrictEqual(
+      three(
+        '<div class="markdown-tabs" data-tabs-group="b8855b5"><div class="markdown-tabs-labels"><input type="radio" name="tabs-4edb7582" id="tabs-4edb7582-0" hidden checked><label class="markdown-tabs-label" for="tabs-4edb7582-0">A</label><input type="radio" name="tabs-4edb7582" id="tabs-4edb7582-1" hidden><label class="markdown-tabs-label" for="tabs-4edb7582-1">B</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="A"><p class="c" id="^m">body</p></section><section class="markdown-tabs-panel" aria-label="B"><p>more</p></section></div></div>'
+      )
+    );
+  });
+
+  it("names a step's paragraph whose attribute block a step header cut off", () => {
+    expect(render("@1. One\n>  body ^m {.c}\n@1. Two\n>  b")).toStrictEqual(
+      three(
+        '<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">One</p><div class="markdown-steps-body"><p class="c" id="^m">body</p></div></li><li class="markdown-steps-item" data-step="2"><p class="markdown-steps-title">Two</p><div class="markdown-steps-body"><p>b</p></div></li></ol>'
+      )
+    );
+  });
+});
+
 // A definition's paragraph names its description, as a list item's names the item: a tight definition renders no `<p>` to carry it. A term is not a paragraph.
 describe("block-ids with definition-list", () => {
   const render = renderAll([`blockIds`, `definitionList`]);
