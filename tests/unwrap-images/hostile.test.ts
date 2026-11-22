@@ -24,7 +24,7 @@ import {
 import { normalizeHtml } from "../utils/index.js";
 
 // The three engines with the plugins that give a paragraph attributes and the lightbox, with unwrap-images or without it: the plugin's own cost is the difference.
-const pipelines = (on: boolean): Array<(input: string) => string> => {
+const pipelines = (on: boolean): ((input: string) => string)[] => {
   const md = new MarkdownIt().use(attrs).use(blockIds).use(lightbox);
   if (on) md.use(unwrapImages);
   const processor = unified()
