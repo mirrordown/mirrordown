@@ -29,10 +29,11 @@ const NAMELESS = new Set([
   `tab_input`
 ]);
 
+// A key of a token's `meta`, its own only: the keys are other plugins' conventions.
 const metaOf = (token: Token | undefined, key: string): unknown => {
   const meta: unknown = token?.meta;
-  return typeof meta === `object` && meta !== null && key in meta
-    ? (meta as Record<string, unknown>)[key]
+  return typeof meta === `object` && meta !== null && Object.hasOwn(meta, key)
+    ? (Reflect.get(meta, key) as unknown)
     : undefined;
 };
 

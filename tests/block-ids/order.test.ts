@@ -5,7 +5,7 @@ import { unified, type Pluggable } from "unified";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
-import { markdownToHtml, type MdastPluginEntry } from "satteri";
+import { markdownToHtml, type PluginFactoryContext } from "satteri";
 import { blockIds } from "../../packages/mdit-block-ids/src";
 import { abbr } from "../../packages/mdit-abbr/src";
 import { attrs } from "../../packages/mdit-attrs/src";
@@ -22,12 +22,21 @@ import {
 } from "../../packages/remd-github-alerts/src";
 import { remarkSteps, stepsHastHandlers } from "../../packages/remd-steps/src";
 import { remarkTabs, tabsHastHandlers } from "../../packages/remd-tabs/src";
-import { satteriBlockIds } from "../../packages/sat-block-ids/src";
-import { satteriAbbr } from "../../packages/sat-abbr/src";
-import { satteriCaption } from "../../packages/sat-caption/src";
-import { satteriGithubAlerts } from "../../packages/sat-github-alerts/src";
-import { satteriSteps } from "../../packages/sat-steps/src";
-import { satteriTabs } from "../../packages/sat-tabs/src";
+import {
+  satteriBlockIds,
+  type BlockIdsPlugin
+} from "../../packages/sat-block-ids/src";
+import { satteriAbbr, type AbbrPlugin } from "../../packages/sat-abbr/src";
+import {
+  satteriCaption,
+  type CaptionPlugin
+} from "../../packages/sat-caption/src";
+import {
+  satteriGithubAlerts,
+  type GithubAlertsPlugin
+} from "../../packages/sat-github-alerts/src";
+import { satteriSteps, type StepsPlugin } from "../../packages/sat-steps/src";
+import { satteriTabs, type TabsPlugin } from "../../packages/sat-tabs/src";
 import { normalizeHtml } from "../utils/index.js";
 
 const mdit =
@@ -58,8 +67,19 @@ const remark =
       )
     );
 
+// The plugins' own synchronous types, so `markdownToHtml` returns its result directly.
+type Factory<P> = (ctx: PluginFactoryContext) => P;
 const satteri =
-  (...plugins: MdastPluginEntry[]) =>
+  (
+    ...plugins: (
+      | Factory<AbbrPlugin>
+      | Factory<BlockIdsPlugin>
+      | Factory<CaptionPlugin>
+      | Factory<GithubAlertsPlugin>
+      | Factory<StepsPlugin>
+      | Factory<TabsPlugin>
+    )[]
+  ) =>
   (input: string): string =>
     normalizeHtml(
       markdownToHtml(input, {

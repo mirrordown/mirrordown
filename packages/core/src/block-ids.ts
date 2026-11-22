@@ -155,7 +155,7 @@ const ownProperties = (node: Node): Properties | undefined =>
 
 // An id the author wrote (with attrs, or Sätteri's attribute blocks) is the block's: a marker that names it is only removed.
 const authorId = (node: Node): boolean => {
-  const id = ownProperties(node)?.id;
+  const id: unknown = ownProperties(node)?.id;
   return id !== undefined && id !== null && id !== ``;
 };
 

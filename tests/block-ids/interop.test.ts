@@ -4,7 +4,7 @@ import { features } from "../presets/features.js";
 
 // The presets with only the named features on, so each case runs the plugins it is about in the order the presets put them; alert icons are off to keep the HTML short.
 const renderAll = (
-  keys: ReadonlyArray<(typeof features)[number][`key`]>
+  keys: readonly (typeof features)[number][`key`][]
 ): ((input: string) => string[]) => {
   const options = {
     ...Object.fromEntries(

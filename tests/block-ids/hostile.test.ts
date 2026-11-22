@@ -16,7 +16,7 @@ import {
 import { normalizeHtml } from "../utils/index.js";
 
 // The three engines, with the plugin or without it: the plugin's own cost is the difference.
-const pipelines = (on: boolean): Array<(input: string) => string> => {
+const pipelines = (on: boolean): ((input: string) => string)[] => {
   const md = new MarkdownIt();
   if (on) md.use(blockIds);
   const processor = unified()
@@ -60,7 +60,7 @@ const ownCost = (input: string): { slowest: number; failed: number } => {
     let alone = false;
     let broken = false;
     const without = timed(() => {
-      alone = fails(() => bare[index]!(input));
+      alone = fails(() => bare[index](input));
     });
     const withIt = timed(() => {
       broken = fails(() => render(input));
