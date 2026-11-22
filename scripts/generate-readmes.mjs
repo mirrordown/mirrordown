@@ -31,6 +31,7 @@ const slugs = [
   "abbr",
   "attrs",
   "autolink-headings",
+  "block-ids",
   "caption",
   "copy-code",
   "definition-list",

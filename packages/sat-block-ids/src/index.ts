@@ -21,7 +21,7 @@ export interface BlockIdsPlugin {
 }
 
 /**
- * Sätteri plugin for Obsidian's block identifiers: `^id` at the very end of a paragraph, a heading or an alert's title is removed, and the block it names gets the `id` `^id`, as `@mirrordown/remd-block-ids` and `@mirrordown/mdit-block-ids` give it. List it after the plugins that build tab panels and steps (sat-tabs, sat-steps) and before sat-github-alerts and sat-caption; Sätteri reads attribute blocks itself, before any plugin, and an id written with one is the block's. Recognition is shared with the remark plugin through `@mirrordown/core`.
+ * Sätteri plugin for Obsidian's block identifiers: `^id` at the very end of a paragraph, a heading or an alert's title is removed, and the block it names gets the `id` `^id`, as `@mirrordown/remd-block-ids` and `@mirrordown/mdit-block-ids` give it. List it after the plugins that build tab panels and steps (sat-tabs, sat-steps) and before sat-github-alerts (whose alerts keep no position, so after it a title's line can't be read), sat-abbr and sat-caption; Sätteri reads attribute blocks itself, before any plugin, and an id written with one is the block's. Recognition is shared with the remark plugin through `@mirrordown/core`.
  */
 export const satteriBlockIds =
   (): ((ctx: PluginFactoryContext) => BlockIdsPlugin) =>
