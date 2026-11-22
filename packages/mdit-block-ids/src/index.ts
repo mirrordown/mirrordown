@@ -19,7 +19,7 @@ const BOUNDARIES = new Set([`tab_panel_open`, `steps_body_open`]);
 // Blocks whose paragraphs name them: a list item, and a definition's description, whose paragraph a tight list hides.
 const ITEMS = new Set([`list_item_open`, `dd_open`]);
 
-// Blocks a marker in its own paragraph after them can't name: raw HTML has no element to carry an id, and a container's title or label isn't a block of its own. Several are other plugins' token names, which `tests/block-ids/interop.test.ts` pins.
+// Blocks a marker in its own paragraph after them can't name: raw HTML and front matter have no element to carry an id, and a container's title or label (mdit-steps' and mdit-tabs' tokens) isn't a block of its own.
 const NAMELESS = new Set([
   `html_block`,
   `front_matter`,

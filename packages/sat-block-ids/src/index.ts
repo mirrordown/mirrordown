@@ -1,6 +1,6 @@
-// This plugin hands Sätteri's nodes to core's mdast recognition and back; the type assertions bridging Sätteri's `MdastTarget` and mdast are reviewed and intentional, so the rule is disabled file-wide, as in sat-caption.
+// This plugin hands Sätteri's nodes to core's mdast recognition; the type assertions bridging Sätteri's `MdastTarget` and mdast are reviewed and intentional, so the rule is disabled file-wide, as in sat-caption.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
-import { editableTree, processBlockIds } from "@mirrordown/core";
+import { processBlockIds } from "@mirrordown/core";
 import type { Root } from "mdast";
 import {
   defineMdastPlugin,
@@ -30,27 +30,19 @@ export const satteriBlockIds =
       name: `block-ids`,
       // Positions tell an escaped `^`, and a marker with spaces after it on its line, from a real one.
       options: { position: true },
+      // Recognition reads the tree as it is and changes it through Sätteri's own calls, rather than through a copy: a copy is made and written back recursively, which quotes nested thousands deep overflow.
       before(root, ctx) {
-        if (!source.includes(`^`)) return;
-        const { tree, writeBack } = editableTree<MdastTarget>(
-          root,
-          // A node recognition created (a shortened line of text, an alert's title restored), with any copied nodes inside it written back.
-          (node, back) =>
-            `children` in node
-              ? ({ ...node, children: node.children.map(back) } as MdastTarget)
-              : node,
-          (node, children) => {
-            ctx.setProperty(node, `children`, children);
-          },
-          (node, data) => {
+        processBlockIds(root as unknown as Root, source, {
+          setChildren: (node, children) => {
             ctx.setProperty(
-              node,
-              `data`,
-              data as Record<string, unknown> | null
+              node as MdastTarget,
+              `children`,
+              children as MdastTarget[]
             );
+          },
+          setData: (node, data) => {
+            ctx.setProperty(node as MdastTarget, `data`, data);
           }
-        );
-        processBlockIds(tree as unknown as Root, source);
-        writeBack(tree);
+        });
       }
     });

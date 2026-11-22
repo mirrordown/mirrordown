@@ -123,5 +123,6 @@ export {
   titleMarkerWritten,
   trailingMarker,
   trimBlankEnd,
+  type BlockIdEdits,
   type BlockMarker
 } from "./block-ids.js";

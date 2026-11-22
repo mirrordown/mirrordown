@@ -34,6 +34,10 @@ E = mc^2
 
 `Line.`^blk
 
+<!-- @case: a caret after the identifier, as superscript writes it, is text -->
+
+a ^b^
+
 <!-- @case: a marker that is not at the end is text -->
 
 ^abc is not at the end

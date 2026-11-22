@@ -4,7 +4,11 @@
 import type { Root } from "mdast";
 import type { Properties } from "hast";
 import { carryEscapes, textEscapes } from "./escapes.js";
-import { createAlertResolver, plainText } from "./github-alerts/index.js";
+import {
+  createAlertResolver,
+  isAlertMarkerLine,
+  plainText
+} from "./github-alerts/index.js";
 import { splitSourceLines } from "./lazy.js";
 
 // `A`–`Z`, `a`–`z`, `0`–`9` and `-`: Obsidian's identifier characters. `_` is not one.
@@ -174,14 +178,33 @@ const lineEndings = (value: string, end: number): number => {
   return count;
 };
 
+/** How the tree's nodes are changed: in place by default (remark), or through the engine's own calls where its nodes are read-only (Sätteri's `ctx.setProperty`). Nothing reads a node again after changing it. */
+export interface BlockIdEdits {
+  setChildren: (node: unknown, children: unknown[]) => void;
+  setData: (node: unknown, data: Record<string, unknown>) => void;
+}
+
+const inPlace: BlockIdEdits = {
+  setChildren: (node, children) => {
+    (node as Node).children = children as Node[];
+  },
+  setData: (node, data) => {
+    (node as Node).data = data;
+  }
+};
+
 /**
- * Turn each block identifier marker in an mdast tree into its block's `id` (`data.hProperties.id`), removing the marker, the whitespace before it and a paragraph left empty. `source` is the document the tree was parsed from: it tells a marker with only spaces after it on its line, and an escaped `^`, from a real one, so a tree without it (`runSync(tree)`) gets no ids. Run it after the plugins that build tab panels and steps from quotes, and after attrs, whose attribute blocks end a block before a marker does.
+ * Turn each block identifier marker in an mdast tree into its block's `id` (`data.hProperties.id`), removing the marker, the whitespace before it and a paragraph left empty. `source` is the document the tree was parsed from: it tells a marker with only spaces after it on its line, and an escaped `^`, from a real one, so a tree without it (`runSync(tree)`) gets no ids. Run it after the plugins that build tab panels and steps from quotes, and after attrs, whose attribute blocks end a block before a marker does. The tree is walked with a stack, not recursion, so quotes can nest as deep as the parser takes them.
  */
-export const processBlockIds = (root: Root, source: string): void => {
+export const processBlockIds = (
+  root: Root,
+  source: string,
+  { setChildren, setData }: BlockIdEdits = inPlace
+): void => {
   if (!source.includes(`^`)) return;
   const lines = splitSourceLines(source);
 
-  // The tree's blocks in document order, each node's parent and its index there. A stack, not recursion: quotes nest as deep as an author writes them.
+  // The tree's blocks in document order, each node's parent and its index there.
   const parents = new Map<Node, Node>();
   const indices = new Map<Node, number>();
   const blocks: Node[] = [];
@@ -258,14 +281,23 @@ export const processBlockIds = (root: Root, source: string): void => {
 
     const parent = parents.get(block);
     if (title) {
-      // An alert's title is its first line. It ends with the marker only when nothing followed on the lines of its paragraph: then the alert's body doesn't start on that line.
+      // An alert's title is its first line. It ends with the marker only when nothing followed on the lines of its paragraph, whose rest is then the alert's body. That body keeps the paragraph's position, which starts on the title's line; Sätteri's alert keeps no position of its own, so there the body is told by its first line being the alert's marker line. A body without a position continued the title if the line after the title isn't blank, since nothing but a paragraph's own lines puts a paragraph right after it.
       const line = parent?.position?.start.line;
-      if (line !== undefined) {
-        const next = parent?.children?.[(indices.get(block) ?? 0) + 1];
-        if (next?.type === `paragraph` && next.position?.start.line === line)
-          continue;
-        if (!titleMarkerWritten(lines[line - 1], id)) continue;
+      const next = parent?.children?.[(indices.get(block) ?? 0) + 1];
+      if (next?.type === `paragraph`) {
+        const body = next.position?.start.line;
+        const continued =
+          body === undefined
+            ? line !== undefined &&
+              (lines[line] ?? ``).replace(/^[ \t>]*/, ``) !== ``
+            : line === undefined
+              ? isAlertMarkerLine(lines[body - 1] ?? ``)
+              : body === line;
+        if (continued) continue;
       }
+      // Without the alert's line (Sätteri, after github-alerts), what came before the title's text is unknown.
+      if (line !== undefined && !titleMarkerWritten(lines[line - 1], id))
+        continue;
     } else {
       // The marker's line, from where its text starts and from where the block ends: each is right where the other can be off (the text may be a plugin's, without a position; an attribute block on its own line may have been taken off the block's end).
       const written = [
@@ -312,22 +344,24 @@ export const processBlockIds = (root: Root, source: string): void => {
             value: createAlertResolver().titleFor(type)
           });
       }
+      // Sätteri names the label `ariaLabel`, remark `aria-label`.
       const properties = ownProperties(block);
       const label = plainText(content).trim();
-      if (properties && `ariaLabel` in properties)
-        block.data = {
+      const key =
+        properties && `ariaLabel` in properties
+          ? `ariaLabel`
+          : properties && `aria-label` in properties
+            ? `aria-label`
+            : undefined;
+      if (key)
+        setData(block, {
           ...block.data,
-          hProperties: { ...properties, ariaLabel: label }
-        };
-      else if (properties && `aria-label` in properties)
-        block.data = {
-          ...block.data,
-          hProperties: { ...properties, "aria-label": label }
-        };
+          hProperties: { ...properties, [key]: label }
+        });
     }
-    block.children = content;
 
     const alone = block.type === `paragraph` && content.length === 0;
+    if (!alone) setChildren(block, content);
     const quote = outerQuote(block);
     let target: Node | undefined;
     if (quote) target = quote;
@@ -342,10 +376,10 @@ export const processBlockIds = (root: Root, source: string): void => {
   }
 
   for (const [element, id] of resolveBlockIds(namings))
-    element.data = {
+    setData(element, {
       ...element.data,
       hProperties: { ...ownProperties(element), id }
-    };
+    });
   // Each parent's children are filtered once, however many of its paragraphs went.
   const emptied = new Set<Node>();
   for (const paragraph of removed.keys()) {
@@ -353,7 +387,8 @@ export const processBlockIds = (root: Root, source: string): void => {
     if (parent) emptied.add(parent);
   }
   for (const parent of emptied)
-    parent.children = (parent.children ?? []).filter(
-      (child) => !removed.has(child)
+    setChildren(
+      parent,
+      (parent.children ?? []).filter((child) => !removed.has(child))
     );
 };
