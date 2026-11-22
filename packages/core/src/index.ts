@@ -40,6 +40,7 @@ export {
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
 export {
   LIGHTBOX_MARKER,
+  MARKDOWN_PARAGRAPH,
   headingRank,
   isEmptyParagraph,
   isImageParagraph,

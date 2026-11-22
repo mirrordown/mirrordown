@@ -5,6 +5,7 @@ import type { Root, RootContent } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
 import type { State, Handler } from "mdast-util-to-hast";
 import {
+  MARKDOWN_PARAGRAPH,
   processSteps,
   type StepsListNode,
   type StepsTitleNode
@@ -61,7 +62,10 @@ const buildListHast = (
       liChildren.push({
         type: "element",
         tagName: "p",
-        properties: { class: `${containerClass}-title` },
+        properties: {
+          class: `${containerClass}-title`,
+          [MARKDOWN_PARAGRAPH]: false
+        },
         children: state.all({
           type: "paragraph",
           children: title.children

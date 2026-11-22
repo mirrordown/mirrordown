@@ -2,6 +2,7 @@ import {
   ALERT_ALIASES,
   DEFAULT_TITLE,
   ICONS,
+  MARKDOWN_PARAGRAPH,
   createAlertResolver,
   splitAlertParagraph,
   type AlertOptions,
@@ -57,7 +58,8 @@ export const satteriGithubAlerts =
             hName: alert.fold ? "summary" : "p",
             hProperties: {
               className: [`${containerClass}-title`],
-              ariaLabel: title
+              ariaLabel: title,
+              [MARKDOWN_PARAGRAPH]: false
             }
           },
           children: [

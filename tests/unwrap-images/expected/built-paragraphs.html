@@ -1,0 +1,23 @@
+<!-- @case: a step title of one image is kept -->
+<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title"><img src="a.png" alt="a"></p><div class="markdown-steps-body"><p>body</p></div></li></ol>
+
+<!-- @case: a step title of several images is kept -->
+<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title"><img src="a.png" alt="a"> <img src="b.png" alt="b"></p><div class="markdown-steps-body"><p>body</p></div></li></ol>
+
+<!-- @case: an image paragraph in a step's body is unwrapped -->
+<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">Step</p><div class="markdown-steps-body"><img src="a.png" alt="a"></div></li></ol>
+
+<!-- @case: an alert title of one image is kept -->
+<div class="markdown-alert" data-alert="note"><p class="markdown-alert-title" aria-label="a"><img src="a.png" alt="a"></p><p>body</p></div>
+
+<!-- @case: an alert title of several images is kept -->
+<div class="markdown-alert" data-alert="note"><p class="markdown-alert-title" aria-label="a b"><img src="a.png" alt="a"> <img src="b.png" alt="b"></p><p>body</p></div>
+
+<!-- @case: an image paragraph in an alert's body is unwrapped -->
+<div class="markdown-alert" data-alert="note"><p class="markdown-alert-title" aria-label="Note">Note</p><img src="a.png" alt="a"></div>
+
+<!-- @case: a lightbox dialog's caption of one image is kept -->
+<figure class="markdown-caption"><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-wdbupl"><img src="a.png" alt="a"></button><figcaption><img src="c.png" alt="c"></figcaption></figure><dialog id="markdown-lightbox-wdbupl" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-wdbupl" aria-label="Close image"><img src="a.png" alt="a"></button><p class="markdown-lightbox-caption"><img src="c.png" alt="c"></p></dialog>
+
+<!-- @case: a lightbox dialog's caption of several images is kept -->
+<figure class="markdown-caption"><button type="button" class="markdown-lightbox-trigger" command="show-modal" commandfor="markdown-lightbox-wdbupl"><img src="a.png" alt="a"></button><figcaption><img src="c.png" alt="c"> <img src="d.png" alt="d"></figcaption></figure><dialog id="markdown-lightbox-wdbupl" class="markdown-lightbox" closedby="any"><button type="button" class="markdown-lightbox-close" command="close" commandfor="markdown-lightbox-wdbupl" aria-label="Close image"><img src="a.png" alt="a"></button><p class="markdown-lightbox-caption"><img src="c.png" alt="c"> <img src="d.png" alt="d"></p></dialog>

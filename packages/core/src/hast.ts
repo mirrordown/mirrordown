@@ -15,9 +15,14 @@ export interface HastLike {
 export interface HastElementLike<C> {
   type: `element`;
   tagName: string;
-  properties: Record<string, string | string[]>;
+  properties: Record<string, string | string[] | false>;
   children: C[];
 }
+
+/**
+ * The property, set to `false`, that says a `<p>` is not a Markdown paragraph: a plugin built it as part of its own markup (a step's or an alert's title, a lightbox caption), so unwrap-images leaves it whole, as in markdown-it, where it is no paragraph token. A property, because it is what reaches the hast element from an mdast node's `hProperties` in remark and Sätteri alike (neither carries the rest of `data` over); `false`, because hast-util-to-html, Sätteri's output and hast-util-to-estree (MDX) print nothing for a property with that value.
+ */
+export const MARKDOWN_PARAGRAPH = `markdownParagraph`;
 
 // hast-util-whitespace: only the inter-element whitespace characters.
 const WHITESPACE = /^[ \t\n\f\r]*$/;
@@ -53,16 +58,18 @@ const collectImages = (
   return true;
 };
 
-// The images of a `<p>` that holds only images and whitespace, in order; none for any other node.
+// The images of a Markdown paragraph's `<p>` that holds only images and whitespace, in order; none for any other node.
 const paragraphImages = (node: HastLike): HastLike[] => {
   const images: HastLike[] = [];
-  return node.tagName === `p` && collectImages(node, false, images)
+  return node.tagName === `p` &&
+    node.properties?.[MARKDOWN_PARAGRAPH] !== false &&
+    collectImages(node, false, images)
     ? images
     : [];
 };
 
 /**
- * A `<p>` whose content is only images (each possibly inside a link or a lightbox button) and whitespace: unwrap-images replaces it with its children.
+ * A `<p>` whose content is only images (each possibly inside a link or a lightbox button) and whitespace: unwrap-images replaces it with its children. A `<p>` marked with {@link MARKDOWN_PARAGRAPH} is never one.
  */
 export const isImageParagraph = (node: HastLike): boolean =>
   paragraphImages(node).length > 0;
@@ -243,7 +250,10 @@ export const lightboxDialog = <C extends HastLike>(
           {
             type: `element` as const,
             tagName: `p`,
-            properties: { className: [`markdown-lightbox-caption`] },
+            properties: {
+              className: [`markdown-lightbox-caption`],
+              [MARKDOWN_PARAGRAPH]: false as const
+            },
             children: caption
           }
         ]

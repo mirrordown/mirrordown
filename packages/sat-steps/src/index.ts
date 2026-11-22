@@ -1,6 +1,7 @@
 // This plugin hands Sätteri's nodes to core's mdast recognition and back; the type assertions bridging Sätteri's `MdastTarget`, mdast and the step node types are reviewed and intentional, so the rule is disabled file-wide, as in remd-steps.
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 import {
+  MARKDOWN_PARAGRAPH,
   createAttributeReader,
   editableTree,
   placeCutAttributes,
@@ -104,7 +105,10 @@ export const satteriSteps =
                   type: `stepsTitle`,
                   data: {
                     hName: `p`,
-                    hProperties: { className: [`${containerClass}-title`] }
+                    hProperties: {
+                      className: [`${containerClass}-title`],
+                      [MARKDOWN_PARAGRAPH]: false
+                    }
                   },
                   children: (title.children as unknown as MdastTarget[]).map(
                     back
