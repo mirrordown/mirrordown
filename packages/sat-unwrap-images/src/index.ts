@@ -1,4 +1,4 @@
-import { isImageParagraph } from "@mirrordown/core";
+import { unwrapImageParagraph } from "@mirrordown/core";
 import {
   defineHastPlugin,
   type HastVisitorInstance,
@@ -22,7 +22,7 @@ export interface UnwrapImagesPlugin {
 }
 
 /**
- * Sätteri plugin that unwraps block-level images: a paragraph holding only images (each possibly inside a link or a lightbox button) is replaced by its children. The rule is shared with the markdown-it and rehype plugins through `@mirrordown/core`.
+ * Sätteri plugin that unwraps block-level images: a paragraph holding only images (each possibly inside a link or a lightbox button) is replaced by its children, and its one image takes the paragraph's attributes. The rule is shared with the markdown-it and rehype plugins through `@mirrordown/core`.
  */
 export const satteriUnwrapImages =
   (): ((ctx: PluginFactoryContext) => UnwrapImagesPlugin) => () =>
@@ -31,7 +31,8 @@ export const satteriUnwrapImages =
       element: {
         filter: [`p`],
         visit(node, ctx) {
-          if (isImageParagraph(node)) ctx.replaceNode(node, [...node.children]);
+          const content = unwrapImageParagraph(node);
+          if (content) ctx.replaceNode(node, content);
         }
       }
     });

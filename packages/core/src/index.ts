@@ -48,6 +48,7 @@ export {
   lightboxId,
   lightboxTrigger,
   sectionize,
+  unwrapImageParagraph,
   type HastElementLike,
   type HastLike
 } from "./hast.js";

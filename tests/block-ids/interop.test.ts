@@ -316,16 +316,24 @@ describe("block-ids with squeeze-paragraphs", () => {
   });
 });
 
-// unwrap-images takes an image out of a paragraph that holds nothing else, and the paragraph's id goes with the paragraph, as an id attrs gives it does. The id is lost in every engine alike; the report hands this to unwrap-images.
+// unwrap-images takes an image out of a paragraph that holds nothing else and gives it the paragraph's id, as it does an id attrs gives the paragraph, so a link to the marker's id still finds the image. A paragraph of several images keeps its id, and stays.
 describe("block-ids with unwrap-images", () => {
   const render = renderAll([`blockIds`, `unwrapImages`]);
 
-  it("loses a named image paragraph's id when the image is unwrapped", () => {
+  it("gives a named image paragraph's id to the image it unwraps", () => {
     expect(render("![a](pic.png) ^img")).toStrictEqual(
-      three('<img src="pic.png" alt="a">')
+      three('<img src="pic.png" alt="a" id="^img">')
     );
     expect(render("![a](pic.png)\n\n^img")).toStrictEqual(
-      three('<img src="pic.png" alt="a">')
+      three('<img src="pic.png" alt="a" id="^img">')
+    );
+  });
+
+  it("keeps a named paragraph of several images", () => {
+    expect(render("![a](a.png) ![b](b.png) ^pair")).toStrictEqual(
+      three(
+        '<p id="^pair"><img src="a.png" alt="a"> <img src="b.png" alt="b"></p>'
+      )
     );
   });
 });
