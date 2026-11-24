@@ -2,6 +2,24 @@ import type Token from "markdown-it/lib/token.mjs";
 import type { DelimiterRange } from "../types.js";
 import type { RuleTest } from "../helper/testRule.js";
 
+/**
+ * The document one run of the rules reads. What a rule would otherwise work out from the whole document for each block it places is worked out here, once per run and only when a rule first asks: a cost per block that grows with the document makes a document of many blocks quadratic. Nothing here outlives the run.
+ */
+export interface AttrDocument {
+  /** The document's source, which token maps index by line. */
+  src: string;
+  /** `source`, the document's or a container's own, split into lines. */
+  lines(source: string): string[];
+  /** The nearest token before `token` that opens a block at a lower level than it: the block that holds it. */
+  parent(token: Token): Token | undefined;
+  /** Removes `count` tokens from `index` on. They stay in the stream until every rule has run, so no later token moves: the core rule passes over them, and `back` steps over them. */
+  remove(index: number, count: number): void;
+  /** Whether a rule has removed `token`. */
+  removed(token: Token): boolean;
+  /** The index of the token `steps` tokens before `index`, not counting removed ones, or -1. */
+  back(index: number, steps: number): number;
+}
+
 export interface AttrRule {
   name: string;
   tests: RuleTest[];
@@ -10,7 +28,6 @@ export interface AttrRule {
     index: number,
     position: number,
     range: DelimiterRange,
-    /** The document's source, which token maps index by line. */
-    src: string
+    doc: AttrDocument
   ): boolean | undefined;
 }

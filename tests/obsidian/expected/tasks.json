@@ -1,0 +1,86 @@
+{
+ "agree": 3464,
+ "differ": {
+  "fuzz/embed/92": {
+   "markdown": "- [ ]\n![[*\n",
+   "obsidian": [],
+   "ours": [
+    " "
+   ]
+  },
+  "fuzz/highlight/1": {
+   "markdown": "- [ ]\n===\n",
+   "obsidian": [],
+   "ours": [
+    " "
+   ]
+  },
+  "fuzz/misc/3": {
+   "markdown": "- [ ]\n</div>\n",
+   "obsidian": [],
+   "ours": {
+    "mdit": [
+     " "
+    ],
+    "remd": [],
+    "sat": []
+   }
+  },
+  "task/status-alphabet": {
+   "markdown": "- [/] a\n- [-] b\n- [>] c\n- [?] d\n- [!] e\n- [*] f\n- [\"] g\n- [x] h\n- [X] i\n",
+   "obsidian": [
+    "/",
+    "-",
+    ">",
+    "?",
+    "!",
+    "*",
+    "\"",
+    "x",
+    "x"
+   ],
+   "ours": [
+    "/",
+    "-",
+    ">",
+    "?",
+    "!",
+    "x",
+    "x"
+   ]
+  },
+  "task/in-obsidian-comment": {
+   "markdown": "%%\n- [ ] Hidden task\n- [x] Also hidden\n%%\n",
+   "obsidian": [],
+   "ours": [
+    " ",
+    "x"
+   ]
+  },
+  "html/comment-around-block": {
+   "markdown": "<!--\n- [ ] hidden\n-->\n\n- [ ] visible\n",
+   "obsidian": [
+    " "
+   ],
+   "ours": {
+    "mdit": [
+     " ",
+     " "
+    ],
+    "remd": [
+     " "
+    ],
+    "sat": [
+     " "
+    ]
+   }
+  },
+  "probe/math-unclosed/list-tab": {
+   "markdown": "- [ ]\n\t$$y\n",
+   "obsidian": [],
+   "ours": [
+    " "
+   ]
+  }
+ }
+}

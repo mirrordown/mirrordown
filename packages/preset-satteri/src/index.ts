@@ -1,5 +1,9 @@
 import type { Features, PluginFactoryContext } from "satteri";
 import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
+import {
+  satteriBlockIds,
+  type BlockIdsPlugin
+} from "@mirrordown/sat-block-ids";
 import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
   satteriCopyCode,
@@ -29,6 +33,10 @@ import {
   type GithubAlertsPlugin
 } from "@mirrordown/sat-github-alerts";
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
+import {
+  satteriImageSize,
+  type ImageSizePlugin
+} from "@mirrordown/sat-image-size";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import {
@@ -36,7 +44,11 @@ import {
   type LightboxOptions,
   type LightboxPlugin
 } from "@mirrordown/sat-lightbox";
-import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
+import {
+  satteriMark,
+  type MarkOptions,
+  type MarkPlugin
+} from "@mirrordown/sat-mark";
 import {
   satteriMermaidPele,
   type MermaidPelePlugin,
@@ -68,10 +80,20 @@ import {
   type TabsPlugin
 } from "@mirrordown/sat-tabs";
 import {
+  satteriTags,
+  type TagsOptions,
+  type TagsPlugin
+} from "@mirrordown/sat-tags";
+import {
   satteriTabIcons,
   type TabIconsOptions,
   type TabIconsPlugin
 } from "@mirrordown/sat-tab-icons";
+import {
+  satteriTaskLists,
+  type TaskListsOptions,
+  type TaskListsPlugin
+} from "@mirrordown/sat-task-lists";
 import {
   satteriSqueezeParagraphs,
   type SqueezeParagraphsPlugin
@@ -89,6 +111,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `attributes` feature, which takes no options. */
   attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  blockIds?: boolean;
   caption?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   /** Sätteri's built-in `definitionList` feature. */
@@ -96,10 +119,11 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   /** Ruby's own options; its `features` are always the preset's. */
@@ -114,7 +138,9 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
+  taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
   features?: Features;
@@ -130,9 +156,11 @@ export interface MirrordownPreset {
   features: Features;
   mdastPlugins: Array<
     | Factory<AbbrPlugin>
+    | Factory<BlockIdsPlugin>
     | Factory<CaptionPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
+    | Factory<ImageSizePlugin>
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
@@ -141,6 +169,8 @@ export interface MirrordownPreset {
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
     | Factory<TabsPlugin>
+    | Factory<TagsPlugin>
+    | Factory<TaskListsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -190,19 +220,28 @@ export const mirrordown = (
 
   return {
     features,
-    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
+    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Task lists before the inline plugins: they read an item's text without its box, as they read the tasks GFM has read. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
       ...(options.prompt === false ? [] : [satteriPromptPreview()]),
       ...(options.ruby === false ? [] : [satteriRuby(settings(options.ruby))]),
+      ...(options.taskLists === false
+        ? []
+        : [satteriTaskLists(settings(options.taskLists))]),
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.ins === false ? [] : [satteriIns()]),
-      ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.mark === false ? [] : [satteriMark(settings(options.mark))]),
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
+      // After prompt previews and ruby, which make image nodes, so it sizes theirs too. Before the plugins that wrap an image or read its alt: spoiler, tabs and alerts (whose labels are read from the alt when they run), caption, and lightbox and unwrap-images among the hast plugins.
+      ...(options.imageSize === false ? [] : [satteriImageSize()]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.
+      ...(options.tags === false ? [] : [satteriTags(settings(options.tags))]),
+      // Block ids after steps and tabs, whose bodies are written as quotes but are not quotes to a marker, and before alerts, which then build their title from a line the marker is already off and keep the id the quote was given. Sätteri reads attribute blocks before any plugin, so an id written with `{#name}` is the block's; as an mdast plugin it runs before slug: a heading a marker names keeps that id.
+      ...(options.blockIds === false ? [] : [satteriBlockIds()]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),

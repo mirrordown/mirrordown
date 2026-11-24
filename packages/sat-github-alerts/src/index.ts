@@ -2,6 +2,7 @@ import {
   ALERT_ALIASES,
   DEFAULT_TITLE,
   ICONS,
+  MARKDOWN_PARAGRAPH,
   createAlertResolver,
   splitAlertParagraph,
   type AlertOptions,
@@ -58,7 +59,8 @@ export const satteriGithubAlerts =
             hProperties: {
               className: [`${containerClass}-title`],
               // markdown-it and remark label a title by its text without the spaces around it, which a default title can have; one that is only spaces keeps them.
-              ariaLabel: title.trim() || title
+              ariaLabel: title.trim() || title,
+              [MARKDOWN_PARAGRAPH]: false
             }
           },
           children: [

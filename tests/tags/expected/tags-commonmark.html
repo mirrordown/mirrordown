@@ -1,0 +1,205 @@
+<!-- @case: spec 51: tags of every kind of tag character -->
+
+<p><a class="tag" href="#meeting">#meeting</a> <a class="tag" href="#inbox/to-read">#inbox/to-read</a> <a class="tag" href="#snake_case">#snake_case</a> <a class="tag" href="#kebab-case">#kebab-case</a> <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#日本語">#日本語</a></p>
+
+<!-- @case: spec 52: digits alone are not a tag -->
+
+<p>#1984</p>
+
+<!-- @case: spec 53: a tag ends at punctuation -->
+
+<p>Ends at punctuation: <a class="tag" href="#tag">#tag</a>. And <a class="tag" href="#bob">#bob</a>'s.</p>
+
+<!-- @case: spec 54: a hash inside a word is text, and a tag can follow a tag -->
+
+<p>abc#def is not a tag.</p>
+<p><a class="tag" href="#Bob">#Bob</a><a class="tag" href="#Alice">#Alice</a> is two.</p>
+
+<!-- @case: spec 55: a tag at the start of a line is not a heading -->
+
+<p><a class="tag" href="#notheading">#notheading</a></p>
+<h1>heading <a class="tag" href="#tagged">#tagged</a></h1>
+
+<!-- @case: a tag needs one character that is not an ascii digit -->
+
+<p>#1984 <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#1984y">#1984y</a> <a class="tag" href="#1/2">#1/2</a> <a class="tag" href="#12-34">#12-34</a> <a class="tag" href="#12_34">#12_34</a> <a class="tag" href="#²">#²</a> <a class="tag" href="#١٢٣">#١٢٣</a> <a class="tag" href="#１２３">#１２３</a></p>
+
+<!-- @case: the run of tag characters is taken whole -->
+
+<p><a class="tag" href="#1984a">#1984a</a> <a class="tag" href="#a1984">#a1984</a> <a class="tag" href="#tag/sub/sub-sub_x">#tag/sub/sub-sub_x</a></p>
+
+<!-- @case: a dash, an underscore or a slash alone is a tag -->
+
+<p><a class="tag" href="#-">#-</a> <a class="tag" href="#_">#_</a> <a class="tag" href="#/">#/</a> <a class="tag" href="#--">#--</a></p>
+
+<!-- @case: ascii punctuation and symbols end a tag -->
+
+<p><a class="tag" href="#a">#a</a>.b <a class="tag" href="#a">#a</a>,b <a class="tag" href="#a">#a</a>;b <a class="tag" href="#a">#a</a>:b <a class="tag" href="#a">#a</a>!b <a class="tag" href="#a">#a</a>?b <a class="tag" href="#a">#a</a>(b) <a class="tag" href="#a">#a</a>'b <a class="tag" href="#a">#a</a>&quot;b <a class="tag" href="#a">#a</a>$b <a class="tag" href="#a">#a</a>%b <a class="tag" href="#a">#a</a>+b <a class="tag" href="#a">#a</a>=b <a class="tag" href="#a">#a</a>@b <a class="tag" href="#a">#a</a>^b <a class="tag" href="#a">#a</a>~b <a class="tag" href="#a">#a</a>|b <a class="tag" href="#a">#a</a>&amp;b <a class="tag" href="#a">#a</a>&lt;b <a class="tag" href="#a">#a</a>&gt;b <a class="tag" href="#a">#a</a>{b} <a class="tag" href="#a">#a</a>\b <a class="tag" href="#a">#a</a><code>b</code></p>
+
+<!-- @case: letters, marks and numbers of any script are tag characters -->
+
+<p><a class="tag" href="#café">#café</a> <a class="tag" href="#étude">#étude</a> <a class="tag" href="#Ünïcödé">#Ünïcödé</a> <a class="tag" href="#ελληνικά">#ελληνικά</a> <a class="tag" href="#русский">#русский</a> <a class="tag" href="#한국어">#한국어</a> <a class="tag" href="#עברית">#עברית</a> <a class="tag" href="#x²">#x²</a> <a class="tag" href="#½">#½</a></p>
+
+<!-- @case: emoji and symbols outside ascii are tag characters -->
+
+<p><a class="tag" href="#🎉">#🎉</a> <a class="tag" href="#❤️">#❤️</a> <a class="tag" href="#🇯🇵">#🇯🇵</a> <a class="tag" href="#©2024">#©2024</a> <a class="tag" href="#€">#€</a> <a class="tag" href="#a→b">#a→b</a> <a class="tag" href="#✓done">#✓done</a></p>
+
+<!-- @case: punctuation outside ascii continues a tag -->
+
+<p><a class="tag" href="#a，b">#a，b</a> <a class="tag" href="#a「b」">#a「b」</a> <a class="tag" href="#a§b">#a§b</a> <a class="tag" href="#a、b">#a、b</a> <a class="tag" href="#a。b">#a。b</a> <a class="tag" href="#a！b">#a！b</a> <a class="tag" href="#a¶b">#a¶b</a> <a class="tag" href="#a·b">#a·b</a></p>
+
+<!-- @case: general and supplemental punctuation end a tag -->
+
+<p><a class="tag" href="#a">#a</a>’b <a class="tag" href="#a">#a</a>…b <a class="tag" href="#a">#a</a>‐b <a class="tag" href="#a">#a</a>—b <a class="tag" href="#a">#a</a>“b” <a class="tag" href="#a">#a</a>‰b <a class="tag" href="#a">#a</a>⁂b <a class="tag" href="#a">#a</a>⸮b <a class="tag" href="#a">#a</a>⸺b</p>
+
+<!-- @case: a zero-width joiner ends a tag -->
+
+<p><a class="tag" href="#👨">#👨</a>‍👩‍👧 <a class="tag" href="#fam👨">#fam👨</a>‍👩‍👧</p>
+
+<!-- @case: case is kept -->
+
+<p><a class="tag" href="#Meeting">#Meeting</a> <a class="tag" href="#MEETING">#MEETING</a> <a class="tag" href="#meeting">#meeting</a></p>
+
+<!-- @case: a css colour of letters is a tag and one of digits is not -->
+
+<p><a class="tag" href="#fff">#fff</a> is a tag, <a class="tag" href="#c0ffee">#c0ffee</a> is a tag, #000 is not.</p>
+
+<!-- @case: a tag at the start of a paragraph -->
+
+<p><a class="tag" href="#start">#start</a> of a paragraph</p>
+
+<!-- @case: a tag after a space or a tab -->
+
+<p>a <a class="tag" href="#space">#space</a> and	<a class="tag" href="#tab">#tab</a></p>
+
+<!-- @case: a tag after a soft line break -->
+
+<p>line one
+<a class="tag" href="#two">#two</a></p>
+
+<!-- @case: a tag after a hard line break -->
+
+<p>one<br>
+<a class="tag" href="#two">#two</a><br>
+<a class="tag" href="#three">#three</a></p>
+
+<!-- @case: tags one after another -->
+
+<p><a class="tag" href="#Bob">#Bob</a><a class="tag" href="#Alice">#Alice</a><a class="tag" href="#Carol">#Carol</a> and <a class="tag" href="#a">#a</a>#1#b</p>
+
+<!-- @case: a hash after a hash is text -->
+
+<p>##tag and <a class="tag" href="#tag">#tag</a># and <a class="tag" href="#a">#a</a>##b</p>
+
+<!-- @case: a hash inside a word is text -->
+
+<p>abc#def C# a#1 x#y#z</p>
+
+<!-- @case: a hash after punctuation is text -->
+
+<p>(#tag) &quot;#tag&quot; -#tag ,#tag /#tag</p>
+
+<!-- @case: a hash straight after an inline element is text -->
+
+<p><strong>bold</strong>#tag <em>em</em>#tag <code>code</code>#tag <a href="url">link</a>#tag <img src="pic.png" alt="img">#tag <a href="https://example.com">https://example.com</a>#tag</p>
+
+<!-- @case: a tag opens the content of emphasis and strong -->
+
+<p><em><a class="tag" href="#a">#a</a></em> <em><a class="tag" href="#b">#b</a></em> <strong><a class="tag" href="#c">#c</a></strong> <strong><a class="tag" href="#d">#d</a></strong> <em><strong><a class="tag" href="#e">#e</a></strong></em></p>
+
+<!-- @case: a tag inside emphasis after a space -->
+
+<p><em>see <a class="tag" href="#a">#a</a></em> and <strong>also <a class="tag" href="#b">#b</a></strong></p>
+
+<!-- @case: a tag in a list item -->
+
+<ul>
+<li><a class="tag" href="#one">#one</a></li>
+<li>two <a class="tag" href="#three">#three</a></li>
+</ul>
+<ol>
+<li><a class="tag" href="#ordered">#ordered</a></li>
+</ol>
+
+<!-- @case: a tag in a blockquote -->
+
+<blockquote>
+<p><a class="tag" href="#quoted">#quoted</a>
+and <a class="tag" href="#more">#more</a></p>
+</blockquote>
+
+<!-- @case: a tag in a list in a blockquote -->
+
+<blockquote>
+<ul>
+<li><a class="tag" href="#deep">#deep</a></li>
+</ul>
+</blockquote>
+
+<!-- @case: a tag in a heading -->
+
+<h2><a class="tag" href="#Tag">#Tag</a> in a heading</h2>
+<h1>Setext <a class="tag" href="#tag">#tag</a></h1>
+
+<!-- @case: a heading holding only a tag -->
+
+<h1><a class="tag" href="#only">#only</a></h1>
+
+<!-- @case: more than six hashes is a paragraph of text -->
+
+<p>####### seven</p>
+
+<!-- @case: a tag at the very start and the very end of the document -->
+
+<p><a class="tag" href="#start">#start</a> then some text and <a class="tag" href="#end">#end</a></p>
+
+<!-- @case: never in a code span -->
+
+<p><code>#code</code> and <code>x #y</code> and <code>#z</code></p>
+
+<!-- @case: never in a code block -->
+
+<pre><code>#fenced
+</code></pre>
+<pre><code>#indented
+</code></pre>
+
+<!-- @case: never in the text of a link -->
+
+<p><a href="url">#tag</a> <a href="url">see #tag</a> <a href="url">#ref</a> <a href="url">#x</a> <a href="url">#ref</a></p>
+
+<!-- @case: never in an autolink -->
+
+<p><a href="https://example.com/#fragment">https://example.com/#fragment</a></p>
+
+<!-- @case: never in image alt text -->
+
+<p><img src="pic.png" alt="#alt"> <img src="pic.png" alt="see #alt"></p>
+
+<!-- @case: an escaped hash is text -->
+
+<p>#tag and a #tag</p>
+
+<!-- @case: a hash written as a character reference is text -->
+
+<p>#tag #tag #tag</p>
+
+<!-- @case: an escaped character ends a tag -->
+
+<p><a class="tag" href="#ab">#ab</a>_cd <a class="tag" href="#a">#a</a>-b <a class="tag" href="#a">#a</a>/b</p>
+
+<!-- @case: a character written as a reference ends a tag -->
+
+<p><a class="tag" href="#ab">#ab</a>cd <a class="tag" href="#a">#a</a>éb</p>
+
+<!-- @case: an escaped hash right after a tag is text -->
+
+<p><a class="tag" href="#tag">#tag</a>#more <a class="tag" href="#tag">#tag</a>#more</p>
+
+<!-- @case: a hash after escaped punctuation is text -->
+
+<p>(#tag) &quot;#tag</p>
+
+<!-- @case: whitespace written as a reference does not start a tag -->
+
+<p> #tag a #tag a #tag a #tag <a class="tag" href="#a">#a</a> #b and a <a class="tag" href="#tag">#tag</a></p>

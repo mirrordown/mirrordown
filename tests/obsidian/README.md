@@ -4,7 +4,7 @@ This folder measures Mirrordown's reading of Obsidian's syntax against what the 
 
 ## What is here
 
-- `fixtures/corpus.json` holds 3,471 Markdown cases and what Obsidian 1.15.0's Reading view made of each: the tags it linked, the text it highlighted, its task boxes and its callouts. The recordings were made by [quartz-community/remark-obsidian](https://github.com/quartz-community/remark-obsidian), whose harness renders a generated corpus inside the real application; this file is those recordings (`test/parity/goldens/obsidian.json` at commit `571e898`, recorded 8 November 2026), reduced to the facts compared here. They are © their authors under the MIT license in `fixtures/LICENSE-remark-obsidian`.
+- `fixtures/corpus.json` holds 3,471 Markdown cases and what Obsidian 1.15.0's Reading view made of each: the tags it linked, the text it highlighted, its task boxes, its callouts and the blocks it named. The recordings were made by [quartz-community/remark-obsidian](https://github.com/quartz-community/remark-obsidian), whose harness renders a generated corpus inside the real application; this file is those recordings (`test/parity/goldens/obsidian.json` at commit `571e898`, recorded 8 November 2026), reduced to the facts compared here. They are © their authors under the MIT license in `fixtures/LICENSE-remark-obsidian`.
 - `obsidian.test.ts` renders every case through the three presets and reads the same facts out of Mirrordown's HTML.
 - `expected/<fact>.json` records, for each fact, how many cases agree with Obsidian and every case that does not, with both readings.
 

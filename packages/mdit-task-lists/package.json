@@ -1,0 +1,48 @@
+{
+  "name": "@mirrordown/mdit-task-lists",
+  "description": "A markdown-it plugin for task lists: GFM's [ ] and [x], plus the six task markers Obsidian's community agrees on ([/], [-], [>], [<], [?], [!]), each labelled and drawn with an icon.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./styles": {
+      "development": "./src/task-lists.css",
+      "default": "./dist/task-lists.css"
+    }
+  },
+  "dependencies": {
+    "@mirrordown/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "catalog:",
+    "markdown-it": "catalog:"
+  },
+  "peerDependencies": {
+    "markdown-it": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bumpy": {
+    "publishCommand": [
+      "node ../../scripts/sync-jsr-version.mjs",
+      "node ../../scripts/npm-publish.mjs",
+      "node ../../scripts/jsr-resolve-deps.mjs",
+      "node ../../scripts/jsr-publish.mjs"
+    ]
+  },
+  "style": "./dist/task-lists.css"
+}

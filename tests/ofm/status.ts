@@ -41,8 +41,6 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
       `13`,
       `16`,
       `19`,
-      `23`,
-      `27`,
       `39`,
       `40`,
       `44`,
@@ -62,15 +60,17 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
   // The link itself is CommonMark's; the internal-link class is optional.
   [`67`, { state: `conforms` }],
 
-  ...all([`51`, `53`, `54`, `55`], { state: `pending`, note: `Tags (W1-B).` }),
-  [`34`, { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }],
-  [
-    `34-minimal`,
-    { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }
-  ],
-  [`35`, { state: `pending`, note: `Task lists (W2-A).` }],
-  [`41`, { state: `pending`, note: `Highlight colours (W2-B).` }],
-  [`66`, { state: `pending`, note: `Image sizes (W2-B).` }],
+  // Tags: the tags set emits the spec's own markup.
+  ...all([`51`, `53`, `54`, `55`], { state: `conforms` }),
+  ...all([`34`, `34-minimal`], {
+    state: `diverges`,
+    note: `Only "x" is a done task. The spec checks every marker but a space; the task-lists set follows the community's status markers instead, so "?" and "-" are unchecked boxes that say what they mean (data-task, a label, an icon).`
+  }),
+  [`35`, { state: `conforms` }],
+  // Highlight colours: the mark set reads the colour emoji as Obsidian does.
+  [`41`, { state: `conforms` }],
+  // Image sizes: the image-size set reads the description as Obsidian does.
+  [`66`, { state: `conforms` }],
   [
     `3`,
     {
@@ -83,10 +83,22 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
     state: `pending`,
     note: `Comments (W3-A).`
   }),
-  ...all([`18`, `20`, `21`, `22`, `24`, `25`, `26`], {
-    state: `pending`,
-    note: `Block identifiers (W3-B).`
-  }),
+  // Block identifiers: the spec's data-block-id is an id here, written with its caret (id="^37066d"), so a link to "#^37066d" finds the block.
+  ...all([`18`, `20`, `21`, `22`, `24`, `25`, `26`], { state: `conforms` }),
+  [
+    `23`,
+    {
+      state: `diverges`,
+      note: `A marker with no block before it is removed and names nothing, as Obsidian renders it; the spec, by its own choice, keeps it as text.`
+    }
+  ],
+  [
+    `27`,
+    {
+      state: `diverges`,
+      note: `A marker at the end of a heading names the heading, as Obsidian does; the spec, by its own choice, reads it as text.`
+    }
+  ],
 
   ...all([`36`, `36-minimal`, `37`], {
     state: `deferred`,

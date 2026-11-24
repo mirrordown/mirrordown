@@ -1,0 +1,59 @@
+<!-- @case: a paragraph ending in a footnote reference has no marker -->
+
+<p>text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>note <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+<!-- @case: a marker after a footnote reference names the paragraph -->
+
+<p id="^ref">text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>note <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+<!-- @case: a marker at the end of a footnote's definition names its paragraph -->
+
+<p>text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p id="^blk">note <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+<!-- @case: a marker alone after a footnote's definition names the block before it -->
+
+<p>para</p>
+<p id="^after-footnote">text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+<section data-footnotes class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>note <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+<!-- @case: a marker in a task list item names the item -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" id="^task"><input type="checkbox" disabled> task</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+</ul>
+
+<!-- @case: a marker after a bare URL names the paragraph -->
+
+<p id="^url">See <a href="https://example.com">https://example.com</a></p>
+
+<!-- @case: a marker inside strikethrough is text -->
+
+<p><del>^blk</del></p>

@@ -1,0 +1,10 @@
+{
+  "name": "@mirrordown/remd-tags",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/jsr.ts"
+  },
+  "imports": {
+    "mdast": "npm:@types/mdast@^4"
+  }
+}

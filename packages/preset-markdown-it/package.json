@@ -27,12 +27,14 @@
     "@mirrordown/mdit-abbr": "workspace:^",
     "@mirrordown/mdit-attrs": "workspace:^",
     "@mirrordown/mdit-autolink-headings": "workspace:^",
+    "@mirrordown/mdit-block-ids": "workspace:^",
     "@mirrordown/mdit-caption": "workspace:^",
     "@mirrordown/mdit-copy-code": "workspace:^",
     "@mirrordown/mdit-definition-list": "workspace:^",
     "@mirrordown/mdit-del": "workspace:^",
     "@mirrordown/mdit-file-tree": "workspace:^",
     "@mirrordown/mdit-github-alerts": "workspace:^",
+    "@mirrordown/mdit-image-size": "workspace:^",
     "@mirrordown/mdit-ins": "workspace:^",
     "@mirrordown/mdit-kbd": "workspace:^",
     "@mirrordown/mdit-lightbox": "workspace:^",
@@ -49,6 +51,8 @@
     "@mirrordown/mdit-sup": "workspace:^",
     "@mirrordown/mdit-tab-icons": "workspace:^",
     "@mirrordown/mdit-tabs": "workspace:^",
+    "@mirrordown/mdit-tags": "workspace:^",
+    "@mirrordown/mdit-task-lists": "workspace:^",
     "@mirrordown/mdit-unwrap-images": "workspace:^"
   },
   "devDependencies": {

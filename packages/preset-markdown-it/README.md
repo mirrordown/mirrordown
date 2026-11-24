@@ -60,16 +60,18 @@ md.use(mirrordown, {
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/mdit-abbr`               |
 | `attrs`             | `{.class #id}`                              | `@mirrordown/mdit-attrs`              |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/mdit-autolink-headings`  |
+| `blockIds`          | `^id` at the end of a block                 | `@mirrordown/mdit-block-ids`          |
 | `caption`           | `~: caption` after a block                  | `@mirrordown/mdit-caption`            |
 | `copyCode`          | a copy button on code blocks                | `@mirrordown/mdit-copy-code`          |
 | `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/mdit-definition-list`    |
 | `del`               | `--deleted--`                               | `@mirrordown/mdit-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/mdit-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/mdit-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/mdit-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/mdit-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/mdit-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/mdit-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/mdit-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/mdit-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/mdit-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/mdit-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/mdit-ruby`               |
@@ -81,13 +83,15 @@ md.use(mirrordown, {
 | `sub`               | `~subscript~`                               | `@mirrordown/mdit-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/mdit-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/mdit-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/mdit-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/mdit-tab-icons`          |
+| `taskLists`         | `- [x] done`, `- [?] question`…             | `@mirrordown/mdit-task-lists`         |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/mdit-unwrap-images`      |
 
 ## Notes
 
 - **GFM is markdown-it's own.** markdown-it renders tables and `~~strikethrough~~` out of the box (as `<s>`, where remark renders `<del>`); `~text~` is subscript either way. The preset doesn't change markdown-it's configuration.
-- **The rest of GFM is not included.** markdown-it has no footnotes, task lists or bare-URL links of its own, and the preset adds no dependency for them, so a document that uses them renders differently here than with the remark and Sätteri presets: `[^1]: Note.` is read as a link reference definition, `- [ ] task` keeps its brackets and `www.example.com` stays text. Add a markdown-it plugin for each you need (and `linkify: true` for URLs). Aligned table columns are written as `style="text-align:left"`, where remark writes `align="left"`.
+- **The rest of GFM is not included.** markdown-it has no footnotes or bare-URL links of its own, and the preset adds no dependency for them, so a document that uses them renders differently here than with the remark and Sätteri presets: `[^1]: Note.` is read as a link reference definition and `www.example.com` stays text. Task lists come from the `taskLists` set, which renders them as remark-gfm and Sätteri do. Add a markdown-it plugin for each you need (and `linkify: true` for URLs). Aligned table columns are written as `style="text-align:left"`, where remark writes `align="left"`.
 - **`tabIcons` follows `tabs`.** With `tabs: { containerClass }` set, tab-icons looks for groups of that class, unless you give it a `containerClass` of its own.
 - **`inline-svg` is not included.** It reads SVG files from disk; add [`@mirrordown/mdit-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/mdit-inline-svg) yourself where that fits.
 - **Raw HTML is the host's.** The preset doesn't change markdown-it's `html` option. markdown-it escapes raw HTML unless it is created with `html: true`, remark-rehype drops it by default, and Sätteri keeps it, so a document that holds raw HTML renders differently across the presets until the hosts are set alike.

@@ -226,3 +226,214 @@ para
 <!-- @case: own line: a line in an ordered list item goes on the item -->
 1. a
    {.x}
+
+<!-- @case: removed paragraph: a fence after a rule's block keeps its own -->
+---
+
+{.h}
+
+```js {.x}
+code
+```
+
+<!-- @case: removed paragraph: a fence after a table's block keeps its own -->
+| a |
+|---|
+| b |
+
+{.t}
+
+```js {.x}
+code
+```
+
+<!-- @case: removed paragraph: a fence after a list's block keeps its own -->
+- a
+
+{.l}
+
+```js {.x}
+code
+```
+
+<!-- @case: removed paragraph: two blocks after a table both go on it -->
+| a |
+|---|
+| b |
+
+{.t}
+
+{.u}
+
+<!-- @case: removed paragraph: two blocks after a list both go on it -->
+- a
+
+{.l}
+
+{.m}
+
+<!-- @case: removed paragraph: two blocks after a rule both go on it -->
+---
+
+{.h}
+
+{.i}
+
+<!-- @case: removed paragraph: three blocks after a table -->
+| a |
+|---|
+| b |
+
+{.t}
+
+{.u}
+
+{.v}
+
+<!-- @case: removed paragraph: three blocks after a list -->
+- a
+
+{.l}
+
+{.m}
+
+{.n}
+
+<!-- @case: removed paragraph: three blocks after a rule -->
+---
+
+{.h}
+
+{.i}
+
+{.j}
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a table's block -->
+| a |
+|---|
+| b |
+
+{.t}
+
+para {.p}
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block -->
+- a
+
+{.l}
+
+para {.p}
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a rule's block -->
+---
+
+{.h}
+
+para {.p}
+
+<!-- @case: removed paragraph: a heading after a rule's block keeps its own -->
+---
+
+{.h}
+
+# H {.g}
+
+<!-- @case: removed paragraph: a rule and its block after another -->
+a
+
+---
+
+{.h}
+
+---
+
+{.i}
+
+<!-- @case: removed paragraph: a list and its block after a rule's -->
+---
+
+{.h}
+
+- a
+
+{.l}
+
+<!-- @case: removed paragraph: two blocks after a rule in a blockquote -->
+> ---
+>
+> {.h}
+>
+> {.i}
+
+<!-- @case: removed paragraph: a fence after a table's block in a blockquote -->
+> | a |
+> |---|
+> | b |
+>
+> {.t}
+>
+> ```js {.x}
+> code
+> ```
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block in a blockquote -->
+> - a
+>
+> {.l}
+>
+> para {.p}
+
+<!-- @case: removed paragraph: two blocks after a list in a list item -->
+- a
+
+  - b
+
+  {.l}
+
+  {.m}
+
+<!-- @case: removed paragraph: a fence after a list's block in a list item -->
+- a
+
+  - b
+
+  {.l}
+
+  ```js {.x}
+  code
+  ```
+
+<!-- @case: removed paragraph: two blocks after a table in a list item -->
+- a
+
+  | a |
+  |---|
+  | b |
+
+  {.t}
+
+  {.u}
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block in a list item -->
+- a
+
+  - b
+
+  {.l}
+
+  para {.p}
+
+<!-- @case: fence order: the block's class leads when another attribute comes first -->
+```js {data-x=1 .a}
+code
+```
+
+<!-- @case: fence order: the block's class leads an id written before it -->
+```js {#i .a}
+code
+```
+
+<!-- @case: fence order: the block's classes lead together -->
+```js {data-x=1 .a .b}
+code
+```

@@ -12,6 +12,7 @@ import {
   ALERT_ALIASES,
   DEFAULT_TITLE,
   ICONS,
+  MARKDOWN_PARAGRAPH,
   createAlertResolver,
   plainText,
   splitAlertParagraph,
@@ -65,10 +66,13 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
       const titleNode = {
         type: "alertTitle",
         data: {
+          // The type's own title as configured, for a plugin that later empties the title (block-ids, taking a marker off it).
+          defaultTitle: titleFor(type),
           hName: alert.fold ? "summary" : "p",
           hProperties: {
             class: `${containerClass}-title`,
-            "aria-label": title
+            "aria-label": title,
+            [MARKDOWN_PARAGRAPH]: false
           }
         },
         // A title without plain text (an image with no alt) is still the title; the default one then only labels it.

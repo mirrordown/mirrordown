@@ -330,3 +330,210 @@
 <ol>
 <li class="x">a</li>
 </ol>
+
+<!-- @case: removed paragraph: a fence after a rule's block keeps its own -->
+<hr class="h">
+<pre><code class="x language-js">code
+</code></pre>
+
+<!-- @case: removed paragraph: a fence after a table's block keeps its own -->
+<table class="t">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="x language-js">code
+</code></pre>
+
+<!-- @case: removed paragraph: a fence after a list's block keeps its own -->
+<ul class="l">
+<li>a</li>
+</ul>
+<pre><code class="x language-js">code
+</code></pre>
+
+<!-- @case: removed paragraph: two blocks after a table both go on it -->
+<table class="t u">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: removed paragraph: two blocks after a list both go on it -->
+<ul class="l m">
+<li>a</li>
+</ul>
+
+<!-- @case: removed paragraph: two blocks after a rule both go on it -->
+<hr class="h i">
+
+<!-- @case: removed paragraph: three blocks after a table -->
+<table class="t u v">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: removed paragraph: three blocks after a list -->
+<ul class="l m n">
+<li>a</li>
+</ul>
+
+<!-- @case: removed paragraph: three blocks after a rule -->
+<hr class="h i j">
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a table's block -->
+<table class="t">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+<p class="p">para</p>
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block -->
+<ul class="l">
+<li>a</li>
+</ul>
+<p class="p">para</p>
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a rule's block -->
+<hr class="h">
+<p class="p">para</p>
+
+<!-- @case: removed paragraph: a heading after a rule's block keeps its own -->
+<hr class="h">
+<h1 class="g">H</h1>
+
+<!-- @case: removed paragraph: a rule and its block after another -->
+<p>a</p>
+<hr class="h">
+<hr class="i">
+
+<!-- @case: removed paragraph: a list and its block after a rule's -->
+<hr class="h">
+<ul class="l">
+<li>a</li>
+</ul>
+
+<!-- @case: removed paragraph: two blocks after a rule in a blockquote -->
+<blockquote>
+<hr class="h i">
+</blockquote>
+
+<!-- @case: removed paragraph: a fence after a table's block in a blockquote -->
+<blockquote>
+<table class="t">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="x language-js">code
+</code></pre>
+</blockquote>
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block in a blockquote -->
+<blockquote>
+<ul class="l">
+<li>a</li>
+</ul>
+<p class="p">para</p>
+</blockquote>
+
+<!-- @case: removed paragraph: two blocks after a list in a list item -->
+<ul>
+<li>
+<p>a</p>
+<ul class="l m">
+<li>b</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: removed paragraph: a fence after a list's block in a list item -->
+<ul>
+<li>
+<p>a</p>
+<ul class="l">
+<li>b</li>
+</ul>
+<pre><code class="x language-js">code
+</code></pre>
+</li>
+</ul>
+
+<!-- @case: removed paragraph: two blocks after a table in a list item -->
+<ul>
+<li>
+<p>a</p>
+<table class="t u">
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+
+<!-- @case: removed paragraph: a paragraph ending in a block after a list's block in a list item -->
+<ul>
+<li>
+<p>a</p>
+<ul class="l">
+<li>b</li>
+</ul>
+<p class="p">para</p>
+</li>
+</ul>
+
+<!-- @case: fence order: the block's class leads when another attribute comes first -->
+<pre><code class="a language-js" data-x="1">code
+</code></pre>
+
+<!-- @case: fence order: the block's class leads an id written before it -->
+<pre><code class="a language-js" id="i">code
+</code></pre>
+
+<!-- @case: fence order: the block's classes lead together -->
+<pre><code class="a b language-js" data-x="1">code
+</code></pre>

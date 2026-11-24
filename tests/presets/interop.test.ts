@@ -185,6 +185,67 @@ describe("presets: the plugins together", () => {
     });
   });
 
+  // GFM reads `[ ]` and `[x]` while remark and Sätteri parse, before any plugin; task-lists reads the other markers, and every box in markdown-it, after. The inline plugins, attrs and abbr have to find an item's text without its box either way, so task-lists comes before them in the remark and Sätteri presets (in markdown-it its rule runs before theirs wherever it is added), and before prompt in the markdown-it preset, whose rule parses a preview's text where this one looks for boxes.
+  describe("a task item's text is read without its box", () => {
+    const item = (marker: string, label: string, text: string) =>
+      `<li class="task-list-item" data-task="${marker}"><input type="checkbox" disabled aria-label="${label}"> ${text}</li>`;
+
+    it("by the inline plugins", () => {
+      expect(
+        rendered("- [?] ==m== [[K]] --d-- ++i++ ||s|| {漢字|かんじ}")
+      ).toBe(
+        `<ul class="contains-task-list">${item("?", "Question", `<mark>m</mark> <kbd>K</kbd> <del>d</del> <ins>i</ins> ${spoiler("s")} <ruby>漢字<rt>かんじ</rt></ruby>`)}</ul>`
+      );
+    });
+
+    it("by attrs, which put the task's class after the block's", () => {
+      expect(rendered("- [?] a {.cls}\n- [x] b {.cls}")).toBe(
+        '<ul class="contains-task-list"><li class="cls task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> a</li><li class="cls task-list-item"><input type="checkbox" checked disabled> b</li></ul>'
+      );
+    });
+
+    it("by abbr", () => {
+      expect(rendered("*[x]: ex\n\n- [x] x\n- [?] x")).toBe(
+        '<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked disabled> <abbr title="ex">x</abbr></li>' +
+          item("?", "Question", '<abbr title="ex">x</abbr>') +
+          "</ul>"
+      );
+    });
+
+    it("in a prompt's preview", () => {
+      expect(rendered("```prompt\n- [?] Ask\n```")).toContain(
+        `<div class="markdown-prompt-preview"><ul class="contains-task-list">${item("?", "Question", "Ask")}</ul></div>`
+      );
+    });
+
+    it("in a tab's panel and a step's body", () => {
+      expect(rendered("% Tab\n> - [/] a")).toContain(
+        `<section class="markdown-tabs-panel" aria-label="Tab"><ul class="contains-task-list">${item("/", "In progress", "a")}</ul></section>`
+      );
+      expect(rendered("@1. Step\n> - [!] a")).toContain(
+        `<div class="markdown-steps-body"><ul class="contains-task-list">${item("!", "Important", "a")}</ul></div>`
+      );
+    });
+
+    it("in an alert", () => {
+      expect(rendered("> [!NOTE]\n> - [-] a")).toBe(
+        alert(
+          "note",
+          "Note",
+          "Note",
+          `<ul class="contains-task-list">${item("-", "Cancelled", "a")}</ul>`
+        )
+      );
+    });
+
+    // GFM's own task list, which markdown-it now renders the same through the set.
+    it("as GFM renders it, in every engine", () => {
+      expect(rendered("- [ ] todo\n- [x] done")).toBe(
+        '<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" disabled> todo</li><li class="task-list-item"><input type="checkbox" checked disabled> done</li></ul>'
+      );
+    });
+  });
+
   // Known differences no order of plugins removes. Each is pinned so a change in any engine shows up here; when one is fixed in its plugin, move the case to the groups above.
   describe("pinned: where the engines still differ", () => {
     // The next two are no longer differences, kept here as the cases that used to be. markdown-it replaces terms after inline parsing, so an alert's keyword and an attribute block are read before a term in them is wrapped. remark's and Sätteri's abbr once had to run first, while a definition was still one plain line of text; it reads definitions from their source now, so the presets run it after alerts and attrs, in markdown-it's order.
@@ -233,15 +294,8 @@ describe("presets: the plugins together", () => {
       expect(sat(input)).toBe(footnotes);
     });
 
-    // The rest of GFM that markdown-it does not read by default. The preset leaves markdown-it's parser configuration alone.
-    it("task lists and bare URLs are GFM's too", () => {
-      const tasks = "- [ ] todo\n- [x] done";
-      expect(md(tasks)).toBe("<ul><li>[ ] todo</li><li>[x] done</li></ul>");
-      expect(rm(tasks)).toContain(
-        '<li class="task-list-item"><input type="checkbox" disabled> todo</li>'
-      );
-      expect(sat(tasks)).toBe(rm(tasks));
-
+    // The rest of GFM that markdown-it does not read by default. The preset leaves markdown-it's parser configuration alone. (Task lists were pinned here too, until the task-lists set gave markdown-it GFM's: see above.)
+    it("bare URLs are GFM's too", () => {
       const url = "see www.example.com now";
       expect(md(url)).toBe(`<p>${url}</p>`);
       expect(rm(url)).toBe(
@@ -256,6 +310,28 @@ describe("presets: the plugins together", () => {
       expect(md(input)).toContain('<th style="text-align:center">a</th>');
       expect(rm(input)).toContain('<th align="center">a</th>');
       expect(sat(input)).toContain('<th style="text-align: center">a</th>');
+    });
+  });
+
+  // A tag opens only at the start of its parent's content or after whitespace. An alert puts its icon at the start of its title, which is decoration, not content: a tag that starts the title has to stay one whichever engine built the alert, and whichever of the two plugins ran first. Icons are on here, as they are by default.
+  describe("a tag starts an alert's title, icon or not", () => {
+    const withIcons = [markdownIt(), remark(), satteri()];
+    const tag = '<a class="tag" href="#urgent">#urgent</a>';
+
+    it.each([
+      ["a plain alert", "> [!NOTE] #urgent fix\n> body"],
+      ["a foldable alert", "> [!TIP]- #urgent fix\n> body"],
+      ["a title that is only a tag", "> [!WARNING] #urgent"]
+    ])("in %s", (_name, input) => {
+      const html = withIcons.map((render) => render(input));
+      expect(html).toStrictEqual(html.map(() => html[0]));
+      expect(html[0]).toContain(`</svg>${tag}`);
+    });
+
+    it("and without icons", () => {
+      expect(rendered("> [!NOTE] #urgent fix\n> body")).toContain(
+        `aria-label="#urgent fix">${tag} fix</p>`
+      );
     });
   });
 });

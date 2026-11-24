@@ -1,0 +1,134 @@
+<!-- @case: a width and a height after the alt text -->
+<p><img src="https://example.com/e.jpg" alt="Engelbart" width="100" height="145"></p>
+
+<!-- @case: a width alone after the alt text -->
+<p><img src="https://example.com/e.jpg" alt="Engelbart" width="100"></p>
+
+<!-- @case: a description that is only a width leaves an empty alt -->
+<p><img src="https://example.com/e.jpg" alt="" width="250"></p>
+
+<!-- @case: a description that is only a width and a height leaves an empty alt -->
+<p><img src="https://example.com/e.jpg" alt="" width="250" height="100"></p>
+
+<!-- @case: a description without a size is left as it is -->
+<p><img src="e.jpg" alt="Engelbart"> <img src="e.jpg" alt="a|b"> <img src="e.jpg" alt="a|"> <img src="e.jpg" alt="|"></p>
+
+<!-- @case: five digits are a size, six are not -->
+<p><img src="e.jpg" alt="a" width="99999" height="99999"> <img src="e.jpg" alt="a|123456"> <img src="e.jpg" alt="a|100x123456"></p>
+
+<!-- @case: a unit or a percentage is not a size -->
+<p><img src="e.jpg" alt="a|100px"> <img src="e.jpg" alt="a|50%"></p>
+
+<!-- @case: a height alone is not a size -->
+<p><img src="e.jpg" alt="a|x145"></p>
+
+<!-- @case: an upper-case X is not a size -->
+<p><img src="e.jpg" alt="a|100X145"></p>
+
+<!-- @case: a number starting with 0 is not a size -->
+<p><img src="e.jpg" alt="a|0"> <img src="e.jpg" alt="a|0100"> <img src="e.jpg" alt="a|100x0"> <img src="e.jpg" alt="a|100x0145"></p>
+
+<!-- @case: an x without a height is not a size -->
+<p><img src="e.jpg" alt="a|100x"></p>
+
+<!-- @case: spaces inside the size make it not a size -->
+<p><img src="e.jpg" alt="a|100 x 145"> <img src="e.jpg" alt="a| 100"></p>
+
+<!-- @case: a size followed by a space is not a size -->
+<p><img src="e.jpg" alt="a|100 "></p>
+
+<!-- @case: digits that are not ASCII are not a size -->
+<p><img src="e.jpg" alt="a|١٠٠"> <img src="e.jpg" alt="a|１００"></p>
+
+<!-- @case: three numbers are not a size -->
+<p><img src="e.jpg" alt="a|1x2x3"></p>
+
+<!-- @case: the whitespace before the bar leaves the alt text -->
+<p><img src="e.jpg" alt="Engelbart" width="100"> <img src="e.jpg" alt="Engelbart" width="100"></p>
+
+<!-- @case: the whitespace at the start of the alt text stays -->
+<p><img src="e.jpg" alt="  a" width="100"></p>
+
+<!-- @case: only the last bar is read -->
+<p><img src="e.jpg" alt="a|b" width="100"> <img src="e.jpg" alt="a|100" width="200"></p>
+
+<!-- @case: a bar with nothing before it leaves an empty alt -->
+<p><img src="e.jpg" alt="" width="100"> <img src="e.jpg" alt="" width="100"></p>
+
+<!-- @case: formatting in the description is its text -->
+<p><img src="e.jpg" alt="Engel bart" width="100"></p>
+
+<!-- @case: a code span in the description is its text -->
+<p><img src="e.jpg" alt="Engelbart" width="100"></p>
+
+<!-- @case: a bar inside a code span is still the bar -->
+<p><img src="e.jpg" alt="a" width="100"></p>
+
+<!-- @case: a character reference before the size is text -->
+<p><img src="e.jpg" alt="Tom &amp; Jerry" width="100"></p>
+
+<!-- @case: a character reference in place of the bar is the bar -->
+<p><img src="e.jpg" alt="a" width="100"></p>
+
+<!-- @case: an escaped bar is the bar -->
+<p><img src="e.jpg" alt="a" width="100"></p>
+
+<!-- @case: a character reference in place of the x is the x -->
+<p><img src="e.jpg" alt="a" width="100" height="145"></p>
+
+<!-- @case: replacement patterns in the alt text are kept as written -->
+<p><img src="e.jpg" alt="$&amp; $1 $$" width="100"></p>
+
+<!-- @case: names of object members in the alt text are kept as written -->
+<p><img src="e.jpg" alt="__proto__" width="100"> <img src="e.jpg" alt="constructor" width="100"> <img src="e.jpg" alt="toString" width="100"></p>
+
+<!-- @case: an image with a title -->
+<p><img src="e.jpg" alt="Engelbart" title="A portrait" width="100" height="145"></p>
+
+<!-- @case: a full reference image finds its definition by its label -->
+<p><img src="e.jpg" alt="Engelbart" title="A portrait" width="100" height="145"></p>
+
+<!-- @case: a collapsed reference image finds its definition by the description as written -->
+<p><img src="e.jpg" alt="Engelbart" width="100"></p>
+
+<!-- @case: a shortcut reference image finds its definition by the description as written -->
+<p><img src="e.jpg" alt="Engelbart" width="100"></p>
+
+<!-- @case: an image inside a link -->
+<p><a href="https://example.com"><img src="e.jpg" alt="Engelbart" width="100"></a></p>
+
+<!-- @case: a link with a size in its text is not an image -->
+<p><a href="https://example.com">Engelbart|100</a></p>
+
+<!-- @case: an image in a list item -->
+<ul>
+<li><img src="e.jpg" alt="Engelbart" width="100"></li>
+<li>text <img src="e.jpg" alt="Engelbart" width="100" height="145"></li>
+</ul>
+
+<!-- @case: an image in a blockquote -->
+<blockquote>
+<p><img src="e.jpg" alt="Engelbart" width="100"></p>
+</blockquote>
+
+<!-- @case: an image in a heading -->
+<h1>A portrait <img src="e.jpg" alt="Engelbart" width="100"></h1>
+
+<!-- @case: two sized images in one paragraph -->
+<p><img src="a.jpg" alt="a" width="100"> and <img src="b.jpg" alt="b" width="200" height="50"></p>
+
+<!-- @case: a sized image after text and before text -->
+<p>Before <img src="a.jpg" alt="a" width="100"> after.</p>
+
+<!-- @case: an empty description -->
+<p><img src="e.jpg" alt=""></p>
+
+<!-- @case: a description of only spaces -->
+<p><img src="e.jpg" alt="   "></p>
+
+<!-- @case: a description over two lines -->
+<p><img src="e.jpg" alt="Engel
+bart" width="100"></p>
+
+<!-- @case: a hard line break in the description is not part of the alt text -->
+<p><img src="e.jpg" alt="Engelbart" width="100"></p>
