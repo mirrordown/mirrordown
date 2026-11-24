@@ -43,6 +43,9 @@ const joinLiteralBackslashes = (children: Token[]): Token[] => {
 const readDocument = (src: string, tokens: Token[]): AttrDocument => {
   const split = new Map<string, string[]>();
   let parents: Map<Token, Token> | undefined;
+  const removed = new Set<Token>();
+  // For the last index of each run of removed tokens, the first index of the run, so that a step back crosses the run at once, however many blocks were removed in a row.
+  const runStart = new Map<number, number>();
   return {
     src,
     lines(source) {
@@ -69,6 +72,27 @@ const readDocument = (src: string, tokens: Token[]): AttrDocument => {
         }
       }
       return parents.get(token);
+    },
+    remove(index, count) {
+      for (let i = index; i < index + count; i++) removed.add(tokens[i]);
+      const before = index - 1;
+      const start =
+        before >= 0 && removed.has(tokens[before])
+          ? (runStart.get(before) ?? before)
+          : index;
+      runStart.set(index + count - 1, start);
+    },
+    removed(token) {
+      return removed.has(token);
+    },
+    back(index, steps) {
+      let at = index;
+      for (let step = 0; step < steps && at >= 0; step++) {
+        at--;
+        while (at >= 0 && removed.has(tokens[at]))
+          at = (runStart.get(at) ?? at) - 1;
+      }
+      return at;
     }
   };
 };
@@ -118,8 +142,14 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
 
     const doc = readDocument(state.src, tokens);
     for (let index = 0; index < tokens.length; index++) {
-      const tokenType = tokens[index].type;
-      for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex++) {
+      const token = tokens[index];
+      const tokenType = token.type;
+      // A rule that removes a paragraph removes the token being read with it, and the rules after it have nothing left to read; the token after the paragraph is read in its turn, by every rule.
+      for (
+        let ruleIndex = 0;
+        ruleIndex < rules.length && !doc.removed(token);
+        ruleIndex++
+      ) {
         const anchorType = anchorTypes[ruleIndex];
         if (anchorType !== null && anchorType !== tokenType) continue;
         const pattern = rules[ruleIndex];
@@ -127,7 +157,7 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
         let range: DelimiterRange | null = null;
 
         const match = pattern.tests.every((test) => {
-          const result = testRule(tokens, index, test);
+          const result = testRule(tokens, index, test, doc);
           if (result.position != null) position = result.position;
           if (result.range) range = result.range;
           return result.match;
@@ -152,5 +182,10 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
         }
       }
     }
+
+    // The removed paragraphs leave the stream together, in one pass: removing each as its rule read it moved every later token once per block.
+    let kept = 0;
+    for (const token of tokens) if (!doc.removed(token)) tokens[kept++] = token;
+    tokens.length = kept;
   });
 };

@@ -29,15 +29,15 @@ export const createTableRules = (options: DelimiterConfig): AttrRule[] => {
         type: "table_close"
       }
     ],
-    transform(tokens, index) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const content = inline.children![0].content.trim();
       const range = check(content, "only")!;
 
-      // Find the matching table_open (start from table_close at index-2)
+      // Find the matching table_open (start from the table_close before the paragraph)
       let tableOpenIdx = -1;
       let depth = 1;
-      for (let i = index - 3; i >= 0; i--) {
+      for (let i = doc.back(index, 2) - 1; i >= 0; i--) {
         const t = tokens[i];
         if (t.type === "table_close") depth++;
         else if (t.type === "table_open") {
@@ -53,7 +53,7 @@ export const createTableRules = (options: DelimiterConfig): AttrRule[] => {
       addAttrs(tokens[tableOpenIdx], content, range, options.allowed);
 
       // Remove paragraph_open + inline + paragraph_close
-      tokens.splice(index - 1, 3);
+      doc.remove(index - 1, 3);
     }
   };
 

@@ -12,6 +12,12 @@ export interface AttrDocument {
   lines(source: string): string[];
   /** The nearest token before `token` that opens a block at a lower level than it: the block that holds it. */
   parent(token: Token): Token | undefined;
+  /** Removes `count` tokens from `index` on. They stay in the stream until every rule has run, so no later token moves: the core rule passes over them, and `back` steps over them. */
+  remove(index: number, count: number): void;
+  /** Whether a rule has removed `token`. */
+  removed(token: Token): boolean;
+  /** The index of the token `steps` tokens before `index`, not counting removed ones, or -1. */
+  back(index: number, steps: number): number;
 }
 
 export interface AttrRule {

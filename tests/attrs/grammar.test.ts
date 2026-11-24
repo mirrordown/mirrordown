@@ -5,10 +5,12 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { markdownToHtml } from "satteri";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
-import { normalizeHtml } from "../utils/index.js";
+import { normalizeHtml, parseFixture } from "../utils/index.js";
 
 // Sätteri reads attribute blocks itself (its built-in `attributes` feature), and that reader can't be changed from here. So it is the reference for what a block is: these cases pin mdit-attrs and remd-attrs to it, on input the fixtures don't reach.
 const md = new MarkdownIt().use(attrs);
@@ -501,5 +503,20 @@ describe.each(engines)("attrs/grammar: tables (%s)", (_engine, render) => {
     ).toBe(
       '<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td colspan="2">a</td><td rowspan="2">b</td></tr></tbody></table>'
     );
+  });
+});
+
+// The shared fixtures run through markdown-it and remark, and Sätteri can't read every one of them (its limits above). These are where markdown-it once differed from both: it removed a paragraph holding only a block and then read on from the wrong token, skipping the one after it (a fence lost its block, a second block made an empty paragraph). Sätteri reads them as the fixtures say.
+describe("attrs/grammar: Sätteri on the shared fixtures it reads", () => {
+  const read = (path: string): string =>
+    readFileSync(join(import.meta.dirname, path), "utf8");
+  const cases = parseFixture(
+    read("fixtures/attrs.md"),
+    read("expected/attrs.html")
+  ).filter(({ name }) => name.startsWith("removed paragraph:"));
+  const [, , [, sat]] = engines;
+
+  it.each(cases)("$name", ({ input, expected }) => {
+    expect(sat(input)).toBe(expected);
   });
 });
