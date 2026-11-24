@@ -21,8 +21,15 @@
   /* ── Structure ─────────────────────────────────────────────────────────── */
 
   .markdown-alert {
-    --_alert-color: var(--markdown-alert-color, oklch(0.55 0.15 250));
-    --_alert-bg: var(--markdown-alert-bg, oklch(0.97 0.015 250 / 60%));
+    /* The colours of a type no rule below names: one that `types` registers, or an undefined one that fell back. Dark values are the note's, so such an alert is readable on a dark page too. */
+    --_alert-color: var(
+      --markdown-alert-color,
+      light-dark(oklch(0.55 0.15 250), oklch(0.62 0.2 253))
+    );
+    --_alert-bg: var(
+      --markdown-alert-bg,
+      light-dark(oklch(0.97 0.015 250 / 60%), oklch(0.2 0.04 258 / 40%))
+    );
     --_alert-border: var(--markdown-alert-border, var(--_alert-color));
 
     padding: 0.75rem 1rem;

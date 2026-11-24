@@ -94,6 +94,7 @@ export const remarkGithubAlerts: Plugin<[AlertOptions?], Root> = (
               ? `${containerClass} ${classes}`
               : containerClass,
           "data-alert": type,
+          ...(alert.metadata ? { "data-alert-metadata": alert.metadata } : {}),
           ...(alert.fold === "+" ? { open: true } : {}),
           ...attributes
         },
