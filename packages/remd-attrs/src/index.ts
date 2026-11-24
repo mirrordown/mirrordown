@@ -4,7 +4,6 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 /* oxlint-disable typescript/no-unnecessary-condition */
 import { SKIP } from "unist-util-visit";
-import type { Visitor } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type {
   Root,
@@ -85,28 +84,43 @@ type BlockReader = (
   pos: "end" | "only"
 ) => DelimiterRange | null;
 
-// Shared visitor for list/table/hr: apply attrs from a standalone paragraph
-// to the preceding sibling of the given type, then remove the paragraph.
-const makeSiblingAttrVisitor =
-  (
-    siblingType: string,
-    blockAt: BlockReader,
-    allowed: Array<string | RegExp>
-  ): Visitor =>
-  (node: Node, index: number | undefined, parent: Parent | undefined) => {
-    if (!parent || typeof index === "undefined") return;
-    if (node.type !== "paragraph") return;
-    const para = node as Paragraph;
-    if (para.children.length !== 1 || para.children[0].type !== "text") return;
-    const content = para.children[0].value.trim();
-    const range = blockAt(para.children[0], content, "only");
-    if (!range) return;
-    const prev = parent.children[index - 1];
-    if (!prev || prev.type !== siblingType) return;
-    applyAttrs(prev, content, range, allowed);
-    parent.children.splice(index, 1);
-    return [SKIP, index];
-  };
+// Shared walk for list/table/hr and custom containers: apply attrs from a standalone paragraph to the preceding sibling `takes` accepts, then remove the paragraph.
+const placeSiblingBlocks = (
+  tree: Root,
+  takes: (prev: Node) => boolean,
+  blockAt: BlockReader,
+  allowed: Array<string | RegExp>
+): void => {
+  // Each removed paragraph, with the sibling it gave its block to. The paragraphs leave their parents together after the walk, since removing each on the spot moved every later sibling once per block; until then, a paragraph right after a removed one looks past it to that sibling, as it would have found it.
+  const removed = new Map<Node, Node>();
+  const parents = new Set<Parent>();
+  visit(
+    tree,
+    (node: Node, index: number | undefined, parent: Parent | undefined) => {
+      if (!parent || typeof index === "undefined") return;
+      if (node.type !== "paragraph") return;
+      const para = node as Paragraph;
+      if (para.children.length !== 1 || para.children[0].type !== "text")
+        return;
+      const content = para.children[0].value.trim();
+      const range = blockAt(para.children[0], content, "only");
+      if (!range) return;
+      const before = parent.children[index - 1];
+      const prev = before && (removed.get(before) ?? before);
+      if (!prev || !takes(prev)) return;
+      applyAttrs(prev as AttrNode, content, range, allowed);
+      removed.set(node, prev);
+      parents.add(parent);
+      return SKIP;
+    }
+  );
+  for (const parent of parents) {
+    let kept = 0;
+    for (const child of parent.children)
+      if (!removed.has(child)) parent.children[kept++] = child;
+    parent.children.length = kept;
+  }
+};
 
 /** remark plugin for attribute lists (`{.class #id key=value}`) on elements. */
 export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
@@ -433,7 +447,12 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
 
     // â”€â”€ list: attrs at end of list item / standalone paragraph after list â”€
     if (rules.has("list")) {
-      visit(tree, makeSiblingAttrVisitor("list", blockAt, allowed));
+      placeSiblingBlocks(
+        tree,
+        (prev) => prev.type === "list",
+        blockAt,
+        allowed
+      );
 
       // â”€â”€ custom containerItem nodes (data.attrsRole === "containerItem") â”€â”€
       // Third-party plugins opt in by setting data.attrsRole = "containerItem" and
@@ -462,36 +481,34 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       // â”€â”€ custom container nodes (data.attrsRole === "container") â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Third-party plugins opt in by setting data.attrsRole = "container".
       // A standalone attr paragraph after such a node applies to the node itself.
-      visit(
+      placeSiblingBlocks(
         tree,
-        (node: Node, index: number | undefined, parent: Parent | undefined) => {
-          if (!parent || typeof index === "undefined") return;
-          if (node.type !== "paragraph") return;
-          const para = node as Paragraph;
-          if (para.children.length !== 1 || para.children[0].type !== "text")
-            return;
-          const content = para.children[0].value.trim();
-          const range = blockAt(para.children[0], content, "only");
-          if (!range) return;
-          const prev = parent.children[index - 1] as
-            | { data?: { attrsRole?: string } }
-            | undefined;
-          if (prev?.data?.attrsRole !== "container") return;
-          applyAttrs(prev as unknown as AttrNode, content, range, allowed);
-          parent.children.splice(index, 1);
-          return [SKIP, index];
-        }
+        (prev) =>
+          (prev as { data?: { attrsRole?: string } }).data?.attrsRole ===
+          "container",
+        blockAt,
+        allowed
       );
     }
 
     // â”€â”€ table: standalone paragraph after table containing only attrs â”€â”€â”€â”€â”€
     if (rules.has("table")) {
-      visit(tree, makeSiblingAttrVisitor("table", blockAt, allowed));
+      placeSiblingBlocks(
+        tree,
+        (prev) => prev.type === "table",
+        blockAt,
+        allowed
+      );
     }
 
     // â”€â”€ hr: standalone paragraph after thematic break containing only attrs
     if (rules.has("hr")) {
-      visit(tree, makeSiblingAttrVisitor("thematicBreak", blockAt, allowed));
+      placeSiblingBlocks(
+        tree,
+        (prev) => prev.type === "thematicBreak",
+        blockAt,
+        allowed
+      );
     }
 
     // â”€â”€ block: paragraph with trailing attrs on last text child â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

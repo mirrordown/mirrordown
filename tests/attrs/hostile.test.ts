@@ -117,6 +117,8 @@ interface Many {
   make: (n: number) => string;
   /** Sätteri leaves a line ending at the end of a setext heading's content when a block is on the line before the underline, as the guide lists. */
   satteriDiffers?: true;
+  /** How many remark's plugin is timed on, when remark's own parser can't reach 20,000 in reasonable time. */
+  remarkSize?: number;
 }
 
 // Every kind of block the plugins place, many times over. markdown-it once split the whole document into lines again for each block on a line of its own, walked back over a list's or blockquote's earlier children for each one in it, and dropped each block's emptied text from the paragraph one at a time: 20,000 image paragraphs took 27 seconds. remark's plugin did the last too, read every item of a list again per block to tell whether the list was loose or held a task item, and walked the tree with `unist-util-visit`, which finds each node's index among its siblings with `indexOf`.
@@ -161,6 +163,22 @@ const many: Many[] = [
   {
     name: "image blocks in one paragraph",
     make: (n) => "![a](a.png){.c}".repeat(n)
+  },
+  // markdown-it and remark once removed each of these paragraphs on the spot, which moved every later block once per paragraph.
+  {
+    name: "tables, each followed by a block in a paragraph of its own",
+    make: (n) => "| a |\n|---|\n| b |\n\n{.t}\n\n".repeat(n),
+    // remark-gfm takes longer than linear to parse many tables by itself: 2.7 seconds for 2,000.
+    remarkSize: 2000
+  },
+  {
+    name: "lists, each followed by a block in a paragraph of its own",
+    make: (n) => "- a\n\n{.l}\n\n".repeat(n)
+  },
+  {
+    // Text first: Sätteri reads a document that opens with `---` and has another `---` line as front matter.
+    name: "rules, each followed by a block in a paragraph of its own",
+    make: (n) => `text\n\n${"---\n\n{.h}\n\n".repeat(n)}`
   }
 ];
 
@@ -171,13 +189,14 @@ describe("many blocks through attrs", () => {
   it.each(many)(
     "20,000 $name",
     { timeout: 120_000 },
-    ({ make, satteriDiffers }) => {
+    ({ make, satteriDiffers, remarkSize = 20_000 }) => {
       const input = make(20_000);
       const { costs, failed } = ownCost(input, [MDIT, SAT]);
       expect(failed).toBe(0);
-      const tree = parser.parse(input);
+      const source = make(remarkSize);
+      const tree = parser.parse(source);
       const remark = timed(() =>
-        unified().use(remarkAttrs).runSync(tree, input)
+        unified().use(remarkAttrs).runSync(tree, source)
       );
       expect(Math.max(...costs, remark)).toBeLessThan(HOSTILE_TIME_LIMIT);
       const [mdit, remd, sat] = html(make(500));
@@ -203,6 +222,7 @@ describe("many blocks through attrs", () => {
   // The same for remark, counted rather than timed, for the reason above: each rule reads a node's children about once, so a few dozen reads each is linear, and a read of all of them again per block, or per node for its index, comes to their number over again.
   it.each(many)(
     "remark's plugin reads each node's children a few times over, not once per block: $name",
+    { timeout: 60_000 },
     ({ make }) => {
       const input = make(2000);
       const tree = parser.parse(input);
