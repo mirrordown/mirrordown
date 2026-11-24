@@ -1,5 +1,5 @@
 {
- "agree": 3413,
+ "agree": 3433,
  "differ": {
   "highlight/triple": {
    "markdown": "===text==\n",
@@ -87,200 +87,20 @@
     "mark"
    ]
   },
-  "highlight/fam-circle-red-vs": {
-   "markdown": "==🔴️ text==\n",
-   "obsidian": [
-    "️ text"
-   ],
-   "ours": [
-    "🔴️ text"
-   ]
-  },
   "highlight/emoji-nested": {
    "markdown": "==🔴 a ==🟢 b== c==\n",
    "obsidian": [
     " a ==🟢 b"
    ],
    "ours": [
-    "🔴 a 🟢 b"
+    " a b"
    ]
   },
   "highlight/emoji-in-comment": {
    "markdown": "%%==🔴 text==%%\n",
    "obsidian": [],
    "ours": [
-    "🔴 text"
-   ]
-  },
-  "highlight/emoji-tab-after": {
-   "markdown": "==🔴\ttext==\n",
-   "obsidian": [
     " text"
-   ],
-   "ours": [
-    "🔴 text"
-   ]
-  },
-  "highlight/emoji-newline-after": {
-   "markdown": "==🔴\ntext==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🔴 text"
-   ]
-  },
-  "highlight/set-circle-orange": {
-   "markdown": "==🟠 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟠 text"
-   ]
-  },
-  "highlight/set-circle-yellow": {
-   "markdown": "==🟡 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟡 text"
-   ]
-  },
-  "highlight/set-circle-green": {
-   "markdown": "==🟢 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟢 text"
-   ]
-  },
-  "highlight/set-circle-blue": {
-   "markdown": "==🔵 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🔵 text"
-   ]
-  },
-  "highlight/set-circle-purple": {
-   "markdown": "==🟣 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟣 text"
-   ]
-  },
-  "highlight/set-square-orange": {
-   "markdown": "==🟧 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟧 text"
-   ]
-  },
-  "highlight/set-square-purple": {
-   "markdown": "==🟪 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟪 text"
-   ]
-  },
-  "highlight/emoji-space-text": {
-   "markdown": "==🔴 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🔴 text"
-   ]
-  },
-  "highlight/emoji-text-nospace": {
-   "markdown": "==🔴text==\n",
-   "obsidian": [
-    "text"
-   ],
-   "ours": [
-    "🔴text"
-   ]
-  },
-  "highlight/square-red": {
-   "markdown": "==🟥text==\n",
-   "obsidian": [
-    "text"
-   ],
-   "ours": [
-    "🟥text"
-   ]
-  },
-  "highlight/square-yellow": {
-   "markdown": "==🟨 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟨 text"
-   ]
-  },
-  "highlight/square-green": {
-   "markdown": "==🟩 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟩 text"
-   ]
-  },
-  "highlight/square-blue": {
-   "markdown": "==🟦 text==\n",
-   "obsidian": [
-    " text"
-   ],
-   "ours": [
-    "🟦 text"
-   ]
-  },
-  "highlight/emoji-only-body": {
-   "markdown": "==🔴==\n",
-   "obsidian": [
-    ""
-   ],
-   "ours": [
-    "🔴"
-   ]
-  },
-  "highlight/emoji-doubled": {
-   "markdown": "==🔴🟩text==\n",
-   "obsidian": [
-    "🟩text"
-   ],
-   "ours": [
-    "🔴🟩text"
-   ]
-  },
-  "highlight/emoji-in-callout-title": {
-   "markdown": "> [!note] ==🔴 T==\n",
-   "obsidian": [
-    " T"
-   ],
-   "ours": [
-    "🔴 T"
-   ]
-  },
-  "highlight/emoji-in-table-cell": {
-   "markdown": "| a |\n| --- |\n| ==🔴 t== |\n",
-   "obsidian": [
-    " t"
-   ],
-   "ours": [
-    "🔴 t"
    ]
   },
   "probe/math/in-highlight": {

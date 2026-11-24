@@ -22,6 +22,14 @@ export {
   type PhrasingLike
 } from "./github-alerts/index.js";
 export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
+export {
+  HIGHLIGHT_MARKERS,
+  createHighlightMarkers,
+  type HighlightMarker,
+  type HighlightMarkers,
+  type HighlightVariant,
+  type MarkOptions
+} from "./highlight-markers.js";
 export { createKbdTransform } from "./kbd.js";
 export {
   scanSpans,
@@ -56,6 +64,17 @@ export {
   parseAbbreviations,
   type AbbreviationPart
 } from "./abbr.js";
+export {
+  createTagCollector,
+  scanTags,
+  tagAncestors,
+  tagChildren,
+  tagHref,
+  tagKey,
+  type TagNodes,
+  type TagPart,
+  type TagsOptions
+} from "./tags.js";
 export {
   processSteps,
   processStepsInChildren,
@@ -115,6 +134,7 @@ export {
   type CopyCodeOptions,
   type CopyCodeState
 } from "./copy-code.js";
+export { parseImageSize, type ImageSize } from "./image-size.js";
 export {
   TASK_MARKERS,
   createTaskResolver,

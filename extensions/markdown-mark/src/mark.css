@@ -1,0 +1,20 @@
+@import "../../../packages/mdit-mark/src/mark.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  Each highlight colour is a light-dark() pair, which follows the color-scheme
+  of the element it is on. VSCode's preview says which kind of theme is active
+  with a class on <body>, not with color-scheme, so under a dark theme the
+  highlights would keep their light tints. Say it here, on the highlights
+  themselves, since this is a host-integration concern rather than a plugin one.
+*/
+.vscode-light mark[data-highlight],
+.vscode-high-contrast-light mark[data-highlight] {
+  color-scheme: light;
+}
+
+.vscode-dark mark[data-highlight],
+.vscode-high-contrast:not(.vscode-high-contrast-light) mark[data-highlight] {
+  color-scheme: dark;
+}

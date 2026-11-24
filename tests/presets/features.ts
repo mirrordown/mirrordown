@@ -41,6 +41,7 @@ export const features: ReadonlyArray<{
     input: "> [!NOTE]\n> Body",
     marker: "markdown-alert"
   },
+  { key: "imageSize", input: "![Alt|100](pic.png)", marker: 'width="100"' },
   { key: "ins", input: "a ++new++ b", marker: "<ins>" },
   { key: "kbd", input: "[[Ctrl]]", marker: "<kbd>" },
   { key: "lightbox", input: "!![Alt](pic.png)", marker: "<dialog" },
@@ -69,6 +70,7 @@ export const features: ReadonlyArray<{
   { key: "sub", input: "H~2~O", marker: "<sub>" },
   { key: "sup", input: "x^2^", marker: "<sup>" },
   { key: "tabs", input: "% One\n> a\n% Two\n> b", marker: "markdown-tabs" },
+  { key: "tags", input: "Filed under #inbox", marker: 'class="tag"' },
   {
     key: "tabIcons",
     input: "% npm\n> a\n% pnpm\n> b",

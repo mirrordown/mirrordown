@@ -31,6 +31,7 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | `*[term]: Title`  | [`<abbr>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr) | [mdit-abbr](packages/mdit-abbr)       | [remd-abbr](packages/remd-abbr)       | [sat-abbr](packages/sat-abbr)       | [markdown-abbr](extensions/markdown-abbr)                       |
 | `{本\|ほん}`      | [`<ruby>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ruby) | [mdit-ruby](packages/mdit-ruby)       | [remd-ruby](packages/remd-ruby)       | [sat-ruby](packages/sat-ruby)       | [markdown-denden-furigana](extensions/markdown-denden-furigana) |
 | `\|\|spoiler\|\|` | click-to-reveal (no JS)                                                               | [mdit-spoiler](packages/mdit-spoiler) | [remd-spoiler](packages/remd-spoiler) | [sat-spoiler](packages/sat-spoiler) | [markdown-spoiler](extensions/markdown-spoiler)                 |
+| `#tag`            | tag link (`<a class="tag">`)                                                          | [mdit-tags](packages/mdit-tags)       | [remd-tags](packages/remd-tags)       | [sat-tags](packages/sat-tags)       | —                                                               |
 
 ### Block & structural
 
@@ -54,11 +55,12 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Images
 
-| Syntax             | HTML                                                                                      | markdown-it                                       | remark                                            | Sätteri                                         | VSCode                                                      |
-| ------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| `![](…img.svg)`    | inlined `<svg>`                                                                           | [mdit-inline-svg](packages/mdit-inline-svg)       | [remd-inline-svg](packages/remd-inline-svg)       | [sat-inline-svg](packages/sat-inline-svg)       | [markdown-inline-svg](extensions/markdown-inline-svg)       |
-| `!![](…img)`       | [`<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | [mdit-lightbox](packages/mdit-lightbox)           | [remd-lightbox](packages/remd-lightbox)           | [sat-lightbox](packages/sat-lightbox)           | [markdown-lightbox](extensions/markdown-lightbox)           |
-| standalone `![]()` | unwrapped `<img>`                                                                         | [mdit-unwrap-images](packages/mdit-unwrap-images) | [remd-unwrap-images](packages/remd-unwrap-images) | [sat-unwrap-images](packages/sat-unwrap-images) | [markdown-unwrap-images](extensions/markdown-unwrap-images) |
+| Syntax               | HTML                                                                                      | markdown-it                                       | remark                                            | Sätteri                                         | VSCode                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| `![](…img.svg)`      | inlined `<svg>`                                                                           | [mdit-inline-svg](packages/mdit-inline-svg)       | [remd-inline-svg](packages/remd-inline-svg)       | [sat-inline-svg](packages/sat-inline-svg)       | [markdown-inline-svg](extensions/markdown-inline-svg)       |
+| `!![](…img)`         | [`<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | [mdit-lightbox](packages/mdit-lightbox)           | [remd-lightbox](packages/remd-lightbox)           | [sat-lightbox](packages/sat-lightbox)           | [markdown-lightbox](extensions/markdown-lightbox)           |
+| standalone `![]()`   | unwrapped `<img>`                                                                         | [mdit-unwrap-images](packages/mdit-unwrap-images) | [remd-unwrap-images](packages/remd-unwrap-images) | [sat-unwrap-images](packages/sat-unwrap-images) | [markdown-unwrap-images](extensions/markdown-unwrap-images) |
+| `![alt\|100x145](…)` | `width` and `height` on the `<img>`                                                       | [mdit-image-size](packages/mdit-image-size)       | [remd-image-size](packages/remd-image-size)       | [sat-image-size](packages/sat-image-size)       | —                                                           |
 
 ### Diagrams
 
@@ -141,6 +143,8 @@ The plugins in this collection are forked and modernized from the following upst
 - [rehype-mermaid](https://github.com/remcohaszing/rehype-mermaid) — the API and test cases `mermaid-pele` follows; [Pele](https://pele.run) renders the diagrams
 - [Vocs](https://vocs.dev/writing/markdown-extensions#file-tree) — the File Tree `file-tree` ports, as a fence rather than a directive; its icons are [Seti UI](https://github.com/jesseweed/seti-ui)'s, and its design and Shiki theme support follow [Pierre's Trees](https://trees.software/)
 - [Vocs](https://vocs.dev/writing/markdown-extensions#prompts) — the Prompts `prompt` ports, as a fence rather than a directive; its service icons are [Lobe Icons](https://github.com/lobehub/lobe-icons)
+- [Obsidian](https://obsidian.md/help/tags) — the `#tag` syntax `tags` reads, following the rules in [Gordon Brander's Obsidian Flavored Markdown spec](https://github.com/gordonbrander/obsidian-markdown)
+- [Obsidian](https://obsidian.md/help/syntax#External+images) — the image size syntax `image-size` reads
 - [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and the themes whose status markers it documents — the six task markers `task-lists` reads beyond GFM's; their icons are [Lucide](https://lucide.dev)'s
 
 ---

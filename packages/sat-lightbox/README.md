@@ -6,7 +6,7 @@ A Sätteri plugin for the `lightbox` syntax extension.
 
 ## Overview
 
-The `lightbox` plugin opts an image into a click-to-zoom lightbox with a leading `!!`. The marked image becomes a trigger button that opens the full-size image in a modal `<dialog>`, dimming and blurring the page behind it. Unmarked images (`![…]`) render normally.
+The `lightbox` plugin opts an image into a click-to-zoom lightbox with a leading `!!`. The marked image becomes a trigger button that opens the full-size image in a modal `<dialog>` (a `width` or `height` on the image, from the [`image-size`](/guide/plugins/image-size) plugin or an attribute block, sizes the image on the page and is left off the dialog's copy), dimming and blurring the page behind it. Unmarked images (`![…]`) render normally.
 
 The entire interaction — open, close, backdrop dismiss, `Esc`, focus trapping, and the zoom/fade animation — is built from modern declarative HTML and CSS only: [`<dialog>`](https://developer.mozilla.org/docs/Web/HTML/Element/dialog), the [Invoker Commands API](https://developer.mozilla.org/docs/Web/API/Invoker_Commands_API) (`command`/`commandfor`), `closedby="any"`, and [`@starting-style`](https://developer.mozilla.org/docs/Web/CSS/@starting-style). **No JavaScript runs**, so it works in environments that disable scripts, such as the VSCode Markdown preview.
 

@@ -37,6 +37,7 @@ const slugs = [
   "del",
   "file-tree",
   "github-alerts",
+  "image-size",
   "ins",
   "kbd",
   "lightbox",
@@ -53,6 +54,7 @@ const slugs = [
   "sup",
   "tab-icons",
   "tabs",
+  "tags",
   "task-lists",
   "unwrap-images"
 ];

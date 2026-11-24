@@ -88,10 +88,11 @@ mirrordown({
 | `del`               | `--deleted--`                               | `@mirrordown/remd-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/remd-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/remd-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/remd-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/remd-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/remd-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/remd-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/remd-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/remd-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/remd-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/remd-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/remd-ruby`               |
@@ -103,6 +104,7 @@ mirrordown({
 | `sub`               | `~subscript~`                               | `@mirrordown/remd-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/remd-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/remd-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/remd-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/remd-tab-icons`          |
 | `taskLists`         | `- [x] done`, `- [?] question`…             | `@mirrordown/remd-task-lists`         |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/remd-unwrap-images`      |

@@ -1,0 +1,46 @@
+<!-- @case: in a table cell the bar is written escaped -->
+<table>
+<thead>
+<tr>
+<th>Portrait</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="e.jpg" alt="Engelbart" width="100" height="145"></td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: an unescaped bar in a table cell ends the cell -->
+<table>
+<thead>
+<tr>
+<th>Portrait</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>![Engelbart</td>
+<td>100](e.jpg)</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: sized and unsized images in table cells -->
+<table>
+<thead>
+<tr>
+<th>Plain</th>
+<th>Sized</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img src="a.jpg" alt="p"></td>
+<td><img src="b.jpg" alt="s" width="50"></td>
+</tr>
+</tbody>
+</table>
+

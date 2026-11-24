@@ -15,10 +15,11 @@ import {
   githubAlerts,
   type AlertOptions
 } from "@mirrordown/mdit-github-alerts";
+import { imageSize } from "@mirrordown/mdit-image-size";
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
-import { mark } from "@mirrordown/mdit-mark";
+import { mark, type MarkOptions } from "@mirrordown/mdit-mark";
 import {
   mermaidPele,
   type MermaidPeleOptions
@@ -32,6 +33,7 @@ import { steps, type StepsOptions } from "@mirrordown/mdit-steps";
 import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
+import { tags, type TagsOptions } from "@mirrordown/mdit-tags";
 import { taskLists, type TaskListsOptions } from "@mirrordown/mdit-task-lists";
 import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
@@ -47,10 +49,11 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | MermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
@@ -62,6 +65,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
@@ -101,6 +105,8 @@ export const mirrordown = (
         };
 
   on(options.abbr, abbr);
+  // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Before attrs, whose rule sits there too: an attribute block's `title` then follows the size, as in remark and Sätteri.
+  on(options.imageSize, imageSize);
   // Before prompt: both read a list item's text right after inline parsing, and markdown-it runs the rules added there in the reverse of the order they were added, so prompt has to parse a preview's text before this looks for boxes in it. Its rule also runs before attrs and abbr wherever it is added, so they read an item's text without its box, as they read GFM's tasks in the other engines.
   configured(options.taskLists, taskLists);
   // Before slug, so explicit `{#id}` attributes win.
@@ -110,7 +116,7 @@ export const mirrordown = (
   configured(options.githubAlerts, githubAlerts);
   on(options.ins, ins);
   on(options.kbd, kbd);
-  on(options.mark, mark);
+  configured(options.mark, mark);
   configured(options.ruby, ruby);
   configured(options.steps, steps);
   on(options.spoiler, spoiler);
@@ -119,6 +125,8 @@ export const mirrordown = (
   configured(options.tabs, tabs);
   // After tabs and attrs: it reads the labels they leave.
   configured(tabIconsSetting, tabIcons);
+  // Registered after abbr and alerts: each puts a core rule straight after `linkify`, where the one registered last runs first. Tags are read before abbreviations are marked, as in the other presets, and before an alert's title is labelled.
+  configured(options.tags, tags);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

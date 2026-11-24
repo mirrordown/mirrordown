@@ -29,6 +29,10 @@ import {
   type GithubAlertsPlugin
 } from "@mirrordown/sat-github-alerts";
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
+import {
+  satteriImageSize,
+  type ImageSizePlugin
+} from "@mirrordown/sat-image-size";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import {
@@ -36,7 +40,11 @@ import {
   type LightboxOptions,
   type LightboxPlugin
 } from "@mirrordown/sat-lightbox";
-import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
+import {
+  satteriMark,
+  type MarkOptions,
+  type MarkPlugin
+} from "@mirrordown/sat-mark";
 import {
   satteriMermaidPele,
   type MermaidPelePlugin,
@@ -67,6 +75,11 @@ import {
   type TabsOptions,
   type TabsPlugin
 } from "@mirrordown/sat-tabs";
+import {
+  satteriTags,
+  type TagsOptions,
+  type TagsPlugin
+} from "@mirrordown/sat-tags";
 import {
   satteriTabIcons,
   type TabIconsOptions,
@@ -101,10 +114,11 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   /** Ruby's own options; its `features` are always the preset's. */
@@ -119,6 +133,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
@@ -139,6 +154,7 @@ export interface MirrordownPreset {
     | Factory<CaptionPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
+    | Factory<ImageSizePlugin>
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
@@ -147,6 +163,7 @@ export interface MirrordownPreset {
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
     | Factory<TabsPlugin>
+    | Factory<TagsPlugin>
     | Factory<TaskListsPlugin>
   >;
   hastPlugins: Array<
@@ -207,12 +224,16 @@ export const mirrordown = (
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.ins === false ? [] : [satteriIns()]),
-      ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.mark === false ? [] : [satteriMark(settings(options.mark))]),
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
+      // After prompt previews and ruby, which make image nodes, so it sizes theirs too. Before the plugins that wrap an image or read its alt: spoiler, tabs and alerts (whose labels are read from the alt when they run), caption, and lightbox and unwrap-images among the hast plugins.
+      ...(options.imageSize === false ? [] : [satteriImageSize()]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.
+      ...(options.tags === false ? [] : [satteriTags(settings(options.tags))]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),

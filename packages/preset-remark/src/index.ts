@@ -33,13 +33,14 @@ import {
   githubAlertsHastHandlers,
   type AlertOptions
 } from "@mirrordown/remd-github-alerts";
+import { remarkImageSize } from "@mirrordown/remd-image-size";
 import { remarkIns } from "@mirrordown/remd-ins";
 import { remarkKbd } from "@mirrordown/remd-kbd";
 import {
   rehypeLightbox,
   type LightboxOptions
 } from "@mirrordown/remd-lightbox";
-import { remarkMark } from "@mirrordown/remd-mark";
+import { remarkMark, type MarkOptions } from "@mirrordown/remd-mark";
 import {
   rehypeMermaidPele,
   type RehypeMermaidPeleOptions
@@ -61,6 +62,7 @@ import {
   tabsHastHandlers,
   type TabsOptions
 } from "@mirrordown/remd-tabs";
+import { remarkTags, type TagsOptions } from "@mirrordown/remd-tags";
 import {
   rehypeTabIcons,
   type TabIconsOptions
@@ -85,10 +87,11 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | RehypeMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
@@ -100,6 +103,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
@@ -177,8 +181,10 @@ export const mirrordown = (
       ...on(options.kbd, remarkKbd),
       ...on(options.del, remarkDel),
       ...on(options.ins, remarkIns),
-      ...on(options.mark, remarkMark),
+      ...configured(options.mark, remarkMark),
       ...configured(options.steps, remarkSteps),
+      // After prompt and ruby, which make image nodes (a prompt's preview, a ruby rebuilt from its source), so it sizes theirs too. Before the plugins that wrap an image or read its alt (spoiler, caption, and lightbox and unwrap-images among the rehype plugins), so they find it sized and without the size in its alt. Attrs may come after: its `width` and `height` win either way.
+      ...on(options.imageSize, remarkImageSize),
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),
       ...on(options.sup, remarkSup),
@@ -187,6 +193,8 @@ export const mirrordown = (
       ...configured(options.githubAlerts, remarkGithubAlerts),
       // Attrs last, as markdown-it applies them after parsing: step titles, tab labels and the other plugins' nodes exist by then.
       ...configured(options.attrs, remarkAttrs),
+      // After attrs, so the `#id` of an attribute block is read as an id before tags are looked for, and after the plugins whose spans a tag can open. Before abbr, as in markdown-it.
+      ...configured(options.tags, remarkTags),
       // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
       ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.

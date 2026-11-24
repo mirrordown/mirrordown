@@ -66,10 +66,11 @@ md.use(mirrordown, {
 | `del`               | `--deleted--`                               | `@mirrordown/mdit-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/mdit-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/mdit-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/mdit-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/mdit-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/mdit-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/mdit-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/mdit-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/mdit-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/mdit-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/mdit-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/mdit-ruby`               |
@@ -81,6 +82,7 @@ md.use(mirrordown, {
 | `sub`               | `~subscript~`                               | `@mirrordown/mdit-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/mdit-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/mdit-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/mdit-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/mdit-tab-icons`          |
 | `taskLists`         | `- [x] done`, `- [?] question`…             | `@mirrordown/mdit-task-lists`         |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/mdit-unwrap-images`      |

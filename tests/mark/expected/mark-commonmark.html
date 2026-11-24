@@ -85,3 +85,179 @@
 
 <!-- @case: a run between spaces neither opens nor closes -->
 <p><mark>a === b</mark></p>
+
+<!-- @case: colour: a red circle or square colours a highlight red -->
+<p><mark data-highlight="red">circle</mark> <mark data-highlight="red">square</mark></p>
+
+<!-- @case: colour: an orange circle or square colours a highlight orange -->
+<p><mark data-highlight="orange">circle</mark> <mark data-highlight="orange">square</mark></p>
+
+<!-- @case: colour: a yellow circle or square colours a highlight yellow -->
+<p><mark data-highlight="yellow">circle</mark> <mark data-highlight="yellow">square</mark></p>
+
+<!-- @case: colour: a green circle or square colours a highlight green -->
+<p><mark data-highlight="green">circle</mark> <mark data-highlight="green">square</mark></p>
+
+<!-- @case: colour: a blue circle or square colours a highlight blue -->
+<p><mark data-highlight="blue">circle</mark> <mark data-highlight="blue">square</mark></p>
+
+<!-- @case: colour: a purple circle or square colours a highlight purple -->
+<p><mark data-highlight="purple">circle</mark> <mark data-highlight="purple">square</mark></p>
+
+<!-- @case: colour: an emoji that is not one of the twelve markers is text -->
+<p><mark>🟤 brown</mark> <mark>⚪ white</mark> <mark>🟫 square</mark></p>
+
+<!-- @case: colour: a plain highlight has no attribute -->
+<p><mark>text</mark></p>
+
+<!-- @case: colour: a marker in the middle of the content is text -->
+<p><mark>te🔴xt</mark></p>
+
+<!-- @case: colour: a marker inside formatting is not the content's first character -->
+<p><mark><strong>🔴bold</strong></mark></p>
+
+<!-- @case: colour: a space after the opening delimiter means no highlight -->
+<p>== 🔴 text==</p>
+
+<!-- @case: colour: only the marker goes, the space after it stays -->
+<p><mark data-highlight="orange"> text</mark></p>
+
+<!-- @case: colour: a highlight of only a marker is empty -->
+<p><mark data-highlight="red"></mark></p>
+
+<!-- @case: colour: a variation selector after the marker stays in the content -->
+<p><mark data-highlight="red">️ text</mark></p>
+
+<!-- @case: colour: only the first of two markers is read -->
+<p><mark data-highlight="red">🟩text</mark></p>
+
+<!-- @case: colour: a marker written as a character reference is text -->
+<p><mark>🔴text</mark> <mark>🔴text</mark></p>
+
+<!-- @case: colour: a character reference after the marker stays -->
+<p><mark data-highlight="red">&amp;text</mark></p>
+
+<!-- @case: colour: a backslash before the marker is text, and so is the marker -->
+<p><mark>\🔴text</mark></p>
+
+<!-- @case: colour: an escaped opening delimiter is text, and so is the marker -->
+<p>==🔴 text==</p>
+
+<!-- @case: colour: an escaped character after the marker stays escaped -->
+<p><mark data-highlight="red">==text</mark></p>
+
+<!-- @case: colour: nested highlights are coloured each by its own first character -->
+<p><mark data-highlight="red">a <mark data-highlight="green">b</mark> c</mark></p>
+
+<!-- @case: colour: a closer pairs with the nearest opener, which takes the colour -->
+<p>==🔴a <mark data-highlight="green">b</mark></p>
+
+<!-- @case: colour: a highlight that opens with another highlight has no colour of its own -->
+<p><mark><mark data-highlight="red">a</mark>b</mark></p>
+
+<!-- @case: colour: each highlight in a paragraph has its own colour -->
+<p><mark data-highlight="red">a</mark> and <mark data-highlight="blue">b</mark> and <mark>c</mark></p>
+
+<!-- @case: colour: an odd-length run leaves its extra marker outside a coloured highlight -->
+<p>=<mark data-highlight="red">a</mark>=</p>
+
+<!-- @case: colour: formatting after the marker stays -->
+<p><mark data-highlight="red"><strong>bold</strong> text</mark></p>
+
+<!-- @case: colour: a highlight across a line break -->
+<p><mark data-highlight="red">
+text</mark></p>
+
+<!-- @case: colour: a hard break straight after the marker -->
+<p><mark data-highlight="red"><br>
+text</mark></p>
+
+<!-- @case: colour: inside emphasis -->
+<p><em><mark data-highlight="red">a</mark></em></p>
+
+<!-- @case: colour: inside a link -->
+<p><a href="https://example.com"><mark data-highlight="red">a</mark></a></p>
+
+<!-- @case: colour: a link as the first child is not text -->
+<p><mark><a href="https://example.com">🔴a</a></mark></p>
+
+<!-- @case: colour: in a heading -->
+<h2><mark data-highlight="red">heading</mark></h2>
+
+<!-- @case: colour: in list items -->
+<ul><li><mark data-highlight="red">first</mark></li><li><mark data-highlight="green">second</mark></li></ul>
+
+<!-- @case: colour: in a blockquote -->
+<blockquote><p><mark data-highlight="blue">quote</mark></p></blockquote>
+
+<!-- @case: colour: a code span is code, inside a highlight or around one -->
+<p><code>==🔴a==</code> <mark><code>🔴</code></mark></p>
+
+<!-- @case: colour: a replacement pattern after the marker stays as written -->
+<p><mark data-highlight="red">$&amp;$$$'</mark></p>
+
+<!-- @case: colour: text naming an inherited object member is not a colour -->
+<p><mark>constructor</mark> <mark><strong>proto</strong></mark> <mark>toString</mark></p>
+
+<!-- @case: colour: a marker is punctuation to the delimiter, so a run straight after a letter does not open -->
+<p>foo==🔴bar== and foo <mark data-highlight="red">bar</mark>baz</p>
+
+<!-- @case: label: each of the ten labels names its variant and keeps its emoji -->
+<p><mark data-highlight="bug">🐛 Bug</mark> <mark data-highlight="documentation">📖 Docs</mark> <mark data-highlight="enhancement">✨ New</mark> <mark data-highlight="question">❓ Why</mark> <mark data-highlight="help-wanted">🙋 Help</mark> <mark data-highlight="good-first-issue">🌱 Start</mark> <mark data-highlight="duplicate">👯 Again</mark> <mark data-highlight="invalid">🚫 No</mark> <mark data-highlight="wontfix">⛔ Never</mark> <mark data-highlight="warning">⚠️ Careful</mark></p>
+
+<!-- @case: label: the warning sign is one marker with or without its variation selector -->
+<p><mark data-highlight="warning">⚠ bare</mark> <mark data-highlight="warning">⚠️ selected</mark></p>
+
+<!-- @case: label: a label straight before text -->
+<p><mark data-highlight="bug">🐛Bug</mark></p>
+
+<!-- @case: label: a label before formatting -->
+<p><mark data-highlight="bug">🐛<strong>Bug</strong> here</mark></p>
+
+<!-- @case: label: a highlight of only a label keeps it -->
+<p><mark data-highlight="bug">🐛</mark></p>
+
+<!-- @case: label: a label not at the start is text -->
+<p><mark>a 🐛</mark> <mark>a⚠️</mark></p>
+
+<!-- @case: label: a label written as a character reference is text -->
+<p><mark>🐛 Bug</mark> <mark>⚠️ Careful</mark></p>
+
+<!-- @case: label: the warning sign before a variation selector written as a character reference -->
+<p><mark data-highlight="warning">⚠️ Careful</mark></p>
+
+<!-- @case: label: a variation selector before the marker is not passed over -->
+<p><mark>️🐛 Bug</mark></p>
+
+<!-- @case: label: a variation selector after a label stays with it -->
+<p><mark data-highlight="bug">🐛️ Bug</mark></p>
+
+<!-- @case: label: only the first marker is read, colour or label -->
+<p><mark data-highlight="red">🐛 a</mark> <mark data-highlight="bug">🐛🔴 b</mark></p>
+
+<!-- @case: label: an emoji that is not a marker is text -->
+<p><mark>🐜 ant</mark> <mark>📕 book</mark></p>
+
+<!-- @case: label: inside a link -->
+<p><a href="https://example.com"><mark data-highlight="bug">🐛 Bug</mark></a></p>
+
+<!-- @case: label: in a heading -->
+<h2><mark data-highlight="warning">⚠️ Careful</mark></h2>
+
+<!-- @case: label: in list items -->
+<ul><li><mark data-highlight="bug">🐛 Bug</mark></li><li><mark data-highlight="enhancement">✨ New</mark></li></ul>
+
+<!-- @case: label: in a blockquote -->
+<blockquote><p><mark data-highlight="question">❓ Why</mark></p></blockquote>
+
+<!-- @case: label: a code span is code -->
+<p><code>==🐛 Bug==</code> <mark><code>🐛</code></mark></p>
+
+<!-- @case: label: an escaped opening delimiter is text, and so is the label -->
+<p>==🐛 Bug==</p>
+
+<!-- @case: label: a highlight that opens with another highlight has no variant of its own -->
+<p><mark><mark data-highlight="bug">🐛a</mark>b</mark></p>
+
+<!-- @case: label: nested highlights each take their own variant -->
+<p><mark data-highlight="bug">🐛a <mark data-highlight="warning">⚠️b</mark> c</mark></p>
