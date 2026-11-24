@@ -46,7 +46,7 @@ export const createSoftbreakRule = (options: DelimiterConfig): AttrRule => {
         ]
       }
     ],
-    transform(tokens, index, _position, _range, src) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const children = inline.children!;
       const content = children[children.length - 1].content.trim();
@@ -56,12 +56,8 @@ export const createSoftbreakRule = (options: DelimiterConfig): AttrRule => {
       // holds its own source (a panel tokenized from its body), which token
       // maps inside it index instead.
       const ancestors: Token[] = [];
-      let source = src;
-      let level = inline.level;
-      for (let i = index - 1; i >= 0 && level > 0; i--) {
-        const token = tokens[i];
-        if (token.nesting !== 1 || token.level >= level) continue;
-        level = token.level;
+      let source = doc.src;
+      for (let token = doc.parent(inline); token; token = doc.parent(token)) {
         const meta: unknown = token.meta;
         const own =
           typeof meta === "object" && meta !== null && "attrsSource" in meta
@@ -76,7 +72,7 @@ export const createSoftbreakRule = (options: DelimiterConfig): AttrRule => {
       const block = ancestors.at(0);
       if (!block) return;
 
-      const lines = source.split("\n");
+      const lines = doc.lines(source);
       const containers: Container[] = [];
       let quotes = 0;
       for (let i = ancestors.length - 1; i >= 1; i--) {

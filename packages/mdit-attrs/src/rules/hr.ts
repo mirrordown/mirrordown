@@ -24,17 +24,17 @@ export const createHrRule = (options: DelimiterConfig): AttrRule => {
         type: "hr"
       }
     ],
-    transform(tokens, index) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const textChild = inline.children![0];
       const content = textChild.content.trim();
       const range = check(content, "only")!;
 
-      const hr = tokens[index - 2];
+      const hr = tokens[doc.back(index, 2)];
       addAttrs(hr, content, range, options.allowed);
 
       // Remove paragraph_open + inline + paragraph_close
-      tokens.splice(index - 1, 3);
+      doc.remove(index - 1, 3);
     }
   };
 };

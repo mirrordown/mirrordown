@@ -72,14 +72,17 @@ const testChild = (
 export const testRule = (
   tokens: Token[],
   index: number,
-  test: RuleTest
+  test: RuleTest,
+  /** Steps back from a token over those a rule has removed, which stay in the stream until the run ends. */
+  steps: { back(index: number, steps: number): number }
 ): TestResult => {
   let tokenIndex: number;
+  const shift = test.shift ?? 0;
   if (test.position !== undefined) {
     tokenIndex =
       test.position < 0 ? tokens.length + test.position : test.position;
   } else {
-    tokenIndex = index + (test.shift ?? 0);
+    tokenIndex = shift < 0 ? steps.back(index, -shift) : index + shift;
   }
 
   const token = tokens[tokenIndex];

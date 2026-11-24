@@ -161,20 +161,21 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
           t === "bullet_list_close" || t === "ordered_list_close"
       }
     ],
-    transform(tokens, index) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const children = inline.children!;
       const textChild = children[0];
       const content = textChild.content.trim();
       const range = check(content, "only")!;
 
-      // Find the matching list_open for the close token at index-2
-      const closeToken = tokens[index - 2];
+      // Find the matching list_open for the close token before the paragraph
+      const closeIdx = doc.back(index, 2);
+      const closeToken = tokens[closeIdx];
       const openType = closeToken.type.replace("_close", "_open");
 
       let depth = 1;
       let listOpenIdx = -1;
-      for (let i = index - 3; i >= 0; i--) {
+      for (let i = closeIdx - 1; i >= 0; i--) {
         const t = tokens[i];
         if (t.type === closeToken.type) depth++;
         else if (t.type === openType) {
@@ -190,7 +191,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       addAttrs(tokens[listOpenIdx], content, range, options.allowed);
 
       // Remove paragraph_open + inline + paragraph_close
-      tokens.splice(index - 1, 3);
+      doc.remove(index - 1, 3);
     }
   };
 
@@ -221,7 +222,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
         meta: (m) => m?.attrsRole === "container"
       }
     ],
-    transform(tokens, index) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const children = inline.children!;
       const textChild = children[0];
@@ -229,12 +230,13 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       const range = check(content, "only")!;
 
       // Walk back to find the matching open token (same type with _open suffix)
-      const closeToken = tokens[index - 2];
+      const closeIdx = doc.back(index, 2);
+      const closeToken = tokens[closeIdx];
       const openType = closeToken.type.replace("_close", "_open");
 
       let depth = 1;
       let listOpenIdx = -1;
-      for (let i = index - 3; i >= 0; i--) {
+      for (let i = closeIdx - 1; i >= 0; i--) {
         const t = tokens[i];
         if (t.type === closeToken.type) depth++;
         else if (t.type === openType) {
@@ -250,7 +252,7 @@ export const createListRules = (options: DelimiterConfig): AttrRule[] => {
       addAttrs(tokens[listOpenIdx], content, range, options.allowed);
 
       // Remove paragraph_open + inline + paragraph_close
-      tokens.splice(index - 1, 3);
+      doc.remove(index - 1, 3);
     }
   };
 

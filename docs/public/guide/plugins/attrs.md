@@ -253,3 +253,5 @@ Sätteri reads attribute blocks itself, and the markdown-it and remark plugins f
 - There are no options, so no custom delimiters, no `allowed` list and no way to turn single rules off.
 
 markdown-it writes an attribute's name as you typed it, where remark and Sätteri spell a name HTML defines the way HTML does: `{Title=x}` gives `Title="x"` on markdown-it and `title="x"` on the other two. A browser reads both as `title`. remark-rehype's serializer also writes an empty value as the bare name (`{hidden}` is `hidden` there and `hidden=""` on the other two) and a backtick in a value as `&#x60;`. Those are the same to a browser too.
+
+remark leaves out an attribute named `constructor` or `__proto__`, in any case, where markdown-it and Sätteri write it: `text {.a constructor=x}` gives `<p class="a">` there, because remark-rehype's serializer throws on that name and would fail the whole page.

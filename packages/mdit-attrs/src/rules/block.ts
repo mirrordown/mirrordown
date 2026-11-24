@@ -37,7 +37,7 @@ export const createBlockRule = (options: DelimiterConfig): AttrRule => {
         ]
       }
     ],
-    transform(tokens, index) {
+    transform(tokens, index, _position, _range, doc) {
       const inline = tokens[index];
       const children = inline.children!;
       const lastChild = children[children.length - 1];
@@ -69,7 +69,7 @@ export const createBlockRule = (options: DelimiterConfig): AttrRule => {
       if (
         before.meta?.attrsItemTitle === true ||
         (before.type === "paragraph_open" &&
-          tokens[index - 2]?.type === "list_item_open")
+          tokens[doc.back(index, 2)]?.type === "list_item_open")
       )
         return;
 
