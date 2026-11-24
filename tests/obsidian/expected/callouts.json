@@ -1,0 +1,46 @@
+{
+ "agree": 3467,
+ "differ": {
+  "fuzz/embed/64": {
+   "markdown": "  ](![[ ]]\n> [!note] $**strong**$ ^[i\n",
+   "obsidian": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "ours": [
+    ""
+   ]
+  },
+  "callout/marker-padding": {
+   "markdown": ">[!note]\n> a\n\n>  [!note]\n> b\n",
+   "obsidian": [
+    ""
+   ],
+   "ours": [
+    "",
+    ""
+   ]
+  },
+  "callout/marker-after-empty-quote-line": {
+   "markdown": ">\n> [!note]\n> x\n",
+   "obsidian": [],
+   "ours": [
+    ""
+   ]
+  },
+  "callout/marker-inside-title": {
+   "markdown": "> [!note] > [!warning] T\n> x\n",
+   "obsidian": [
+    "",
+    ""
+   ],
+   "ours": [
+    ""
+   ]
+  }
+ }
+}

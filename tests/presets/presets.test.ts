@@ -17,6 +17,7 @@ import {
   type RemarkOptions,
   type SatteriOptions
 } from "./engines.js";
+import { features } from "./features.js";
 
 // Every feature's shared fixtures, minus inline-svg (not in the presets), engine-specific files, and the GFM and raw-HTML variants whose baselines differ between the engines themselves.
 const testsDir = join(import.meta.dirname, "..");
@@ -112,83 +113,6 @@ describe("presets", () => {
       });
     }
   );
-
-  // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).
-  const features: readonly {
-    key: keyof MarkdownItOptions & keyof RemarkOptions & keyof SatteriOptions;
-    input: string;
-    marker: string;
-    absentWhenOn?: boolean;
-  }[] = [
-    {
-      key: "abbr",
-      input: "*[HTML]: Hyper Text\n\nSome HTML.",
-      marker: "<abbr"
-    },
-    { key: "attrs", input: "Text {.note}", marker: 'class="note"' },
-    { key: "autolinkHeadings", input: "# Title", marker: 'class="anchor"' },
-    {
-      key: "caption",
-      input: "```\ncode\n```\n~: A caption",
-      marker: "<figcaption>"
-    },
-    {
-      key: "copyCode",
-      input: "```sh\nnpm test\n```",
-      marker: 'class="markdown-copy-code"'
-    },
-    { key: "definitionList", input: "Term\n: Definition", marker: "<dl>" },
-    { key: "del", input: "a --gone-- b", marker: "<del>" },
-    {
-      key: "fileTree",
-      input: "```filetree\nsrc/\n  index.ts\n```",
-      marker: 'class="markdown-file-tree"'
-    },
-    {
-      key: "githubAlerts",
-      input: "> [!NOTE]\n> Body",
-      marker: "markdown-alert"
-    },
-    { key: "ins", input: "a ++new++ b", marker: "<ins>" },
-    { key: "kbd", input: "[[Ctrl]]", marker: "<kbd>" },
-    { key: "lightbox", input: "!![Alt](pic.png)", marker: "<dialog" },
-    { key: "mark", input: "==hi==", marker: "<mark>" },
-    {
-      key: "mermaidPele",
-      input: "```mermaid\nflowchart LR\n  A --> B\n```",
-      marker: 'class="pele pele-flowchart"'
-    },
-    {
-      key: "prompt",
-      input: "```prompt\nSummarize this page.\n```",
-      marker: 'class="markdown-prompt"'
-    },
-    { key: "ruby", input: "{漢字|かんじ}", marker: "<ruby>" },
-    { key: "sectionize", input: "# Title\n\nText", marker: "<section" },
-    { key: "slug", input: "## Sub Title", marker: 'id="sub-title"' },
-    { key: "spoiler", input: "a ||secret|| b", marker: "markdown-spoiler" },
-    {
-      key: "squeezeParagraphs",
-      input: "{.x}\n\nText",
-      marker: '<p class="x"></p>',
-      absentWhenOn: true
-    },
-    { key: "steps", input: "@1. First\n> Do it", marker: "markdown-steps" },
-    { key: "sub", input: "H~2~O", marker: "<sub>" },
-    { key: "sup", input: "x^2^", marker: "<sup>" },
-    { key: "tabs", input: "% One\n> a\n% Two\n> b", marker: "markdown-tabs" },
-    {
-      key: "tabIcons",
-      input: "% npm\n> a\n% pnpm\n> b",
-      marker: "markdown-tab-icon"
-    },
-    {
-      key: "unwrapImages",
-      input: "![Alt](pic.png)",
-      marker: "<p><img",
-      absentWhenOn: true
-    }
-  ];
 
   describe.each(engines)("%s", (_, render) => {
     it.each(features)(

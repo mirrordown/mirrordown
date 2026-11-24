@@ -23,6 +23,18 @@ covers what's specific to authoring a plugin set.
 
 **The invariant that governs everything: `mdit-<name>`, `remd-<name>` and `sat-<name>` must emit byte-identical HTML for the same input.** Verify parity continuously, not at the end. The only accepted differences are hard limits of an engine itself, kept out of shared fixtures. Sätteri is the one engine we can't change without upstream work, so where engines disagree on something its parser decides, its behavior is usually the target (see `sub`/`sup`).
 
+## Tools
+
+Plain `node` scripts, each with `--help`:
+
+- `node scripts/render.mjs "==a== [[b]]"` renders a snippet through the three presets and prints each engine's HTML, with a diff and exit code 1 where they differ. `--only mark,kbd` and `--off slug` choose features, `--plain` turns off the document-level transforms, `--file` and stdin take input byte for byte. It covers features that are in the presets; for a set that is not there yet, use its own `tests/<name>/` files.
+- `node scripts/verify.mjs [tests/<name>]` runs the build, the format check, lint and types, and the tests, in the order that makes each meaningful, and reports all four even when an early one fails.
+- `node scripts/core-users.mjs <module>` lists the packages that import a `packages/core/src` module, and `--tests <module>` the test folders to run first after changing it.
+- `node scripts/new-worktree.mjs <name> <branch>` creates a worktree with its own install and build. Never `git stash` in one: the stash is shared by all of them.
+- `tests/utils/hostile.ts` is a table of inputs that have broken sets before (replacement patterns, inherited object keys, CRLF, long runs). `tests/presets/hostile.test.ts` shows how a set runs it: add a row there once the set is in the presets.
+- `tests/ofm/` records what the presets emit for every example of the Obsidian Flavored Markdown spec. A set that changes those outputs updates it with `OFM_UPDATE=1 vp test run tests/ofm` and adjusts `tests/ofm/status.ts`.
+- `tests/obsidian/` compares the presets with what the Obsidian application itself rendered for 3,471 recorded cases: the tags, highlights and callouts it made. A set that reads Obsidian's syntax updates it with `OBSIDIAN_UPDATE=1 vp test run tests/obsidian`; every case that moved is a change in what an Obsidian author's page looks like. Where a spec and the recording disagree about Obsidian, the recording is right.
+
 ## Phase 0 — Scope it with the user (do this first)
 
 Do not start coding. Hold a short design conversation and converge on these before
