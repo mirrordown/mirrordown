@@ -2,6 +2,7 @@ import type { PluginWithOptions } from "markdown-it";
 import type Token from "markdown-it/lib/token.mjs";
 import type { AttrsOptions, DelimiterRange } from "./types.js";
 import { createRules } from "./rules/index.js";
+import type { AttrDocument } from "./rules/types.js";
 import { testRule } from "./helper/index.js";
 
 /**
@@ -36,6 +37,40 @@ const joinLiteralBackslashes = (children: Token[]): Token[] => {
     }
   }
   return joined;
+};
+
+/** The {@link AttrDocument} for one run of the rules over `tokens`, read from `src`. */
+const readDocument = (src: string, tokens: Token[]): AttrDocument => {
+  const split = new Map<string, string[]>();
+  let parents: Map<Token, Token> | undefined;
+  return {
+    src,
+    lines(source) {
+      let lines = split.get(source);
+      if (!lines) {
+        lines = source.split("\n");
+        split.set(source, lines);
+      }
+      return lines;
+    },
+    parent(token) {
+      if (!parents) {
+        parents = new Map();
+        // The open tokens that can still be a later token's parent, oldest first and each at a lower level than the next: an open token hides every earlier one at its level or deeper. The tokens the rules remove after this is built are paragraphs, whose only child, their inline, goes with them.
+        const opens: Token[] = [];
+        for (const t of tokens) {
+          let at = opens.length - 1;
+          while (at >= 0 && opens[at].level >= t.level) at--;
+          if (at >= 0) parents.set(t, opens[at]);
+          if (t.nesting === 1) {
+            opens.length = at + 1;
+            opens.push(t);
+          }
+        }
+      }
+      return parents.get(token);
+    }
+  };
 };
 
 /** markdown-it plugin for attribute lists (`{.class #id key=value}`) on elements. */
@@ -81,6 +116,7 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
         token.children = joinLiteralBackslashes(token.children);
     }
 
+    const doc = readDocument(state.src, tokens);
     for (let index = 0; index < tokens.length; index++) {
       const tokenType = tokens[index].type;
       for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex++) {
@@ -103,7 +139,7 @@ export const attrs: PluginWithOptions<AttrsOptions> = (
             index,
             position!,
             range!,
-            state.src
+            doc
           );
 
           if (

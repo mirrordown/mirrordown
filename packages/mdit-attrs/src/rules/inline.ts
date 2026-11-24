@@ -8,12 +8,8 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
 
   // Blocks that open the text right after an element go on it, and the text
   // after them stays, as in markdown-it-attrs.
-  const takeLeadingAttrs = (
-    target: Token,
-    children: Token[],
-    i: number
-  ): void => {
-    const child = children[i];
+  // Returns whether the blocks were all the text held, so that it goes.
+  const takeLeadingAttrs = (target: Token, child: Token): boolean => {
     let content = child.content;
     let range = check(content, "start");
     while (range) {
@@ -21,8 +17,17 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
       content = content.slice(range[1] + options.right.length);
       range = check(content, "start");
     }
-    if (content) child.content = content;
-    else children.splice(i, 1);
+    child.content = content;
+    return content === "";
+  };
+
+  // Drops the texts the blocks emptied, all in one pass: a pass per text would cost the length of the paragraph for each block in it. The rules walk the children from the end, so a text dropped later is one they have already passed.
+  const dropEmptied = (children: Token[], emptied: Set<Token>): void => {
+    if (emptied.size === 0) return;
+    let kept = 0;
+    for (const child of children)
+      if (!emptied.has(child)) children[kept++] = child;
+    children.length = kept;
   };
 
   // Handles self-closing inline elements that render attributes: `code` and
@@ -34,6 +39,7 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
     transform(tokens, index) {
       const token = tokens[index];
       const children = token.children!;
+      const emptied = new Set<Token>();
       let modified = false;
 
       for (let i = children.length - 1; i >= 0; i--) {
@@ -46,10 +52,11 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         // oxlint-disable-next-line typescript/no-unnecessary-condition
         if (prev?.type !== "image" && prev?.type !== "code_inline") continue;
 
-        takeLeadingAttrs(prev, children, i);
+        if (takeLeadingAttrs(prev, child)) emptied.add(child);
         modified = true;
       }
 
+      dropEmptied(children, emptied);
       return modified;
     }
   };
@@ -66,6 +73,7 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
     transform(tokens, index) {
       const token = tokens[index];
       const children = token.children!;
+      const emptied = new Set<Token>();
       let modified = false;
 
       for (let i = children.length - 1; i >= 0; i--) {
@@ -93,10 +101,11 @@ export const createInlineRules = (options: DelimiterConfig): AttrRule[] => {
         }
         if (openIdx === -1) continue;
 
-        takeLeadingAttrs(children[openIdx], children, i);
+        if (takeLeadingAttrs(children[openIdx], child)) emptied.add(child);
         modified = true;
       }
 
+      dropEmptied(children, emptied);
       return modified;
     }
   };

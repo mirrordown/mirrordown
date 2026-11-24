@@ -8,9 +8,14 @@ import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
+import {
+  HOSTILE_TIME_LIMIT,
+  comparable,
+  hostileCases
+} from "../utils/hostile.js";
 import { normalizeHtml } from "../utils/index.js";
 
-// The three engines, with attribute blocks read or not. Sätteri reads blocks itself, through its `attributes` feature.
+// The three engines, with attribute blocks read or not: the plugin's own cost is the difference. Sätteri reads blocks itself, through its `attributes` feature.
 const pipelines = (on: boolean): ((input: string) => string)[] => {
   const md = new MarkdownIt();
   if (on) md.use(attrs);
@@ -30,6 +35,170 @@ const pipelines = (on: boolean): ((input: string) => string)[] => {
   ];
 };
 const withPlugin = pipelines(true);
+const bare = pipelines(false);
+const MDIT = 0;
+const REMD = 1;
+const SAT = 2;
+
+const timed = (run: () => void): number => {
+  const started = performance.now();
+  run();
+  return performance.now() - started;
+};
+
+// The fastest of three runs: a pause for garbage collection only ever makes one slower.
+const fastest = (run: () => void): number =>
+  Math.min(timed(run), timed(run), timed(run));
+
+const fails = (run: () => void): boolean => {
+  try {
+    run();
+    return false;
+  } catch {
+    return true;
+  }
+};
+
+// How much longer each engine takes with the plugin, rendering `input`, and whether the plugin made it fail.
+const ownCost = (
+  input: string,
+  engines = [MDIT, REMD, SAT]
+): { costs: number[]; failed: number } => {
+  const costs: number[] = [];
+  let failed = 0;
+  for (const index of engines) {
+    let alone = false;
+    let broken = false;
+    const without = timed(() => {
+      alone = fails(() => bare[index](input));
+    });
+    const withIt = timed(() => {
+      broken = fails(() => withPlugin[index](input));
+    });
+    if (broken && !alone) failed++;
+    costs.push(alone ? 0 : withIt - without);
+  }
+  return { costs, failed };
+};
+
+const html = (input: string): string[] =>
+  withPlugin.map((render) => comparable(normalizeHtml(render(input))));
+
+// Input an author would never write on purpose still arrives: pasted logs, generated files, text from another system. None of it may throw, hang, or make the engines disagree.
+describe("hostile input through attrs", () => {
+  it.each(hostileCases((text) => `${text} {.c}`, `{`))(
+    "before a block: $name",
+    ({ input }) => {
+      const { costs, failed } = ownCost(input);
+      expect(failed).toBe(0);
+      expect(Math.max(...costs)).toBeLessThan(HOSTILE_TIME_LIMIT);
+      const out = html(input);
+      expect(out).toStrictEqual(out.map(() => out[0]));
+    }
+  );
+
+  // Two of these meet differences the guide lists, so they are held to not throwing and the time limit only: Sätteri reads no block that holds a backtick, and markdown-it and remark have read `__proto__`'s underscores as emphasis before a block is read.
+  const differ = new Set(["replacement patterns", "__proto__"]);
+  it.each(hostileCases((text) => `text {title="${text}"}`, `}`))(
+    "in a quoted value: $name",
+    ({ name, input }) => {
+      const { costs, failed } = ownCost(input);
+      expect(failed).toBe(0);
+      expect(Math.max(...costs)).toBeLessThan(HOSTILE_TIME_LIMIT);
+      const out = html(input);
+      if (!differ.has(name)) expect(out).toStrictEqual(out.map(() => out[0]));
+    }
+  );
+});
+
+interface Many {
+  name: string;
+  make: (n: number) => string;
+  /** Sätteri leaves a line ending at the end of a setext heading's content when a block is on the line before the underline, as the guide lists. */
+  satteriDiffers?: true;
+}
+
+const listItems: Many[] = [
+  {
+    name: "items of one list, each with a block on a line of its own",
+    make: (n) => "- item\n  {.c}\n".repeat(n)
+  },
+  {
+    name: "items of one list, each with a block on a line written outside it",
+    make: (n) => "- item\n{.c}\n".repeat(n)
+  }
+];
+
+// Every kind of block the plugins place, many times over. markdown-it once split the whole document into lines again for each block on a line of its own and walked back over a list's earlier items for each one in it, and dropped each block's emptied text from the paragraph one at a time: 20,000 image paragraphs took 27 seconds.
+const many: Many[] = [
+  {
+    name: "paragraphs, each with a block on a line of its own",
+    make: (n) => "para\n{.c}\n\n".repeat(n)
+  },
+  {
+    name: "image paragraphs, each with a block on a line of its own",
+    make: (n) => "![a](a.png)\n{.c}\n\n".repeat(n)
+  },
+  ...listItems,
+  {
+    name: "setext headings, each with a block on a line of its own",
+    make: (n) => "Title\n{.c}\n---\n\n".repeat(n),
+    satteriDiffers: true
+  },
+  {
+    name: "blockquotes, each with a block on a line of its own",
+    make: (n) => "> quote\n> {.c}\n\n".repeat(n)
+  },
+  {
+    name: "paragraphs of one blockquote, each with a block on a line of its own",
+    make: (n) => "> quote\n> {.c}\n>\n".repeat(n)
+  },
+  {
+    name: "paragraphs, each ending in a block",
+    make: (n) => "para {.c}\n\n".repeat(n)
+  },
+  {
+    name: "inline blocks in one paragraph",
+    make: (n) => "*a*{.c}".repeat(n)
+  },
+  {
+    name: "image blocks in one paragraph",
+    make: (n) => "![a](a.png){.c}".repeat(n)
+  }
+];
+
+describe("many blocks through attrs", () => {
+  // remark is held to the limit at 5,000 blocks: its plugin's cost is linear, but about 50 microseconds a block, most of it a dozen walks of the whole tree, one per rule, and remark-rehype and remark's parser take longer than linear on one long list or paragraph by themselves, which no difference in time can see past.
+  it.each(many)(
+    "20,000 $name",
+    { timeout: 120_000 },
+    ({ make, satteriDiffers }) => {
+      const large = ownCost(make(20_000), [MDIT, SAT]);
+      const remark = ownCost(make(5000), [REMD]);
+      expect(large.failed + remark.failed).toBe(0);
+      expect(Math.max(...large.costs, ...remark.costs)).toBeLessThan(
+        HOSTILE_TIME_LIMIT
+      );
+      const [mdit, remd, sat] = html(make(500));
+      expect(remd).toBe(mdit);
+      if (!satteriDiffers) expect(sat).toBe(mdit);
+    }
+  );
+
+  // A test that only passes on a fast machine is no test: a cost per block that grows with the document doubles twice when the document doubles.
+  it.each(many)(
+    "twice as many $name take markdown-it about twice as long",
+    { timeout: 120_000 },
+    ({ make }) => {
+      const small = make(10_000);
+      const large = make(20_000);
+      const render = withPlugin[MDIT];
+      expect(
+        fastest(() => render(large)) / fastest(() => render(small))
+      ).toBeLessThan(3);
+    }
+  );
+});
 
 // hast-util-to-html looks each attribute's name up in property-information's table of HTML names after lower-casing it, and that table is a plain object: `constructor` and `__proto__` are found there as members every object inherits, resolve to nothing, and the serializer throws for the whole page. So remd-attrs leaves such a name out, wherever the block is, and applies the rest of the block; markdown-it and Sätteri print it. The fault is a dependency's, so this is an engine difference, kept out of the shared fixtures.
 describe("attrs: a name every object inherits", () => {
