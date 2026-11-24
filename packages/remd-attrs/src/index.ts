@@ -3,7 +3,7 @@
 // accesses are also kept (noUncheckedIndexedAccess is off project-wide).
 /* oxlint-disable typescript/no-unsafe-type-assertion */
 /* oxlint-disable typescript/no-unnecessary-condition */
-import { visit, SKIP } from "unist-util-visit";
+import { SKIP } from "unist-util-visit";
 import type { Visitor } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type {
@@ -28,6 +28,7 @@ import { applyAttrs } from "./applyAttrs.js";
 import { readAttrs } from "./getAttrs.js";
 import { getDelimiterChecker } from "./getDelimiterChecker.js";
 import type { AttrsOptions, DelimiterRange } from "./types.js";
+import { visit } from "./visit.js";
 
 export type {
   AttrsOptions,
@@ -219,6 +220,8 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
       visit(tree, (node: Node) => {
         if (!("children" in node)) return;
         const children = (node as Paragraph).children;
+        // The texts the blocks empty, dropped together after the walk back, which never returns to one: dropping each as it empties cost the length of the paragraph per block.
+        const emptied = new Set<Node>();
         for (let i = children.length - 1; i >= 1; i--) {
           const child = children[i];
           const prev = children[i - 1];
@@ -256,8 +259,13 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
           }
           if (taken === 0) continue;
           if (content) child.value = content;
-          else children.splice(i, 1);
+          else emptied.add(child);
         }
+        if (emptied.size === 0) return;
+        let kept = 0;
+        for (const child of children)
+          if (!emptied.has(child)) children[kept++] = child;
+        children.length = kept;
       });
     }
 
@@ -282,6 +290,16 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         });
         parents = map;
         return map;
+      };
+      // Whether a list is loose depends on every item in it, and a list whose items each end in a block on a line of its own would read them all once per block. Nothing this rule changes makes a list loose or tight.
+      const loose = new Map<List, boolean>();
+      const looseList = (list: List): boolean => {
+        let value = loose.get(list);
+        if (value === undefined) {
+          value = listLoose(list);
+          loose.set(list, value);
+        }
+        return value;
       };
       visit(tree, (node: Node) => {
         if (node.type !== "paragraph" && node.type !== "heading") return;
@@ -353,7 +371,7 @@ export const remarkAttrs: Plugin<[AttrsOptions?], Root> = (options = {}) => {
         // A tight list hides its paragraphs, so the item shows the attributes.
         else if (
           parent?.type === "listItem" &&
-          !listLoose(parentMap.get(parent) as List)
+          !looseList(parentMap.get(parent) as List)
         )
           target = parent;
         applyAttrs(target, content, range, allowed);

@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
 import { markdownToHtml } from "satteri";
+import type { Node, Parent } from "unist";
 import { attrs } from "../../packages/mdit-attrs/src";
 import { remarkAttrs } from "../../packages/remd-attrs/src";
 import {
@@ -118,18 +119,7 @@ interface Many {
   satteriDiffers?: true;
 }
 
-const listItems: Many[] = [
-  {
-    name: "items of one list, each with a block on a line of its own",
-    make: (n) => "- item\n  {.c}\n".repeat(n)
-  },
-  {
-    name: "items of one list, each with a block on a line written outside it",
-    make: (n) => "- item\n{.c}\n".repeat(n)
-  }
-];
-
-// Every kind of block the plugins place, many times over. markdown-it once split the whole document into lines again for each block on a line of its own and walked back over a list's earlier items for each one in it, and dropped each block's emptied text from the paragraph one at a time: 20,000 image paragraphs took 27 seconds.
+// Every kind of block the plugins place, many times over. markdown-it once split the whole document into lines again for each block on a line of its own, walked back over a list's or blockquote's earlier children for each one in it, and dropped each block's emptied text from the paragraph one at a time: 20,000 image paragraphs took 27 seconds. remark's plugin did the last too, read every item of a list again per block to tell whether the list was loose or held a task item, and walked the tree with `unist-util-visit`, which finds each node's index among its siblings with `indexOf`.
 const many: Many[] = [
   {
     name: "paragraphs, each with a block on a line of its own",
@@ -139,7 +129,14 @@ const many: Many[] = [
     name: "image paragraphs, each with a block on a line of its own",
     make: (n) => "![a](a.png)\n{.c}\n\n".repeat(n)
   },
-  ...listItems,
+  {
+    name: "items of one list, each with a block on a line of its own",
+    make: (n) => "- item\n  {.c}\n".repeat(n)
+  },
+  {
+    name: "items of one list, each with a block on a line written outside it",
+    make: (n) => "- item\n{.c}\n".repeat(n)
+  },
   {
     name: "setext headings, each with a block on a line of its own",
     make: (n) => "Title\n{.c}\n---\n\n".repeat(n),
@@ -167,18 +164,22 @@ const many: Many[] = [
   }
 ];
 
+const parser = unified().use(remarkParse).use(remarkGfm);
+
 describe("many blocks through attrs", () => {
-  // remark is held to the limit at 5,000 blocks: its plugin's cost is linear, but about 50 microseconds a block, most of it a dozen walks of the whole tree, one per rule, and remark-rehype and remark's parser take longer than linear on one long list or paragraph by themselves, which no difference in time can see past.
+  // remark's plugin is timed on its own, on a tree parsed beforehand: remark's parser and remark-rehype take longer than linear by themselves on one long list or paragraph (seconds, for 20,000 list items), and a difference between two such times measures nothing.
   it.each(many)(
     "20,000 $name",
     { timeout: 120_000 },
     ({ make, satteriDiffers }) => {
-      const large = ownCost(make(20_000), [MDIT, SAT]);
-      const remark = ownCost(make(5000), [REMD]);
-      expect(large.failed + remark.failed).toBe(0);
-      expect(Math.max(...large.costs, ...remark.costs)).toBeLessThan(
-        HOSTILE_TIME_LIMIT
+      const input = make(20_000);
+      const { costs, failed } = ownCost(input, [MDIT, SAT]);
+      expect(failed).toBe(0);
+      const tree = parser.parse(input);
+      const remark = timed(() =>
+        unified().use(remarkAttrs).runSync(tree, input)
       );
+      expect(Math.max(...costs, remark)).toBeLessThan(HOSTILE_TIME_LIMIT);
       const [mdit, remd, sat] = html(make(500));
       expect(remd).toBe(mdit);
       if (!satteriDiffers) expect(sat).toBe(mdit);
@@ -196,6 +197,35 @@ describe("many blocks through attrs", () => {
       expect(
         fastest(() => render(large)) / fastest(() => render(small))
       ).toBeLessThan(3);
+    }
+  );
+
+  // The same for remark, counted rather than timed, for the reason above: each rule reads a node's children about once, so a few dozen reads each is linear, and a read of all of them again per block, or per node for its index, comes to their number over again.
+  it.each(many)(
+    "remark's plugin reads each node's children a few times over, not once per block: $name",
+    ({ make }) => {
+      const input = make(2000);
+      const tree = parser.parse(input);
+      const counts: { length: number; reads: number }[] = [];
+      const count = (node: Node): void => {
+        const parent = node as Partial<Parent>;
+        if (!parent.children) return;
+        for (const child of parent.children) count(child);
+        if (parent.children.length < 100) return;
+        const counted = { length: parent.children.length, reads: 0 };
+        counts.push(counted);
+        parent.children = new Proxy(parent.children, {
+          get(target, key, receiver) {
+            if (typeof key === "string" && /^\d+$/.test(key)) counted.reads++;
+            return Reflect.get(target, key, receiver);
+          }
+        });
+      };
+      count(tree);
+      unified().use(remarkAttrs).runSync(tree, input);
+      expect(counts.length).toBeGreaterThan(0);
+      for (const { length, reads } of counts)
+        expect(reads).toBeLessThan(50 * length);
     }
   );
 });
