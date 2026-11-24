@@ -67,6 +67,11 @@ import {
   rehypeTabIcons,
   type TabIconsOptions
 } from "@mirrordown/remd-tab-icons";
+import {
+  remarkTaskLists,
+  taskListsHastHandlers,
+  type TaskListsOptions
+} from "@mirrordown/remd-task-lists";
 import { rehypeUnwrapImages } from "@mirrordown/remd-unwrap-images";
 
 /** Every feature is on by default: `false` turns one off, an options object configures it. */
@@ -100,6 +105,7 @@ export interface MirrordownOptions {
   tabs?: boolean | TabsOptions;
   tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
+  taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
 }
 
@@ -169,6 +175,8 @@ export const mirrordown = (
       // Before abbr and the delimiter plugins: it rebuilds each ruby from its source text, so what an earlier plugin did inside the braces would be lost.
       ...configured(options.ruby, remarkRuby),
       ...on(options.definitionList, remarkDefinitionList),
+      // After prompt, so it reads a preview's lists too. Before the inline plugins, attrs and abbr: they read an item's text without its box, as they read the tasks GFM has read, and attrs gives a task's item and list their classes in GFM's order only once the item is a task.
+      ...configured(options.taskLists, remarkTaskLists),
       // Before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it.
       ...on(options.kbd, remarkKbd),
       ...on(options.del, remarkDel),
@@ -213,7 +221,8 @@ export const mirrordown = (
         ...handlers(options.githubAlerts, githubAlertsHastHandlers),
         ...handlers(options.steps, stepsHastHandlers),
         ...handlers(options.spoiler, spoilerHastHandlers),
-        ...handlers(options.tabs, tabsHastHandlers)
+        ...handlers(options.tabs, tabsHastHandlers),
+        ...handlers(options.taskLists, taskListsHastHandlers)
       }
     },
     gfm: false,

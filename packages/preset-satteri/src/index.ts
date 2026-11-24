@@ -86,6 +86,11 @@ import {
   type TabIconsPlugin
 } from "@mirrordown/sat-tab-icons";
 import {
+  satteriTaskLists,
+  type TaskListsOptions,
+  type TaskListsPlugin
+} from "@mirrordown/sat-task-lists";
+import {
   satteriSqueezeParagraphs,
   type SqueezeParagraphsPlugin
 } from "@mirrordown/sat-squeeze-paragraphs";
@@ -130,6 +135,7 @@ export interface MirrordownOptions {
   tabs?: boolean | TabsOptions;
   tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
+  taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
   features?: Features;
@@ -158,6 +164,7 @@ export interface MirrordownPreset {
     | Factory<StepsPlugin>
     | Factory<TabsPlugin>
     | Factory<TagsPlugin>
+    | Factory<TaskListsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -207,10 +214,13 @@ export const mirrordown = (
 
   return {
     features,
-    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
+    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Task lists before the inline plugins: they read an item's text without its box, as they read the tasks GFM has read. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
     mdastPlugins: [
       ...(options.prompt === false ? [] : [satteriPromptPreview()]),
       ...(options.ruby === false ? [] : [satteriRuby(settings(options.ruby))]),
+      ...(options.taskLists === false
+        ? []
+        : [satteriTaskLists(settings(options.taskLists))]),
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.ins === false ? [] : [satteriIns()]),

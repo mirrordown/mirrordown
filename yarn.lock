@@ -1543,6 +1543,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-task-lists@workspace:^, @mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-unwrap-images@workspace:*, @mirrordown/mdit-unwrap-images@workspace:^, @mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images"
@@ -1585,6 +1597,7 @@ __metadata:
     "@mirrordown/mdit-tab-icons": "workspace:^"
     "@mirrordown/mdit-tabs": "workspace:^"
     "@mirrordown/mdit-tags": "workspace:^"
+    "@mirrordown/mdit-task-lists": "workspace:^"
     "@mirrordown/mdit-unwrap-images": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
@@ -1624,6 +1637,7 @@ __metadata:
     "@mirrordown/remd-tab-icons": "workspace:^"
     "@mirrordown/remd-tabs": "workspace:^"
     "@mirrordown/remd-tags": "workspace:^"
+    "@mirrordown/remd-task-lists": "workspace:^"
     "@mirrordown/remd-unwrap-images": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
@@ -1662,6 +1676,7 @@ __metadata:
     "@mirrordown/sat-tab-icons": "workspace:^"
     "@mirrordown/sat-tabs": "workspace:^"
     "@mirrordown/sat-tags": "workspace:^"
+    "@mirrordown/sat-task-lists": "workspace:^"
     "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
@@ -2047,6 +2062,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/remd-task-lists@workspace:^, @mirrordown/remd-task-lists@workspace:packages/remd-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-task-lists@workspace:packages/remd-task-lists"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/hast": "catalog:"
+    "@types/mdast": "catalog:"
+    mdast-util-to-hast: "npm:^13.0.0"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-unwrap-images@workspace:^, @mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images"
@@ -2319,6 +2349,17 @@ __metadata:
 "@mirrordown/sat-tags@workspace:^, @mirrordown/sat-tags@workspace:packages/sat-tags":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-tags@workspace:packages/sat-tags"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-task-lists@workspace:^, @mirrordown/sat-task-lists@workspace:packages/sat-task-lists":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-task-lists@workspace:packages/sat-task-lists"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"

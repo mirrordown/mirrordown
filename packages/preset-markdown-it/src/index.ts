@@ -34,6 +34,7 @@ import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
 import { tags, type TagsOptions } from "@mirrordown/mdit-tags";
+import { taskLists, type TaskListsOptions } from "@mirrordown/mdit-task-lists";
 import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
 
@@ -66,6 +67,7 @@ export interface MirrordownOptions {
   tabs?: boolean | TabsOptions;
   tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
+  taskLists?: boolean | TaskListsOptions;
   unwrapImages?: boolean;
 }
 
@@ -105,6 +107,8 @@ export const mirrordown = (
   on(options.abbr, abbr);
   // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Before attrs, whose rule sits there too: an attribute block's `title` then follows the size, as in remark and Sätteri.
   on(options.imageSize, imageSize);
+  // Before prompt: both read a list item's text right after inline parsing, and markdown-it runs the rules added there in the reverse of the order they were added, so prompt has to parse a preview's text before this looks for boxes in it. Its rule also runs before attrs and abbr wherever it is added, so they read an item's text without its box, as they read GFM's tasks in the other engines.
+  configured(options.taskLists, taskLists);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
   on(options.definitionList, dl);

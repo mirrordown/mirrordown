@@ -1,0 +1,448 @@
+<!-- @case: every marker -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done, upper case</li>
+<li class="task-list-item" data-task="/"><input type="checkbox" disabled aria-label="In progress"> in progress</li>
+<li class="task-list-item" data-task="-"><input type="checkbox" disabled aria-label="Cancelled"> cancelled</li>
+<li class="task-list-item" data-task="&gt;"><input type="checkbox" disabled aria-label="Forwarded"> forwarded</li>
+<li class="task-list-item" data-task="&lt;"><input type="checkbox" disabled aria-label="Scheduled"> scheduled</li>
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+<li class="task-list-item" data-task="!"><input type="checkbox" disabled aria-label="Important"> important</li>
+</ul>
+
+<!-- @case: a tab in the box is a to-do, as in GFM -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+</ul>
+
+<!-- @case: an ordered list -->
+
+<ol class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+</ol>
+
+<!-- @case: an ordered list that starts later -->
+
+<ol start="3" class="contains-task-list">
+<li class="task-list-item" data-task="!"><input type="checkbox" disabled aria-label="Important"> important</li>
+<li class="task-list-item" data-task="/"><input type="checkbox" disabled aria-label="In progress"> in progress</li>
+</ol>
+
+<!-- @case: other bullets -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="/"><input type="checkbox" disabled aria-label="In progress"> in progress</li>
+</ul>
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="&gt;"><input type="checkbox" disabled aria-label="Forwarded"> forwarded</li>
+</ul>
+
+<!-- @case: a loose list puts the box in the paragraph -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?">
+<p><input type="checkbox" disabled aria-label="Question"> question</p>
+</li>
+<li class="task-list-item">
+<p><input type="checkbox" checked disabled> done</p>
+</li>
+<li class="task-list-item" data-task="/">
+<p><input type="checkbox" disabled aria-label="In progress"> in progress</p>
+</li>
+</ul>
+
+<!-- @case: a loose item keeps its later paragraphs -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="&lt;">
+<p><input type="checkbox" disabled aria-label="Scheduled"> scheduled</p>
+<p>More about it.</p>
+</li>
+</ul>
+
+<!-- @case: the list is a task list once, whatever kinds it holds -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+<li>not a task</li>
+</ul>
+
+<!-- @case: a list of tasks and items that are not -->
+
+<ul class="contains-task-list">
+<li>plain</li>
+<li class="task-list-item" data-task="!"><input type="checkbox" disabled aria-label="Important"> important</li>
+<li>also plain</li>
+</ul>
+
+<!-- @case: nested lists mixing kinds -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="/"><input type="checkbox" disabled aria-label="In progress"> in progress
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+<li class="task-list-item" data-task="-"><input type="checkbox" disabled aria-label="Cancelled"> cancelled
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="task-list-item" data-task="&gt;"><input type="checkbox" disabled aria-label="Forwarded"> forwarded</li>
+</ul>
+
+<!-- @case: a nested list that is not a task list -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question
+<ul>
+<li>plain</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: a task in a blockquote -->
+
+<blockquote>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+</ul>
+</blockquote>
+
+<!-- @case: a task in a blockquote marked as an alert -->
+
+<blockquote>
+<p>[!NOTE]</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> to-do</li>
+<li class="task-list-item" data-task="!"><input type="checkbox" disabled aria-label="Important"> important</li>
+</ul>
+</blockquote>
+
+<!-- @case: a task in a list in a list item -->
+
+<ul>
+<li>
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> question</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> done</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: other markers are text -->
+
+<ul>
+<li>[b] text</li>
+<li>[1] reference</li>
+<li>[a] option</li>
+<li>[ab] text</li>
+<li>[] empty</li>
+<li>[ x] space before</li>
+</ul>
+
+<!-- @case: a character outside the BMP is not a marker -->
+
+<ul>
+<li>[😀] text</li>
+</ul>
+
+<!-- @case: formatting after the box -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> <strong>bold</strong></li>
+<li class="task-list-item"><input type="checkbox" checked disabled> <em>emphasis</em></li>
+<li class="task-list-item" data-task="!"><input type="checkbox" disabled aria-label="Important"> <code>code</code></li>
+<li class="task-list-item" data-task="/"><input type="checkbox" disabled aria-label="In progress"> <a href="https://example.com">a link</a></li>
+</ul>
+
+<!-- @case: a second box is text -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> [?] question</li>
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> [x] done</li>
+</ul>
+
+<!-- @case: x: no content after the box -->
+
+<ul>
+<li>[x]</li>
+</ul>
+
+<!-- @case: ?: no content after the box -->
+
+<ul>
+<li>[?]</li>
+</ul>
+
+<!-- @case: x: no space after the box -->
+
+<ul>
+<li>[x]text</li>
+</ul>
+
+<!-- @case: ?: no space after the box -->
+
+<ul>
+<li>[?]text</li>
+</ul>
+
+<!-- @case: x: a tab after the box -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> text</li>
+</ul>
+
+<!-- @case: ?: a tab after the box -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> text</li>
+</ul>
+
+<!-- @case: x: two spaces after the box keep one -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled>  text</li>
+</ul>
+
+<!-- @case: ?: two spaces after the box keep one -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question">  text</li>
+</ul>
+
+<!-- @case: x: the text on the next line -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> text</li>
+</ul>
+
+<!-- @case: ?: the text on the next line -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> text</li>
+</ul>
+
+<!-- @case: x: the text on a lazy line -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> text</li>
+</ul>
+
+<!-- @case: ?: the text on a lazy line -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> text</li>
+</ul>
+
+<!-- @case: x: a backslash line break after a space -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> <br>
+text</li>
+</ul>
+
+<!-- @case: ?: a backslash line break after a space -->
+
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> <br>
+text</li>
+</ul>
+
+<!-- @case: x: a backslash line break right after the box -->
+
+<ul>
+<li>[x]<br>
+text</li>
+</ul>
+
+<!-- @case: ?: a backslash line break right after the box -->
+
+<ul>
+<li>[?]<br>
+text</li>
+</ul>
+
+<!-- @case: x: the box on a continuation line -->
+
+<ul>
+<li>text
+[x] more</li>
+</ul>
+
+<!-- @case: ?: the box on a continuation line -->
+
+<ul>
+<li>text
+[?] more</li>
+</ul>
+
+<!-- @case: ?: the box on the line after an empty list marker -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: x: the box in a later paragraph -->
+
+<ul>
+<li>
+<p>text</p>
+<p>[x] more</p>
+</li>
+</ul>
+
+<!-- @case: ?: the box in a later paragraph -->
+
+<ul>
+<li>
+<p>text</p>
+<p>[?] more</p>
+</li>
+</ul>
+
+<!-- @case: x: an escaped opening bracket -->
+
+<ul>
+<li>[x] text</li>
+</ul>
+
+<!-- @case: ?: an escaped opening bracket -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: x: an escaped closing bracket -->
+
+<ul>
+<li>[x] text</li>
+</ul>
+
+<!-- @case: ?: an escaped closing bracket -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: ?: an escaped marker -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: x: a character reference for the bracket -->
+
+<ul>
+<li>[x] text</li>
+<li>[x] text</li>
+</ul>
+
+<!-- @case: ?: a character reference for the bracket -->
+
+<ul>
+<li>[?] text</li>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: a character reference for the marker -->
+
+<ul>
+<li>[x] text</li>
+<li>[?] text</li>
+<li>[ ] text</li>
+</ul>
+
+<!-- @case: x: a character reference for the space after the box -->
+
+<ul>
+<li>[x] text</li>
+</ul>
+
+<!-- @case: ?: a character reference for the space after the box -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: x: a non-breaking space after the box -->
+
+<ul>
+<li>[x] text</li>
+</ul>
+
+<!-- @case: ?: a non-breaking space after the box -->
+
+<ul>
+<li>[?] text</li>
+</ul>
+
+<!-- @case: the box in a code span -->
+
+<ul>
+<li><code>[x]</code> text</li>
+<li><code>[?]</code> text</li>
+</ul>
+
+<!-- @case: the box as a link -->
+
+<ul>
+<li><a href="https://example.com">x</a> text</li>
+<li><a href="https://example.com">?</a> text</li>
+</ul>
+
+<!-- @case: the box inside a link -->
+
+<ul>
+<li><a href="https://example.com">a [?] b</a></li>
+</ul>
+
+<!-- @case: the box in a heading -->
+
+<h1>[?] heading</h1>
+<ul>
+<li>
+<h1>[x] heading</h1>
+</li>
+<li>
+<h1>[?] heading</h1>
+</li>
+</ul>
+
+<!-- @case: ?: the box in a setext heading -->
+
+<ul>
+<li>
+<h1>[?] heading</h1>
+</li>
+</ul>
+
+<!-- @case: the box outside a list -->
+
+<p>[x] text</p>
+<p>[?] text</p>
+
+<!-- @case: the box in an indented code block -->
+
+<ul>
+<li>
+<pre><code>[?] code
+</code></pre>
+</li>
+</ul>
+
+<!-- @case: a task at the very end of the document -->
+
+<p>Some text.</p>
+<ul class="contains-task-list">
+<li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> last</li>
+</ul>

@@ -55,6 +55,7 @@ const slugs = [
   "tab-icons",
   "tabs",
   "tags",
+  "task-lists",
   "unwrap-images"
 ];
 

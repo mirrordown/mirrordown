@@ -45,6 +45,7 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | `## Heading` → wrap        | [`<section>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section)                | [mdit-sectionize](packages/mdit-sectionize)                 | [remd-sectionize](packages/remd-sectionize)                 | [sat-sectionize](packages/sat-sectionize)                 | [markdown-sectionize](extensions/markdown-sectionize)                 |
 | (empty `<p>`) → removed    | dropped empty paragraphs                                                                                   | [mdit-squeeze-paragraphs](packages/mdit-squeeze-paragraphs) | [remd-squeeze-paragraphs](packages/remd-squeeze-paragraphs) | [sat-squeeze-paragraphs](packages/sat-squeeze-paragraphs) | [markdown-squeeze-paragraphs](extensions/markdown-squeeze-paragraphs) |
 | `~: caption` after a block | [`<figure>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figure) + `<figcaption>` | [mdit-caption](packages/mdit-caption)                       | [remd-caption](packages/remd-caption)                       | [sat-caption](packages/sat-caption)                       | [markdown-caption](extensions/markdown-caption)                       |
+| `- [x] task`, `- [/] task` | GFM task list, plus six more task states                                                                   | [mdit-task-lists](packages/mdit-task-lists)                 | [remd-task-lists](packages/remd-task-lists)                 | [sat-task-lists](packages/sat-task-lists)                 | —                                                                     |
 
 ### Attributes
 
@@ -144,6 +145,7 @@ The plugins in this collection are forked and modernized from the following upst
 - [Vocs](https://vocs.dev/writing/markdown-extensions#prompts) — the Prompts `prompt` ports, as a fence rather than a directive; its service icons are [Lobe Icons](https://github.com/lobehub/lobe-icons)
 - [Obsidian](https://obsidian.md/help/tags) — the `#tag` syntax `tags` reads, following the rules in [Gordon Brander's Obsidian Flavored Markdown spec](https://github.com/gordonbrander/obsidian-markdown)
 - [Obsidian](https://obsidian.md/help/syntax#External+images) — the image size syntax `image-size` reads
+- [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and the themes whose status markers it documents — the six task markers `task-lists` reads beyond GFM's; their icons are [Lucide](https://lucide.dev)'s
 
 ---
 

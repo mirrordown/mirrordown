@@ -135,3 +135,15 @@ export {
   type CopyCodeState
 } from "./copy-code.js";
 export { parseImageSize, type ImageSize } from "./image-size.js";
+export {
+  TASK_MARKERS,
+  createTaskResolver,
+  matchTaskBox,
+  startAfterBox,
+  type TaskBox,
+  type TaskBoxContext,
+  type TaskBoxMatch,
+  type TaskListsOptions,
+  type TaskMarkerResolver,
+  type TaskPoint
+} from "./task-lists.js";

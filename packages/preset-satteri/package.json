@@ -44,6 +44,7 @@
     "@mirrordown/sat-tab-icons": "workspace:^",
     "@mirrordown/sat-tabs": "workspace:^",
     "@mirrordown/sat-tags": "workspace:^",
+    "@mirrordown/sat-task-lists": "workspace:^",
     "@mirrordown/sat-unwrap-images": "workspace:^"
   },
   "devDependencies": {

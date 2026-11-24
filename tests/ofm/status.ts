@@ -69,12 +69,11 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
 
   // Tags: the tags set emits the spec's own markup.
   ...all([`51`, `53`, `54`, `55`], { state: `conforms` }),
-  [`34`, { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }],
-  [
-    `34-minimal`,
-    { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }
-  ],
-  [`35`, { state: `pending`, note: `Task lists (W2-A).` }],
+  ...all([`34`, `34-minimal`], {
+    state: `diverges`,
+    note: `Only "x" is a done task. The spec checks every marker but a space; the task-lists set follows the community's status markers instead, so "?" and "-" are unchecked boxes that say what they mean (data-task, a label, an icon).`
+  }),
+  [`35`, { state: `conforms` }],
   // Highlight colours: the mark set reads the colour emoji as Obsidian does.
   [`41`, { state: `conforms` }],
   // Image sizes: the image-size set reads the description as Obsidian does.
