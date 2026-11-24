@@ -1518,6 +1518,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-tags@workspace:^, @mirrordown/mdit-tags@workspace:packages/mdit-tags":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-tags@workspace:packages/mdit-tags"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-unwrap-images@workspace:*, @mirrordown/mdit-unwrap-images@workspace:^, @mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-unwrap-images@workspace:packages/mdit-unwrap-images"
@@ -1558,6 +1570,7 @@ __metadata:
     "@mirrordown/mdit-sup": "workspace:^"
     "@mirrordown/mdit-tab-icons": "workspace:^"
     "@mirrordown/mdit-tabs": "workspace:^"
+    "@mirrordown/mdit-tags": "workspace:^"
     "@mirrordown/mdit-unwrap-images": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
@@ -1595,6 +1608,7 @@ __metadata:
     "@mirrordown/remd-sup": "workspace:^"
     "@mirrordown/remd-tab-icons": "workspace:^"
     "@mirrordown/remd-tabs": "workspace:^"
+    "@mirrordown/remd-tags": "workspace:^"
     "@mirrordown/remd-unwrap-images": "workspace:^"
     "@types/hast": "catalog:"
     "@types/mdast": "catalog:"
@@ -1631,6 +1645,7 @@ __metadata:
     "@mirrordown/sat-steps": "workspace:^"
     "@mirrordown/sat-tab-icons": "workspace:^"
     "@mirrordown/sat-tabs": "workspace:^"
+    "@mirrordown/sat-tags": "workspace:^"
     "@mirrordown/sat-unwrap-images": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
@@ -1991,6 +2006,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/remd-tags@workspace:^, @mirrordown/remd-tags@workspace:packages/remd-tags":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-tags@workspace:packages/remd-tags"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    unified: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/remd-unwrap-images@workspace:^, @mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-unwrap-images@workspace:packages/remd-unwrap-images"
@@ -2243,6 +2270,17 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-tags@workspace:^, @mirrordown/sat-tags@workspace:packages/sat-tags":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-tags@workspace:packages/sat-tags"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.11.3

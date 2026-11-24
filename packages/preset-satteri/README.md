@@ -89,6 +89,7 @@ mirrordown({
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
 | `tabs`              | `% Tab`                                     | `@mirrordown/sat-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/sat-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/sat-tab-icons`          |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
 | `features`          | any other Sätteri feature                   | merged over the preset's features    |

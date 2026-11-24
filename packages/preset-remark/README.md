@@ -103,6 +103,7 @@ mirrordown({
 | `sub`               | `~subscript~`                               | `@mirrordown/remd-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/remd-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/remd-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/remd-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/remd-tab-icons`          |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/remd-unwrap-images`      |
 
