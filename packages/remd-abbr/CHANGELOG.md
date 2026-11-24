@@ -5,6 +5,12 @@
 
 
 
+
+## 0.1.6
+<sub>2026-11-24</sub>
+
+- *(patch)* Updated dependency `@mirrordown/core` v0.3.0
+
 ## 0.1.5
 <sub>2026-11-17</sub>
 
