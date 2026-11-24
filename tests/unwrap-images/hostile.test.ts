@@ -62,15 +62,36 @@ const timed = (run: () => void): number => {
   return performance.now() - started;
 };
 
-// How much longer the slowest engine takes with the plugin, rendering `input`.
-const ownCost = (input: string): number => {
-  let slowest = 0;
-  for (const [index, render] of withPlugin.entries()) {
-    const without = timed(() => bare[index](input));
-    slowest = Math.max(slowest, timed(() => render(input)) - without);
-  }
-  return slowest;
+// The fastest of three runs: a pause for garbage collection only ever makes one slower.
+const fastest = (run: () => void): number =>
+  Math.min(timed(run), timed(run), timed(run));
+
+const MDIT = 0;
+const SAT = 2;
+
+// remark's pipeline here takes seconds on tens of thousands of paragraphs, and the difference between two such runs is mostly what else the machine was doing: on a CI runner it came to more than the limit with nothing wrong. So remark's plugin is timed on its transform alone, on the tree the rest of the pipeline hands it.
+const remarkBare = unified()
+  .use(remarkParse)
+  .use(remarkAttrs)
+  .use(remarkBlockIds)
+  .use(remarkRehype)
+  .use(rehypeLightbox);
+const remarkUnwrap = unified().use(rehypeUnwrapImages);
+const remarkCost = (input: string): number => {
+  const tree = remarkBare.runSync(remarkBare.parse(input));
+  return timed(() => remarkUnwrap.runSync(tree));
 };
+
+// How much the plugin costs the slowest engine, rendering `input`: for markdown-it and Sätteri, how much longer the pipeline takes with it than without, each at its fastest.
+const ownCost = (input: string): number =>
+  Math.max(
+    remarkCost(input),
+    ...[MDIT, SAT].map(
+      (index) =>
+        fastest(() => withPlugin[index](input)) -
+        fastest(() => bare[index](input))
+    )
+  );
 
 const html = (input: string): string[] =>
   withPlugin.map((render) => comparable(normalizeHtml(render(input))));
@@ -160,17 +181,17 @@ describe("hostile input through unwrap-images", () => {
     expect(out).toStrictEqual(out.map(() => out[0]));
   });
 
-  // A limit in milliseconds is passed by a fast machine whatever the plugin does, and it was: markdown-it's plugin put each paragraph's children in its place with a splice, which moved every later token once per paragraph, and only a slower machine took more than the limit. A cost per paragraph that grows with the document doubles twice when the document doubles, on any machine.
+  // A limit in milliseconds is passed by a fast machine whatever the plugin does, and it was: markdown-it's plugin put each paragraph's children in its place with a splice, which moved every later token once per paragraph, and only a slower machine took more than the limit. Growth does not depend on the machine: four times as many paragraphs take four times as long when the cost is per paragraph, and about twelve times as long with that splice. The sizes are far apart on purpose: between twice as many, the two answers are 2 and 3.5, and a busy machine measured 3.1 for the first.
   it(
-    "twice as many image paragraphs take markdown-it about twice as long",
+    "four times as many image paragraphs take markdown-it about four times as long",
     { timeout: 120_000 },
     () => {
-      const [render] = withPlugin;
-      const fastest = (n: number): number => {
+      const render = withPlugin[MDIT];
+      const time = (n: number): number => {
         const input = "![a](a.png) ^m\n\n".repeat(n);
-        return Math.min(...[0, 1, 2].map(() => timed(() => render(input))));
+        return fastest(() => render(input));
       };
-      expect(fastest(20_000) / fastest(10_000)).toBeLessThan(3);
+      expect(time(40_000) / time(10_000)).toBeLessThan(8);
     }
   );
 });
