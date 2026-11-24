@@ -2,6 +2,119 @@
 
 
 
+
+## 0.3.0
+<sub>2026-11-24</sub>
+
+- *(minor)*
+  A callout whose type nobody defined is now a callout, as it is in Obsidian, and a callout can carry metadata. Quotes that begin with a `[!word]` marker render differently than before: read the first two entries.
+
+  - **An undefined type falls back to an alert of its own type** (all engines), when its identifier is made only of letters, numbers, `_` and `-`. It gets the note's icon and colours, and a title made from the identifier.
+
+    ```markdown
+    > [!custom-type]
+    > Body.
+    ```
+
+    Was `<blockquote><p>[!custom-type]`, a plain quote with the marker as text. Now `<div class="markdown-alert" data-alert="custom-type">` titled "Custom type". Style it with `[data-alert="custom-type"]`, or name it in the `titles` option. An identifier with any other character (`[!a.b]`) is still a quote.
+
+  - **`fallback: false` keeps an undefined type a quote** (all engines), for a site that wants only the built-in types and the ones its `types` option registers.
+
+    ```ts
+    githubAlerts({ fallback: false })
+    ```
+
+  - **The type is read as Obsidian reads it** (all engines): spaces around it are dropped and spaces inside it become `-`, before it is lowercased.
+
+    ```markdown
+    > [! NOTE ]
+    > Body.
+
+    > [!My type]
+    > Body.
+    ```
+
+    Was a plain quote for both. Now a note, and an alert of the type `my-type`. Keys of the `types` option are read the same way, so `types: { "Release Notes": "release" }` matches `[!release-notes]`.
+
+  - **A title needs a space before it** (all engines), as in Obsidian and on GitHub.
+
+    ```markdown
+    > [!NOTE]Title
+    > Body.
+    ```
+
+    Was an alert titled "Title". Now a plain quote: write `> [!NOTE] Title`. The same goes for a fold marker (`> [!NOTE]-Title`), an escaped one (`> [!NOTE]\+ Title`), formatting (`> [!NOTE]*Title*`) and an attribute block (`> [!NOTE]{.wide}`) written straight against the marker. The last of these rendered three different ways in the three engines and is now a quote in each.
+
+  - **Text after `|` in the marker is the alert's metadata** (all engines), for a stylesheet to use.
+
+    ```markdown
+    > [!info|wide]
+    > Body.
+    ```
+
+    Was a plain quote. Now `<div class="markdown-alert" data-alert="info" data-alert-metadata="wide">`.
+
+  - **With `matchCaseInsensitive: false`, a built-in type written in another case is an undefined type** (all engines).
+
+    ```markdown
+    > [!NOTE]
+    > Body.
+    ```
+
+    Was a plain quote under that option. Now `<div class="markdown-alert" data-alert="NOTE">` titled "NOTE". Add `fallback: false` to keep the quote.
+
+  - **An alert of a type the stylesheet has no rule for is readable on a dark page** (all engines). Its background was a fixed light colour whatever the colour scheme; it now uses the note's dark colours there. Nothing changes on a light page.
+
+  - **A default title's label has no spaces around it** (Sätteri). With `titles: { note: " Hinweis " }`, `> [!NOTE]` was `aria-label=" Hinweis "` in Sätteri only. Now `aria-label="Hinweis"`, as in markdown-it and remark.
+- *(patch)*
+  unwrap-images no longer loses what a paragraph carried: an image alone in a paragraph takes the paragraph's attributes.
+
+  - **One image takes its paragraph's attributes** (all engines): the id, the classes and every other attribute, from an attribute block on its own line or from a block identifier, also when the image is inside a link or a lightbox button. A link to the id finds the image again.
+
+    ```markdown
+    ![a](pic.png)
+    {#hero .wide}
+    ```
+
+    Was `<img src="pic.png" alt="a">`. Now `<img src="pic.png" alt="a" id="hero" class="wide">`.
+
+    ```markdown
+    ![a](pic.png) ^img
+    ```
+
+    Was `<img src="pic.png" alt="a">`. Now `<img src="pic.png" alt="a" id="^img">`.
+
+  - **The image's own attributes win, and classes add up** (all engines).
+
+    ```markdown
+    ![a](pic.png){#own .c}
+    {#x .wide}
+    ```
+
+    Was `<img src="pic.png" alt="a" id="own" class="c">`. Now `<img src="pic.png" alt="a" id="own" class="c wide">`.
+
+  - **A paragraph with attributes and several images is kept** (all engines): an id can name one element, and a class on a group of images is about the group. Without attributes, several images are unwrapped as before.
+
+    ```markdown
+    ![a](a.png) ![b](b.png)
+    {.gallery}
+    ```
+
+    Was `<img src="a.png" alt="a"> <img src="b.png" alt="b">`. Now `<p class="gallery"><img src="a.png" alt="a"> <img src="b.png" alt="b"></p>`.
+
+  - **A step's title, an alert's title and a lightbox caption are never unwrapped** (remark and Sätteri; markdown-it never did). They are a plugin's own `<p>`, not an image paragraph.
+
+    ```markdown
+    @1. ![a](a.png)
+    >  body
+    ```
+
+    Was, in remark and Sätteri, `<li class="markdown-steps-item" data-step="1"><img src="a.png" alt="a"><div class="markdown-steps-body">…`. Now, as in markdown-it, `<li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title"><img src="a.png" alt="a"></p><div class="markdown-steps-body">…`. The same holds for `> [!note] ![a](a.png)` with `icons: false`, and for a lightbox dialog's caption.
+
+  `@mirrordown/remd-steps`, `@mirrordown/sat-steps`, `@mirrordown/remd-github-alerts` and `@mirrordown/sat-github-alerts` mark the title they build with a property that is never printed (`markdownParagraph: false`), which unwrap-images reads. Their HTML does not change on its own.
+
+  `@mirrordown/core` gains `unwrapImageParagraph` and `MARKDOWN_PARAGRAPH`.
+
 ## 0.2.1
 <sub>2026-11-17</sub>
 

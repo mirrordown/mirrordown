@@ -6,6 +6,107 @@
 
 
 
+
+## 0.7.0
+<sub>2026-11-24</sub>
+
+- *(minor)*
+  Add `tags`, on by default like every other feature: `#tag` in text becomes `<a class="tag" href="#tag">#tag</a>`. Pages rendered with a preset change where their text holds such a word.
+
+  - **A word that starts with `#` is now a link.**
+
+    ```markdown
+    Set the colour to #fff and see #todo below.
+    ```
+
+    Was plain text. Now `#fff` and `#todo` are tag links. A hash followed only by digits (`#1984`, `#000`), one inside a word (`abc#def`), and one in code or in a link are still text. Write `\#fff` to keep a single word as text, or pass `tags: false` to turn the feature off.
+
+  - **`tags: { href }` sets where a tag links to,** for a site with tag pages: `mirrordown({ tags: { href: (name) => "/tags/" + name } })`.
+- *(minor)*
+  Highlights take variants from a marker emoji, the presets' stylesheets include the mark set's new one, and `mark` takes options.
+
+  - **A highlight that starts with a marker emoji is a coloured pill.**
+
+    ```markdown
+    ==🔴Important== ==🐛 Bug==
+    ```
+
+    Was `<mark>🔴Important</mark>` and `<mark>🐛 Bug</mark>`. Now `<mark data-highlight="red">Important</mark>` and `<mark data-highlight="bug">🐛 Bug</mark>`, each drawn as a pill by the preset's stylesheet. The colour emoji 🔴🟠🟡🟢🔵🟣 and the squares 🟥🟧🟨🟩🟦🟪 are removed; the label emoji 🐛 📖 ✨ ❓ 🙋 🌱 👯 🚫 ⛔ ⚠️ are kept. Put any character before the emoji, or a backslash before the opening `==`, to keep a plain highlight.
+
+  - **`mark` takes the plugin's options**, as well as `true` and `false`: `mirrordown({ mark: { markers: { "🚀": "release", "🟡": false } } })` adds a marker and turns one off.
+- *(minor)*
+  Add `imageSize`, on by default like every other feature: an image's description can end in a size, as in Obsidian. Pages rendered with a preset change where an image's description ends that way.
+
+  - **`![alt|100x145](…)` and `![alt|100](…)` size the image.**
+
+    ```markdown
+    ![Engelbart|100x145](engelbart.jpg)
+    ```
+
+    Was `<img src="engelbart.jpg" alt="Engelbart|100x145">`. Now `<img src="engelbart.jpg" alt="Engelbart" width="100" height="145">`.
+
+  - **A description that is only a number is a width.**
+
+    ```markdown
+    ![2024](chart.png)
+    ```
+
+    Was `<img src="chart.png" alt="2024">`. Now `<img src="chart.png" alt="" width="2024">`. Write more than the number (`![Chart for 2024](chart.png)`), or pass `imageSize: false`.
+- *(minor)*
+  Add `taskLists`, on by default like every other feature, and its stylesheet to each preset's `styles.css`. Pages rendered with a preset change where a list item starts with a box.
+
+  - **The markdown-it preset renders GFM's task lists**, as the remark and Sätteri presets already did.
+
+    ```markdown
+    - [x] done
+    ```
+
+    Was `<ul><li>[x] done</li></ul>`. Now `<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked disabled> done</li></ul>`, the same HTML as the other two presets.
+
+  - **Six more markers are tasks in every preset**: `/` in progress, `-` cancelled, `>` forwarded, `<` scheduled, `?` question, `!` important.
+
+    ```markdown
+    - [?] which licence
+    ```
+
+    Was `<ul><li>[?] which licence</li></ul>`. Now `<ul class="contains-task-list"><li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> which licence</li></ul>`, drawn with an icon by the preset's stylesheet. The box is not checked: only `x` is a done task.
+
+  - **Any other marker is unchanged.** `- [b] text` and `- [1] reference` stay text.
+
+  - **`taskLists` takes the plugin's options**, as well as `true` and `false`: `mirrordown({ taskLists: { markers: { b: "Bookmark" }, fallback: true } })` adds a marker and reads any single character as a task, as Obsidian does. `taskLists: false` leaves the markdown-it preset without task lists and the other two with GFM's.
+- *(minor)*
+  Add `blockIds`, on by default like every other feature. Pages rendered with a preset change where a block ends in a space and `^name`.
+
+  - **A block identifier becomes the block's `id`.**
+
+    ```markdown
+    The quick purple gem dashes through the paragraph. ^37066d
+    ```
+
+    Was `<p>The quick purple gem dashes through the paragraph. ^37066d</p>`. Now `<p id="^37066d">The quick purple gem dashes through the paragraph.</p>`.
+
+  - **A heading that ends in a marker takes the marker's id instead of a slug.**
+
+    ```markdown
+    ## Setup ^setup
+    ```
+
+    Was `<h2 id="setup-setup">Setup ^setup</h2>`. Now `<h2 id="^setup">Setup</h2>`, and its anchor link points at `#^setup`.
+
+  - **A paragraph that is only a marker is removed**, naming the block before it when there is one.
+
+    ```markdown
+    | a |
+    | - |
+    | b |
+
+    ^results
+    ```
+
+    Was a table and `<p>^results</p>`. Now `<table id="^results">…</table>`.
+
+  - **Text that happens to end this way changes too.** `Stop it with ^C` was `<p>Stop it with ^C</p>` and is now `<p id="^C">Stop it with</p>`. Write the key as code, or pass `blockIds: false`.
+
 ## 0.6.1
 <sub>2026-11-17</sub>
 
