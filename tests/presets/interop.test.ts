@@ -258,4 +258,26 @@ describe("presets: the plugins together", () => {
       expect(sat(input)).toContain('<th style="text-align: center">a</th>');
     });
   });
+
+  // A tag opens only at the start of its parent's content or after whitespace. An alert puts its icon at the start of its title, which is decoration, not content: a tag that starts the title has to stay one whichever engine built the alert, and whichever of the two plugins ran first. Icons are on here, as they are by default.
+  describe("a tag starts an alert's title, icon or not", () => {
+    const withIcons = [markdownIt(), remark(), satteri()];
+    const tag = '<a class="tag" href="#urgent">#urgent</a>';
+
+    it.each([
+      ["a plain alert", "> [!NOTE] #urgent fix\n> body"],
+      ["a foldable alert", "> [!TIP]- #urgent fix\n> body"],
+      ["a title that is only a tag", "> [!WARNING] #urgent"]
+    ])("in %s", (_name, input) => {
+      const html = withIcons.map((render) => render(input));
+      expect(html).toStrictEqual(html.map(() => html[0]));
+      expect(html[0]).toContain(`</svg>${tag}`);
+    });
+
+    it("and without icons", () => {
+      expect(rendered("> [!NOTE] #urgent fix\n> body")).toContain(
+        `aria-label="#urgent fix">${tag} fix</p>`
+      );
+    });
+  });
 });

@@ -78,7 +78,7 @@ mirrordown({
 | `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/sat-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/sat-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/sat-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/sat-ruby`               |
@@ -90,6 +90,7 @@ mirrordown({
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
 | `tabs`              | `% Tab`                                     | `@mirrordown/sat-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/sat-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/sat-tab-icons`          |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
 | `features`          | any other Sätteri feature                   | merged over the preset's features    |

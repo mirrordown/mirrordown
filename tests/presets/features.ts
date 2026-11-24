@@ -70,6 +70,7 @@ export const features: ReadonlyArray<{
   { key: "sub", input: "H~2~O", marker: "<sub>" },
   { key: "sup", input: "x^2^", marker: "<sup>" },
   { key: "tabs", input: "% One\n> a\n% Two\n> b", marker: "markdown-tabs" },
+  { key: "tags", input: "Filed under #inbox", marker: 'class="tag"' },
   {
     key: "tabIcons",
     input: "% npm\n> a\n% pnpm\n> b",

@@ -50,6 +50,7 @@
     "@mirrordown/mdit-sup": "workspace:^",
     "@mirrordown/mdit-tab-icons": "workspace:^",
     "@mirrordown/mdit-tabs": "workspace:^",
+    "@mirrordown/mdit-tags": "workspace:^",
     "@mirrordown/mdit-unwrap-images": "workspace:^"
   },
   "devDependencies": {

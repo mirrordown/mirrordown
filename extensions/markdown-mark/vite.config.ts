@@ -4,7 +4,8 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "vp pack && vp exec vsce package --no-dependencies",
+        command:
+          "vp pack && vp exec postcss src/mark.css --output dist/mark.css && vp exec vsce package --no-dependencies",
         cache: true
       }
     }

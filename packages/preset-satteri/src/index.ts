@@ -40,7 +40,11 @@ import {
   type LightboxOptions,
   type LightboxPlugin
 } from "@mirrordown/sat-lightbox";
-import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
+import {
+  satteriMark,
+  type MarkOptions,
+  type MarkPlugin
+} from "@mirrordown/sat-mark";
 import {
   satteriMermaidPele,
   type MermaidPelePlugin,
@@ -71,6 +75,11 @@ import {
   type TabsOptions,
   type TabsPlugin
 } from "@mirrordown/sat-tabs";
+import {
+  satteriTags,
+  type TagsOptions,
+  type TagsPlugin
+} from "@mirrordown/sat-tags";
 import {
   satteriTabIcons,
   type TabIconsOptions,
@@ -104,7 +113,7 @@ export interface MirrordownOptions {
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   /** Ruby's own options; its `features` are always the preset's. */
@@ -119,6 +128,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `superscript` feature. */
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
   /** Further Sätteri features, such as `math` or `smartPunctuation`. These win over the preset's. */
@@ -147,6 +157,7 @@ export interface MirrordownPreset {
     | Factory<SpoilerPlugin>
     | Factory<StepsPlugin>
     | Factory<TabsPlugin>
+    | Factory<TagsPlugin>
   >;
   hastPlugins: Array<
     | Factory<AutolinkHeadingsPlugin>
@@ -203,7 +214,7 @@ export const mirrordown = (
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.ins === false ? [] : [satteriIns()]),
-      ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.mark === false ? [] : [satteriMark(settings(options.mark))]),
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
@@ -211,6 +222,8 @@ export const mirrordown = (
       ...(options.imageSize === false ? [] : [satteriImageSize()]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
+      // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.
+      ...(options.tags === false ? [] : [satteriTags(settings(options.tags))]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),

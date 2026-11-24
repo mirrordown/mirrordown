@@ -114,7 +114,7 @@ line two</p>
 <p>a == b == c</p><p>=<mark>three</mark>=</p><p>== spaced ==</p>
 
 <!-- @case: example-41 -->
-<p><mark>🔴Important</mark></p>
+<p><mark data-highlight="red">Important</mark></p>
 
 <!-- @case: example-43 -->
 <p>This is an %%inline%% comment.</p><p><strong>Bold %%hidden%% text</strong></p><h1>Heading %%hidden%%</h1>
@@ -141,19 +141,19 @@ line two</p>
 <p>$$x^2$$</p><p>Before $$y$$ after</p>
 
 <!-- @case: example-51 -->
-<p>#meeting #inbox/to-read #snake_case #kebab-case #y1984 #日本語</p>
+<p><a class="tag" href="#meeting">#meeting</a> <a class="tag" href="#inbox/to-read">#inbox/to-read</a> <a class="tag" href="#snake_case">#snake_case</a> <a class="tag" href="#kebab-case">#kebab-case</a> <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#日本語">#日本語</a></p>
 
 <!-- @case: example-52 -->
 <p>#1984</p>
 
 <!-- @case: example-53 -->
-<p>Ends at punctuation: #tag. And #bob's.</p>
+<p>Ends at punctuation: <a class="tag" href="#tag">#tag</a>. And <a class="tag" href="#bob">#bob</a>'s.</p>
 
 <!-- @case: example-54 -->
-<p>abc#def is not a tag.</p><p>#Bob#Alice is two.</p>
+<p>abc#def is not a tag.</p><p><a class="tag" href="#Bob">#Bob</a><a class="tag" href="#Alice">#Alice</a> is two.</p>
 
 <!-- @case: example-55 -->
-<p>#notheading</p><h1>heading #tagged</h1>
+<p><a class="tag" href="#notheading">#notheading</a></p><h1>heading <a class="tag" href="#tagged">#tagged</a></h1>
 
 <!-- @case: example-56 -->
 <p><kbd>Three laws of motion</kbd></p><p><kbd>Three laws of motion.md</kbd></p><p><kbd>Projects/Three laws of motion</kbd></p>

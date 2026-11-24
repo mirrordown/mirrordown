@@ -21,14 +21,17 @@
     "@types/vscode": "^1.125.0"
   },
   "contributes": {
-    "markdown.markdownItPlugins": true
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./dist/mark.css"
+    ]
   },
   "activationEvents": [],
   "engines": {
     "vscode": "^1.125.0"
   },
   "bumpy": {
-    "buildCommand": "vp pack && vp exec vsce package --no-dependencies",
+    "buildCommand": "vp pack && vp exec postcss src/mark.css --output dist/mark.css && vp exec vsce package --no-dependencies",
     "publishCommand": "vp exec vsce publish --no-dependencies",
     "skipNpmPublish": true
   }

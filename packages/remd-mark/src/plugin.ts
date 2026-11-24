@@ -1,7 +1,14 @@
 import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
-import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
+import {
+  createDelimitedTransform,
+  createHighlightMarkers,
+  maskTreeEscapes,
+  type MarkOptions
+} from "@mirrordown/core";
+
+export type { MarkOptions };
 
 /** Optional data carried by a {@link Mark} node. */
 export interface MarkData extends Data {}
@@ -15,17 +22,24 @@ export interface Mark extends Parent {
 
 /**
  * remark plugin for highlight syntax (`==text==`), wrapping each match in a
- * {@link Mark} node that renders as a `<mark>` element.
+ * {@link Mark} node that renders as a `<mark>` element. A highlight that starts with a marker emoji names a variant in `data-highlight`: a colour emoji is removed (`==🔴text==` renders `<mark data-highlight="red">text</mark>`), a label's is kept (`==🐛 Bug==` renders `<mark data-highlight="bug">🐛 Bug</mark>`). `options.markers` adds, renames and turns off markers.
  */
-export const remarkMark: Plugin<[], Root> = () => {
+export const remarkMark: Plugin<[MarkOptions?], Root> = (options = {}) => {
+  const markers = createHighlightMarkers(options);
   // The scan is shared with the Sätteri plugin through @mirrordown/core.
   const transform = createDelimitedTransform<PhrasingContent>(`=`, {
     text: (value) => ({ type: `text`, value }),
-    wrap: (children): Mark => ({
-      type: `mark`,
-      children,
-      data: { hName: `mark` }
-    })
+    wrap: (children): Mark => {
+      // Under the key the attrs plugin writes, so a `data-highlight` in an attribute block replaces it.
+      const variant = markers.take(children);
+      return {
+        type: `mark`,
+        children,
+        data: variant
+          ? { hName: `mark`, hProperties: { "data-highlight": variant } }
+          : { hName: `mark` }
+      };
+    }
   });
 
   const transformer: Transformer<Root> = (tree, file) => {

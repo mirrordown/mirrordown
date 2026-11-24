@@ -4,12 +4,17 @@ import type {
   Delimiter
 } from "markdown-it/lib/rules_inline/state_inline.mjs";
 import type Token from "markdown-it/lib/token.mjs";
+import { createHighlightMarkers, type MarkOptions } from "@mirrordown/core";
+
+export type { MarkOptions };
 
 // A pair nested deeper than this stays text, as in the remark and Sätteri plugins (the scan in `@mirrordown/core`): Sätteri rejects a document whose content nests deeper than 128 levels, and markdown-it's own `maxNesting` is 100.
 const MAX_DEPTH = 100;
 
-/** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. */
-export function mark(md: MDit): void {
+/** markdown-it plugin for `==highlight==` syntax, rendering `<mark>` elements. A highlight that starts with a marker emoji names a variant in `data-highlight`: a colour emoji is removed (`==🔴text==` renders `<mark data-highlight="red">text</mark>`), a label's is kept (`==🐛 Bug==` renders `<mark data-highlight="bug">🐛 Bug</mark>`). `options.markers` adds, renames and turns off markers. */
+export function mark(md: MDit, options: MarkOptions = {}): void {
+  const markers = createHighlightMarkers(options);
+
   md.inline.ruler.before(`emphasis`, `mark`, (state, silent) => {
     const marker = state.src.charCodeAt(state.pos);
 
@@ -143,6 +148,28 @@ export function mark(md: MDit): void {
       }
     }
 
+    return true;
+  });
+
+  // A highlight's marker, read once every delimiter rule has run and adjacent text has been joined, so the token after `mark_open` is the highlight's first child as it renders. A character reference is still its own `text_special` token here (markdown-it joins those in later, in `text_join`), so a marker written as one is not plain text and names nothing, as in remark and Sätteri. It runs before attrs, a core rule, so a `data-highlight` written in an attribute block replaces this one.
+  md.inline.ruler2.after(`fragments_join`, `mark_variant`, (state) => {
+    const { tokens } = state;
+    // An emptied text token is dropped, as remark and Sätteri drop the emptied node, so the highlight is as empty to a later plugin as it renders. The list is compacted in one pass, as `fragments_join` does: removing each token on its own is quadratic on a line of many highlights.
+    let kept = 0;
+    let previous: Token | undefined;
+    for (const token of tokens) {
+      const split =
+        previous?.type === `mark_open` && token.type === `text`
+          ? markers.split(token.content)
+          : undefined;
+      if (split) {
+        previous?.attrSet(`data-highlight`, split.variant);
+        token.content = split.rest;
+      }
+      if (!split || split.rest) tokens[kept++] = token;
+      previous = token;
+    }
+    tokens.length = kept;
     return true;
   });
 }

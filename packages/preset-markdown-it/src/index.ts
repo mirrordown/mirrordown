@@ -19,7 +19,7 @@ import { imageSize } from "@mirrordown/mdit-image-size";
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
-import { mark } from "@mirrordown/mdit-mark";
+import { mark, type MarkOptions } from "@mirrordown/mdit-mark";
 import {
   mermaidPele,
   type MermaidPeleOptions
@@ -33,6 +33,7 @@ import { steps, type StepsOptions } from "@mirrordown/mdit-steps";
 import { sub } from "@mirrordown/mdit-sub";
 import { sup } from "@mirrordown/mdit-sup";
 import { tabs, type TabsOptions } from "@mirrordown/mdit-tabs";
+import { tags, type TagsOptions } from "@mirrordown/mdit-tags";
 import { tabIcons, type TabIconsOptions } from "@mirrordown/mdit-tab-icons";
 import { unwrapImages } from "@mirrordown/mdit-unwrap-images";
 
@@ -51,7 +52,7 @@ export interface MirrordownOptions {
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | MermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
@@ -63,6 +64,7 @@ export interface MirrordownOptions {
   sub?: boolean;
   sup?: boolean;
   tabs?: boolean | TabsOptions;
+  tags?: boolean | TagsOptions;
   tabIcons?: boolean | TabIconsOptions;
   unwrapImages?: boolean;
 }
@@ -110,7 +112,7 @@ export const mirrordown = (
   configured(options.githubAlerts, githubAlerts);
   on(options.ins, ins);
   on(options.kbd, kbd);
-  on(options.mark, mark);
+  configured(options.mark, mark);
   configured(options.ruby, ruby);
   configured(options.steps, steps);
   on(options.spoiler, spoiler);
@@ -119,6 +121,8 @@ export const mirrordown = (
   configured(options.tabs, tabs);
   // After tabs and attrs: it reads the labels they leave.
   configured(tabIconsSetting, tabIcons);
+  // Registered after abbr and alerts: each puts a core rule straight after `linkify`, where the one registered last runs first. Tags are read before abbreviations are marked, as in the other presets, and before an alert's title is labelled.
+  configured(options.tags, tags);
   // After the containers, whose blocks it captions.
   on(options.caption, caption);
   configured(options.mermaidPele, mermaidPele);

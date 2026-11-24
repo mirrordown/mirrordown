@@ -67,14 +67,16 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
   // The link itself is CommonMark's; the internal-link class is optional.
   [`67`, { state: `conforms` }],
 
-  ...all([`51`, `53`, `54`, `55`], { state: `pending`, note: `Tags (W1-B).` }),
+  // Tags: the tags set emits the spec's own markup.
+  ...all([`51`, `53`, `54`, `55`], { state: `conforms` }),
   [`34`, { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }],
   [
     `34-minimal`,
     { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }
   ],
   [`35`, { state: `pending`, note: `Task lists (W2-A).` }],
-  [`41`, { state: `pending`, note: `Highlight colours (W2-B).` }],
+  // Highlight colours: the mark set reads the colour emoji as Obsidian does.
+  [`41`, { state: `conforms` }],
   // Image sizes: the image-size set reads the description as Obsidian does.
   [`66`, { state: `conforms` }],
   [
