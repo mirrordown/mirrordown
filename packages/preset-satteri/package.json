@@ -29,6 +29,7 @@
     "@mirrordown/sat-del": "workspace:^",
     "@mirrordown/sat-file-tree": "workspace:^",
     "@mirrordown/sat-github-alerts": "workspace:^",
+    "@mirrordown/sat-image-size": "workspace:^",
     "@mirrordown/sat-ins": "workspace:^",
     "@mirrordown/sat-kbd": "workspace:^",
     "@mirrordown/sat-lightbox": "workspace:^",
@@ -43,6 +44,8 @@
     "@mirrordown/sat-steps": "workspace:^",
     "@mirrordown/sat-tab-icons": "workspace:^",
     "@mirrordown/sat-tabs": "workspace:^",
+    "@mirrordown/sat-tags": "workspace:^",
+    "@mirrordown/sat-task-lists": "workspace:^",
     "@mirrordown/sat-unwrap-images": "workspace:^"
   },
   "devDependencies": {

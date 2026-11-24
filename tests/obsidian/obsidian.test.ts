@@ -88,6 +88,21 @@ const facts: readonly {
       )
   },
   {
+    name: `tasks`,
+    why: `the same list items are tasks, each with the marker its author wrote`,
+    // Obsidian ticks every box but an empty one. Here only `x` is a done task, on purpose, so the marker is compared and the tick is not. `X` is `x`: GFM's done box keeps no marker.
+    obsidian: ({ tasks }) =>
+      tasks.map(({ char }) => (char === `X` ? `x` : char)),
+    ours: (html) =>
+      [
+        ...html.matchAll(
+          /<li class="[^"]*\btask-list-item\b[^"]*"(?: data-task="([^"]*)")?[^>]*>\s*(?:<p>)?\s*<input type="checkbox"( checked)?/g
+        )
+      ].map(([, marker, checked]) =>
+        marker === undefined ? (checked ? `x` : ` `) : text(marker)
+      )
+  },
+  {
     name: `blocks`,
     why: `a link to a block finds the same identifiers its author can link to in Obsidian`,
     // Which identifiers a page has, not which element holds each: Obsidian records a source range, and here an identifier is an element's id.

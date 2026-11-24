@@ -31,6 +31,7 @@
     "@mirrordown/remd-del": "workspace:^",
     "@mirrordown/remd-file-tree": "workspace:^",
     "@mirrordown/remd-github-alerts": "workspace:^",
+    "@mirrordown/remd-image-size": "workspace:^",
     "@mirrordown/remd-ins": "workspace:^",
     "@mirrordown/remd-kbd": "workspace:^",
     "@mirrordown/remd-lightbox": "workspace:^",
@@ -47,6 +48,8 @@
     "@mirrordown/remd-sup": "workspace:^",
     "@mirrordown/remd-tab-icons": "workspace:^",
     "@mirrordown/remd-tabs": "workspace:^",
+    "@mirrordown/remd-tags": "workspace:^",
+    "@mirrordown/remd-task-lists": "workspace:^",
     "@mirrordown/remd-unwrap-images": "workspace:^",
     "mdast-util-to-hast": "^13.0.0",
     "remark-gfm": "catalog:"

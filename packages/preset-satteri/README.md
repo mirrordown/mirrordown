@@ -75,10 +75,11 @@ mirrordown({
 | `del`               | `--deleted--`                               | `@mirrordown/sat-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/sat-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/sat-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/sat-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/sat-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/sat-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/sat-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/sat-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/sat-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/sat-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/sat-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/sat-ruby`               |
@@ -90,14 +91,16 @@ mirrordown({
 | `sub`               | `~subscript~`                               | Sätteri's `subscript` feature        |
 | `sup`               | `^superscript^`                             | Sätteri's `superscript` feature      |
 | `tabs`              | `% Tab`                                     | `@mirrordown/sat-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/sat-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/sat-tab-icons`          |
+| `taskLists`         | `- [x] done`, `- [?] question`…             | `@mirrordown/sat-task-lists`         |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/sat-unwrap-images`      |
 | `features`          | any other Sätteri feature                   | merged over the preset's features    |
 
 ## Notes
 
 - **Smart punctuation stays off.** The preset sets `smartPunctuation: false`, because hosts such as Astro turn it on by default and smart quotes and dashes rewrite text some plugins read. Pass `features: { smartPunctuation: true }` to turn it back on.
-- **GFM is Sätteri's.** Footnotes, task lists and bare-URL links come with the `gfm` feature, and the markdown-it preset does not have them: a document that uses them renders differently there.
+- **GFM is Sätteri's.** Footnotes, task lists and bare-URL links come with the `gfm` feature. The markdown-it preset does not have the footnotes and links, so a document that uses them renders differently there; it has the same task lists, through the `taskLists` set.
 - **Raw HTML is the host's.** The preset leaves Sätteri's handling of it as it is. markdown-it escapes raw HTML unless it is created with `html: true`, remark-rehype drops it by default, and Sätteri keeps it, so a document that holds raw HTML renders differently across the presets until the hosts are set alike.
 - **Astro highlights code first.** Leave `mermaid` and `filetree` out of highlighting, as above, so those fences reach the plugins. Shiki also rebuilds each code block without its fence's meta, which is where copy-code reads `nocopy` and prompt reads its services, `open` and title; the [copy-code](https://github.com/mirrordown/mirrordown/tree/main/packages/sat-copy-code) and [prompt](https://github.com/mirrordown/mirrordown/tree/main/packages/sat-prompt) READMEs show the transformer that keeps it.
 - **Synchronous.** The preset's plugins are all synchronous, and its types say so, so `markdownToHtml(source, mirrordown())` returns its result directly rather than a Promise.

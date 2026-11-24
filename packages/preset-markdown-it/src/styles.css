@@ -5,9 +5,11 @@
 @import "@mirrordown/mdit-file-tree/styles";
 @import "@mirrordown/mdit-github-alerts/styles";
 @import "@mirrordown/mdit-lightbox/styles";
+@import "@mirrordown/mdit-mark/styles";
 @import "@mirrordown/mdit-mermaid-pele/styles";
 @import "@mirrordown/mdit-prompt/styles";
 @import "@mirrordown/mdit-spoiler/styles";
 @import "@mirrordown/mdit-steps/styles";
 @import "@mirrordown/mdit-tabs/styles";
 @import "@mirrordown/mdit-tab-icons/styles";
+@import "@mirrordown/mdit-task-lists/styles";

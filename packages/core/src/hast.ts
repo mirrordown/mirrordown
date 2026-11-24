@@ -223,7 +223,14 @@ export const lightboxTrigger = <C>(
   children: [image]
 });
 
-/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. A caption that is empty or only whitespace text shows nothing, so it gets no `<p>`, as in the markdown-it plugin. */
+// The dialog's copy of an image, without a `width` or `height`. Those size the image on the page, whether the image-size plugin read them from the description or an attribute block gave them; the dialog shows the image at full size, and a host that resizes images from those attributes (Astro's image pipeline) would shrink the dialog's image to the thumbnail's.
+const fullSize = <C extends HastLike>(image: C): C => {
+  if (image.properties === undefined) return image;
+  const { width: _width, height: _height, ...properties } = image.properties;
+  return { ...image, properties };
+};
+
+/** The modal dialog, appended at the document end, showing the image full size, and its caption under it when one is given. The image is shown without the `width` and `height` it has on the page. A caption that is empty or only whitespace text shows nothing, so it gets no `<p>`, as in the markdown-it plugin. */
 export const lightboxDialog = <C extends HastLike>(
   id: string,
   image: C,
@@ -243,7 +250,7 @@ export const lightboxDialog = <C extends HastLike>(
         commandfor: id,
         ariaLabel: `Close image`
       },
-      children: [image]
+      children: [fullSize(image)]
     },
     ...(caption?.some((node) => !isWhitespaceText(node))
       ? [

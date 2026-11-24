@@ -17,7 +17,8 @@ const sets: readonly {
   { key: `ins`, wrap: (text) => `++${text}++`, marker: `+` },
   { key: `kbd`, wrap: (text) => `[[${text}]]`, marker: `[` },
   { key: `mark`, wrap: (text) => `==${text}==`, marker: `=` },
-  { key: `spoiler`, wrap: (text) => `||${text}||`, marker: `|` }
+  { key: `spoiler`, wrap: (text) => `||${text}||`, marker: `|` },
+  { key: `tags`, wrap: (text) => `#${text} `, marker: `#` }
 ];
 
 // Input an author would never write on purpose still arrives: pasted logs, generated files, text from another system. None of it may throw, hang, or make the engines disagree.

@@ -89,10 +89,11 @@ mirrordown({
 | `del`               | `--deleted--`                               | `@mirrordown/remd-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/remd-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/remd-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/remd-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/remd-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/remd-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/remd-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/remd-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/remd-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/remd-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/remd-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/remd-ruby`               |
@@ -104,13 +105,15 @@ mirrordown({
 | `sub`               | `~subscript~`                               | `@mirrordown/remd-sub`                |
 | `sup`               | `^superscript^`                             | `@mirrordown/remd-sup`                |
 | `tabs`              | `% Tab`                                     | `@mirrordown/remd-tabs`               |
+| `tags`              | `#tag`                                      | `@mirrordown/remd-tags`               |
 | `tabIcons`          | icons on tab labels, `[!npm]`               | `@mirrordown/remd-tab-icons`          |
+| `taskLists`         | `- [x] done`, `- [?] question`…             | `@mirrordown/remd-task-lists`         |
 | `unwrapImages`      | images not wrapped in `<p>`                 | `@mirrordown/remd-unwrap-images`      |
 
 ## Notes
 
 - **Diagrams are raw HTML.** `mermaidPele` replaces each diagram's code block with Pele's `<svg>` as a `raw` node, so it reaches the HTML exactly as Pele wrote it. Stringify with `allowDangerousHtml: true`, as above (Astro already does), or the diagrams come out as escaped text.
-- **GFM is included.** The preset adds `remark-gfm` with single-tilde strikethrough off, so `~text~` is subscript and `~~text~~` is strikethrough. It returns `gfm: false` so a processor that adds its own GFM, like Astro's, doesn't add it again with single-tilde strikethrough on. Set `gfm: false` in the options to leave GFM out. Footnotes, task lists and bare-URL links are GFM's, and the markdown-it preset does not have them: a document that uses them renders differently there.
+- **GFM is included.** The preset adds `remark-gfm` with single-tilde strikethrough off, so `~text~` is subscript and `~~text~~` is strikethrough. It returns `gfm: false` so a processor that adds its own GFM, like Astro's, doesn't add it again with single-tilde strikethrough on. Set `gfm: false` in the options to leave GFM out. Footnotes and bare-URL links are GFM's, and the markdown-it preset does not have them: a document that uses them renders differently there. Task lists are GFM's too, and the `taskLists` set gives markdown-it the same ones.
 - **Smart punctuation stays off.** The preset returns `smartypants: false`: smart quotes and dashes would rewrite text that `del` and `attrs` read. To turn it on anyway, override it: `unified({ ...mirrordown(), smartypants: true })`.
 - **`tabIcons` follows `tabs`.** With `tabs: { containerClass }` set, tab-icons looks for groups of that class, unless you give it a `containerClass` of its own.
 - **`inline-svg` is not included.** It reads SVG files from disk and runs asynchronously; add [`@mirrordown/remd-inline-svg`](https://github.com/mirrordown/mirrordown/tree/main/packages/remd-inline-svg) to `rehypePlugins` yourself where that fits.

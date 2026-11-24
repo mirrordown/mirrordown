@@ -90,6 +90,50 @@ describe("mark + attrs: mark and block attrs coexist", () => {
   it("sätteri", () => expect(sat(input)).toBe(expected));
 });
 
+// A coloured highlight takes the attributes of a block written after it as well as its colour. The colour is set when the highlight is made, before any block is read, so it comes first in every engine; a `data-highlight` the author wrote in a block replaces it, since the author chose it.
+describe.each([
+  [
+    "a class follows the colour",
+    "==\u{1F534}text=={.note}",
+    '<p><mark data-highlight="red" class="note">text</mark></p>'
+  ],
+  [
+    "an id and a class follow the colour, in the middle of a paragraph",
+    "a ==\u{1F7E2}text=={#key .note} b",
+    '<p>a <mark data-highlight="green" id="key" class="note">text</mark> b</p>'
+  ],
+  [
+    "a written data-highlight replaces the marker's colour",
+    "==\u{1F534}text=={data-highlight=blue}",
+    '<p><mark data-highlight="blue">text</mark></p>'
+  ],
+  [
+    "a written data-highlight replaces the colour, in the middle of a paragraph",
+    "==\u{1F534}text=={.note data-highlight=blue} b",
+    '<p><mark data-highlight="blue" class="note">text</mark> b</p>'
+  ],
+  [
+    "a written data-highlight on a plain highlight is kept",
+    "==text=={data-highlight=green}",
+    '<p><mark data-highlight="green">text</mark></p>'
+  ],
+  [
+    "an emptied highlight still takes its block",
+    "==\u{1F534}=={.note}",
+    '<p><mark data-highlight="red" class="note"></mark></p>'
+  ],
+  [
+    "a block inside a coloured highlight goes on the highlight it follows",
+    "==\u{1F534}a ==\u{1F7E2}b=={.inner} c==",
+    '<p><mark data-highlight="red">a <mark data-highlight="green" class="inner">b</mark> c</mark></p>'
+  ]
+])("mark + attrs, coloured: %s", (_name, input, expected) => {
+  it("markdown-it", () =>
+    expect(normalizeHtml(md.render(input))).toBe(expected));
+  it("remark", () => expect(remd(input)).toBe(expected));
+  it("sätteri", () => expect(sat(input)).toBe(expected));
+});
+
 const syntax: SpanSyntax = {
   span: "==x==",
   html: (attributes) => `<mark${attributes}>x</mark>`

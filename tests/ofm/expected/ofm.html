@@ -97,6 +97,12 @@ Hidden</p><p>Also hidden</p>
 <!-- @case: example-33 -->
 <blockquote><p>See [!info] here</p></blockquote><div class="markdown-alert" data-alert="info"><p class="markdown-alert-title" aria-label="nospace"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>nospace</p></div>
 
+<!-- @case: example-34 -->
+<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked disabled> Done</li><li class="task-list-item"><input type="checkbox" disabled> Not done</li><li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> Question</li><li class="task-list-item" data-task="-"><input type="checkbox" disabled aria-label="Cancelled"> Cancelled</li></ul>
+
+<!-- @case: example-34-minimal -->
+<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked disabled> Done</li><li class="task-list-item"><input type="checkbox" disabled> Not done</li><li class="task-list-item" data-task="?"><input type="checkbox" disabled aria-label="Question"> Question</li><li class="task-list-item" data-task="-"><input type="checkbox" disabled aria-label="Cancelled"> Cancelled</li></ul>
+
 <!-- @case: example-35 -->
 <ul><li>[] empty</li><li>[ab] two</li></ul>
 
@@ -111,7 +117,7 @@ line two</p>
 <p>a == b == c</p><p>=<mark>three</mark>=</p><p>== spaced ==</p>
 
 <!-- @case: example-41 -->
-<p><mark>🔴Important</mark></p>
+<p><mark data-highlight="red">Important</mark></p>
 
 <!-- @case: example-43 -->
 <p>This is an %%inline%% comment.</p><p><strong>Bold %%hidden%% text</strong></p><h1>Heading %%hidden%%</h1>
@@ -138,19 +144,19 @@ line two</p>
 <p>$$x^2$$</p><p>Before $$y$$ after</p>
 
 <!-- @case: example-51 -->
-<p>#meeting #inbox/to-read #snake_case #kebab-case #y1984 #日本語</p>
+<p><a class="tag" href="#meeting">#meeting</a> <a class="tag" href="#inbox/to-read">#inbox/to-read</a> <a class="tag" href="#snake_case">#snake_case</a> <a class="tag" href="#kebab-case">#kebab-case</a> <a class="tag" href="#y1984">#y1984</a> <a class="tag" href="#日本語">#日本語</a></p>
 
 <!-- @case: example-52 -->
 <p>#1984</p>
 
 <!-- @case: example-53 -->
-<p>Ends at punctuation: #tag. And #bob's.</p>
+<p>Ends at punctuation: <a class="tag" href="#tag">#tag</a>. And <a class="tag" href="#bob">#bob</a>'s.</p>
 
 <!-- @case: example-54 -->
-<p>abc#def is not a tag.</p><p>#Bob#Alice is two.</p>
+<p>abc#def is not a tag.</p><p><a class="tag" href="#Bob">#Bob</a><a class="tag" href="#Alice">#Alice</a> is two.</p>
 
 <!-- @case: example-55 -->
-<p>#notheading</p><h1>heading #tagged</h1>
+<p><a class="tag" href="#notheading">#notheading</a></p><h1>heading <a class="tag" href="#tagged">#tagged</a></h1>
 
 <!-- @case: example-56 -->
 <p><kbd>Three laws of motion</kbd></p><p><kbd>Three laws of motion.md</kbd></p><p><kbd>Projects/Three laws of motion</kbd></p>
@@ -187,7 +193,7 @@ lines]]</p>
 <p>!<kbd>Engelbart.jpg</kbd></p><p>!<kbd>Engelbart.jpg|100</kbd></p><p>!<kbd>Engelbart.jpg|100x145</kbd></p><p>!<kbd>Engelbart.jpg|A portrait</kbd></p><p>!<kbd>Engelbart.jpg|A portrait|100x145</kbd></p>
 
 <!-- @case: example-66 -->
-<p><img src="https://example.com/e.jpg" alt="Engelbart|100x145"></p><p><img src="https://example.com/e.jpg" alt="Engelbart|100"></p><p><img src="https://example.com/e.jpg" alt="250"></p><p><img src="https://example.com/e.jpg" alt="Engelbart"></p>
+<p><img src="https://example.com/e.jpg" alt="Engelbart" width="100" height="145"></p><p><img src="https://example.com/e.jpg" alt="Engelbart" width="100"></p><p><img src="https://example.com/e.jpg" alt="" width="250"></p><p><img src="https://example.com/e.jpg" alt="Engelbart"></p>
 
 <!-- @case: example-67 -->
 <p><a href="Three%20laws%20of%20motion.md">Three laws</a></p><p><a href="Example.md#Details">Section</a></p><p><a href="My%20Note.md">With spaces</a></p>
