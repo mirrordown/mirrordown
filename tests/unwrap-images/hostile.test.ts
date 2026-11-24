@@ -159,4 +159,18 @@ describe("hostile input through unwrap-images", () => {
     const out = html(make(n / 10));
     expect(out).toStrictEqual(out.map(() => out[0]));
   });
+
+  // A limit in milliseconds is passed by a fast machine whatever the plugin does, and it was: markdown-it's plugin put each paragraph's children in its place with a splice, which moved every later token once per paragraph, and only a slower machine took more than the limit. A cost per paragraph that grows with the document doubles twice when the document doubles, on any machine.
+  it(
+    "twice as many image paragraphs take markdown-it about twice as long",
+    { timeout: 120_000 },
+    () => {
+      const [render] = withPlugin;
+      const fastest = (n: number): number => {
+        const input = "![a](a.png) ^m\n\n".repeat(n);
+        return Math.min(...[0, 1, 2].map(() => timed(() => render(input))));
+      };
+      expect(fastest(20_000) / fastest(10_000)).toBeLessThan(3);
+    }
+  );
 });
