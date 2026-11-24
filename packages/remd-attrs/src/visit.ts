@@ -1,6 +1,9 @@
 import type { Node, Parent } from "unist";
 import { CONTINUE, EXIT, SKIP } from "unist-util-visit";
 
+const isParent = (node: Node): node is Parent =>
+  Boolean((node as Partial<Parent>).children);
+
 type Visitor<N extends Node> = (
   node: N,
   index: number | undefined,
@@ -42,16 +45,11 @@ export function visit(
             : [value];
       if (result[0] === EXIT) return result;
     }
-    const parentNode = node as Partial<Parent>;
-    if (parentNode.children && result[0] !== SKIP) {
+    if (isParent(node) && result[0] !== SKIP) {
       let offset = 0;
       // The children are read again at each step, as a visitor may have spliced them.
-      while (offset < parentNode.children.length) {
-        const answer = walk(
-          parentNode.children[offset],
-          offset,
-          node as Parent
-        );
+      while (offset < node.children.length) {
+        const answer = walk(node.children[offset], offset, node);
         if (answer[0] === EXIT) return answer;
         offset = typeof answer[1] === "number" ? answer[1] : offset + 1;
       }
