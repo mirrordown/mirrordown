@@ -525,3 +525,15 @@
 <p class="p">para</p>
 </li>
 </ul>
+
+<!-- @case: fence order: the block's class leads when another attribute comes first -->
+<pre><code class="a language-js" data-x="1">code
+</code></pre>
+
+<!-- @case: fence order: the block's class leads an id written before it -->
+<pre><code class="a language-js" id="i">code
+</code></pre>
+
+<!-- @case: fence order: the block's classes lead together -->
+<pre><code class="a b language-js" data-x="1">code
+</code></pre>

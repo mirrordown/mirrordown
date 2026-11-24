@@ -422,3 +422,18 @@ a
   {.l}
 
   para {.p}
+
+<!-- @case: fence order: the block's class leads when another attribute comes first -->
+```js {data-x=1 .a}
+code
+```
+
+<!-- @case: fence order: the block's class leads an id written before it -->
+```js {#i .a}
+code
+```
+
+<!-- @case: fence order: the block's classes lead together -->
+```js {data-x=1 .a .b}
+code
+```

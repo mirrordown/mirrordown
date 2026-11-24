@@ -72,9 +72,17 @@ export const createFenceRule = (
       // first, so `class` leads as it does in remd (mdast-util-to-hast creates
       // the language class before applying attributes, and a remark plugin
       // cannot reorder it). The renderer wrapper trims the leading space.
-      if (token.info && token.attrIndex("class") < 0) {
+      const classAt = token.attrIndex("class");
+      if (token.info && classAt < 0) {
         token.attrs = [["class", ""], ...(token.attrs ?? [])];
         token.meta = { ...token.meta, attrsReservedClass: true };
+      } else if (token.info && classAt > 0) {
+        // The block's own class leads for the same reason when the block names something before it (`{data-x=1 .a}`).
+        const attrs = token.attrs!;
+        token.attrs = [
+          attrs[classAt],
+          ...attrs.filter((_, at) => at !== classAt)
+        ];
       }
     }
   };

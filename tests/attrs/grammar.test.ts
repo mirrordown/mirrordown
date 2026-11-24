@@ -506,14 +506,17 @@ describe.each(engines)("attrs/grammar: tables (%s)", (_engine, render) => {
   });
 });
 
-// The shared fixtures run through markdown-it and remark, and Sätteri can't read every one of them (its limits above). These are where markdown-it once differed from both: it removed a paragraph holding only a block and then read on from the wrong token, skipping the one after it (a fence lost its block, a second block made an empty paragraph). Sätteri reads them as the fixtures say.
+// The shared fixtures run through markdown-it and remark, and Sätteri can't read every one of them (its limits above). These two groups are where markdown-it once differed from both: it removed a paragraph holding only a block and then read on from the wrong token, skipping the one after it (a fence lost its block, a second block made an empty paragraph), and it wrote a fence's other attributes before its class. Sätteri reads them as the fixtures say.
 describe("attrs/grammar: Sätteri on the shared fixtures it reads", () => {
   const read = (path: string): string =>
     readFileSync(join(import.meta.dirname, path), "utf8");
   const cases = parseFixture(
     read("fixtures/attrs.md"),
     read("expected/attrs.html")
-  ).filter(({ name }) => name.startsWith("removed paragraph:"));
+  ).filter(
+    ({ name }) =>
+      name.startsWith("removed paragraph:") || name.startsWith("fence order:")
+  );
   const [, , [, sat]] = engines;
 
   it.each(cases)("$name", ({ input, expected }) => {
