@@ -91,7 +91,7 @@ mirrordown({
 | `ins`               | `++inserted++`                              | `@mirrordown/remd-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/remd-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/remd-lightbox`           |
-| `mark`              | `==highlight==`                             | `@mirrordown/remd-mark`               |
+| `mark`              | `==highlight==`, emoji colours and labels   | `@mirrordown/remd-mark`               |
 | `mermaidPele`       | ` ```mermaid ` diagrams, rendered with Pele | `@mirrordown/remd-mermaid-pele`       |
 | `prompt`            | ` ```prompt ` AI prompts                    | `@mirrordown/remd-prompt`             |
 | `ruby`              | `{漢字\|かんじ}`                            | `@mirrordown/remd-ruby`               |

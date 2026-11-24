@@ -75,7 +75,8 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
     { state: `pending`, note: `Task lists (W2-A).`, differs: GFM_BASE }
   ],
   [`35`, { state: `pending`, note: `Task lists (W2-A).` }],
-  [`41`, { state: `pending`, note: `Highlight colours (W2-B).` }],
+  // Highlight colours: the mark set reads the colour emoji as Obsidian does.
+  [`41`, { state: `conforms` }],
   [`66`, { state: `pending`, note: `Image sizes (W2-B).` }],
   [
     `3`,

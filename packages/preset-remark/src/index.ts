@@ -39,7 +39,7 @@ import {
   rehypeLightbox,
   type LightboxOptions
 } from "@mirrordown/remd-lightbox";
-import { remarkMark } from "@mirrordown/remd-mark";
+import { remarkMark, type MarkOptions } from "@mirrordown/remd-mark";
 import {
   rehypeMermaidPele,
   type RehypeMermaidPeleOptions
@@ -84,7 +84,7 @@ export interface MirrordownOptions {
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | RehypeMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   ruby?: boolean | RubyOptions;
@@ -171,7 +171,7 @@ export const mirrordown = (
       ...on(options.kbd, remarkKbd),
       ...on(options.del, remarkDel),
       ...on(options.ins, remarkIns),
-      ...on(options.mark, remarkMark),
+      ...configured(options.mark, remarkMark),
       ...configured(options.steps, remarkSteps),
       ...on(options.spoiler, remarkSpoiler),
       ...on(options.sub, remarkSub),

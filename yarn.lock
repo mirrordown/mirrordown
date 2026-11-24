@@ -1373,6 +1373,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-mark@workspace:packages/mdit-mark"
   dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
     markdown-it: "catalog:"
   peerDependencies:

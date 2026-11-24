@@ -36,7 +36,11 @@ import {
   type LightboxOptions,
   type LightboxPlugin
 } from "@mirrordown/sat-lightbox";
-import { satteriMark, type MarkPlugin } from "@mirrordown/sat-mark";
+import {
+  satteriMark,
+  type MarkOptions,
+  type MarkPlugin
+} from "@mirrordown/sat-mark";
 import {
   satteriMermaidPele,
   type MermaidPelePlugin,
@@ -104,7 +108,7 @@ export interface MirrordownOptions {
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
-  mark?: boolean;
+  mark?: boolean | MarkOptions;
   mermaidPele?: boolean | SatteriMermaidPeleOptions;
   prompt?: boolean | PromptOptions;
   /** Ruby's own options; its `features` are always the preset's. */
@@ -204,7 +208,7 @@ export const mirrordown = (
       ...(options.kbd === false ? [] : [satteriKbd()]),
       ...(options.del === false ? [] : [satteriDel()]),
       ...(options.ins === false ? [] : [satteriIns()]),
-      ...(options.mark === false ? [] : [satteriMark()]),
+      ...(options.mark === false ? [] : [satteriMark(settings(options.mark))]),
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
