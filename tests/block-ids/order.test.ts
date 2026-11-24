@@ -244,18 +244,15 @@ describe("block-ids order: Sätteri", () => {
     ).toBe(satteri(satteriBlockIds(), satteriGithubAlerts(noIcons))(input));
   });
 
-  // The alert Sätteri's github-alerts builds keeps no position, and its title has lost the `[!TYPE]` before it, so after it a title is read without its line: a caret written straight after the type passes for a marker. Before it (as the preset lists them), the line is a paragraph's and the caret is text.
-  it("reads an alert title's line only before github-alerts", () => {
+  // Text written straight against an alert's marker leaves a quote, so a caret there is never an alert title's: in either order it is a quote's text with no space before it, which is no marker. Before github-alerts left this a quote, the order showed here: listed after it, block-ids read the built title without its line and took the caret for a marker.
+  it("leaves a caret straight after an alert's type as a quote's text in either order", () => {
     const input = "> [!tip]^no";
+    const quote = "<blockquote><p>[!tip]^no</p></blockquote>";
     expect(
       satteri(satteriBlockIds(), satteriGithubAlerts(noIcons))(input)
-    ).toBe(
-      '<div class="markdown-alert" data-alert="tip"><p class="markdown-alert-title" aria-label="^no">^no</p></div>'
-    );
+    ).toBe(quote);
     expect(
       satteri(satteriGithubAlerts(noIcons), satteriBlockIds())(input)
-    ).toBe(
-      '<div class="markdown-alert" data-alert="tip" id="^no"><p class="markdown-alert-title" aria-label="Tip">Tip</p></div>'
-    );
+    ).toBe(quote);
   });
 });

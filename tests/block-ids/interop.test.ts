@@ -78,8 +78,7 @@ describe("block-ids with github-alerts", () => {
     {
       name: "a marker straight after the type is text",
       input: "> [!tip]^no",
-      expected:
-        '<div class="markdown-alert" data-alert="tip"><p class="markdown-alert-title" aria-label="^no">^no</p></div>'
+      expected: "<blockquote><p>[!tip]^no</p></blockquote>"
     },
     {
       name: "a marker on a lazy line after the alert names it",
