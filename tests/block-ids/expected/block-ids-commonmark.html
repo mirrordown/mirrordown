@@ -1,0 +1,352 @@
+<!-- @case: a marker at the end of a paragraph names it -->
+
+<p id="^37066d">The quick purple gem dashes through the paragraph.</p>
+
+<!-- @case: the id holds the caret and the identifier as written, upper case included -->
+
+<p id="^BLK">text</p>
+
+<!-- @case: an identifier is letters, digits and hyphens -->
+
+<p id="^item-1-2a">Gemmy</p>
+
+<!-- @case: a tab before the caret separates it as a space does -->
+
+<p id="^blk">text</p>
+
+<!-- @case: an underscore is not an identifier character, so the marker is text -->
+
+<p>text ^blk_x</p>
+
+<!-- @case: a caret with no identifier is text -->
+
+<p>text ^</p>
+
+<!-- @case: a caret after a word is text -->
+
+<p>not-a-marker^abc</p>
+<p>E = mc^2</p>
+
+<!-- @case: a caret right after a code span is text -->
+
+<p><code>code</code>^blk</p>
+<p><code>Line.</code>^blk</p>
+
+<!-- @case: a caret after the identifier, as superscript writes it, is text -->
+
+<p>a ^b^</p>
+
+<!-- @case: a marker that is not at the end is text -->
+
+<p>^abc is not at the end</p>
+
+<!-- @case: a marker with a space after it on its line is text -->
+
+<p>text ^blk</p>
+<p>text ^tab</p>
+<p id="^kept">text</p>
+
+<!-- @case: an escaped bracket before a caret is text, as Obsidian's own reading of it is a bug -->
+
+<p>x[^1</p>
+
+<!-- @case: an escaped caret is text -->
+
+<p>text ^blk</p>
+
+<!-- @case: a character reference for the caret is text -->
+
+<p>text ^blk</p>
+<p>text ^blk</p>
+
+<!-- @case: an escaped identifier character makes the marker text -->
+
+<p>text ^a-b</p>
+
+<!-- @case: a marker inside emphasis is text -->
+
+<p><em>x ^blk</em></p>
+<p><em>^blk</em></p>
+<p><strong>text ^blk</strong></p>
+
+<!-- @case: a marker inside a link is text -->
+
+<p><a href="u">^blk</a></p>
+<p><a href="u">link ^x</a></p>
+
+<!-- @case: a marker inside a code span is text -->
+
+<p><code>^blk</code></p>
+<p>text <code>code ^blk</code></p>
+
+<!-- @case: a fenced code block is not read -->
+
+<pre><code>code ^blk
+</code></pre>
+
+<!-- @case: an indented code block is not read -->
+
+<p>para</p>
+<pre><code>code ^blk
+</code></pre>
+
+<!-- @case: only the last marker counts -->
+
+<p id="^two">text ^one</p>
+<p id="^blk2">^blk</p>
+
+<!-- @case: a marker on its own line after text is removed with the line ending -->
+
+<p id="^abc">Some text</p>
+
+<!-- @case: a marker after a hard break is removed with the break -->
+
+<p id="^abc">Some text</p>
+
+<!-- @case: a marker after a backslash break is removed with the break and the space before it -->
+
+<p id="^abc">Some text</p>
+
+<!-- @case: all the spaces before a marker are removed -->
+
+<p id="^abc">text</p>
+
+<!-- @case: a marker after emphasis names the paragraph -->
+
+<p id="^blk"><em>x</em></p>
+
+<!-- @case: a marker in a paragraph that spans lines names it -->
+
+<p id="^two-lines">The first line
+and the second</p>
+
+<!-- @case: a marker at the end of an ATX heading names the heading -->
+
+<h2 id="^heading-id">Heading</h2>
+
+<!-- @case: the closing sequence of an ATX heading is not text after the marker -->
+
+<h2 id="^closed">Heading</h2>
+
+<!-- @case: a marker at the end of a setext heading names the heading -->
+
+<h2 id="^setext-id">Setext heading</h2>
+<h1 id="^equals-id">Equals heading</h1>
+
+<!-- @case: a heading that is only a marker is named and empty -->
+
+<h1 id="^blk"></h1>
+<h2 id="^setext"></h2>
+
+<!-- @case: a marker in a tight list item names the item -->
+
+<ul>
+<li id="^item-1">Gemmy</li>
+<li>Unhelpful assistant</li>
+</ul>
+
+<!-- @case: a marker in an ordered list item names the item -->
+
+<ol>
+<li id="^first">First</li>
+<li>Second</li>
+</ol>
+
+<!-- @case: nested items each take their own marker -->
+
+<ul>
+<li id="^one">Item
+<ul>
+<li id="^two">Sub</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: a marker in a nested item names the innermost item -->
+
+<ul>
+<li>a
+<ul>
+<li id="^id">b</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: a marker on its own continuation line of a nested item names it -->
+
+<ul>
+<li>Item one
+<ul>
+<li id="^nested-id">Nested item</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: a marker alone in its own paragraph of a loose item names the item -->
+
+<ul>
+<li id="^id">
+<p>a</p>
+</li>
+</ul>
+
+<!-- @case: a list item that is only a marker is named and empty -->
+
+<ul>
+<li id="^only"></li>
+<li>b</li>
+</ul>
+
+<!-- @case: a marker on a lazy line after a list names the last item -->
+
+<ul>
+<li>one</li>
+<li id="^lazy">two</li>
+</ul>
+
+<!-- @case: a marker in a quote names the quote -->
+
+<blockquote id="^blk">
+<p>text</p>
+</blockquote>
+
+<!-- @case: a marker alone in a quote's last paragraph names the quote -->
+
+<blockquote id="^b">
+<p>x</p>
+</blockquote>
+
+<!-- @case: a marker on a list item inside a quote names the quote -->
+
+<blockquote id="^id">
+<ul>
+<li>a</li>
+<li>b</li>
+</ul>
+</blockquote>
+
+<!-- @case: a marker on a lazy line after a quote names the quote -->
+
+<blockquote id="^lazy-quote">
+<p>Some quoted text</p>
+</blockquote>
+
+<!-- @case: a marker in a nested quote names the outermost quote -->
+
+<blockquote id="^x">
+<p>outer</p>
+<blockquote>
+<p>inner</p>
+</blockquote>
+</blockquote>
+
+<!-- @case: a marker at the end of a heading in a quote names the quote -->
+
+<blockquote id="^h">
+<h2>Heading</h2>
+</blockquote>
+
+<!-- @case: a quotation, a marker line and a line after it are one paragraph -->
+
+<blockquote>
+<p>A quotation.
+^37066f
+Next.</p>
+</blockquote>
+
+<!-- @case: a marker alone after a paragraph names the paragraph -->
+
+<p id="^own">para</p>
+
+<!-- @case: a marker alone after a list names the list -->
+
+<ul id="^list">
+<li>x</li>
+</ul>
+
+<!-- @case: a marker alone after a quote names the quote -->
+
+<blockquote id="^quote-id">
+<p>A quoted block.</p>
+</blockquote>
+
+<!-- @case: a marker alone after a fenced code block names the code -->
+
+<pre><code class="language-js" id="^code">code
+</code></pre>
+
+<!-- @case: a marker alone after an indented code block names the code -->
+
+<p>para</p>
+<pre><code id="^indented">code
+</code></pre>
+
+<!-- @case: a marker alone after a thematic break names it -->
+
+<hr id="^rule">
+
+<!-- @case: a marker alone after a heading names the heading -->
+
+<h2 id="^title">Title</h2>
+
+<!-- @case: a marker alone after a link reference definition names the block before it -->
+
+<p id="^after-definition">para</p>
+
+<!-- @case: a marker alone at the start of the document names nothing -->
+
+<p>para</p>
+
+<!-- @case: a marker alone with nothing else names nothing -->
+
+
+
+<!-- @case: two markers alone in a row name the same block, the last one winning -->
+
+<p id="^second">para</p>
+
+<!-- @case: a block named twice takes the last marker -->
+
+<p id="^second">para</p>
+
+<!-- @case: two markers inside one quote name it, the last one winning -->
+
+<blockquote id="^item-two">
+<ul>
+<li>Item one</li>
+<li>Item two</li>
+</ul>
+</blockquote>
+
+<!-- @case: an identifier used twice stays with the block named last -->
+
+<p>x</p>
+<p id="^b">y</p>
+
+<!-- @case: an identifier taken from a block that a later marker renames stays with the block before -->
+
+<p id="^b">x</p>
+<p id="^c">y</p>
+
+<!-- @case: identifiers that are members of every object name their blocks -->
+
+<p id="^constructor">para</p>
+<p id="^toString">para</p>
+<p id="^hasOwnProperty">para</p>
+
+<!-- @case: an identifier with underscores is text -->
+
+<p>^<strong>proto</strong></p>
+
+<!-- @case: a marker in a heading of a list item names the heading -->
+
+<ul>
+<li>
+<h1 id="^h">Heading</h1>
+</li>
+</ul>
+
+<!-- @case: a marker at the very end of the document -->
+
+<p>para</p>
+<p id="^end">last</p>

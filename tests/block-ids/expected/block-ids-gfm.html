@@ -1,0 +1,56 @@
+<!-- @case: a marker in a table cell is text -->
+
+<table>
+<thead>
+<tr>
+<th>a ^x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b ^y</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: a marker alone after a table names the table -->
+
+<table id="^b">
+<thead>
+<tr>
+<th>x</th>
+</tr>
+</thead>
+</table>
+
+<!-- @case: a marker alone after a table with rows names the table -->
+
+<table id="^table-id">
+<thead>
+<tr>
+<th>x</th>
+<th>y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<!-- @case: a marker on a line after a table's last row is a row -->
+
+<table>
+<thead>
+<tr>
+<th>x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>^row</td>
+</tr>
+</tbody>
+</table>

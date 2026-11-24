@@ -15,9 +15,14 @@ export interface HastLike {
 export interface HastElementLike<C> {
   type: `element`;
   tagName: string;
-  properties: Record<string, string | string[]>;
+  properties: Record<string, string | string[] | false>;
   children: C[];
 }
+
+/**
+ * The property, set to `false`, that says a `<p>` is not a Markdown paragraph: a plugin built it as part of its own markup (a step's or an alert's title, a lightbox caption), so unwrap-images leaves it whole, as in markdown-it, where it is no paragraph token. A property, because it is what reaches the hast element from an mdast node's `hProperties` in remark and Sätteri alike (neither carries the rest of `data` over); `false`, because hast-util-to-html, Sätteri's output and hast-util-to-estree (MDX) print nothing for a property with that value.
+ */
+export const MARKDOWN_PARAGRAPH = `markdownParagraph`;
 
 // hast-util-whitespace: only the inter-element whitespace characters.
 const WHITESPACE = /^[ \t\n\f\r]*$/;
@@ -28,34 +33,116 @@ const isWhitespaceText = (node: HastLike): boolean =>
 export const isEmptyParagraph = (node: HastLike): boolean =>
   node.tagName === `p` && (node.children ?? []).every(isWhitespaceText);
 
-/**
- * A `<p>` whose content is only images (each possibly inside a link or a lightbox button) and whitespace: unwrap-images replaces it with its children.
- */
-export const isImageParagraph = (node: HastLike): boolean => {
-  // `image`: an image was found; `empty`: nothing but whitespace yet; `other`: anything else.
-  const scan = (
-    parent: HastLike,
-    inLink: boolean
-  ): `image` | `empty` | `other` => {
-    let result: `image` | `empty` = `empty`;
-    for (const child of parent.children ?? []) {
-      if (isWhitespaceText(child)) continue;
-      if (child.type !== `element`) return `other`;
-      if (child.tagName === `img`) {
-        result = `image`;
-        continue;
-      }
-      if (!inLink && (child.tagName === `a` || child.tagName === `button`)) {
-        const inner = scan(child, true);
-        if (inner === `other`) return `other`;
-        if (inner === `image`) result = `image`;
-        continue;
-      }
-      return `other`;
+// Adds the `<img>` elements in `parent` to `images`, each possibly inside a link or a lightbox button, and says whether `parent` holds nothing else but whitespace.
+const collectImages = (
+  parent: HastLike,
+  inLink: boolean,
+  images: HastLike[]
+): boolean => {
+  for (const child of parent.children ?? []) {
+    if (isWhitespaceText(child)) continue;
+    if (child.type !== `element`) return false;
+    if (child.tagName === `img`) {
+      images.push(child);
+      continue;
     }
-    return result;
-  };
-  return node.tagName === `p` && scan(node, false) === `image`;
+    if (
+      !inLink &&
+      (child.tagName === `a` || child.tagName === `button`) &&
+      collectImages(child, true, images)
+    ) {
+      continue;
+    }
+    return false;
+  }
+  return true;
+};
+
+// The images of a Markdown paragraph's `<p>` that holds only images and whitespace, in order; none for any other node.
+const paragraphImages = (node: HastLike): HastLike[] => {
+  const images: HastLike[] = [];
+  return node.tagName === `p` &&
+    node.properties?.[MARKDOWN_PARAGRAPH] !== false &&
+    collectImages(node, false, images)
+    ? images
+    : [];
+};
+
+/**
+ * A `<p>` whose content is only images (each possibly inside a link or a lightbox button) and whitespace: unwrap-images replaces it with its children. A `<p>` marked with {@link MARKDOWN_PARAGRAPH} is never one.
+ */
+export const isImageParagraph = (node: HastLike): boolean =>
+  paragraphImages(node).length > 0;
+
+type Property = [name: string, value: unknown];
+
+// The properties hast prints an attribute for: not those whose value is `undefined`, `null` or `false`.
+const setProperties = (node: HastLike): Property[] =>
+  Object.entries(node.properties ?? {}).filter(
+    ([, value]) => value !== undefined && value !== null && value !== false
+  );
+
+// Both name the class attribute: hast's own `className` holds a list, and an attributes plugin's `class` (remark's attrs) a space-separated string.
+const CLASS = new Set([`class`, `className`]);
+const SPACES = /[ \t\n\f\r]+/;
+const classNames = (value: unknown): unknown[] =>
+  value === undefined
+    ? []
+    : (Array.isArray(value) ? value : [value]).flatMap((name) =>
+        typeof name === `string`
+          ? name.split(SPACES).filter((part) => part !== ``)
+          : [name]
+      );
+
+// The image's properties with the paragraph's added: the image's own win, and the classes are joined, the image's own first, without duplicates, in the form the image's own are written (a list under `className`, a string under `class`). A new property follows the image's own, in the paragraph's order, as markdown-it appends an attribute to a token. Built from entries, so a property named `__proto__` stays a property.
+const withParagraphProperties = (
+  image: HastLike,
+  paragraph: readonly Property[]
+): Record<string, unknown> => {
+  const entries = setProperties(image);
+  for (const [key, value] of paragraph) {
+    if (CLASS.has(key)) {
+      const own = entries.find(([name]) => CLASS.has(name));
+      const names = [
+        ...new Set([...classNames(own?.[1]), ...classNames(value)])
+      ];
+      const entry: Property = own ?? [key, undefined];
+      entry[1] = entry[0] === `className` ? names : names.join(` `);
+      if (!own) entries.push(entry);
+    } else if (!entries.some(([name]) => name === key)) {
+      entries.push([key, value]);
+    }
+  }
+  return Object.fromEntries(entries);
+};
+
+/**
+ * What unwrap-images puts in place of a paragraph, or `undefined` when the paragraph stays. A `<p>` of only images (`isImageParagraph`) is replaced by its children. When it carries an attribute (an id from an attribute block or a block marker, a class, anything), its one image takes them all, also inside a link or a lightbox button, so a link to the paragraph's id still finds the image. A paragraph that carries one and holds several images stays: an id names one element, and a class on a group of images is about the group.
+ */
+export const unwrapImageParagraph = <C extends HastLike>(
+  node: HastLike & { children: readonly C[] }
+): C[] | undefined => {
+  const children: readonly C[] = node.children;
+  const images = paragraphImages(node);
+  const [image] = images;
+  if (!image) return undefined;
+  const carried = setProperties(node);
+  if (carried.length === 0) return [...children];
+  if (images.length > 1) return undefined;
+  const properties = withParagraphProperties(image, carried);
+  // New nodes, never a change to the image itself: the lightbox's dialog can share the image's properties, and only the image in the page takes the paragraph's attributes.
+  return children.map((child) =>
+    child === image
+      ? { ...child, properties }
+      : child.children?.includes(image)
+        ? {
+            ...child,
+            children: child.children.map((inner) =>
+              inner === image ? { ...inner, properties } : inner
+            )
+          }
+        : child
+  );
 };
 
 /** The rank of an `h1`–`h6` element, or `undefined`. */
@@ -170,7 +257,10 @@ export const lightboxDialog = <C extends HastLike>(
           {
             type: `element` as const,
             tagName: `p`,
-            properties: { className: [`markdown-lightbox-caption`] },
+            properties: {
+              className: [`markdown-lightbox-caption`],
+              [MARKDOWN_PARAGRAPH]: false as const
+            },
             children: caption
           }
         ]

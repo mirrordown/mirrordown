@@ -33,6 +33,10 @@ const cases = Object.values(recorded.cases).map(
     highlights: obsidian.projections.highlights,
     // Each task box's character, and whether it rendered checked.
     tasks: obsidian.projections.tasks,
+    // The identifier of each block Obsidian's metadata names (`^id`), without the position it records after an `@`.
+    blocks: obsidian.compute.blocks.map((block) =>
+      block.slice(0, block.lastIndexOf(`@`))
+    ),
     callouts: callouts(obsidian.html)
   })
 );

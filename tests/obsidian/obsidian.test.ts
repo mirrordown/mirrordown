@@ -17,6 +17,7 @@ interface Case {
   tags: string[];
   highlights: string[];
   tasks: Task[];
+  blocks: string[];
   callouts: string[];
 }
 
@@ -100,6 +101,16 @@ const facts: readonly {
       ].map(([, marker, checked]) =>
         marker === undefined ? (checked ? `x` : ` `) : text(marker)
       )
+  },
+  {
+    name: `blocks`,
+    why: `a link to a block finds the same identifiers its author can link to in Obsidian`,
+    // Which identifiers a page has, not which element holds each: Obsidian records a source range, and here an identifier is an element's id.
+    obsidian: ({ blocks }) => [...blocks].sort(),
+    ours: (html) =>
+      [...html.matchAll(/<[a-z][^>]*\sid="\^([^"]*)"/g)]
+        .map(([, id]) => text(id ?? ``))
+        .sort()
   }
 ];
 

@@ -1,0 +1,292 @@
+{
+ "agree": 3430,
+ "differ": {
+  "probe/escaped-block-id/bare-open": {
+   "markdown": "\\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/text-space-before": {
+   "markdown": "x \\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/text-nospace-before": {
+   "markdown": "x\\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/single-bracket-before": {
+   "markdown": "[\\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/emphasis-before": {
+   "markdown": "*x* \\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/heading-marker": {
+   "markdown": "# \\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/list-marker": {
+   "markdown": "- \\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-block-id/second-line": {
+   "markdown": "head\n\\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/block-id/leading-space": {
+   "markdown": " ^blk\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-delim/backtick-then-id": {
+   "markdown": "`Line.`^blk\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-delim/heading-backtick": {
+   "markdown": "## `Title`^blk\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-indent/three": {
+   "markdown": "   ^blk\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "fuzz/block-ref/14": {
+   "markdown": "^blk\n</div>\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "fuzz/emphasis/1": {
+   "markdown": "_under_^blk\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "fuzz/inline-footnote/4": {
+   "markdown": "[^[[a#\n\\[^1]\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "fuzz/footnote/10": {
+   "markdown": "[^1](u)\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-label/in-quote": {
+   "markdown": "> \\[^1\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-label/in-wikilink": {
+   "markdown": "[[\\[^1]\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/escaped-label/in-brackets": {
+   "markdown": "[\\[^1]]]\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/label-shape/block-id-then-destination": {
+   "markdown": "[^blk](u)\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/emphasis-wraps": {
+   "markdown": "*^blk*\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/underscore-wraps": {
+   "markdown": "_^blk_\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/strong-wraps": {
+   "markdown": "**^blk**\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/highlight-wraps": {
+   "markdown": "==^blk==\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/strike-wraps": {
+   "markdown": "~~^blk~~\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/text-then-wrapped": {
+   "markdown": "x *^blk*\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/content-beside-inside": {
+   "markdown": "*x ^blk*\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/in-quote": {
+   "markdown": "> *^blk*\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/in-list": {
+   "markdown": "1. ==^blk==\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/wrapped-trailing-space": {
+   "markdown": "*^blk* \n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-inline/wrapped-then-block": {
+   "markdown": "*^blk*\nnext\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/caret-link/link-with-def": {
+   "markdown": "[^1](u)\n\n[^1]: one\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/caret-link/link-angle-dest": {
+   "markdown": "[^1](<u>)\n",
+   "obsidian": [
+    "1"
+   ],
+   "ours": []
+  },
+  "probe/block-id-extent/alone-then-list": {
+   "markdown": "^blk\n- item\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-wrapper/strong-trailing-period": {
+   "markdown": "**^blk**.\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-wrapper/em-trailing-period": {
+   "markdown": "*^blk*.\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-wrapper/nested-trailing-period": {
+   "markdown": "_*^blk*_.\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-tail/wrapper-then-word": {
+   "markdown": "*^blk* word\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "probe/block-id-tail/wrapper-then-comma-word": {
+   "markdown": "*^blk*, word\n",
+   "obsidian": [
+    "blk"
+   ],
+   "ours": []
+  },
+  "hunt/inline-footnote-double-parse/0": {
+   "markdown": "inline ^[^9] real[^7]\n\n[^7]: body\n",
+   "obsidian": [
+    "9"
+   ],
+   "ours": []
+  },
+  "hunt/inline-footnote-double-parse/1": {
+   "markdown": "inline ^[^note] real[^1]\n\n[^1]: body\n",
+   "obsidian": [
+    "note"
+   ],
+   "ours": []
+  }
+ }
+}

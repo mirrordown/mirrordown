@@ -41,8 +41,6 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
       `13`,
       `16`,
       `19`,
-      `23`,
-      `27`,
       `39`,
       `40`,
       `44`,
@@ -57,13 +55,8 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
   [`8`, { state: `conforms` }],
   // Callouts: the spec requires no particular markup, and github-alerts renders these.
   ...all([`28`, `29`, `30`, `31`, `32`], { state: `conforms` }),
-  [
-    `33`,
-    {
-      state: `diverges`,
-      note: `"> [!info]nospace" is an alert titled "nospace"; the spec, by its own choice, makes it a plain quote.`
-    }
-  ],
+  // Text straight against the marker leaves a quote, as the spec chose and Obsidian does.
+  [`33`, { state: `conforms` }],
   // The link itself is CommonMark's; the internal-link class is optional.
   [`67`, { state: `conforms` }],
 
@@ -90,10 +83,22 @@ export const status: ReadonlyMap<string, Status> = new Map<string, Status>([
     state: `pending`,
     note: `Comments (W3-A).`
   }),
-  ...all([`18`, `20`, `21`, `22`, `24`, `25`, `26`], {
-    state: `pending`,
-    note: `Block identifiers (W3-B).`
-  }),
+  // Block identifiers: the spec's data-block-id is an id here, written with its caret (id="^37066d"), so a link to "#^37066d" finds the block.
+  ...all([`18`, `20`, `21`, `22`, `24`, `25`, `26`], { state: `conforms` }),
+  [
+    `23`,
+    {
+      state: `diverges`,
+      note: `A marker with no block before it is removed and names nothing, as Obsidian renders it; the spec, by its own choice, keeps it as text.`
+    }
+  ],
+  [
+    `27`,
+    {
+      state: `diverges`,
+      note: `A marker at the end of a heading names the heading, as Obsidian does; the spec, by its own choice, reads it as text.`
+    }
+  ],
 
   ...all([`36`, `36-minimal`, `37`], {
     state: `deferred`,

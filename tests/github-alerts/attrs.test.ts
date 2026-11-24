@@ -201,6 +201,15 @@ describe.each(engines)(
         alert(' foo" data-alert="note" id="bar"', "Note", "<p>body</p>")
       ],
       [
+        "with metadata, after the alert's metadata",
+        "> [!NOTE|wide]\n> body\n{.foo #bar}",
+        alert(
+          ' foo" data-alert="note" data-alert-metadata="wide" id="bar"',
+          "Note",
+          "<p>body</p>"
+        )
+      ],
+      [
         "after a body of several blocks",
         "> [!NOTE]\n> body\n>\n> more\n{.foo}",
         alert(' foo" data-alert="note"', "Note", "<p>body</p><p>more</p>")
@@ -277,19 +286,13 @@ describe("github-alerts + attrs: a block ending the title line, which the engine
     expect(sat(input)).toBe(text);
   });
 
-  it("right after the marker, where markdown-it puts the type's own title back", () => {
+  // A block written straight against the marker is text against it, so the quote is no alert, in every engine: this was once a third way the engines differed.
+  it("right after the marker, where no engine reads an alert", () => {
     const input = "> [!NOTE]{.foo}\n> body";
-    const text = alert(
-      '" data-alert="note"',
-      "{.foo}",
-      "<p>body</p>",
-      "{.foo}"
-    );
-    expect(mdit(input)).toBe(
-      '<div class="markdown-alert" data-alert="note"><p class="markdown-alert-title foo" aria-label="Note">Note</p><p>body</p></div>'
-    );
-    expect(remd(input)).toBe(text);
-    expect(sat(input)).toBe(text);
+    const quote = "<blockquote><p>[!NOTE]{.foo}\nbody</p></blockquote>";
+    expect(mdit(input)).toBe(quote);
+    expect(remd(input)).toBe(quote);
+    expect(sat(input)).toBe(quote);
   });
 });
 

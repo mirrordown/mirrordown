@@ -1253,6 +1253,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-block-ids@workspace:^, @mirrordown/mdit-block-ids@workspace:packages/mdit-block-ids":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-block-ids@workspace:packages/mdit-block-ids"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-caption@workspace:*, @mirrordown/mdit-caption@workspace:^, @mirrordown/mdit-caption@workspace:packages/mdit-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-caption@workspace:packages/mdit-caption"
@@ -1573,6 +1585,7 @@ __metadata:
     "@mirrordown/mdit-abbr": "workspace:^"
     "@mirrordown/mdit-attrs": "workspace:^"
     "@mirrordown/mdit-autolink-headings": "workspace:^"
+    "@mirrordown/mdit-block-ids": "workspace:^"
     "@mirrordown/mdit-caption": "workspace:^"
     "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
@@ -1613,6 +1626,7 @@ __metadata:
     "@mirrordown/remd-abbr": "workspace:^"
     "@mirrordown/remd-attrs": "workspace:^"
     "@mirrordown/remd-autolink-headings": "workspace:^"
+    "@mirrordown/remd-block-ids": "workspace:^"
     "@mirrordown/remd-caption": "workspace:^"
     "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
@@ -1655,6 +1669,7 @@ __metadata:
   dependencies:
     "@mirrordown/sat-abbr": "workspace:^"
     "@mirrordown/sat-autolink-headings": "workspace:^"
+    "@mirrordown/sat-block-ids": "workspace:^"
     "@mirrordown/sat-caption": "workspace:^"
     "@mirrordown/sat-copy-code": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
@@ -1720,6 +1735,20 @@ __metadata:
     unist-util-visit: "catalog:"
   peerDependencies:
     unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-block-ids@workspace:^, @mirrordown/remd-block-ids@workspace:packages/remd-block-ids":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-block-ids@workspace:packages/remd-block-ids"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    unified: "catalog:"
+    vfile: "npm:^6.0.3"
+  peerDependencies:
+    unified: ^11.0.0
+    vfile: ^6.0.0
   languageName: unknown
   linkType: soft
 
@@ -2105,6 +2134,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-autolink-headings@workspace:packages/sat-autolink-headings"
   dependencies:
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-block-ids@workspace:^, @mirrordown/sat-block-ids@workspace:packages/sat-block-ids":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-block-ids@workspace:packages/sat-block-ids"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
   peerDependencies:
     satteri: ^0.11.3

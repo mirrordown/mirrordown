@@ -2,6 +2,7 @@ import {
   ALERT_ALIASES,
   DEFAULT_TITLE,
   ICONS,
+  MARKDOWN_PARAGRAPH,
   createAlertResolver,
   splitAlertParagraph,
   type AlertOptions,
@@ -57,7 +58,9 @@ export const satteriGithubAlerts =
             hName: alert.fold ? "summary" : "p",
             hProperties: {
               className: [`${containerClass}-title`],
-              ariaLabel: title
+              // markdown-it and remark label a title by its text without the spaces around it, which a default title can have; one that is only spaces keeps them.
+              ariaLabel: title.trim() || title,
+              [MARKDOWN_PARAGRAPH]: false
             }
           },
           children: [
@@ -94,6 +97,7 @@ export const satteriGithubAlerts =
                 ...(Array.isArray(className) ? className : [])
               ],
               dataAlert: type,
+              ...(alert.metadata ? { dataAlertMetadata: alert.metadata } : {}),
               ...(alert.fold === "+" ? { open: true } : {}),
               ...attributes
             }

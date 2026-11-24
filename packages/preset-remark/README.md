@@ -82,6 +82,7 @@ mirrordown({
 | `abbr`              | `*[HTML]: HyperText…`                       | `@mirrordown/remd-abbr`               |
 | `attrs`             | `{.class #id}`                              | `@mirrordown/remd-attrs`              |
 | `autolinkHeadings`  | anchor links on headings                    | `@mirrordown/remd-autolink-headings`  |
+| `blockIds`          | `^id` at the end of a block                 | `@mirrordown/remd-block-ids`          |
 | `caption`           | `~: caption` after a block                  | `@mirrordown/remd-caption`            |
 | `copyCode`          | a copy button on code blocks                | `@mirrordown/remd-copy-code`          |
 | `definitionList`    | `Term` / `: Definition`                     | `@mirrordown/remd-definition-list`    |

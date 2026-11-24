@@ -1,5 +1,9 @@
 import type { Features, PluginFactoryContext } from "satteri";
 import { satteriAbbr, type AbbrPlugin } from "@mirrordown/sat-abbr";
+import {
+  satteriBlockIds,
+  type BlockIdsPlugin
+} from "@mirrordown/sat-block-ids";
 import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
   satteriCopyCode,
@@ -107,6 +111,7 @@ export interface MirrordownOptions {
   /** Sätteri's built-in `attributes` feature, which takes no options. */
   attrs?: boolean;
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
+  blockIds?: boolean;
   caption?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   /** Sätteri's built-in `definitionList` feature. */
@@ -151,6 +156,7 @@ export interface MirrordownPreset {
   features: Features;
   mdastPlugins: Array<
     | Factory<AbbrPlugin>
+    | Factory<BlockIdsPlugin>
     | Factory<CaptionPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
@@ -234,6 +240,8 @@ export const mirrordown = (
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
       // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.
       ...(options.tags === false ? [] : [satteriTags(settings(options.tags))]),
+      // Block ids after steps and tabs, whose bodies are written as quotes but are not quotes to a marker, and before alerts, which then build their title from a line the marker is already off and keep the id the quote was given. Sätteri reads attribute blocks before any plugin, so an id written with `{#name}` is the block's; as an mdast plugin it runs before slug: a heading a marker names keeps that id.
+      ...(options.blockIds === false ? [] : [satteriBlockIds()]),
       ...(options.githubAlerts === false
         ? []
         : [satteriGithubAlerts(settings(options.githubAlerts))]),

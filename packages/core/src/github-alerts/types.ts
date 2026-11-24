@@ -72,11 +72,7 @@ export const DEFAULT_TITLE: Record<AlertType, string> = {
 
 /** Options shared by the GitHub alerts plugins for every engine. */
 export interface AlertOptions {
-  /**
-   * Extra alert types beyond the built-in set. Keys are lowercase keywords
-   * (including any aliases you want), values are the canonical type string
-   * that appears in the data-alert attribute and CSS class.
-   */
+  /** Extra alert types beyond the built-in set. Keys are keywords (including any aliases you want), normalised as a `[!TYPE]` keyword is: trimmed, each run of whitespace as `-`, lowercased unless `matchCaseInsensitive` is false. Values are the canonical type string that appears in the data-alert attribute and CSS class. */
   types?: Record<string, string>;
   /** Default display titles, keyed by canonical type: a built-in one, or one that `types` adds. */
   titles?: Partial<Record<AlertType, string>> & Partial<Record<string, string>>;
@@ -86,4 +82,6 @@ export interface AlertOptions {
   icons?: boolean;
   /** CSS class applied to the alert container. Default: "markdown-alert". */
   containerClass?: string;
+  /** Set false to keep a quote whose keyword names no type, built-in or from `types`, a quote. Default: true, where such a keyword made only of letters, marks, numbers, `_` and `-` is an alert of its own type (`[!custom-type]` gives `data-alert="custom-type"`). */
+  fallback?: boolean;
 }

@@ -13,8 +13,10 @@ export {
   ICONS,
   createAlertResolver,
   isAlertMarkerLine,
+  matchAlertMarker,
   plainText,
   splitAlertParagraph,
+  type AlertMarker,
   type AlertOptions,
   type AlertParagraph,
   type AlertResolver,
@@ -48,6 +50,7 @@ export {
 export { scriptSyntax, type ScriptSyntax } from "./scripts.js";
 export {
   LIGHTBOX_MARKER,
+  MARKDOWN_PARAGRAPH,
   headingRank,
   isEmptyParagraph,
   isImageParagraph,
@@ -56,6 +59,7 @@ export {
   lightboxId,
   lightboxTrigger,
   sectionize,
+  unwrapImageParagraph,
   type HastElementLike,
   type HastLike
 } from "./hast.js";
@@ -147,3 +151,14 @@ export {
   type TaskMarkerResolver,
   type TaskPoint
 } from "./task-lists.js";
+export {
+  blankAfterMarker,
+  cutMarker,
+  processBlockIds,
+  resolveBlockIds,
+  titleMarkerWritten,
+  trailingMarker,
+  trimBlankEnd,
+  type BlockIdEdits,
+  type BlockMarker
+} from "./block-ids.js";

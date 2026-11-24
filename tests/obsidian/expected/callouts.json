@@ -1,13 +1,6 @@
 {
- "agree": 3460,
+ "agree": 3467,
  "differ": {
-  "callout/unknown-type": {
-   "markdown": "> [!custom] Custom\n> Body\n",
-   "obsidian": [
-    ""
-   ],
-   "ours": []
-  },
   "fuzz/embed/64": {
    "markdown": "  ](![[ ]]\n> [!note] $**strong**$ ^[i\n",
    "obsidian": [
@@ -31,51 +24,6 @@
     "",
     ""
    ]
-  },
-  "callout/type-inner-whitespace": {
-   "markdown": "> [! note]\n> a\n\n> [!note ]\n> b\n",
-   "obsidian": [
-    "",
-    ""
-   ],
-   "ours": []
-  },
-  "callout/attached-title": {
-   "markdown": "> [!note]x\n> y\n",
-   "obsidian": [],
-   "ours": [
-    ""
-   ]
-  },
-  "callout/fold-title-boundary": {
-   "markdown": "> [!note]-x\n> a\n\n> [!note]+x\n> b\n",
-   "obsidian": [],
-   "ours": [
-    "-",
-    "+"
-   ]
-  },
-  "callout/nonstandard-fold-markers": {
-   "markdown": "> [!note]± T\n> a\n\n> [!note]-+ T\n> b\n",
-   "obsidian": [],
-   "ours": [
-    "",
-    "-"
-   ]
-  },
-  "callout/custom-type": {
-   "markdown": "> [!project-status]\n> Body\n",
-   "obsidian": [
-    ""
-   ],
-   "ours": []
-  },
-  "callout/type-with-spaces": {
-   "markdown": "> [!type with spaces]\n> Body\n",
-   "obsidian": [
-    ""
-   ],
-   "ours": []
   },
   "callout/marker-after-empty-quote-line": {
    "markdown": ">\n> [!note]\n> x\n",
