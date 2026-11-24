@@ -48,12 +48,15 @@ const withParagraphAttrs = (
 /** markdown-it plugin that unwraps block-level images out of their paragraph, giving the paragraph's attributes to its one image. */
 export const unwrapImages: PluginSimple = (md) => {
   md.core.ruler.push("unwrap_images", (state) => {
+    // The tokens are written to a new stream in one pass: putting each paragraph's children in its place in the old one moved every later token once per paragraph, which made a document of many image paragraphs quadratic.
+    const { tokens } = state;
+    const kept: Token[] = [];
     let i = 0;
 
-    while (i < state.tokens.length) {
-      const open = state.tokens[i];
-      const inline = state.tokens[i + 1];
-      const close = state.tokens[i + 2];
+    while (i < tokens.length) {
+      const open = tokens[i];
+      const inline = tokens[i + 1];
+      const close = tokens[i + 2];
 
       if (
         open.type !== "paragraph_open" ||
@@ -62,6 +65,7 @@ export const unwrapImages: PluginSimple = (md) => {
         // oxlint-disable-next-line typescript/no-unnecessary-condition
         close?.type !== "paragraph_close"
       ) {
+        kept.push(open);
         i++;
         continue;
       }
@@ -72,7 +76,8 @@ export const unwrapImages: PluginSimple = (md) => {
 
       // A paragraph that carries an attribute and holds several images stays: an id names one element, and a class on a group of images is about the group.
       if (images.length === 0 || (carried.length > 0 && images.length > 1)) {
-        i++;
+        kept.push(open, inline, close);
+        i += 3;
         continue;
       }
 
@@ -87,8 +92,10 @@ export const unwrapImages: PluginSimple = (md) => {
       }
 
       // Everything the paragraph held takes its place, the whitespace between images included: remark and Sätteri keep it, and two inline images with a gap are not two that touch.
-      state.tokens.splice(i, 3, ...children);
-      i += children.length;
+      for (const child of children) kept.push(child);
+      i += 3;
     }
+
+    state.tokens = kept;
   });
 };
