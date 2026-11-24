@@ -108,7 +108,7 @@ const placeSiblingBlocks = (
       const before = parent.children[index - 1];
       const prev = before && (removed.get(before) ?? before);
       if (!prev || !takes(prev)) return;
-      applyAttrs(prev as AttrNode, content, range, allowed);
+      applyAttrs(prev, content, range, allowed);
       removed.set(node, prev);
       parents.add(parent);
       return SKIP;
