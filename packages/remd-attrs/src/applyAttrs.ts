@@ -57,7 +57,8 @@ export const applyAttrs = (
     } else if (key === "css-module") {
       const existing = props["css-module"] as string | undefined;
       props["css-module"] = existing ? `${existing} ${value}` : value;
-    } else {
+    } else if (!(key.toLowerCase() in Object.prototype)) {
+      // hast-util-to-html looks every name up in property-information's table of HTML names after lower-casing it, and that table is a plain object: a name that lower-cases to a member every object inherits (`constructor`, `__proto__`) is found there, resolves to nothing, and the serializer throws for the whole document. Such a name is left out; markdown-it and Sätteri print it.
       props[key] = value;
     }
   }
