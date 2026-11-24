@@ -41,6 +41,7 @@ export const features: ReadonlyArray<{
     input: "> [!NOTE]\n> Body",
     marker: "markdown-alert"
   },
+  { key: "imageSize", input: "![Alt|100](pic.png)", marker: 'width="100"' },
   { key: "ins", input: "a ++new++ b", marker: "<ins>" },
   { key: "kbd", input: "[[Ctrl]]", marker: "<kbd>" },
   { key: "lightbox", input: "!![Alt](pic.png)", marker: "<dialog" },

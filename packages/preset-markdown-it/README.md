@@ -66,6 +66,7 @@ md.use(mirrordown, {
 | `del`               | `--deleted--`                               | `@mirrordown/mdit-del`                |
 | `fileTree`          | ` ```filetree ` file trees                  | `@mirrordown/mdit-file-tree`          |
 | `githubAlerts`      | `> [!NOTE]`                                 | `@mirrordown/mdit-github-alerts`      |
+| `imageSize`         | `![alt\|100x145](image.png)`                | `@mirrordown/mdit-image-size`         |
 | `ins`               | `++inserted++`                              | `@mirrordown/mdit-ins`                |
 | `kbd`               | `[[Ctrl]]`                                  | `@mirrordown/mdit-kbd`                |
 | `lightbox`          | `!![alt](image.png)`                        | `@mirrordown/mdit-lightbox`           |

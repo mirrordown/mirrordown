@@ -1323,6 +1323,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@mirrordown/mdit-image-size@workspace:^, @mirrordown/mdit-image-size@workspace:packages/mdit-image-size":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-image-size@workspace:packages/mdit-image-size"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
 "@mirrordown/mdit-inline-svg@workspace:packages/mdit-inline-svg":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-inline-svg@workspace:packages/mdit-inline-svg"
@@ -1555,6 +1567,7 @@ __metadata:
     "@mirrordown/mdit-del": "workspace:^"
     "@mirrordown/mdit-file-tree": "workspace:^"
     "@mirrordown/mdit-github-alerts": "workspace:^"
+    "@mirrordown/mdit-image-size": "workspace:^"
     "@mirrordown/mdit-ins": "workspace:^"
     "@mirrordown/mdit-kbd": "workspace:^"
     "@mirrordown/mdit-lightbox": "workspace:^"
@@ -1593,6 +1606,7 @@ __metadata:
     "@mirrordown/remd-del": "workspace:^"
     "@mirrordown/remd-file-tree": "workspace:^"
     "@mirrordown/remd-github-alerts": "workspace:^"
+    "@mirrordown/remd-image-size": "workspace:^"
     "@mirrordown/remd-ins": "workspace:^"
     "@mirrordown/remd-kbd": "workspace:^"
     "@mirrordown/remd-lightbox": "workspace:^"
@@ -1632,6 +1646,7 @@ __metadata:
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-file-tree": "workspace:^"
     "@mirrordown/sat-github-alerts": "workspace:^"
+    "@mirrordown/sat-image-size": "workspace:^"
     "@mirrordown/sat-ins": "workspace:^"
     "@mirrordown/sat-kbd": "workspace:^"
     "@mirrordown/sat-lightbox": "workspace:^"
@@ -1771,6 +1786,19 @@ __metadata:
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/hast": "catalog:"
+    "@types/mdast": "catalog:"
+    unified: "catalog:"
+    unist-util-visit: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-image-size@workspace:^, @mirrordown/remd-image-size@workspace:packages/remd-image-size":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-image-size@workspace:packages/remd-image-size"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
     unified: "catalog:"
     unist-util-visit: "catalog:"
@@ -2100,6 +2128,17 @@ __metadata:
 "@mirrordown/sat-github-alerts@workspace:^, @mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-github-alerts@workspace:packages/sat-github-alerts"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-image-size@workspace:^, @mirrordown/sat-image-size@workspace:packages/sat-image-size":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-image-size@workspace:packages/sat-image-size"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"

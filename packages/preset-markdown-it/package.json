@@ -33,6 +33,7 @@
     "@mirrordown/mdit-del": "workspace:^",
     "@mirrordown/mdit-file-tree": "workspace:^",
     "@mirrordown/mdit-github-alerts": "workspace:^",
+    "@mirrordown/mdit-image-size": "workspace:^",
     "@mirrordown/mdit-ins": "workspace:^",
     "@mirrordown/mdit-kbd": "workspace:^",
     "@mirrordown/mdit-lightbox": "workspace:^",

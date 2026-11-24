@@ -15,6 +15,7 @@ import {
   githubAlerts,
   type AlertOptions
 } from "@mirrordown/mdit-github-alerts";
+import { imageSize } from "@mirrordown/mdit-image-size";
 import { ins } from "@mirrordown/mdit-ins";
 import { kbd } from "@mirrordown/mdit-kbd";
 import { lightbox, type LightboxOptions } from "@mirrordown/mdit-lightbox";
@@ -47,6 +48,7 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
@@ -101,6 +103,8 @@ export const mirrordown = (
         };
 
   on(options.abbr, abbr);
+  // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Before attrs, whose rule sits there too: an attribute block's `title` then follows the size, as in remark and Sätteri.
+  on(options.imageSize, imageSize);
   // Before slug, so explicit `{#id}` attributes win.
   configured(options.attrs, attrs);
   on(options.definitionList, dl);

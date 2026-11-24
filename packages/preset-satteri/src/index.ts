@@ -29,6 +29,10 @@ import {
   type GithubAlertsPlugin
 } from "@mirrordown/sat-github-alerts";
 import { satteriDel, type DelPlugin } from "@mirrordown/sat-del";
+import {
+  satteriImageSize,
+  type ImageSizePlugin
+} from "@mirrordown/sat-image-size";
 import { satteriIns, type InsPlugin } from "@mirrordown/sat-ins";
 import { satteriKbd, type KbdPlugin } from "@mirrordown/sat-kbd";
 import {
@@ -105,6 +109,7 @@ export interface MirrordownOptions {
   del?: boolean;
   fileTree?: boolean | FileTreeOptions;
   githubAlerts?: boolean | AlertOptions;
+  imageSize?: boolean;
   ins?: boolean;
   kbd?: boolean;
   lightbox?: boolean | LightboxOptions;
@@ -143,6 +148,7 @@ export interface MirrordownPreset {
     | Factory<CaptionPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
+    | Factory<ImageSizePlugin>
     | Factory<InsPlugin>
     | Factory<KbdPlugin>
     | Factory<MarkPlugin>
@@ -212,6 +218,8 @@ export const mirrordown = (
       ...(options.steps === false
         ? []
         : [satteriSteps(settings(options.steps))]),
+      // After prompt previews and ruby, which make image nodes, so it sizes theirs too. Before the plugins that wrap an image or read its alt: spoiler, tabs and alerts (whose labels are read from the alt when they run), caption, and lightbox and unwrap-images among the hast plugins.
+      ...(options.imageSize === false ? [] : [satteriImageSize()]),
       ...(options.spoiler === false ? [] : [satteriSpoiler()]),
       ...(options.tabs === false ? [] : [satteriTabs(settings(options.tabs))]),
       // After the plugins whose spans a tag can open, and before abbr, as in markdown-it. Before alerts: an alert puts its icon at the start of its title, and a tag that starts the title (`> [!NOTE] #tag`) would then no longer start its content. Sätteri reads attribute blocks in its parser, so they are gone before any plugin runs.

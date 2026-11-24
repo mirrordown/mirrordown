@@ -37,6 +37,7 @@ const slugs = [
   "del",
   "file-tree",
   "github-alerts",
+  "image-size",
   "ins",
   "kbd",
   "lightbox",
