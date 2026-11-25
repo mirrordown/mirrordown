@@ -33,6 +33,7 @@ const slugs = [
   "autolink-headings",
   "block-ids",
   "caption",
+  "cjk-friendly",
   "copy-code",
   "definition-list",
   "del",
