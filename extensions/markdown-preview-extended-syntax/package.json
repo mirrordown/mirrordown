@@ -18,12 +18,14 @@
     "saeris.markdown-abbr",
     "saeris.markdown-attributes",
     "saeris.markdown-autolink-headings",
+    "saeris.markdown-block-ids",
     "saeris.markdown-caption",
     "saeris.markdown-definition-list",
     "saeris.markdown-del",
     "saeris.markdown-denden-furigana",
     "saeris.markdown-file-tree",
     "saeris.markdown-github-alerts",
+    "saeris.markdown-image-size",
     "saeris.markdown-inline-svg",
     "saeris.markdown-ins",
     "saeris.markdown-keyboard",
@@ -39,6 +41,7 @@
     "saeris.markdown-superscript",
     "saeris.markdown-tab-icons",
     "saeris.markdown-tabs",
+    "saeris.markdown-task-lists",
     "saeris.markdown-unwrap-images"
   ],
   "engines": {
