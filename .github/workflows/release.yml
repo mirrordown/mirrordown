@@ -22,11 +22,9 @@ jobs:
           node-version: "24"
           cache: true
 
-      # The VSCode extensions bundle the plugin source, so their build (vp pack)
-      # needs the mdit-* dist present, otherwise vp pack silently externalizes
-      # the plugin and ships a broken vsix. Build those dists only when an
-      # extension will actually publish (its <name>@<version> tag is missing) —
-      # a package-only release/retry skips this entirely.
+      # The VSCode extensions bundle the plugin source, so their build (vp pack) needs the dist of everything they import present: the mdit-* plugin, and the core package the plugins import. Where a dist is missing, vp pack only warns, leaves the import in the bundle as a `require`, and ships a vsix that fails to load. Build those dists only when an extension will actually publish (its <name>@<version> tag is missing): a package-only release or retry skips this entirely.
+      #
+      # Then bundle every extension as its release build will, and stop before anything is published if one would ship an import it does not contain. Core was missing from this step until 2026-11-25, when a release that bumped no package published nine extensions with `require("@mirrordown/core")`.
       - name: Pre-build plugin dists for extension bundling
         run: |
           need=0
@@ -37,7 +35,13 @@ jobs:
           done
           if [ "$need" = 1 ]; then
             echo "An extension needs publishing — building plugin dists"
+            (cd packages/core && vp pack)
             for d in packages/mdit-*/; do (cd "$d" && vp pack); done
+            for ext in extensions/*/; do
+              [ -f "$ext/vite.config.ts" ] || continue
+              (cd "$ext" && vp pack)
+            done
+            node scripts/check-extension-bundles.mjs
           else
             echo "No extension to publish — skipping plugin pre-build"
           fi
