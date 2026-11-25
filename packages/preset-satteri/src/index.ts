@@ -6,6 +6,10 @@ import {
 } from "@mirrordown/sat-block-ids";
 import { satteriCaption, type CaptionPlugin } from "@mirrordown/sat-caption";
 import {
+  satteriCjkBreaks,
+  type CjkBreaksPlugin
+} from "@mirrordown/sat-cjk-breaks";
+import {
   satteriCopyCode,
   type CopyCodeOptions,
   type CopyCodePlugin
@@ -113,6 +117,7 @@ export interface MirrordownOptions {
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   blockIds?: boolean;
   caption?: boolean;
+  cjkBreaks?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   /** Sätteri's built-in `definitionList` feature. */
   definitionList?: boolean;
@@ -158,6 +163,7 @@ export interface MirrordownPreset {
     | Factory<AbbrPlugin>
     | Factory<BlockIdsPlugin>
     | Factory<CaptionPlugin>
+    | Factory<CjkBreaksPlugin>
     | Factory<DelPlugin>
     | Factory<GithubAlertsPlugin>
     | Factory<ImageSizePlugin>
@@ -220,7 +226,7 @@ export const mirrordown = (
 
   return {
     features,
-    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Task lists before the inline plugins: they read an item's text without its box, as they read the tasks GFM has read. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption last, after the containers whose blocks it captions.
+    // Prompt previews first: the plugins after them see a prompt's preview as part of the page. Then ruby: it re-reads its blocks from source, which nodes built by other plugins don't have. Task lists before the inline plugins: they read an item's text without its box, as they read the tasks GFM has read. Kbd before del, ins, mark and spoiler: a key's brackets isolate the delimiters inside it, as in markdown-it. Tabs after the inline plugins: a panel's aria-label is its label's text when tabs renders, so they must have run. Alerts after the inline plugins for the same reason (a title's aria-label), and after steps and tabs, whose headers take the marker line directly under them as body text. Caption after the containers whose blocks it captions, and cjk-breaks after everything.
     mdastPlugins: [
       ...(options.prompt === false ? [] : [satteriPromptPreview()]),
       ...(options.ruby === false ? [] : [satteriRuby(settings(options.ruby))]),
@@ -248,7 +254,9 @@ export const mirrordown = (
       // After the delimiter plugins and alerts, as markdown-it applies abbreviations once inline parsing is done.
       ...(options.abbr === false ? [] : [satteriAbbr()]),
       // After the containers, whose blocks it captions.
-      ...(options.caption === false ? [] : [satteriCaption()])
+      ...(options.caption === false ? [] : [satteriCaption()]),
+      // Last: the plugins before it find their syntax by the lines of a text node (tabs, steps, alerts, tags, abbr, caption) or build the spans it reads through (kbd, mark, ruby and the rest), as markdown-it has parsed all of them before its rule runs.
+      ...(options.cjkBreaks === false ? [] : [satteriCjkBreaks()])
     ],
     // In plugin order: mermaid-pele first (the plugins after it see the diagrams' <svg>, and copy-code no longer sees them as code blocks), then file-tree and prompt (copy-code no longer sees the trees or prompts as code blocks either), sectionize before slug and autolink-headings (they still find the nested headings), lightbox before unwrap-images (it drops the text its marker empties), squeeze-paragraphs last (it removes the residue of the others).
     hastPlugins: [

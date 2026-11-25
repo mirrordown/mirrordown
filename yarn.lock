@@ -1561,7 +1561,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks":
+"@mirrordown/mdit-cjk-breaks@workspace:^, @mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks"
   dependencies:
@@ -1883,6 +1883,7 @@ __metadata:
     "@mirrordown/mdit-autolink-headings": "workspace:^"
     "@mirrordown/mdit-block-ids": "workspace:^"
     "@mirrordown/mdit-caption": "workspace:^"
+    "@mirrordown/mdit-cjk-breaks": "workspace:^"
     "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
     "@mirrordown/mdit-del": "workspace:^"
@@ -1924,6 +1925,7 @@ __metadata:
     "@mirrordown/remd-autolink-headings": "workspace:^"
     "@mirrordown/remd-block-ids": "workspace:^"
     "@mirrordown/remd-caption": "workspace:^"
+    "@mirrordown/remd-cjk-breaks": "workspace:^"
     "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
     "@mirrordown/remd-del": "workspace:^"
@@ -1967,6 +1969,7 @@ __metadata:
     "@mirrordown/sat-autolink-headings": "workspace:^"
     "@mirrordown/sat-block-ids": "workspace:^"
     "@mirrordown/sat-caption": "workspace:^"
+    "@mirrordown/sat-cjk-breaks": "workspace:^"
     "@mirrordown/sat-copy-code": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-file-tree": "workspace:^"
@@ -2062,7 +2065,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/remd-cjk-breaks@workspace:packages/remd-cjk-breaks":
+"@mirrordown/remd-cjk-breaks@workspace:^, @mirrordown/remd-cjk-breaks@workspace:packages/remd-cjk-breaks":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-cjk-breaks@workspace:packages/remd-cjk-breaks"
   dependencies:
@@ -2472,7 +2475,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/sat-cjk-breaks@workspace:packages/sat-cjk-breaks":
+"@mirrordown/sat-cjk-breaks@workspace:^, @mirrordown/sat-cjk-breaks@workspace:packages/sat-cjk-breaks":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-cjk-breaks@workspace:packages/sat-cjk-breaks"
   dependencies:
