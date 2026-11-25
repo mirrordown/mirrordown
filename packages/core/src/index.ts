@@ -25,6 +25,15 @@ export {
 } from "./github-alerts/index.js";
 export { createDelimitedTransform, type DelimiterMarker } from "./delimited.js";
 export {
+  cjkFriendlyEnabled,
+  delimiterFlanking,
+  enableCjkFriendly,
+  type CharacterClass,
+  type Flanking,
+  type Neighbour
+} from "./flanking.js";
+export { micromarkAfter, micromarkBefore } from "./flanking-micromark.js";
+export {
   HIGHLIGHT_MARKERS,
   createHighlightMarkers,
   type HighlightMarker,
