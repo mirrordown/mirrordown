@@ -14,44 +14,52 @@ const extensionsDir = join(repoRoot, "extensions");
 const ALLOWED = new Set(["vscode"]);
 const REQUIRE = /\brequire\(\s*["'`]([^"'`]+)["'`]\s*\)/g;
 
-const faults = [];
-let checked = 0;
+/** The faults of one bundle: missing, or requiring something it does not contain. */
+const bundleFaults = (name, bundle) => {
+  const path = join(extensionsDir, name, bundle);
+  if (!existsSync(path)) {
+    return [`${name}: ${bundle} does not exist (was it built?)`];
+  }
+  const required = new Set(
+    [...readFileSync(path, "utf8").matchAll(REQUIRE)].map((match) => match[1])
+  );
+  return [...required]
+    .filter((id) => !ALLOWED.has(id))
+    .map(
+      (id) => `${name}: ${bundle} requires "${id}", which is not in the bundle`
+    );
+};
 
-for (const name of readdirSync(extensionsDir).sort()) {
+/** The faults of one extension, or `null` for a folder with no code to check (the pack, or no manifest). */
+const extensionFaults = (name) => {
   const manifestPath = join(extensionsDir, name, "package.json");
-  if (!existsSync(manifestPath)) continue;
+  if (!existsSync(manifestPath)) {
+    return null;
+  }
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const bundles = [...new Set([manifest.main, manifest.browser])].filter(
     Boolean
   );
-  // The pack has no code of its own.
-  if (bundles.length === 0) continue;
-  checked++;
-
-  for (const bundle of bundles) {
-    const path = join(extensionsDir, name, bundle);
-    if (!existsSync(path)) {
-      faults.push(`${name}: ${bundle} does not exist (was it built?)`);
-      continue;
-    }
-    const required = new Set(
-      [...readFileSync(path, "utf8").matchAll(REQUIRE)].map((match) => match[1])
-    );
-    for (const id of required)
-      if (!ALLOWED.has(id))
-        faults.push(
-          `${name}: ${bundle} requires "${id}", which is not in the bundle`
-        );
+  if (bundles.length === 0) {
+    return null;
   }
+  const scripts = manifest.contributes?.["markdown.previewScripts"] ?? [];
+  return [
+    ...bundles.flatMap((bundle) => bundleFaults(name, bundle)),
+    ...scripts
+      .filter((script) => !existsSync(join(extensionsDir, name, script)))
+      .map(
+        (script) =>
+          `${name}: the manifest names the preview script ${script}, which does not exist`
+      )
+  ];
+};
 
-  for (const script of manifest.contributes?.["markdown.previewScripts"] ??
-    []) {
-    if (!existsSync(join(extensionsDir, name, script)))
-      faults.push(
-        `${name}: the manifest names the preview script ${script}, which does not exist`
-      );
-  }
-}
+const results = readdirSync(extensionsDir)
+  .sort()
+  .map(extensionFaults)
+  .filter((faults) => faults !== null);
+const faults = results.flat();
 
 if (faults.length > 0) {
   console.error(
@@ -63,5 +71,5 @@ if (faults.length > 0) {
   process.exit(1);
 }
 console.log(
-  `${checked} extension bundles checked: each requires nothing but vscode.`
+  `${results.length} extension bundles checked: each requires nothing but vscode.`
 );
