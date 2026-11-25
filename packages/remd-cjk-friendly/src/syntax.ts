@@ -76,7 +76,7 @@ const gfmStrikethrough = (context: TokenizeContext): Construct | undefined => {
   return constructs.find(({ name }) => name === `strikethrough`);
 };
 
-// GFM's strikethrough tokenizer, run as it is, with its runs then classified by the amended rule. Where the amendment agrees with CommonMark, GFM's answer stands.
+// GFM's strikethrough tokenizer, run as it is, with its runs then classified by the amended rule. GFM's own answer is CommonMark's on micromark's code units, which takes a character outside the Basic Multilingual Plane for a letter, so ours replaces it: it is CommonMark's answer on whole characters wherever the amendment adds nothing.
 function tokenizeStrikethrough(
   this: TokenizeContext,
   effects: Effects,
@@ -92,11 +92,14 @@ function tokenizeStrikethrough(
     // GFM's token type is not among the types micromark declares, so it is compared as a string.
     const type: string | undefined = token?.type;
     if (token && type === `strikethroughSequenceTemporary`) {
-      const after = micromarkAfter(this, code);
-      const plain = delimiterFlanking(before, after, false);
-      const amended = delimiterFlanking(before, after, true, twoBefore);
-      if (plain.left !== amended.left) token._open = amended.left;
-      if (plain.right !== amended.right) token._close = amended.right;
+      const { left, right } = delimiterFlanking(
+        before,
+        micromarkAfter(this, code),
+        true,
+        twoBefore
+      );
+      token._open = left;
+      token._close = right;
     }
     return ok(code);
   };

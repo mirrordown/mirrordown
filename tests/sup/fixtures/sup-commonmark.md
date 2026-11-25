@@ -182,3 +182,15 @@ b^
 <!-- @case: undefined footnote reference after a superscript stays literal -->
 
 x^2^[^1]
+
+<!-- @case: an astral symbol before it is punctuation, so it opens before punctuation -->
+
+🎉^"a"^
+
+<!-- @case: an astral symbol after it is punctuation, so it does not open after a letter -->
+
+a^𝜵a^a
+
+<!-- @case: an astral symbol before it is punctuation, so it does not close before a letter -->
+
+a^a𝜵^a

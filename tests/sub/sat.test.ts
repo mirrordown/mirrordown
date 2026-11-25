@@ -67,6 +67,16 @@ describe("sub/sat", () => {
     }
   );
 
+  // An engine limit: Sätteri's subscript closes after punctuation before a letter, which emphasis and the markdown-it and remark plugins do not (`a~a.~a` stays text there). An astral symbol is punctuation to all three, so `a~a𝜵~a` differs the same way. Pinned so that a change in Sätteri is noticed.
+  it.each([`a~a.~a`, `a~a𝜵~a`])(
+    "closes a subscript after punctuation before a letter: %s",
+    (input) => {
+      expect(render(input, false)).toBe(
+        `<p>a<sub>${input.slice(2, -2)}</sub>a</p>`
+      );
+    }
+  );
+
   // An engine limit: with GFM off, markdown-it and remark read a `~~` run as plain text and render `<p>~~H<sub>2</sub>O~~</p>`, but Sätteri keeps a matched `~~…~~` pair closed to subscripts. Pinned so that a change in Sätteri is noticed.
   it.each([
     ["~~H~2~O~~", "<p>~~H~2~O~~</p>"],

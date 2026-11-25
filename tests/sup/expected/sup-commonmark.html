@@ -145,3 +145,12 @@ b</sup></p>
 
 <!-- @case: undefined footnote reference after a superscript stays literal -->
 <p>x<sup>2</sup>[^1]</p>
+
+<!-- @case: an astral symbol before it is punctuation, so it opens before punctuation -->
+<p>🎉<sup>"a"</sup></p>
+
+<!-- @case: an astral symbol after it is punctuation, so it does not open after a letter -->
+<p>a^𝜵a^a</p>
+
+<!-- @case: an astral symbol before it is punctuation, so it does not close before a letter -->
+<p>a^a𝜵^a</p>
