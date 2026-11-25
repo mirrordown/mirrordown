@@ -15,6 +15,11 @@
   "publisher": "saeris",
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "devDependencies": {
     "@mirrordown/mdit-sub": "workspace:*",
     "@types/markdown-it": "catalog:",
