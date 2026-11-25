@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "build:site": "vp run --filter \"../packages/**\" build && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -26,7 +27,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "wrangler": "^4.166.0"
   },
   "engines": {
     "node": ">=24.0.0"

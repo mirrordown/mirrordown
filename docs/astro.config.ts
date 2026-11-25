@@ -13,6 +13,7 @@ const preset = mirrordown({
 });
 
 export default defineConfig({
+  site: "https://mirrordown.dev",
   fonts: [
     {
       provider: fontProviders.fontsource(),
