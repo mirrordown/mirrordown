@@ -74,7 +74,7 @@ node_modules/…
 
 ### Comments, highlights and placeholders
 
-After a name, ` # ` or ` // ` starts a comment. `**name**` highlights a row. A row of `...` or `…` stands for entries left out.
+After a name, ` # ` or ` // ` starts a comment. `**name**` highlights a row. A row of `...` or `…` stands for entries left out; a comment written after one is dropped.
 
 ````markdown
 ```filetree
@@ -139,7 +139,7 @@ export default defineConfig({
 
 ## The client script
 
-Without it, a tree is nested lists, and its folders open and close as `<details>` do. Import it once per page, from the package for your engine, to make each tree an [ARIA tree](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/): one tab stop, ↑ and ↓ between rows, → and ← to open and close folders or move into and out of them, Home and End, `*` to open a folder's siblings, and typing a name's first letters to jump to it.
+Without it, a tree is nested lists, and its folders open and close as `<details>` do. Import it once per page, from the package for your engine (a second copy leaves the trees the first one set up as they are), to make each tree an [ARIA tree](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/): one tab stop, ↑ and ↓ between rows, → and ← to open and close folders or move into and out of them, Home and End, `*` to open a folder's siblings, and typing a name's first letters to jump to it.
 
 ```ts
 import "@mirrordown/remd-file-tree/client";
