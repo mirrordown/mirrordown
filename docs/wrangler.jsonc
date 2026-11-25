@@ -1,4 +1,4 @@
-// The docs site on Cloudflare Workers: a static site, so there is no Worker script, only the files Astro builds into `dist`. Workers Builds runs from this folder (its root directory is `docs`): `yarn build:site` builds the packages and the site, then `yarn wrangler deploy` uploads it.
+// The docs site on Cloudflare Workers: a static site, so there is no Worker script, only the files Astro builds into `dist`. Workers Builds runs from this folder (its root directory is `docs`): `yarn build:site` builds the site and the packages it depends on, in order, then `yarn wrangler deploy` uploads it.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   // Must be the Worker's name in the Cloudflare dashboard, or Workers Builds refuses the deploy.
@@ -6,5 +6,7 @@
   "compatibility_date": "2026-11-24",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  // `wrangler preview`, which Workers Builds runs for every branch but `main`, refuses a configuration without this block. It is empty because a preview of a static site needs no settings of its own: the assets above apply to it too.
+  "previews": {}
 }
