@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build:site": "vp run --filter \"../packages/**\" build && astro build",
+    "build:site": "vp run -t build",
     "preview": "astro preview",
     "astro": "astro"
   },
