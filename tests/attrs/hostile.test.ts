@@ -205,17 +205,17 @@ describe("many blocks through attrs", () => {
     }
   );
 
-  // A test that only passes on a fast machine is no test: a cost per block that grows with the document doubles twice when the document doubles.
+  // A test that only passes on a fast machine is no test, so growth is checked too: four times as many blocks take about four times as long when the cost is per block (3.6 to 4.8 measured across these shapes), and nine times as long or more when each block costs the length of the document, as every one of them but paragraphs ending in a block did before (8.8 for rules, the weakest, 10 for lists, 14 for tables, 16 and up for the rest). The sizes are four times apart on purpose. Between twice as many, the answers are 2 and 3 to 4, and markdown-it alone measures up to 2.6 on a paragraph of inline elements, so a limit of 3 failed on a busy machine with nothing wrong (3.66).
   it.each(many)(
-    "twice as many $name take markdown-it about twice as long",
+    "four times as many $name take markdown-it about four times as long",
     { timeout: 120_000 },
     ({ make }) => {
       const small = make(10_000);
-      const large = make(20_000);
+      const large = make(40_000);
       const render = withPlugin[MDIT];
       expect(
         fastest(() => render(large)) / fastest(() => render(small))
-      ).toBeLessThan(3);
+      ).toBeLessThan(8);
     }
   );
 
