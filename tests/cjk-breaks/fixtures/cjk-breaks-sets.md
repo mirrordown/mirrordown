@@ -120,6 +120,19 @@ x^日本^
 語
 {.note}
 
+<!-- @case: an attribute block at the end of the last line -->
+
+日本
+語 {#name .note}
+
+<!-- @case: a span's attribute block is not between it and the break -->
+
+==日本=={.x}
+語
+
+**日本**{.x}
+語
+
 <!-- @case: a setext heading's id is read without the break -->
 
 日本
