@@ -219,14 +219,21 @@ describe.each(engines)("kbd edges (%s)", (_engine, render) => {
     expect(render("[[a\rb]]")).not.toContain("<kbd>");
   });
 
-  it("stops nesting at 100 keys, markdown-it's nesting limit, instead of overflowing", () => {
-    const nested = (depth: number): string =>
-      "[[".repeat(depth) + "x" + "]]".repeat(depth);
-    const keys = (html: string): number => html.split("<kbd>").length - 1;
-    expect(keys(render(nested(100)))).toBe(100);
-    expect(keys(render(nested(150)))).toBe(100);
-    expect(keys(render(nested(3000)))).toBe(100);
-  });
+  // What matters is the count, not the time: it takes about two seconds alone, and ran past the default five while the rest of the suite ran beside it.
+  it(
+    "stops nesting at 100 keys, markdown-it's nesting limit, instead of overflowing",
+    {
+      timeout: 30_000
+    },
+    () => {
+      const nested = (depth: number): string =>
+        "[[".repeat(depth) + "x" + "]]".repeat(depth);
+      const keys = (html: string): number => html.split("<kbd>").length - 1;
+      expect(keys(render(nested(100)))).toBe(100);
+      expect(keys(render(nested(150)))).toBe(100);
+      expect(keys(render(nested(3000)))).toBe(100);
+    }
+  );
 
   // Untrusted input must not make the scan quadratic: before the fix each of these took well over ten seconds (the time grew with the square of the length). They now run in under half a second, and the bound leaves a slow runner ten times that.
   it.each([
