@@ -86,9 +86,10 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Chinese, Japanese and Korean text
 
-| Syntax                                     | HTML                                 | markdown-it                                 | remark                                      | Sätteri                                   | VSCode |
-| ------------------------------------------ | ------------------------------------ | ------------------------------------------- | ------------------------------------------- | ----------------------------------------- | ------ |
-| line break inside Chinese or Japanese text | the break removed, so no space shows | [mdit-cjk-breaks](packages/mdit-cjk-breaks) | [remd-cjk-breaks](packages/remd-cjk-breaks) | [sat-cjk-breaks](packages/sat-cjk-breaks) | —      |
+| Syntax                                     | HTML                                                                       | markdown-it                                     | remark                                          | Sätteri                                   | VSCode |
+| ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | ------ |
+| line break inside Chinese or Japanese text | the break removed, so no space shows                                       | [mdit-cjk-breaks](packages/mdit-cjk-breaks)     | [remd-cjk-breaks](packages/remd-cjk-breaks)     | [sat-cjk-breaks](packages/sat-cjk-breaks) | —      |
+| `**強調。**` beside CJK punctuation        | emphasis, strikethrough and the inline elements above open and close there | [mdit-cjk-friendly](packages/mdit-cjk-friendly) | [remd-cjk-friendly](packages/remd-cjk-friendly) | not yet                                   | —      |
 
 > All VSCode extensions are also bundled together in the [Markdown Preview Extended Syntax](extensions/markdown-preview-extended-syntax) pack. Heading slugs are provided in the preview by the Heading Anchors extension (and by VSCode's own built-in heading ids), so `slug` has no standalone extension. VSCode's preview has its own copy button on code blocks (1.132+), so `copy-code` has none either.
 
@@ -155,6 +156,7 @@ The plugins in this collection are forked and modernized from the following upst
 - [Obsidian](https://obsidian.md/help/syntax#External+images) — the image size syntax `image-size` reads
 - [Obsidian Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and the themes whose status markers it documents — the six task markers `task-lists` reads beyond GFM's; their icons are [Lucide](https://lucide.dev)'s
 - [markdown-it-cjk-breaks](https://github.com/markdown-it/markdown-it-cjk-breaks) — the rule `cjk-breaks` follows for which line breaks to remove, measured against it in the tests
+- [CommonMark CJK-friendly Amendments](https://github.com/tats-u/markdown-cjk-friendly) — the specification `cjk-friendly` implements and the test corpus it passes, measured against its markdown-it and remark packages in the tests
 
 ---
 
