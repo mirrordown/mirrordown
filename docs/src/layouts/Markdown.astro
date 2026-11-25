@@ -6,6 +6,7 @@ import Sidebar from "../components/Sidebar.astro";
 import SidebarDrawer from "../components/SidebarDrawer.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import PageNav from "../components/PageNav.astro";
+import { pagePath } from "../utils/pagePath";
 
 interface Props {
   title: string;
@@ -15,7 +16,7 @@ interface Props {
 }
 
 const { title, description, headings, lastModified } = Astro.props as Props;
-const currentPath = new URL(Astro.request.url).pathname;
+const currentPath = pagePath(Astro.request.url);
 
 const entries = await getCollection("docs");
 
