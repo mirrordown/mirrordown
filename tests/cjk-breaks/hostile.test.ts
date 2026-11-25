@@ -90,16 +90,25 @@ describe(`cjk-breaks on hostile input`, () => {
 
   // A limit in milliseconds is passed by a fast machine whatever the plugin does. Growth does not depend on the machine: four times as many lines take about four times as long when the cost is per line, and sixteen times as long when each line costs the length of the paragraph.
   describe.each(shapes)(`four times as many $name`, ({ make, small }) => {
+    // markdown-it is timed out, as remark is below: by itself it takes 5.3 times as long on four times the lines at these sizes (measured without the plugin), so timing a whole render left a limit of 8 little room, and it failed on a shared runner at 8.4 with nothing wrong in the rule. The rule runs alone, on tokens parsed beforehand; a profile of a whole render puts it and its width lookups at about a tenth of the time. Parsed anew for each run, since the rule takes the breaks out of the tokens it is given.
+    // Its sizes are sixteen times apart, not four: sixteen times the lines take 16 times as long when the cost is per line (15.7 to 18.6 measured) and 256 times when each line costs the paragraph. The list of kept tokens now and then costs one run twice as much as it grows past some size (28 measured), which four times apart reads as 7 against a limit of 8, and sixteen apart as 28 against 64.
     it(
-      `take markdown-it about four times as long`,
+      `take markdown-it's rule about sixteen times as long for sixteen times as many`,
       { timeout: 120_000 },
       () => {
-        const render = withPlugin[0];
-        const few = make(small);
-        const many = make(small * 4);
-        expect(
-          fastest(() => render(many)) / fastest(() => render(few))
-        ).toBeLessThan(8);
+        const parser = new MarkdownIt();
+        const md = new MarkdownIt().use(cjkBreaks);
+        // The plugin pushes its rule to the end of the core chain.
+        const rule = md.core.ruler.getRules(``).at(-1)!;
+        const time = (input: string): number =>
+          Math.min(
+            ...[0, 1, 2, 3, 4].map(() => {
+              const state = new md.core.State(input, md, {});
+              state.tokens = parser.parse(input, {});
+              return timed(() => rule(state));
+            })
+          );
+        expect(time(make(small * 64)) / time(make(small * 4))).toBeLessThan(64);
       }
     );
 

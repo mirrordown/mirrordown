@@ -63,20 +63,20 @@ export const cjkBreaks: PluginSimple = (md) => {
     for (const block of state.tokens) {
       const children = block.children;
       if (block.type !== `inline` || !children) continue;
-      // Every break is decided on the tokens as they came, then the removed ones go at once.
-      const removed = new Set<Token>();
-      for (const [index, token] of children.entries()) {
+      // Every break is decided on the tokens as they came: the kept ones go to a list of their own, and `children` is read, never changed.
+      const kept: Token[] = [];
+      for (let index = 0; index < children.length; index++) {
+        const token = children[index]!;
         if (
-          token.type === `softbreak` &&
-          cjkBreakRemoved(
+          token.type !== `softbreak` ||
+          !cjkBreakRemoved(
             beside(children, index, -1),
             beside(children, index, 1)
           )
         )
-          removed.add(token);
+          kept.push(token);
       }
-      if (removed.size > 0)
-        block.children = children.filter((token) => !removed.has(token));
+      if (kept.length < children.length) block.children = kept;
     }
   });
 };
