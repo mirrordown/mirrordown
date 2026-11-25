@@ -7,6 +7,7 @@ import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs, type AttrsOptions } from "@mirrordown/remd-attrs";
 import { remarkBlockIds } from "@mirrordown/remd-block-ids";
 import { remarkCaption } from "@mirrordown/remd-caption";
+import { remarkCjkFriendly } from "@mirrordown/remd-cjk-friendly";
 import {
   rehypeCopyCode,
   type CopyCodeOptions
@@ -84,6 +85,7 @@ export interface MirrordownOptions {
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   blockIds?: boolean;
   caption?: boolean;
+  cjkFriendly?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
   del?: boolean;
@@ -172,6 +174,8 @@ export const mirrordown = (
   return {
     remarkPlugins: [
       ...gfm,
+      // Anywhere in the list: it takes over GFM's strikethrough by name, and the delimiter plugins read its rule from the processor's data when they run.
+      ...on(options.cjkFriendly, remarkCjkFriendly),
       // First: the plugins after it see a prompt's preview as part of the page.
       ...on(options.prompt !== false, remarkPrompt),
       // Before abbr and the delimiter plugins: it rebuilds each ruby from its source text, so what an earlier plugin did inside the braces would be lost.

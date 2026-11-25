@@ -26,6 +26,7 @@
     "@mirrordown/remd-autolink-headings": "workspace:^",
     "@mirrordown/remd-block-ids": "workspace:^",
     "@mirrordown/remd-caption": "workspace:^",
+    "@mirrordown/remd-cjk-friendly": "workspace:^",
     "@mirrordown/remd-copy-code": "workspace:^",
     "@mirrordown/remd-definition-list": "workspace:^",
     "@mirrordown/remd-del": "workspace:^",
