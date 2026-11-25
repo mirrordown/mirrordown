@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
+import type { PhrasingContent } from "mdast";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
+import { createDelimitedTransform } from "../../packages/core/src";
 import { remarkCjkFriendly } from "../../packages/remd-cjk-friendly/src";
 import {
   HOSTILE_TIME_LIMIT,
@@ -104,24 +106,46 @@ describe.each(delimiters.filter(({ grow }) => grow))(
   }
 );
 
-// remark is timed where micromark itself is linear. In one long paragraph micromark pairs emphasis, strikethrough and `~`/`^` in more than linear time with or without the plugin (a paragraph of four times as many `「**` grows 4.8 times at 1,000 against 4,000 without it, 11 for `テ~「`), so those runs are one pair to a paragraph. `==`, `++`, `--` and `||` are paired by one scan of Mirrordown's after parsing, which the plugin changes, so two of them stay in one paragraph (`||` builds two nodes per span); GFM is off for them, since its bare-URL scan is slower than linear on runs of letters and hyphens (`a--b` 40,000 times: 14 times as long as 10,000, without any Mirrordown plugin).
+// remark is timed where micromark itself is linear. In one long paragraph micromark pairs emphasis, strikethrough and `~`/`^` in more than linear time with or without the plugin (a paragraph of four times as many `「**` grows 4.8 times at 1,000 against 4,000 without it, 11 for `テ~「`), so those runs are one pair to a paragraph.
 describe("remark grows linearly with the plugin", () => {
   // Parsed only: the plugin is a micromark extension, and turning 50,000 paragraphs into HTML adds seconds that measure nothing of it.
   const parser = unified()
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkCjkFriendly);
-  it.each([
-    [
-      `a pair to a paragraph, parsed`,
-      `**テ。**テ\n\n`,
-      (input: string): unknown => parser.parse(input)
-    ],
-    [`mark in one paragraph`, `。==テ`, remark({ gfm: false })],
-    [`spoiler in one paragraph`, `。||テ`, remark({ gfm: false })]
-  ])("%s", { timeout: 120_000 }, (_, shape, rm) => {
+  it("a pair to a paragraph, parsed", { timeout: 120_000 }, () => {
+    const shape = `**テ。**テ\n\n`;
     const small = shape.repeat(10_000);
     const large = shape.repeat(40_000);
-    expect(timed(() => rm(large)) / timed(() => rm(small))).toBeLessThan(8);
+    expect(
+      fastest(() => parser.parse(large)) / fastest(() => parser.parse(small))
+    ).toBeLessThan(8);
   });
+
+  // `==`, `++`, `--` and `||` are paired by one scan of Mirrordown's after parsing, and that scan is what the plugin changes, so it is timed alone, on one text node, with the amendment on. The remark plugins around it walk the tree with unist-util-visit, which looks up each text node's place among its parent's children: a paragraph of many spans costs them more than linear time with or without this plugin (four times as many `a ==b== ` take nine times as long, measured on main). Timing the whole pipeline measured that walk, and failed in CI at 8.4 with nothing wrong in the scan.
+  it.each([
+    [`mark`, `=`],
+    [`spoiler`, `|`]
+  ] as const)(
+    "the scan behind %s, in one paragraph",
+    { timeout: 120_000 },
+    (_, marker) => {
+      const scan = createDelimitedTransform<PhrasingContent>(
+        marker,
+        {
+          text: (value) => ({ type: `text`, value }),
+          wrap: (children) => ({ type: `emphasis`, children })
+        },
+        undefined,
+        () => true
+      );
+      const time = (count: number): number => {
+        const children: PhrasingContent[] = [
+          { type: `text`, value: `。${marker}${marker}テ`.repeat(count) }
+        ];
+        return fastest(() => scan(children, `paragraph`));
+      };
+      expect(time(160_000) / time(40_000)).toBeLessThan(8);
+    }
+  );
 });
