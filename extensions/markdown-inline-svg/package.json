@@ -15,12 +15,17 @@
   "publisher": "saeris",
   "main": "./dist/index.cjs",
   "browser": "./dist/index.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "devDependencies": {
     "@types/vscode": "^1.125.0"
   },
   "contributes": {
     "markdown.previewScripts": [
-      "./dist/preview.js"
+      "./dist/preview.iife.js"
     ]
   },
   "activationEvents": [],

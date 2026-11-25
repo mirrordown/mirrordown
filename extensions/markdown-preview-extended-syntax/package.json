@@ -15,7 +15,6 @@
   },
   "publisher": "saeris",
   "extensionPack": [
-    "Billaferd.vscode-header-sections",
     "saeris.markdown-abbr",
     "saeris.markdown-attributes",
     "saeris.markdown-autolink-headings",

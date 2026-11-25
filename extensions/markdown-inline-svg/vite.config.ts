@@ -32,7 +32,7 @@ export default defineConfig({
         alwaysBundle: [/^@mirrordown\//]
       },
       dts: false,
-      format: "esm"
+      format: "iife"
     }
   ]
 });
