@@ -103,7 +103,7 @@ describe(`cjk-breaks on hostile input`, () => {
       }
     );
 
-    // remark itself is timed out: its parser takes most of the time and varies most, so the plugin runs alone on a parsed tree.
+    // remark itself is timed out: its parser takes most of the time and varies most, so the plugin runs alone on a parsed tree. Alone it takes two to four milliseconds on `small` lines, too little to time while the rest of the suite runs beside it (the ratio went past 8 in a full run though the cost is per line), so its two sizes are four times the others', and it takes the fastest of five.
     it(
       `take remark's plugin about four times as long`,
       { timeout: 120_000 },
@@ -113,12 +113,12 @@ describe(`cjk-breaks on hostile input`, () => {
         const time = (input: string): number => {
           const tree = parser.parse(input);
           const file = new VFile(input);
-          const trees = [0, 1, 2].map((): Root => structuredClone(tree));
+          const trees = [0, 1, 2, 3, 4].map((): Root => structuredClone(tree));
           return Math.min(
             ...trees.map((copy) => timed(() => transform.runSync(copy, file)))
           );
         };
-        expect(time(make(small * 4)) / time(make(small))).toBeLessThan(8);
+        expect(time(make(small * 16)) / time(make(small * 4))).toBeLessThan(8);
       }
     );
 
