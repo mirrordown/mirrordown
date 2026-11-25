@@ -1,4 +1,5 @@
 import { isMasked } from "./escapes.js";
+import { delimiterFlanking, type Neighbour } from "./flanking.js";
 import type { PhrasingLike } from "./github-alerts/index.js";
 import {
   createSpanTransform,
@@ -29,20 +30,21 @@ const INLINE_PARENTS = new Set([
 // markdown-it's `maxNesting`, which `kbd.ts` stops nested keys at too: a pair nested deeper than this stays text. Sätteri rejects a whole document whose content nests deeper than 128 levels, so the bound is what lets all three engines render the same thing there.
 const MAX_DEPTH = 100;
 
-type CharClass = `space` | `punct` | `other`;
-
-// markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S). A masked character is punctuation: where the source has an escape or a character reference, markdown-it reads the escaped character or the `;` before a run, and the `\` or the `&` after it.
+// markdown-it's isWhiteSpace, and isMdAsciiPunct || isPunctChar (Unicode P and S). A masked character is punctuation, and no character of the text: where the source has an escape or a character reference, markdown-it reads the escaped character or the `;` before a run, and the `\` or the `&` after it, all of them ASCII.
 const WHITESPACE =
   /^[\t\n\v\f\r \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]$/u;
 const PUNCTUATION = /^[\p{P}\p{S}]$/u;
-const classify = (char: string): CharClass =>
+const classify = (char: string): Neighbour =>
   isMasked(char)
-    ? `punct`
-    : WHITESPACE.test(char)
-      ? `space`
-      : PUNCTUATION.test(char)
-        ? `punct`
-        : `other`;
+    ? { kind: `punctuation` }
+    : {
+        kind: WHITESPACE.test(char)
+          ? `whitespace`
+          : PUNCTUATION.test(char)
+            ? `punctuation`
+            : `other`,
+        codePoint: char.codePointAt(0)
+      };
 
 // The whole character that ends before `index`, or starts at it: markdown-it joins a surrogate pair before it classifies the character.
 const charBefore = (value: string, index: number): string => {
@@ -105,42 +107,66 @@ const balancePairs = (delimiters: Delimiter[]): void => {
   });
 };
 
+const PUNCTUATION_MARKUP: Neighbour = { kind: `punctuation` };
+const WHITESPACE_EDGE: Neighbour = { kind: `whitespace` };
+const off = (): boolean => false;
+
 /**
- * Build the delimiter scan for one marker: `=` (mark), `+` (ins), `-` (del) or `|` (spoiler). Pairs nested deeper than `maxDepth` stay text; pass a lower bound when a wrapper is more than one node deep (a spoiler is two), so the nodes stay within what Sätteri accepts.
+ * Build the delimiter scan for one marker: `=` (mark), `+` (ins), `-` (del) or `|` (spoiler). Pairs nested deeper than `maxDepth` stay text; pass a lower bound when a wrapper is more than one node deep (a spoiler is two), so the nodes stay within what Sätteri accepts. `cjkFriendly` says, each time the scan runs, whether runs flank by the CJK-friendly amendment (see `delimiterFlanking`); by default they flank as in CommonMark.
  */
 export const createDelimitedTransform = <N extends PhrasingLike>(
   marker: DelimiterMarker,
   nodes: SpanNodes<N>,
-  maxDepth = MAX_DEPTH
+  maxDepth = MAX_DEPTH,
+  cjkFriendly: () => boolean = off
 ): SpanTransform<N> =>
   createSpanTransform(nodes, (children, parentType, { text, wrap }, source) => {
-    const edge: CharClass = INLINE_PARENTS.has(parentType) ? `punct` : `space`;
-    // The character class beside a text node, from its sibling: a break is a line ending, unless it follows the run and was written as a backslash, which is then the character markdown-it reads there; an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing); any other node ends in its own delimiter or markup.
+    const edge = INLINE_PARENTS.has(parentType)
+      ? PUNCTUATION_MARKUP
+      : WHITESPACE_EDGE;
+    const amended = cjkFriendly();
+    // The text a sibling shows beside this one: an abbreviation is the plain text markdown-it still sees there (it applies abbreviations after inline parsing).
+    const textOf = (
+      sibling: N | undefined,
+      side: `before` | `after`
+    ): string | undefined => {
+      const node =
+        sibling?.type === `abbr`
+          ? sibling.children?.at(side === `before` ? -1 : 0)
+          : sibling;
+      return node?.type === `text` && node.value ? node.value : undefined;
+    };
+    // The character beside a text node, from its sibling: a break is a line ending, unless it follows the run and was written as a backslash, which is then the character markdown-it reads there; any other node ends in its own delimiter or markup.
     const beside = (
       sibling: N | undefined,
       side: `before` | `after`
-    ): CharClass => {
+    ): Neighbour => {
       if (!sibling) return edge;
-      const node =
-        sibling.type === `abbr`
-          ? sibling.children?.at(side === `before` ? -1 : 0)
-          : sibling;
-      if (node?.type === `text` && node.value) {
+      const value = textOf(sibling, side);
+      if (value !== undefined) {
         return classify(
-          side === `before`
-            ? charBefore(node.value, node.value.length)
-            : charAt(node.value, 0)
+          side === `before` ? charBefore(value, value.length) : charAt(value, 0)
         );
       }
-      if (sibling.type !== `break`) return `punct`;
+      if (sibling.type !== `break`) return PUNCTUATION_MARKUP;
       // Only the source tells a backslash break from one written as trailing spaces.
       const start = sibling.position?.start.offset;
       return side === `after` &&
         start !== undefined &&
         source?.charAt(start) === `\\`
-        ? `punct`
-        : `space`;
+        ? PUNCTUATION_MARKUP
+        : WHITESPACE_EDGE;
     };
+    // The character before the one that ends at `i` in the text of child `index`: what a variation selector there belongs to, under the amendment. A selector that ends a sibling's text is read in that text; one that is a sibling's whole text is taken to follow nothing.
+    const twoBefore =
+      (value: string, i: number, index: number) => (): Neighbour => {
+        if (i > 1) return classify(charBefore(value, i - 1));
+        if (i === 1) return beside(children[index - 1], `before`);
+        const sibling = textOf(children[index - 1], `before`);
+        return sibling !== undefined && sibling.length > 1
+          ? classify(charBefore(sibling, sibling.length - 1))
+          : WHITESPACE_EDGE;
+      };
 
     // markdown-it-mark's tokenizer: text between runs is one item, as markdown-it's pending text becomes one token.
     const items: Array<Item<N>> = [];
@@ -173,9 +199,12 @@ export const createDelimitedTransform = <N extends PhrasingLike>(
           end < value.length
             ? classify(charAt(value, end))
             : beside(children[index + 1], `after`);
-        const open = next !== `space` && (next !== `punct` || last !== `other`);
-        const close =
-          last !== `space` && (last !== `punct` || next !== `other`);
+        const { left: open, right: close } = delimiterFlanking(
+          last,
+          next,
+          amended,
+          twoBefore(value, i, index)
+        );
         flush();
         let length = end - i;
         if (length % 2) {

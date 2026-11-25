@@ -6,12 +6,25 @@ import type {
 
 // One sample per preset feature, shared by the presets' own tests and by the render tool (`scripts/render.mjs`), which reads the keys to turn features off. A new feature needs a row here.
 // Each sample's `marker` is in the output when the feature is on, unless `absentWhenOn` (features that remove something).
-export const features: ReadonlyArray<{
-  key: keyof MarkdownItOptions & keyof RemarkOptions & keyof SatteriOptions;
-  input: string;
-  marker: string;
-  absentWhenOn?: boolean;
-}> = [
+// A feature that is not in every preset yet names the ones it is in (`presets`): Sätteri gains some features in its parser, after the other two engines have them.
+export const features: ReadonlyArray<
+  {
+    input: string;
+    marker: string;
+    absentWhenOn?: boolean;
+  } & (
+    | {
+        key: keyof MarkdownItOptions &
+          keyof RemarkOptions &
+          keyof SatteriOptions;
+        presets?: never;
+      }
+    | {
+        key: keyof MarkdownItOptions & keyof RemarkOptions;
+        presets: readonly [`markdown-it`, `remark`];
+      }
+  )
+> = [
   {
     key: "abbr",
     input: "*[HTML]: Hyper Text\n\nSome HTML.",
@@ -30,6 +43,12 @@ export const features: ReadonlyArray<{
     input: "日本語の文章は\n改行しても",
     marker: "文章は\n改行",
     absentWhenOn: true
+  },
+  {
+    key: "cjkFriendly",
+    presets: ["markdown-it", "remark"],
+    input: "**テスト。**テスト",
+    marker: "<strong>"
   },
   {
     key: "copyCode",

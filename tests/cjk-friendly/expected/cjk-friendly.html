@@ -1,0 +1,108 @@
+<!-- @case: strong closing after CJK punctuation, at the start of the document -->
+<p><strong>テスト。</strong>テスト</p>
+
+<!-- @case: strong opening before a CJK bracket -->
+<p>これは<strong>「重要」</strong>です</p>
+
+<!-- @case: strong closing after an ASCII bracket before Hangul -->
+<p><strong>이름(Name)</strong>은 필수입니다</p>
+
+<!-- @case: strong around quotation marks after a CJK character -->
+<p>他说<strong>“你好”</strong>然后走了</p>
+
+<!-- @case: strong between CJK letters, as before -->
+<p>これは<strong>重要</strong>です</p>
+
+<!-- @case: double underscore inside CJK text stays text, as before -->
+<p>これは__重要__です</p>
+
+<!-- @case: emphasis closing after CJK punctuation -->
+<p><em>テスト。</em>テスト</p>
+
+<!-- @case: underscore beside CJK punctuation, as before -->
+<p><em>テスト。</em>」</p>
+
+<!-- @case: mark closing after CJK punctuation -->
+<p><mark>強調。</mark>テスト</p>
+
+<!-- @case: mark around a CJK bracket -->
+<p>これは<mark>「重要」</mark>です</p>
+
+<!-- @case: del closing after CJK punctuation -->
+<p><del>削除。</del>テスト</p>
+
+<!-- @case: ins closing after CJK punctuation -->
+<p><ins>追加。</ins>テスト</p>
+
+<!-- @case: spoiler closing after CJK punctuation -->
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">ネタバレ。</span></label>テスト</p>
+
+<!-- @case: subscript around a CJK bracket -->
+<p>これは<sub>「下付き」</sub>です</p>
+
+<!-- @case: superscript around a CJK bracket -->
+<p>これは<sup>「上付き」</sup>です</p>
+
+<!-- @case: subscript and superscript beside CJK text, as before -->
+<p>H<sub>2</sub>Oとm<sup>2</sup>です</p>
+
+<!-- @case: mark inside strong, both closing after CJK punctuation -->
+<p><strong><mark>強調。</mark></strong>テスト</p>
+
+<!-- @case: strong inside mark -->
+<p><mark><strong>「重要」</strong></mark>です</p>
+
+<!-- @case: ideographic space after the opener is whitespace -->
+<p>**　テスト**です</p>
+
+<!-- @case: ideographic space before the closer is whitespace -->
+<p>**テスト　**です</p>
+
+<!-- @case: an ideograph with a variation selector before the opener -->
+<p>大塚︀<strong>"異体字"</strong>です</p>
+
+<!-- @case: after an ideograph with an ideographic variation selector -->
+<p>葛󠄀<strong>"城"</strong>です</p>
+
+<!-- @case: quotation marks made fullwidth by U+FE01 are CJK punctuation, so the closer still closes before a letter -->
+<p><strong>“︁Git”︁</strong>Hub</p>
+
+<!-- @case: quotation marks without U+FE01 are not CJK, as before -->
+<p>**“Git”**Hub</p>
+
+<!-- @case: no CJK character beside the run, as before -->
+<p>**foo.**bar</p>
+
+<!-- @case: punctuation with a variation selector before the closer, the one change without CJK text -->
+<p>**a.︀**a</p>
+
+<!-- @case: in a link -->
+<p><a href="https://example.com"><strong>テスト。</strong>テスト</a></p>
+
+<!-- @case: around a link -->
+<p><strong><a href="https://example.com">リンク</a></strong>も注意。</p>
+
+<!-- @case: in a heading -->
+<h1><strong>見出し。</strong>です</h1>
+
+<!-- @case: in a list item -->
+<ul><li><strong>項目。</strong>です</li><li><mark>項目。</mark>です</li></ul>
+
+<!-- @case: in a blockquote -->
+<blockquote><p><strong>引用。</strong>です</p></blockquote>
+
+<!-- @case: in a code span -->
+<p><code>**テスト。**テスト</code></p>
+
+<!-- @case: escaped markers -->
+<p>**テスト。**テスト</p>
+
+<!-- @case: a character reference in place of a marker -->
+<p>**テスト。**テスト</p>
+
+<!-- @case: on two lines of one paragraph -->
+<p><strong>テスト。</strong>テスト
+<strong>次。</strong>です</p>
+
+<!-- @case: at the end of the document, as before -->
+<p>テスト<strong>テスト。</strong></p>

@@ -52,17 +52,27 @@ const fixtureCases = readdirSync(testsDir)
       )
   );
 
+// The features a preset does not have yet, turned off: what the other presets render the way that one does.
+const missingFrom = (preset: string): Record<string, false> =>
+  Object.fromEntries(
+    features
+      .filter(({ presets }) => presets && !presets.some((p) => p === preset))
+      .map(({ key }) => [key, false])
+  );
+
 describe("presets", () => {
-  // The presets' promise: the whole suite composes, and a document renders the same whichever engine you choose.
+  // The presets' promise: the whole suite composes, and a document renders the same whichever engine you choose. A feature Sätteri does not have yet is the one exception: Sätteri renders what the others do with it off.
   describe("with every feature on, all three engines render the same", () => {
     // Gantt charts mark "today", so it's fixed, as in the mermaid-pele suites.
     const md = markdownIt({ mermaidPele });
     const rm = remark({ mermaidPele });
     const sat = satteri({ mermaidPele });
+    // markdown-it, not remark: micromark reads a character outside the Basic Multilingual Plane as two code units, so remark alone takes `🈂` beside `**` for a letter where markdown-it and Sätteri read punctuation.
+    const mdAsSatteri = markdownIt({ mermaidPele, ...missingFrom(`sätteri`) });
     it.each(fixtureCases)("$name", ({ input }) => {
       const expected = rm(input);
       expect(md(input)).toBe(expected);
-      expect(sat(input)).toBe(expected);
+      expect(sat(input)).toBe(mdAsSatteri(input));
     });
 
     // Attrs apply after the containers are built, so a step title's or tab label's attrs reach its item rather than being lost with the header paragraph.
@@ -114,14 +124,25 @@ describe("presets", () => {
     }
   );
 
-  describe.each(engines)("%s", (_, render) => {
-    it.each(features)(
+  describe.each(engines)("%s", (name, render) => {
+    const inPreset = ({ presets }: (typeof features)[number]): boolean =>
+      !presets || presets.some((preset) => preset === name);
+
+    it.each(features.filter(inPreset))(
       "$key is on by default and `false` turns it off",
       ({ key, input, marker, absentWhenOn = false }) => {
         expect(render()(input).includes(marker)).toBe(!absentWhenOn);
         expect(render({ [key]: false })(input).includes(marker)).toBe(
           absentWhenOn
         );
+      }
+    );
+
+    // Listed, so the gap shows in every run: when the engine gains the feature, this fails and the row's `presets` must name it.
+    it.each(features.filter((feature) => !inPreset(feature)))(
+      "$key is not in this preset yet",
+      ({ input, marker, absentWhenOn = false }) => {
+        expect(render()(input).includes(marker)).toBe(absentWhenOn);
       }
     );
 

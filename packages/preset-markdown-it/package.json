@@ -30,6 +30,7 @@
     "@mirrordown/mdit-block-ids": "workspace:^",
     "@mirrordown/mdit-caption": "workspace:^",
     "@mirrordown/mdit-cjk-breaks": "workspace:^",
+    "@mirrordown/mdit-cjk-friendly": "workspace:^",
     "@mirrordown/mdit-copy-code": "workspace:^",
     "@mirrordown/mdit-definition-list": "workspace:^",
     "@mirrordown/mdit-del": "workspace:^",

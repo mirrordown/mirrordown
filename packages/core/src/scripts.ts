@@ -8,6 +8,8 @@ import type {
   TokenType,
   Effects
 } from "micromark-util-types";
+import { delimiterFlanking } from "./flanking.js";
+import { micromarkAfter, micromarkBefore } from "./flanking-micromark.js";
 
 // micromark syntax for `~subscript~` and `^superscript^`, shared by remd-sub and remd-sup. Each marker is a single-character delimiter run with emphasis-style flanking. One resolver pairs both markers: it takes closers left to right and pairs each with the nearest opener of the same marker, so runs of the two markers that cross each other (`^a~b^c~`) resolve leftmost-first and the two nest, as in markdown-it and Sätteri. That holds between `~` and `^` only: emphasis and other constructs have resolvers of their own, micromark runs them in the order the constructs first occur in the text, and where a span crosses one of theirs markdown-it pairs differently. It runs once however many of the two constructs a document uses, because micromark calls each `resolveAll` function once.
 
@@ -31,19 +33,6 @@ const TEMPORARY = new Map<string, (typeof SCRIPTS)[Marker]>(
 );
 const scriptOf = (tokenType: string): (typeof SCRIPTS)[Marker] | undefined =>
   TEMPORARY.get(tokenType);
-
-// micromark-util-classify-character, inlined: 1 = whitespace, 2 = punctuation.
-const PUNCTUATION = /\p{P}|\p{S}/u;
-const WHITESPACE = /\s/;
-const classify = (code: Code): 1 | 2 | undefined =>
-  code === null ||
-  code < 0 ||
-  code === 32 ||
-  WHITESPACE.test(String.fromCharCode(code))
-    ? 1
-    : PUNCTUATION.test(String.fromCharCode(code))
-      ? 2
-      : undefined;
 
 // micromark-util-chunked's `splice`, inlined: spreading a long list into Array#splice can overflow the stack.
 const splice = <T>(
@@ -131,11 +120,13 @@ const resolveScripts: Resolver = (events, context) => {
   return events;
 };
 
+// `cjkFriendly` is read when a document is parsed, so the plugin that turns the amended flanking rule on may be listed before or after the one that registers the construct.
 function tokenize(
   this: TokenizeContext,
   effects: Effects,
   ok: State,
-  nok: State
+  nok: State,
+  cjkFriendly: () => boolean
 ): State {
   const { previous, events } = this;
   return (start: Code) => {
@@ -147,20 +138,27 @@ function tokenize(
       events.at(-1)?.[1].type !== `characterEscape`
     )
       return nok(start);
+    const { before, twoBefore } = micromarkBefore(this);
     effects.enter(temporary(script.type));
     effects.consume(start);
     return (after: Code) => {
       // A run of two or more is not a delimiter (`~~` is strikethrough's).
       if (after === script.code) return nok(after);
       const token = effects.exit(temporary(script.type));
-      const before = classify(previous);
-      const next = classify(after);
-      token._open = !next || (next === 2 && Boolean(before));
-      token._close = !before || (before === 2 && Boolean(next));
+      const { left, right } = delimiterFlanking(
+        before,
+        micromarkAfter(this, after),
+        cjkFriendly(),
+        twoBefore
+      );
+      token._open = left;
+      token._close = right;
       return ok(after);
     };
   };
 }
+
+const off = (): boolean => false;
 
 /** The shape of a micromark syntax extension this module builds. */
 export interface ScriptSyntax {
@@ -169,12 +167,17 @@ export interface ScriptSyntax {
 }
 
 /**
- * The micromark syntax extension for one of the two markers: `~` (subscript, `subscript` tokens) or `^` (superscript, `superscript` tokens). The constructs of both markers resolve together.
+ * The micromark syntax extension for one of the two markers: `~` (subscript, `subscript` tokens) or `^` (superscript, `superscript` tokens). The constructs of both markers resolve together. `cjkFriendly` says, when a document is parsed, whether runs flank by the CJK-friendly amendment (see `delimiterFlanking`); by default they flank as in CommonMark.
  */
-export const scriptSyntax = (marker: Marker): ScriptSyntax => {
+export const scriptSyntax = (
+  marker: Marker,
+  cjkFriendly: () => boolean = off
+): ScriptSyntax => {
   const construct: Construct = {
     name: SCRIPTS[marker].type,
-    tokenize,
+    tokenize(effects, ok, nok) {
+      return tokenize.call(this, effects, ok, nok, cjkFriendly);
+    },
     resolveAll: resolveScripts
   };
   return {

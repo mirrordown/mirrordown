@@ -8,6 +8,7 @@ import {
 import { blockIds } from "@mirrordown/mdit-block-ids";
 import { caption } from "@mirrordown/mdit-caption";
 import { cjkBreaks } from "@mirrordown/mdit-cjk-breaks";
+import { cjkFriendly } from "@mirrordown/mdit-cjk-friendly";
 import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
 import { del } from "@mirrordown/mdit-del";
@@ -48,6 +49,7 @@ export interface MirrordownOptions {
   blockIds?: boolean;
   caption?: boolean;
   cjkBreaks?: boolean;
+  cjkFriendly?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
   del?: boolean;
@@ -108,6 +110,8 @@ export const mirrordown = (
           ...(typeof options.tabIcons === `object` ? options.tabIcons : {})
         };
 
+  // Anywhere in the list: it amends what `scanDelims` answers after the other plugins' overrides of it (mdit-sub's), so every delimiter takes its rule.
+  on(options.cjkFriendly, cjkFriendly);
   on(options.abbr, abbr);
   // Its rule runs right before `linkify` wherever it is listed: after the rules that make or change an image's description (ruby's verbatim alt, a prompt's preview, an alert's title), before the alert label that reads it and before the image plugins below (caption, lightbox, unwrap-images). Before attrs, whose rule sits there too: an attribute block's `title` then follows the size, as in remark and Sätteri.
   on(options.imageSize, imageSize);

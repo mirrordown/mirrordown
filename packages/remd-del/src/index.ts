@@ -1,7 +1,11 @@
 import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
-import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
+import {
+  cjkFriendlyEnabled,
+  createDelimitedTransform,
+  maskTreeEscapes
+} from "@mirrordown/core";
 
 interface DeleteData extends Data {}
 
@@ -16,15 +20,22 @@ interface Delete extends Parent {
 /**
  * remark plugin for deletion syntax (`--text--`), wrapping each match in a `delete` mdast node that renders as a `<del>` element. The scan is shared with markdown-it's pairing rules and the Sätteri plugin through `@mirrordown/core`.
  */
-export const remarkDel: Plugin<[], Root> = () => {
-  const transform = createDelimitedTransform<PhrasingContent>(`-`, {
-    text: (value) => ({ type: `text`, value }),
-    wrap: (children): Delete => ({
-      type: `delete`,
-      children,
-      data: { hName: `del` }
-    })
-  });
+export const remarkDel: Plugin<[], Root> = function () {
+  // remd-cjk-friendly says in the processor's data whether runs flank by its rule. It is read when the tree is transformed, so the two plugins may be listed in either order.
+  const data = this.data();
+  const transform = createDelimitedTransform<PhrasingContent>(
+    `-`,
+    {
+      text: (value) => ({ type: `text`, value }),
+      wrap: (children): Delete => ({
+        type: `delete`,
+        children,
+        data: { hName: `del` }
+      })
+    },
+    undefined,
+    () => cjkFriendlyEnabled(data)
+  );
 
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it. They are recovered from the file's source: a tree run without its file has none to honour.

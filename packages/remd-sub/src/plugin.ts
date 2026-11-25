@@ -5,7 +5,7 @@ import type {
   Extension as FromMarkdownExtension,
   Token
 } from "mdast-util-from-markdown";
-import { scriptSyntax } from "@mirrordown/core";
+import { cjkFriendlyEnabled, scriptSyntax } from "@mirrordown/core";
 
 /** Optional data carried by a {@link Subscript} node. */
 export interface SubscriptData extends Data {}
@@ -49,6 +49,9 @@ export const remarkSub: Plugin<[], Root> = function () {
     micromarkExtensions?: unknown[];
     fromMarkdownExtensions?: unknown[];
   };
-  (data.micromarkExtensions ??= []).push(scriptSyntax(`~`));
+  // remd-cjk-friendly says in the same data whether runs flank by its rule. It is read when a document is parsed, so the two plugins may be listed in either order.
+  (data.micromarkExtensions ??= []).push(
+    scriptSyntax(`~`, () => cjkFriendlyEnabled(data))
+  );
   (data.fromMarkdownExtensions ??= []).push(subscriptFromMarkdown);
 };

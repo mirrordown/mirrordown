@@ -34,6 +34,7 @@ const slugs = [
   "block-ids",
   "caption",
   "cjk-breaks",
+  "cjk-friendly",
   "copy-code",
   "definition-list",
   "del",
