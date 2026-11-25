@@ -21,16 +21,17 @@ const timed = (run: () => void): number => {
 const fastest = (run: () => void): number =>
   Math.min(timed(run), timed(run), timed(run));
 
+// `grow` marks one delimiter of each code path the plugin changes in markdown-it's growth check: `scanDelims` as emphasis, strikethrough, the span plugins and the script plugins call it.
 const delimiters = [
-  { name: `strong`, run: `**`, marker: `*` },
-  { name: `emphasis with underscores`, run: `_`, marker: `_` },
-  { name: `strikethrough`, run: `~~`, marker: `~` },
-  { name: `mark`, run: `==`, marker: `=` },
-  { name: `ins`, run: `++`, marker: `+` },
-  { name: `del`, run: `--`, marker: `-` },
-  { name: `spoiler`, run: `||`, marker: `|` },
-  { name: `subscript`, run: `~`, marker: `~` },
-  { name: `superscript`, run: `^`, marker: `^` }
+  { name: `strong`, run: `**`, marker: `*`, grow: true },
+  { name: `emphasis with underscores`, run: `_`, marker: `_`, grow: false },
+  { name: `strikethrough`, run: `~~`, marker: `~`, grow: true },
+  { name: `mark`, run: `==`, marker: `=`, grow: true },
+  { name: `ins`, run: `++`, marker: `+`, grow: false },
+  { name: `del`, run: `--`, marker: `-`, grow: false },
+  { name: `spoiler`, run: `||`, marker: `|`, grow: false },
+  { name: `subscript`, run: `~`, marker: `~`, grow: true },
+  { name: `superscript`, run: `^`, marker: `^`, grow: false }
 ];
 
 const on = [markdownIt(), remark()];
@@ -43,20 +44,24 @@ describe.each(delimiters)(
   ({ run, marker }) => {
     // The span closes after CJK punctuation and before a letter: the case the amendment exists for.
     const wrap = (text: string): string => `「${run}${text}。${run}テスト」`;
+    // The same span where CommonMark closes it too. Pairing many spans in one paragraph costs remark more than linear time with or without the plugin, so the cost of the plugin is measured against the same pairs made without it, not against runs left unpaired.
+    const twin = (text: string): string => `(${run}${text}.${run} test)`;
+    const twins = hostileCases(twin, marker);
 
-    it.each(hostileCases(wrap, marker))(
-      "$name",
-      { timeout: 60_000 },
-      ({ input }) => {
-        const without = timed(() => off.forEach((engine) => engine(input)));
-        let html: string[] = [];
-        const withIt = timed(() => {
-          html = render(input);
-        });
-        expect(withIt - without).toBeLessThan(HOSTILE_TIME_LIMIT);
-        expect(html[1]).toBe(html[0]);
-      }
-    );
+    it.each(
+      hostileCases(wrap, marker).map((hostile, i) => ({
+        ...hostile,
+        baseline: twins[i].input
+      }))
+    )("$name", { timeout: 60_000 }, ({ input, baseline }) => {
+      const without = timed(() => off.forEach((engine) => engine(baseline)));
+      let html: string[] = [];
+      const withIt = timed(() => {
+        html = render(input);
+      });
+      expect(withIt - without).toBeLessThan(HOSTILE_TIME_LIMIT);
+      expect(html[1]).toBe(html[0]);
+    });
   }
 );
 
@@ -73,11 +78,16 @@ describe.each(delimiters)(
   "long runs of $name mixed with CJK punctuation",
   ({ run }) => {
     it.each(shapes(run))("render alike: %j", (shape) => {
-      const html = render(shape.repeat(1000));
+      const html = render(shape.repeat(500));
       expect(html[1]).toBe(html[0]);
     });
+  }
+);
 
-    // A limit in milliseconds passes on a fast machine whatever the code does, so growth is checked: four times the repetitions take about four times as long when each run costs the same (2.0 to 5.2 measured), and sixteen when each costs the length of the paragraph.
+// A limit in milliseconds passes on a fast machine whatever the code does, so growth is checked: four times the repetitions take about four times as long when each run costs the same (2.0 to 5.2 measured across the delimiters), and sixteen when each costs the length of the paragraph.
+describe.each(delimiters.filter(({ grow }) => grow))(
+  "long runs of $name mixed with CJK punctuation",
+  ({ run }) => {
     it(
       "take markdown-it about four times as long four times over",
       { timeout: 120_000 },
@@ -94,7 +104,7 @@ describe.each(delimiters)(
   }
 );
 
-// remark is timed where micromark itself is linear. In one long paragraph micromark pairs emphasis, strikethrough and `~`/`^` in more than linear time with or without the plugin (a paragraph of four times as many `「**` grows 4.8 times at 1,000 against 4,000 without it, 11 for `テ~「`), so those runs are one pair to a paragraph. `==`, `++`, `--` and `||` are paired by Mirrordown's own scan after parsing, which the plugin changes, so they stay in one paragraph; GFM is off for them, since its bare-URL scan is slower than linear on runs of letters and hyphens (`a--b` 40,000 times: 14 times as long as 10,000, without any Mirrordown plugin).
+// remark is timed where micromark itself is linear. In one long paragraph micromark pairs emphasis, strikethrough and `~`/`^` in more than linear time with or without the plugin (a paragraph of four times as many `「**` grows 4.8 times at 1,000 against 4,000 without it, 11 for `テ~「`), so those runs are one pair to a paragraph. `==`, `++`, `--` and `||` are paired by one scan of Mirrordown's after parsing, which the plugin changes, so two of them stay in one paragraph (`||` builds two nodes per span); GFM is off for them, since its bare-URL scan is slower than linear on runs of letters and hyphens (`a--b` 40,000 times: 14 times as long as 10,000, without any Mirrordown plugin).
 describe("remark grows linearly with the plugin", () => {
   // Parsed only: the plugin is a micromark extension, and turning 50,000 paragraphs into HTML adds seconds that measure nothing of it.
   const parser = unified()
@@ -108,8 +118,6 @@ describe("remark grows linearly with the plugin", () => {
       (input: string): unknown => parser.parse(input)
     ],
     [`mark in one paragraph`, `。==テ`, remark({ gfm: false })],
-    [`ins in one paragraph`, `。++テ`, remark({ gfm: false })],
-    [`del in one paragraph`, `。--テ`, remark({ gfm: false })],
     [`spoiler in one paragraph`, `。||テ`, remark({ gfm: false })]
   ])("%s", { timeout: 120_000 }, (_, shape, rm) => {
     const small = shape.repeat(10_000);

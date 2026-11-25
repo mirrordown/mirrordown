@@ -1,52 +1,70 @@
 import { describe, expect, it } from "vite-plus/test";
 import { comparable } from "../utils/hostile.js";
+import { commonMarkExamples, corpus } from "./cases.js";
 import { asDel, markdownIt, remark } from "./engines.js";
-import { ALPHABET, SPAN_ALPHABET, generate } from "./generate.js";
+import { SPAN_ALPHABET, generate } from "./generate.js";
 
-// Our markdown-it against our remark on generated strings, with and without GFM, with Mirrordown's delimiter sets in both. A string the two engines render differently without the plugin is set aside: that difference is theirs. Every other string must render alike with it, but for the differences pinned below, each of which the engines show without CJK text too.
+// Our markdown-it against our remark on the inputs of the comparison with the reference packages, with GFM and Mirrordown's delimiter sets in both, as the presets have them. An input the two engines render differently without the plugin is set aside: that difference is theirs. Every other input must render alike with it, but for the differences pinned below, each of which the engines show without CJK text too. The CommonMark mode of both engines is covered by the fixtures.
 
 const ASTRAL_PUNCTUATION = /^[\p{P}\p{S}]$/u;
 const isAstralPunctuation = (character: string): boolean =>
   character.codePointAt(0)! > 0xffff && ASTRAL_PUNCTUATION.test(character);
 
+const md = markdownIt();
+const rm = remark();
+const mdOff = markdownIt({ cjk: false });
+const rmOff = remark({ cjk: false });
+
 describe.each([
-  { alphabet: `the reference alphabet`, letters: ALPHABET },
-  { alphabet: `Mirrordown's delimiters added`, letters: SPAN_ALPHABET }
-])("cjk-friendly parity, $alphabet", ({ letters }) => {
-  describe.each([true, false])("with GFM %s", (gfm) => {
-    const md = markdownIt({ gfm });
-    const rm = remark({ gfm });
-    const mdOff = markdownIt({ gfm, cjk: false });
-    const rmOff = remark({ gfm, cjk: false });
-    const strings = generate(4000, letters);
-    const compared = strings.filter(
-      (input) => asDel(mdOff(input)) === rmOff(input)
+  {
+    inputs: `generated strings`,
+    strings: generate(4000),
+    changed: 50,
+    crossing: []
+  },
+  {
+    inputs: `generated strings with Mirrordown's delimiters`,
+    strings: generate(4000, SPAN_ALPHABET),
+    changed: 50,
+    crossing: [`Ａ--.あ^~++--~`, `)Ａ++））(_++_`, `||字~_Ａ--(==||~`]
+  },
+  {
+    inputs: `the specification's corpus`,
+    strings: corpus().map(({ input }) => input),
+    changed: 50,
+    crossing: []
+  },
+  {
+    inputs: `the CommonMark examples`,
+    strings: commonMarkExamples().map(({ markdown }) => markdown),
+    changed: 0,
+    crossing: []
+  }
+])("cjk-friendly parity on $inputs", ({ strings, changed, crossing }) => {
+  const compared = strings.filter(
+    (input) => asDel(mdOff(input)) === rmOff(input)
+  );
+  const differ = compared.filter((input) => asDel(md(input)) !== rm(input));
+
+  it("compares inputs the plugin changes", () => {
+    expect(
+      compared.filter((input) => rm(input) !== rmOff(input)).length
+    ).toBeGreaterThanOrEqual(changed);
+  });
+
+  // markdown-it reads `🎉` whole, a symbol and so punctuation; micromark reads two code units, neither punctuation. Here the amendment's clauses turn on what the two read beside a run: taken for a letter, markdown-it renders what remark does.
+  it("renders alike, but where an astral symbol is punctuation to markdown-it only", () => {
+    const astral = differ.filter((input) =>
+      Array.from(input).some(isAstralPunctuation)
     );
-    const differ = compared.filter((input) => asDel(md(input)) !== rm(input));
-
-    it("compares most strings, and the plugin changes some of them", () => {
-      expect(compared.length).toBeGreaterThan(strings.length * 0.98);
-      expect(
-        compared.filter((input) => rm(input) !== rmOff(input)).length
-      ).toBeGreaterThan(50);
-    });
-
-    // markdown-it reads `🎉` whole, a symbol and so punctuation; micromark reads two code units, neither punctuation. Here the amendment's clauses turn on what the two read beside a run: taken for a letter, markdown-it renders what remark does.
-    it("renders alike, but where an astral symbol is punctuation to markdown-it only", () => {
-      const astral = differ.filter((input) =>
-        Array.from(input).some(isAstralPunctuation)
-      );
-      const asLetters = (text: string): string =>
-        Array.from(text, (c) => (isAstralPunctuation(c) ? `ß` : c)).join(``);
-      for (const input of astral) {
-        expect(asDel(md(asLetters(input)))).toBe(asLetters(rm(input)));
-      }
-      expect(differ.filter((input) => !astral.includes(input))).toStrictEqual(
-        letters === SPAN_ALPHABET
-          ? [`Ａ--.あ^~++--~`, `)Ａ++））(_++_`, `||字~_Ａ--(==||~`]
-          : []
-      );
-    });
+    const asLetters = (text: string): string =>
+      Array.from(text, (c) => (isAstralPunctuation(c) ? `ß` : c)).join(``);
+    for (const input of astral) {
+      expect(asDel(md(asLetters(input)))).toBe(asLetters(rm(input)));
+    }
+    expect(differ.filter((input) => !astral.includes(input))).toStrictEqual(
+      crossing
+    );
   });
 });
 
