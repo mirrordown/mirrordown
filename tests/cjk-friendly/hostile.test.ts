@@ -8,8 +8,9 @@ import { remarkCjkFriendly } from "../../packages/remd-cjk-friendly/src";
 import { remarkSub } from "../../packages/remd-sub/src";
 import { remarkSup } from "../../packages/remd-sup/src";
 import {
-  HOSTILE_TIME_LIMIT,
   comparable,
+  GROWTH_CHECK,
+  HOSTILE_TIME_LIMIT,
   hostileCases
 } from "../utils/hostile.js";
 import { asDel, markdownIt, remark } from "./engines.js";
@@ -94,7 +95,7 @@ describe.each(delimiters.filter(({ grow }) => grow))(
   ({ run }) => {
     it(
       "take markdown-it about four times as long four times over",
-      { timeout: 120_000 },
+      GROWTH_CHECK,
       () => {
         const [md] = on;
         const shape = `。${run}テ`;
@@ -115,7 +116,7 @@ describe("remark grows linearly with the plugin", () => {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkCjkFriendly);
-  it("a pair to a paragraph, parsed", { timeout: 120_000 }, () => {
+  it("a pair to a paragraph, parsed", GROWTH_CHECK, () => {
     const shape = `**テ。**テ\n\n`;
     const small = shape.repeat(10_000);
     const large = shape.repeat(40_000);
@@ -127,7 +128,7 @@ describe("remark grows linearly with the plugin", () => {
   // Astral symbols and punctuation (`🎉` So, `𝜵` Sm, `𐬻` Po) beside every delimiter micromark reads, each joined from its two code units before it is classified, in one long paragraph. Each run follows a symbol and precedes a letter, so it only opens and micromark pairs nothing; without the plugin micromark takes the symbols for letters and pairs every run, which costs more than linear time by itself. Parsed only, as above (3.7 and 3.8 measured).
   it(
     "astral symbols beside runs in one paragraph, parsed",
-    { timeout: 120_000 },
+    GROWTH_CHECK,
     () => {
       const astral = unified()
         .use(remarkParse)
@@ -149,7 +150,7 @@ describe("remark grows linearly with the plugin", () => {
     [`spoiler`, `|`]
   ] as const)(
     "the scan behind %s, in one paragraph",
-    { timeout: 120_000 },
+    GROWTH_CHECK,
     (_, marker) => {
       const scan = createDelimitedTransform<PhrasingContent>(
         marker,
