@@ -76,3 +76,9 @@
 
 <!-- @case: closes like emphasis: not after punctuation inside a word -->
 <p>a~(b)~c</p>
+
+<!-- @case: an astral symbol before it is punctuation, so it opens before punctuation -->
+<p>🎉<sub>"a"</sub></p>
+
+<!-- @case: an astral symbol after it is punctuation, so it does not open after a letter -->
+<p>a~𝜵a~a</p>

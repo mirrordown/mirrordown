@@ -5,6 +5,8 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { createDelimitedTransform } from "../../packages/core/src";
 import { remarkCjkFriendly } from "../../packages/remd-cjk-friendly/src";
+import { remarkSub } from "../../packages/remd-sub/src";
+import { remarkSup } from "../../packages/remd-sup/src";
 import {
   HOSTILE_TIME_LIMIT,
   comparable,
@@ -121,6 +123,25 @@ describe("remark grows linearly with the plugin", () => {
       fastest(() => parser.parse(large)) / fastest(() => parser.parse(small))
     ).toBeLessThan(8);
   });
+
+  // Astral symbols and punctuation (`🎉` So, `𝜵` Sm, `𐬻` Po) beside every delimiter micromark reads, each joined from its two code units before it is classified, in one long paragraph. Each run follows a symbol and precedes a letter, so it only opens and micromark pairs nothing; without the plugin micromark takes the symbols for letters and pairs every run, which costs more than linear time by itself. Parsed only, as above (3.7 and 3.8 measured).
+  it(
+    "astral symbols beside runs in one paragraph, parsed",
+    { timeout: 120_000 },
+    () => {
+      const astral = unified()
+        .use(remarkParse)
+        .use(remarkGfm, { singleTilde: false })
+        .use(remarkCjkFriendly)
+        .use([remarkSub, remarkSup]);
+      const shape = `🎉**a𝜵~a𐬻_a🎉~~a𝜵^a`;
+      const small = shape.repeat(2_500);
+      const large = shape.repeat(10_000);
+      expect(
+        fastest(() => astral.parse(large)) / fastest(() => astral.parse(small))
+      ).toBeLessThan(8);
+    }
+  );
 
   // `==`, `++`, `--` and `||` are paired by one scan of Mirrordown's after parsing, and that scan is what the plugin changes, so it is timed alone, on one text node, with the amendment on. The remark plugins around it walk the tree with unist-util-visit, which looks up each text node's place among its parent's children: a paragraph of many spans costs them more than linear time with or without this plugin (four times as many `a ==b== ` take nine times as long, measured on main). Timing the whole pipeline measured that walk, and failed in CI at 8.4 with nothing wrong in the scan.
   it.each([

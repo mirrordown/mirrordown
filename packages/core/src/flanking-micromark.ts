@@ -4,7 +4,7 @@ import type { CharacterClass, Neighbour } from "./flanking.js";
 
 // The characters beside a delimiter run in a micromark tokenizer, as `delimiterFlanking` takes them: the micromark side of the shared flanking rule, used by remd-cjk-friendly's constructs and by `scriptSyntax`.
 
-// micromark-util-classify-character, inlined: line endings, tabs, `\s` and the end of the text are whitespace, Unicode P and S are punctuation. It reads one code unit, as micromark's own emphasis does, so an astral character (its two surrogates) is neither. That is micromark's answer, and it stays the answer under the amendment.
+// micromark-util-classify-character, inlined: line endings, tabs, `\s` and the end of the text are whitespace, Unicode P and S are punctuation. It reads one code unit, as micromark's own emphasis does, so on its own an astral character (two surrogates) would be neither; it classifies the codes that are not surrogates.
 const WHITESPACE = /\s/;
 const PUNCTUATION = /\p{P}|\p{S}/u;
 export const micromarkClass = (code: Code): CharacterClass =>
@@ -17,7 +17,7 @@ export const micromarkClass = (code: Code): CharacterClass =>
       ? `punctuation`
       : `other`;
 
-// The same tests on a whole character, for the one before a variation selector: micromark never classifies that character itself, so there is no answer of its own to keep, and markdown-it reads it whole.
+// The same tests on a whole character. A character outside the Basic Multilingual Plane beside a run is read whole, as CommonMark defines it and as markdown-it and Sätteri read it: `🎉` and `𝜵` are punctuation (So, Sm), `𠮷` a letter. micromark's own emphasis reads two code units there and takes every such character for a letter; these readers serve only the constructs that replace it (remd-cjk-friendly's) and Mirrordown's own `~` and `^`.
 const characterClass = (codePoint: number): CharacterClass => {
   const character = String.fromCodePoint(codePoint);
   return WHITESPACE.test(character)
@@ -44,6 +44,15 @@ const isLowSurrogate = (code: number): boolean =>
 const isHighSurrogate = (code: number): boolean =>
   code >= 0xd800 && code <= 0xdbff;
 
+// Half a surrogate pair is no character. markdown-it reads U+FFFD in its place and Sätteri is handed U+FFFD by the time it parses, and U+FFFD is a symbol (So), so beside a run it is punctuation in all three.
+const REPLACEMENT: Neighbour = { kind: `punctuation`, codePoint: 0xfffd };
+
+// A whole character as a neighbour: `codePoint` is a code point above U+FFFF, or one code unit of the text.
+const neighbour = (codePoint: number): Neighbour =>
+  isLowSurrogate(codePoint) || isHighSurrogate(codePoint)
+    ? REPLACEMENT
+    : { kind: characterClass(codePoint), codePoint };
+
 /**
  * The character before a run that starts at the tokenizer's current point, and a reader for the one before that. Call it where the run starts, before its first marker is consumed: `context.previous` is then the code before the run.
  */
@@ -52,11 +61,13 @@ export const micromarkBefore = (
 ): { before: Neighbour; twoBefore: () => Neighbour } => {
   const { previous } = context;
   const point = context.now();
-  const kind = micromarkClass(previous);
   if (previous === null || previous < 0) {
-    return { before: { kind }, twoBefore: () => ({ kind: `whitespace` }) };
+    return {
+      before: { kind: micromarkClass(previous) },
+      twoBefore: () => ({ kind: `whitespace` })
+    };
   }
-  // micromark hands over code units; the CJK tests take the whole character.
+  // micromark hands over code units; the character before the run is read whole.
   let codePoint = previous;
   if (isLowSurrogate(previous) && point._bufferIndex >= 2) {
     const pair = slice(
@@ -67,16 +78,20 @@ export const micromarkBefore = (
     ).codePointAt(0);
     if (pair !== undefined && pair > 0xffff) codePoint = pair;
   }
-  const end = point._bufferIndex - (codePoint > 0xffff ? 2 : 1);
+  const astral = codePoint > 0xffff;
+  const end = point._bufferIndex - (astral ? 2 : 1);
   return {
-    before: { kind, codePoint },
+    before:
+      astral || isLowSurrogate(previous) || isHighSurrogate(previous)
+        ? neighbour(codePoint)
+        : { kind: micromarkClass(previous), codePoint },
     twoBefore: () => {
       if (end < 1) return { kind: `whitespace` };
       const text = slice(context, point, end - 2, end);
       const character = codePointBefore(text, text.length);
       return character === undefined
         ? { kind: `whitespace` }
-        : { kind: characterClass(character), codePoint: character };
+        : neighbour(character);
     }
   };
 };
@@ -88,6 +103,7 @@ export const micromarkAfter = (
 ): Neighbour => {
   const kind = micromarkClass(code);
   if (code === null || code < 0) return { kind };
+  // The character after the run is read whole too.
   if (isHighSurrogate(code)) {
     const point = context.now();
     const pair = slice(
@@ -96,7 +112,8 @@ export const micromarkAfter = (
       point._bufferIndex,
       point._bufferIndex + 2
     ).codePointAt(0);
-    if (pair !== undefined && pair > 0xffff) return { kind, codePoint: pair };
+    if (pair !== undefined && pair > 0xffff) return neighbour(pair);
   }
+  if (isLowSurrogate(code) || isHighSurrogate(code)) return REPLACEMENT;
   return { kind, codePoint: code };
 };

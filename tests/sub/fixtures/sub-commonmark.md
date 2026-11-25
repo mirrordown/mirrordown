@@ -90,3 +90,11 @@ foo ~bar
 <!-- @case: closes like emphasis: not after punctuation inside a word -->
 
 a~(b)~c
+
+<!-- @case: an astral symbol before it is punctuation, so it opens before punctuation -->
+
+🎉~"a"~
+
+<!-- @case: an astral symbol after it is punctuation, so it does not open after a letter -->
+
+a~𝜵a~a

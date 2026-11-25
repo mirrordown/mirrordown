@@ -88,6 +88,16 @@ describe("sub/remd", () => {
     );
   });
 
+  // A subscript closes like emphasis: not after punctuation before a letter, whether the punctuation is in the Basic Multilingual Plane (`.`) or outside it (`𝜵`, which the syntax reads whole, as markdown-it does, though micromark hands it over as two code units). Sätteri's built-in closes there (see its test).
+  it.each([`a~a.~a`, `a~a𝜵~a`])(
+    "does not close after punctuation before a letter: %s",
+    (input) => {
+      expect(normalizeHtml(String(cmProcessor.processSync(input)))).toBe(
+        `<p>${input}</p>`
+      );
+    }
+  );
+
   // Crossing spans are malformed, and each engine resolves them its own way: here the construct that appeared first in the paragraph claims its pair, as in Sätteri, while markdown-it (see its test) pairs whichever closer comes first. Pinned so that a change in either is noticed.
   it.each([
     ["*x* ~a *b~ c*", "<p><em>x</em> ~a <em>b~ c</em></p>"],

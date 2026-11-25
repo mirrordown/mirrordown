@@ -72,6 +72,14 @@ describe("sub/mdit", () => {
     );
   });
 
+  // A subscript closes like emphasis: not after punctuation before a letter, whether the punctuation is in the Basic Multilingual Plane (`.`) or outside it (`𝜵`, read whole). Sätteri's built-in closes there (see its test).
+  it.each([`a~a.~a`, `a~a𝜵~a`])(
+    "does not close after punctuation before a letter: %s",
+    (input) => {
+      expect(normalizeHtml(md.render(input))).toBe(`<p>${input}</p>`);
+    }
+  );
+
   // Crossing spans are malformed, and each engine resolves them its own way: markdown-it pairs whichever closer comes first, while remark and Sätteri (see their tests) let the construct that appeared first in the paragraph win. Pinned so that a change in either is noticed.
   it.each([
     ["*x* ~a *b~ c*", "<p><em>x</em> <sub>a *b</sub> c*</p>"],

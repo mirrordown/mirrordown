@@ -10,6 +10,9 @@
 <!-- @case: strikethrough around strong, closing before CJK text -->
 ~~**削除。**~~テスト
 
+<!-- @case: strikethrough reads an astral symbol whole -->
+🎉~~"a"~~ and a~~a𝜵~~a
+
 <!-- @case: in a table cell -->
 | 列 |
 | --- |

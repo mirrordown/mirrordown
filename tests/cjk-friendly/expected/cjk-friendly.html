@@ -76,6 +76,24 @@
 <!-- @case: punctuation with a variation selector before the closer, the one change without CJK text -->
 <p>**a.︀**a</p>
 
+<!-- @case: an astral symbol after a letter is punctuation, so the run does not open -->
+<p>a**🎉a**a</p>
+
+<!-- @case: an astral symbol before the opener is punctuation -->
+<p>🎉<strong>"a"</strong></p>
+
+<!-- @case: an astral symbol before an underscore is punctuation -->
+<p>🎉<em>"a"</em></p>
+
+<!-- @case: an astral letter stays a letter -->
+<p>𝒳**"a"**</p>
+
+<!-- @case: mark reads an astral symbol whole -->
+<p>🎉<mark>"a"</mark></p>
+
+<!-- @case: subscript and superscript read an astral symbol whole -->
+<p>🎉<sub>"a"</sub> and 🎉<sup>"a"</sup></p>
+
 <!-- @case: in a link -->
 <p><a href="https://example.com"><strong>テスト。</strong>テスト</a></p>
 

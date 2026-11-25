@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { SPEC, SPEC_GFM, cases } from "./cases.js";
-import { remark } from "./engines.js";
+import { markdownIt, remark } from "./engines.js";
 
 describe("cjk-friendly/remd", () => {
   // The rule does not depend on GFM, so the CommonMark cases hold with remark-gfm and without it.
@@ -25,7 +25,7 @@ describe("cjk-friendly/remd", () => {
     }
   );
 
-  // The corpus cases the two engines render differently without the plugin too: astral punctuation, runs of three or more tildes, which GFM leaves as text, and GFM's bare URLs.
+  // The corpus cases the two engines render differently without the plugin too: runs of three or more tildes, which GFM leaves as text, and GFM's bare URLs.
   it.each(cases(`spec-remd`))(
     "corpus, remark's own: $name",
     ({ input, expected }) => {
@@ -33,12 +33,23 @@ describe("cjk-friendly/remd", () => {
     }
   );
 
-  // micromark reads `🎉` as two code units, neither of them punctuation, so beside a run it is a letter; markdown-it and Sätteri read one symbol (So), punctuation as CommonMark says. The amendment keeps each engine's answer: `**` after a letter and before `🎉` opens here. remark-cjk-friendly reads the whole character instead, and differs from remark without it.
-  it("reads an astral symbol beside a run as micromark does, a letter", () => {
-    expect(corpus(`a**🎉a**a`)).toBe(`<p>a<strong>🎉a</strong>a</p>`);
+  // Besides the specification's own change, the one thing the plugin changes in text without CJK characters: it reads a character outside the Basic Multilingual Plane beside a `*`, `_` or `~~` run whole, as CommonMark, markdown-it, Sätteri and remark-cjk-friendly do, so `🎉` (So) is punctuation and `**` between a letter and it does not open. micromark's own emphasis, which runs without the plugin, reads two code units there and takes it for a letter.
+  it("reads an astral symbol beside a run whole, where micromark alone reads a letter", () => {
+    expect(corpus(`a**🎉a**a`)).toBe(`<p>a**🎉a**a</p>`);
     expect(remark({ spans: false, cjk: false })(`a**🎉a**a`)).toBe(
       `<p>a<strong>🎉a</strong>a</p>`
     );
+  });
+
+  // Half a surrogate pair beside a run: markdown-it reads U+FFFD there, a symbol, so the run flanks as it does beside punctuation, and remark has to agree though the text it writes keeps the surrogate.
+  it.each([
+    [`a lone high surrogate before`, `\ud83c**"a"**`],
+    [`a lone low surrogate before`, `\udf89**"a"**`],
+    [`a lone high surrogate after`, `**"a"**\ud83c`],
+    [`a lone low surrogate after`, `**"a"**\udf89`]
+  ])("reads %s as markdown-it does", (_, input) => {
+    expect(corpus(input)).toBe(markdownIt({ spans: false })(input));
+    expect(corpus(input)).toContain(`<strong>"a"</strong>`);
   });
 
   // A variation selector belongs to the character before it. micromark keeps a NUL (read as U+FFFD) apart from the text around it, so remark finds nothing before the selector and reads it as CommonMark does, a letter, and the run does not open before `"`; markdown-it reads U+FFFD there (as remark-cjk-friendly and markdown-it-cjk-friendly differ in the same way).

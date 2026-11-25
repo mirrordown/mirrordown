@@ -25,18 +25,13 @@ describe("cjk-friendly/mdit", () => {
     }
   );
 
-  // The corpus cases the two engines render differently without the plugin too: astral punctuation, markdown-it's runs of three or more tildes, and GFM's bare URLs, which this markdown-it has none of.
+  // The corpus cases the two engines render differently without the plugin too: markdown-it's runs of three or more tildes, and GFM's bare URLs, which this markdown-it has none of.
   it.each(cases(`spec-mdit`))(
     "corpus, markdown-it's own: $name",
     ({ input, expected }) => {
       expect(corpus(input)).toBe(expected);
     }
   );
-
-  // markdown-it reads `🎉` as one character, a symbol (So), so it is punctuation beside a run, as CommonMark says; remark reads its two surrogates, neither of them punctuation. The amendment keeps each engine's answer: `**` after a letter and before `🎉` does not open here.
-  it("reads an astral symbol beside a run as punctuation", () => {
-    expect(corpus(`a**🎉a**a`)).toBe(`<p>a**🎉a**a</p>`);
-  });
 
   // A variation selector belongs to the character before it. markdown-it reads that character in its source, where a NUL is already U+FFFD, a symbol, so the selector makes punctuation and the run opens before `"`; micromark keeps a NUL apart from the text around it, and remark reads the selector as following nothing (as markdown-it-cjk-friendly and remark-cjk-friendly differ in the same way).
   it("reads the character before a variation selector after a NUL as U+FFFD", () => {
