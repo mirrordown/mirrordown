@@ -250,6 +250,8 @@ the plugin (`pack.deps.alwaysBundle`) so the vsix isn't shipping a bare `require
 Build with `vp run build` and confirm the vsix bundles the plugin and inlines the
 CSS. Add `saeris.markdown-<name>` to the `extensionPack`.
 
+**Check the names against the whole Marketplace before the first publish, not against our publisher.** The Marketplace refuses an extension whose package `name` any other publisher already uses ("The extension 'markdown-image-size' already exists in the Marketplace": `bierner.markdown-image-size` had it), and one whose `displayName` is taken. A lookup of `saeris.<name>` finding nothing proves neither. Search the Marketplace for the name and the display name and compare them with every result's. When a name is taken, change the package `name` and leave the folder as it is (`extensions/markdown-image-size` publishes as `markdown-obsidian-image-size`, `markdown-attrs` as `markdown-attributes`). A refused extension fails the release after the others and the pack are already published, so the pack then lists an extension that does not exist.
+
 **Extension granularity — research the host, don't assume one-plugin-one-extension.**
 The npm packages stay separate (composable primitives), but the _extension_ story
 can differ. When one plugin is useless without another (e.g. `autolink-headings`
