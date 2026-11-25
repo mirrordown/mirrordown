@@ -3,6 +3,7 @@ import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import Theme from "../components/Theme.astro";
 import Header from "../components/Header.astro";
+import { pagePath } from "../utils/pagePath";
 import "../styles/global.css";
 
 interface Props {
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const { title, description, hasSidebar = false } = Astro.props as Props;
-const currentPath = new URL(Astro.request.url).pathname;
+const currentPath = pagePath(Astro.request.url);
 ---
 
 <!doctype html>
