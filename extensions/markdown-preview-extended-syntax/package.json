@@ -1,7 +1,7 @@
 {
   "name": "markdown-preview-extended-syntax",
   "displayName": "Markdown Preview Extended Syntax",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "description": "A collection of syntax extensions for VSCode's Markdown Preview",
   "categories": [
     "Extension Packs",

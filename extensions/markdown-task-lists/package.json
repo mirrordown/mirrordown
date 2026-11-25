@@ -1,7 +1,7 @@
 {
   "name": "markdown-task-lists",
   "displayName": "Markdown Task Lists & Obsidian Statuses",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Adds task lists and Obsidian's task status markers to VSCode's markdown preview",
   "categories": [
     "Other"

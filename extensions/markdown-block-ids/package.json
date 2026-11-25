@@ -1,7 +1,7 @@
 {
   "name": "markdown-block-ids",
   "displayName": "Markdown Obsidian Block IDs",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Adds Obsidian block identifier (^id) support to VSCode's markdown preview",
   "categories": [
     "Other"
