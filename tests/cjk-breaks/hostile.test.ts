@@ -47,21 +47,37 @@ const fastest = (run: () => void): number =>
 const lines = (line: string) => (count: number) =>
   `${line}\n`.repeat(count).trimEnd();
 
+// `size` lines for the time limit and parity, and `small` against four times `small` for growth.
 const shapes = [
   // Every break removed: the whole paragraph is one text node in remark and Sätteri, rebuilt once.
-  { name: `one-character CJK lines`, make: lines(`日`) },
+  {
+    name: `one-character CJK lines`,
+    make: lines(`日`),
+    size: 20_000,
+    small: 10_000
+  },
   // No break removed.
-  { name: `one-character Latin lines`, make: lines(`a`) },
-  // Every break is a text node of its own between two emphasis nodes, read through and taken out.
-  { name: `CJK lines in emphasis`, make: lines(`*日*`) }
+  {
+    name: `one-character Latin lines`,
+    make: lines(`a`),
+    size: 20_000,
+    small: 10_000
+  },
+  // Every break is a text node of its own between two emphasis nodes, read through and taken out. Fewer lines: remark and Sätteri's own parsing of this much emphasis is what takes the time.
+  {
+    name: `CJK lines in emphasis`,
+    make: lines(`*日*`),
+    size: 5000,
+    small: 2500
+  }
 ];
 
 describe(`cjk-breaks on hostile input`, () => {
   it.each(shapes)(
-    `a paragraph of 20,000 $name`,
+    `a paragraph of $size $name`,
     { timeout: 120_000 },
-    ({ make }) => {
-      const input = make(20_000);
+    ({ make, size }) => {
+      const input = make(size);
       const html: string[] = [];
       for (const [engine, render] of withPlugin.entries()) {
         const without = timed(() => bare[engine](input));
@@ -73,16 +89,16 @@ describe(`cjk-breaks on hostile input`, () => {
   );
 
   // A limit in milliseconds is passed by a fast machine whatever the plugin does. Growth does not depend on the machine: four times as many lines take about four times as long when the cost is per line, and sixteen times as long when each line costs the length of the paragraph.
-  describe.each(shapes)(`four times as many $name`, ({ make }) => {
+  describe.each(shapes)(`four times as many $name`, ({ make, small }) => {
     it(
       `take markdown-it about four times as long`,
       { timeout: 120_000 },
       () => {
         const render = withPlugin[0];
-        const small = make(10_000);
-        const large = make(40_000);
+        const few = make(small);
+        const many = make(small * 4);
         expect(
-          fastest(() => render(large)) / fastest(() => render(small))
+          fastest(() => render(many)) / fastest(() => render(few))
         ).toBeLessThan(8);
       }
     );
@@ -102,16 +118,16 @@ describe(`cjk-breaks on hostile input`, () => {
             ...trees.map((copy) => timed(() => transform.runSync(copy, file)))
           );
         };
-        expect(time(make(40_000)) / time(make(10_000))).toBeLessThan(8);
+        expect(time(make(small * 4)) / time(make(small))).toBeLessThan(8);
       }
     );
 
     it(`take Sätteri about four times as long`, { timeout: 120_000 }, () => {
       const render = withPlugin[2];
-      const small = make(10_000);
-      const large = make(40_000);
+      const few = make(small);
+      const many = make(small * 4);
       expect(
-        fastest(() => render(large)) / fastest(() => render(small))
+        fastest(() => render(many)) / fastest(() => render(few))
       ).toBeLessThan(8);
     });
   });
