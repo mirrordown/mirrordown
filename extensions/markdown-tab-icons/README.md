@@ -7,9 +7,9 @@ Adds icons to tab labels in VSCode's markdown preview, matched from the label (n
 The `tab-icons` plugin adds an icon to the labels of [tab groups](/guide/plugins/tabs). A label gets the icon its text matches (`npm`, `pnpm`, `vite.config.ts`), or the one a `[!keyword]` marker at its start names. The icon is an inline `<svg>` before the label's text:
 
 ```html
-<label class="markdown-tabs-label">
-  <input type="radio" name="..." checked>
-  <svg class="markdown-tab-icon" aria-hidden="true" viewBox="0 0 32 32">...</svg>
+<input type="radio" name="..." id="..." hidden checked>
+<label class="markdown-tabs-label" for="...">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="markdown-tab-icon" aria-hidden="true">...</svg>
   npm
 </label>
 ```
@@ -81,7 +81,7 @@ Start a label with `[!keyword]` to choose its icon, the way a [GitHub alert](/gu
 > ```
 ````
 
-`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written.
+`[!none]` turns matching off for one label. A keyword that names no icon isn't a marker: `[!foo] Install` stays as written. Nor is a marker that isn't plain text at the very start of the label: inside markup (`**[!npm]** Install`), or with a piece of it taken by markup (`[!n**p**m]`), it stays as written and the label is matched by its text. Markup after a marker is fine: `[!npm] **Install**`, and so is a keyword that is also a defined [abbreviation](/guide/plugins/abbr): `[!npm]` is still the marker.
 
 ## How a label is matched
 
@@ -120,6 +120,8 @@ Matching works on words, not meaning, so a label can match by accident: `Next st
 | Tools | `esbuild` `eslint` `gradle` `oxc` `oxfmt` `oxlint` `prisma` `rolldown` `rollup` `tailwind` `tailwindcss` `unocss` `vite` `vitest` `vscode` `webpack` |
 | Files | `editorconfig` `gitattributes` `gitignore` `tsconfig` `package.json` `uno.config.ts` `.env` |
 | Extensions | `.c` `.cjs` `.cpp` `.cs` `.css` `.cts` `.dart` `.gjs` `.go` `.groovy` `.gts` `.html` `.ico` `.ini` `.java` `.js` `.json` `.jsp` `.jsx` `.kt` `.less` `.lua` `.md` `.mjs` `.mts` `.php` `.py` `.r` `.rb` `.rs` `.sass` `.scala` `.scss` `.sln` `.swift` `.toml` `.ts` `.tsx` `.wasm` `.yaml` `.yml` |
+
+Some built-in icons define a gradient or a clip path with an id of its own, namespaced `markdown-tab-icon-…`. An icon that appears more than once in a document is written out each time, so those ids repeat, each time on the same definition.
 
 ## Styling
 

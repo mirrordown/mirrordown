@@ -4,7 +4,7 @@ Adds a JavaScript-free click-to-zoom image lightbox to VSCode's markdown preview
 
 ## Overview
 
-The `lightbox` plugin opts an image into a click-to-zoom lightbox with a leading `!!`. The marked image becomes a trigger button that opens the full-size image in a modal `<dialog>`, dimming and blurring the page behind it. Unmarked images (`![…]`) render normally.
+The `lightbox` plugin opts an image into a click-to-zoom lightbox with a leading `!!`. The marked image becomes a trigger button that opens the full-size image in a modal `<dialog>` (a `width` or `height` on the image, from the [`image-size`](/guide/plugins/image-size) plugin or an attribute block, sizes the image on the page and is left off the dialog's copy), dimming and blurring the page behind it. Unmarked images (`![…]`) render normally.
 
 The entire interaction — open, close, backdrop dismiss, `Esc`, focus trapping, and the zoom/fade animation — is built from modern declarative HTML and CSS only: [`<dialog>`](https://developer.mozilla.org/docs/Web/HTML/Element/dialog), the [Invoker Commands API](https://developer.mozilla.org/docs/Web/API/Invoker_Commands_API) (`command`/`commandfor`), `closedby="any"`, and [`@starting-style`](https://developer.mozilla.org/docs/Web/CSS/@starting-style). **No JavaScript runs**, so it works in environments that disable scripts, such as the VSCode Markdown preview.
 
@@ -34,9 +34,15 @@ Add a second `!` in front of any image. Click a thumbnail below to zoom; click i
 
 In renderers without the plugin, the extra `!` renders as plain text and the image still shows.
 
+The marker is read at the start of a line, after a space, or directly after other markup. After text it is not: `Look!![…](…)` and `(!![…](…))` are a `!` and a plain image. The marker cannot be escaped: `\!![…](…)` and `&#33;![…](…)` are still lightbox images. For a literal `!` before a plain image, put a space between them: `! ![…](…)`.
+
+The alt text is the engine's own, in the thumbnail and the dialog alike. Markers from other plugins in it (`!![--a--](x.png)`) differ as they do for any image: markdown-it drops them, and remark and Sätteri keep the text as written.
+
 ### Repeated images share one dialog
 
 The dialog `id` is a stable hash of the image `src`, so referencing the same image more than once produces a **single** dialog that every trigger opens — not a duplicate per reference.
+
+Ids are unique per document, not per page. If you render several documents into one page and two of them lightbox the same image (or use the same name, below), their dialogs have the same `id` and every trigger opens the first one.
 
 ````markdown
 Here is a dock: !![A dock on a still lake](./assets/dock.jpg "Dock").
@@ -47,13 +53,15 @@ And here is the very same dock again: !![The same dock](./assets/dock.jpg "Dock"
 
 By default the `id` is hashed from the `src`. With the [`attrs`](/guide/plugins/attrs) plugin you can name it explicitly with `{#id}` — handy for stable, human-readable ids. The id moves onto the dialog, so it isn't duplicated on the image.
 
+A name belongs to one image. An id that is already taken, by another element such as a heading or by an earlier lightbox image with a different `src`, is ignored: that image keeps its hashed id, so its trigger still opens its own dialog. Two names on the same image give it two dialogs, and references to it without a name share the first. The plugin only sees the ids that exist when it runs, so an id added afterwards (by a slug plugin listed after it, or by the page around the document) is not detected.
+
 ````markdown
 !![Mount Fuji at dawn](./assets/fuji.jpg "Mount Fuji"){#fuji}
 ````
 
 ### Images inside links
 
-An image wrapped in a link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal.
+An image wrapped in a Markdown link is left alone: a `<button>` can't nest in an `<a>`, and the link is the explicit click intent — so the link wins and the `!` stays literal. A link written as raw HTML (`<a href="…">!![…](…)</a>`) is not seen as one: the image inside it still becomes a trigger.
 
 ````markdown
 [!![Swan boats on the lake](./assets/swan-boats.jpg "Swan boats")](https://example.com)

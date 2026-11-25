@@ -1535,7 +1535,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-block-ids@workspace:^, @mirrordown/mdit-block-ids@workspace:packages/mdit-block-ids":
+"@mirrordown/mdit-block-ids@workspace:*, @mirrordown/mdit-block-ids@workspace:^, @mirrordown/mdit-block-ids@workspace:packages/mdit-block-ids":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-block-ids@workspace:packages/mdit-block-ids"
   dependencies:
@@ -1617,7 +1617,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-image-size@workspace:^, @mirrordown/mdit-image-size@workspace:packages/mdit-image-size":
+"@mirrordown/mdit-image-size@workspace:*, @mirrordown/mdit-image-size@workspace:^, @mirrordown/mdit-image-size@workspace:packages/mdit-image-size":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-image-size@workspace:packages/mdit-image-size"
   dependencies:
@@ -1837,7 +1837,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-task-lists@workspace:^, @mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
+"@mirrordown/mdit-task-lists@workspace:*, @mirrordown/mdit-task-lists@workspace:^, @mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-task-lists@workspace:packages/mdit-task-lists"
   dependencies:
@@ -7074,6 +7074,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-block-ids@workspace:extensions/markdown-block-ids":
+  version: 0.0.0-use.local
+  resolution: "markdown-block-ids@workspace:extensions/markdown-block-ids"
+  dependencies:
+    "@mirrordown/mdit-block-ids": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
 "markdown-caption@workspace:extensions/markdown-caption":
   version: 0.0.0-use.local
   resolution: "markdown-caption@workspace:extensions/markdown-caption"
@@ -7136,6 +7146,16 @@ __metadata:
   resolution: "markdown-github-alerts@workspace:extensions/markdown-github-alerts"
   dependencies:
     "@mirrordown/mdit-github-alerts": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-image-size@workspace:extensions/markdown-image-size":
+  version: 0.0.0-use.local
+  resolution: "markdown-image-size@workspace:extensions/markdown-image-size"
+  dependencies:
+    "@mirrordown/mdit-image-size": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown
@@ -7329,6 +7349,16 @@ __metadata:
   resolution: "markdown-tabs@workspace:extensions/markdown-tabs"
   dependencies:
     "@mirrordown/mdit-tabs": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-task-lists@workspace:extensions/markdown-task-lists":
+  version: 0.0.0-use.local
+  resolution: "markdown-task-lists@workspace:extensions/markdown-task-lists"
+  dependencies:
+    "@mirrordown/mdit-task-lists": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

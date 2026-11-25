@@ -1,0 +1,21 @@
+@import "../../../packages/mdit-task-lists/src/task-lists.css";
+
+/*
+  VSCode-specific overrides
+  -------------------------
+  Each status colour is a light-dark() pair, read on the list item, which
+  follows that item's color-scheme. VSCode's preview says which kind of theme
+  is active with a class on <body>, not with color-scheme, so under a dark
+  theme the icons would keep the darker colours meant for a light page. Say it
+  here, on the items themselves, since this is a host-integration concern
+  rather than a plugin one.
+*/
+.vscode-light li[data-task],
+.vscode-high-contrast-light li[data-task] {
+  color-scheme: light;
+}
+
+.vscode-dark li[data-task],
+.vscode-high-contrast:not(.vscode-high-contrast-light) li[data-task] {
+  color-scheme: dark;
+}

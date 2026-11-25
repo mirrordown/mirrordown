@@ -18,6 +18,10 @@ Attributes are written in curly braces using CSS-like shorthand:
 - `.class` → adds a class
 - `key=value` → sets any attribute
 
+Words inside the braces are separated by spaces or tabs. A value that holds spaces is quoted, with `"` or `'`, as in `{title="A longer title"}`. A word of two or more characters with no `=` is an attribute with an empty value, as in `{hidden}`, and a lone character is ignored. Setting an attribute the element already has replaces its value. Classes add up.
+
+Braces that set nothing stay text: `{}`, `{ }`, `{x}` and `{a, b}` are left alone. So is a block with a quote that never closes, with a key that isn't a name (`{a/b=c}`), or written across two lines, or one that holds a character reference (`{title="a&amp;b"}`), except on a code fence, where the reference is decoded. To keep a block that would be read as text, escape its opening brace: `\{.note}`.
+
 ### Headings
 
 ````markdown
@@ -39,6 +43,8 @@ A paragraph with a custom class.
 {.note}
 ````
 
+With [unwrap-images](/guide/plugins/unwrap-images), a block on the line after an image that stands alone in its paragraph goes on the `<img>` when the paragraph is unwrapped, and a paragraph of several images keeps its block and is not unwrapped.
+
 ### Inline elements
 
 ````markdown
@@ -51,6 +57,16 @@ This is **important**{.warning} text.
 - Item one
 - Item two
 {.checklist}
+````
+
+A table takes its block after a blank line, since a line written straight under a table is another row of it. A list takes one there too.
+
+````markdown
+| Name | Value |
+| ---- | ----- |
+| a    | 1     |
+
+{.data}
 ````
 
 ### Inside blockquotes and lists

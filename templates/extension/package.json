@@ -15,6 +15,11 @@
   "publisher": "saeris",
   "main": "./dist/index.js",
   "browser": "./dist/index.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "scripts": {},
   "devDependencies": {
     "@mirrordown/mdit-<name>": "workspace:*",

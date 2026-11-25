@@ -23,12 +23,14 @@ const EXTENSIONS = [
   ["markdown-abbr", "abbr"],
   ["markdown-attrs", "attrs"],
   ["markdown-autolink-headings", "autolink-headings"],
+  ["markdown-block-ids", "block-ids"],
   ["markdown-caption", "caption"],
   ["markdown-definition-list", "definition-list"],
   ["markdown-del", "del"],
   ["markdown-denden-furigana", "ruby"],
   ["markdown-file-tree", "file-tree"],
   ["markdown-github-alerts", "github-alerts"],
+  ["markdown-image-size", "image-size"],
   ["markdown-ins", "ins"],
   ["markdown-kbd", "kbd"],
   ["markdown-lightbox", "lightbox"],
@@ -43,6 +45,7 @@ const EXTENSIONS = [
   ["markdown-sup", "sup"],
   ["markdown-tab-icons", "tab-icons"],
   ["markdown-tabs", "tabs"],
+  ["markdown-task-lists", "task-lists"],
   ["markdown-unwrap-images", "unwrap-images"]
   // markdown-inline-svg has no guide and is authored by hand
 ];

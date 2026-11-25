@@ -45,14 +45,14 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | `## Heading` → wrap        | [`<section>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section)                | [mdit-sectionize](packages/mdit-sectionize)                 | [remd-sectionize](packages/remd-sectionize)                 | [sat-sectionize](packages/sat-sectionize)                 | [markdown-sectionize](extensions/markdown-sectionize)                 |
 | (empty `<p>`) → removed    | dropped empty paragraphs                                                                                   | [mdit-squeeze-paragraphs](packages/mdit-squeeze-paragraphs) | [remd-squeeze-paragraphs](packages/remd-squeeze-paragraphs) | [sat-squeeze-paragraphs](packages/sat-squeeze-paragraphs) | [markdown-squeeze-paragraphs](extensions/markdown-squeeze-paragraphs) |
 | `~: caption` after a block | [`<figure>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figure) + `<figcaption>` | [mdit-caption](packages/mdit-caption)                       | [remd-caption](packages/remd-caption)                       | [sat-caption](packages/sat-caption)                       | [markdown-caption](extensions/markdown-caption)                       |
-| `- [x] task`, `- [/] task` | GFM task list, plus six more task states                                                                   | [mdit-task-lists](packages/mdit-task-lists)                 | [remd-task-lists](packages/remd-task-lists)                 | [sat-task-lists](packages/sat-task-lists)                 | —                                                                     |
+| `- [x] task`, `- [/] task` | GFM task list, plus six more task states                                                                   | [mdit-task-lists](packages/mdit-task-lists)                 | [remd-task-lists](packages/remd-task-lists)                 | [sat-task-lists](packages/sat-task-lists)                 | [markdown-task-lists](extensions/markdown-task-lists)                 |
 
 ### Attributes
 
-| Syntax         | HTML                        | markdown-it                               | remark                                    | Sätteri                                 | VSCode                                      |
-| -------------- | --------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | ------------------------------------------- |
-| `{.class #id}` | Element attributes          | [mdit-attrs](packages/mdit-attrs)         | [remd-attrs](packages/remd-attrs)         | built-in `attributes`                   | [markdown-attrs](extensions/markdown-attrs) |
-| `text ^id`     | block `id` (`<p id="^id">`) | [mdit-block-ids](packages/mdit-block-ids) | [remd-block-ids](packages/remd-block-ids) | [sat-block-ids](packages/sat-block-ids) | —                                           |
+| Syntax         | HTML                        | markdown-it                               | remark                                    | Sätteri                                 | VSCode                                              |
+| -------------- | --------------------------- | ----------------------------------------- | ----------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| `{.class #id}` | Element attributes          | [mdit-attrs](packages/mdit-attrs)         | [remd-attrs](packages/remd-attrs)         | built-in `attributes`                   | [markdown-attrs](extensions/markdown-attrs)         |
+| `text ^id`     | block `id` (`<p id="^id">`) | [mdit-block-ids](packages/mdit-block-ids) | [remd-block-ids](packages/remd-block-ids) | [sat-block-ids](packages/sat-block-ids) | [markdown-block-ids](extensions/markdown-block-ids) |
 
 ### Images
 
@@ -61,7 +61,7 @@ To use the whole suite, install one preset instead of each plugin: every feature
 | `![](…img.svg)`      | inlined `<svg>`                                                                           | [mdit-inline-svg](packages/mdit-inline-svg)       | [remd-inline-svg](packages/remd-inline-svg)       | [sat-inline-svg](packages/sat-inline-svg)       | [markdown-inline-svg](extensions/markdown-inline-svg)       |
 | `!![](…img)`         | [`<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) | [mdit-lightbox](packages/mdit-lightbox)           | [remd-lightbox](packages/remd-lightbox)           | [sat-lightbox](packages/sat-lightbox)           | [markdown-lightbox](extensions/markdown-lightbox)           |
 | standalone `![]()`   | unwrapped `<img>`                                                                         | [mdit-unwrap-images](packages/mdit-unwrap-images) | [remd-unwrap-images](packages/remd-unwrap-images) | [sat-unwrap-images](packages/sat-unwrap-images) | [markdown-unwrap-images](extensions/markdown-unwrap-images) |
-| `![alt\|100x145](…)` | `width` and `height` on the `<img>`                                                       | [mdit-image-size](packages/mdit-image-size)       | [remd-image-size](packages/remd-image-size)       | [sat-image-size](packages/sat-image-size)       | —                                                           |
+| `![alt\|100x145](…)` | `width` and `height` on the `<img>`                                                       | [mdit-image-size](packages/mdit-image-size)       | [remd-image-size](packages/remd-image-size)       | [sat-image-size](packages/sat-image-size)       | [markdown-image-size](extensions/markdown-image-size)       |
 
 ### Diagrams
 
