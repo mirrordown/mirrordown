@@ -86,10 +86,10 @@ To use the whole suite, install one preset instead of each plugin: every feature
 
 ### Chinese, Japanese and Korean text
 
-| Syntax                                     | HTML                                                                       | markdown-it                                     | remark                                          | Sätteri                                   | VSCode |
-| ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | ------ |
-| line break inside Chinese or Japanese text | the break removed, so no space shows                                       | [mdit-cjk-breaks](packages/mdit-cjk-breaks)     | [remd-cjk-breaks](packages/remd-cjk-breaks)     | [sat-cjk-breaks](packages/sat-cjk-breaks) | —      |
-| `**強調。**` beside CJK punctuation        | emphasis, strikethrough and the inline elements above open and close there | [mdit-cjk-friendly](packages/mdit-cjk-friendly) | [remd-cjk-friendly](packages/remd-cjk-friendly) | not yet                                   | —      |
+| Syntax                                     | HTML                                                                       | markdown-it                                     | remark                                          | Sätteri                                   | VSCode                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| line break inside Chinese or Japanese text | the break removed, so no space shows                                       | [mdit-cjk-breaks](packages/mdit-cjk-breaks)     | [remd-cjk-breaks](packages/remd-cjk-breaks)     | [sat-cjk-breaks](packages/sat-cjk-breaks) | [markdown-cjk-breaks](extensions/markdown-cjk-breaks)     |
+| `**強調。**` beside CJK punctuation        | emphasis, strikethrough and the inline elements above open and close there | [mdit-cjk-friendly](packages/mdit-cjk-friendly) | [remd-cjk-friendly](packages/remd-cjk-friendly) | not yet                                   | [markdown-cjk-friendly](extensions/markdown-cjk-friendly) |
 
 > All VSCode extensions are also bundled together in the [Markdown Preview Extended Syntax](extensions/markdown-preview-extended-syntax) pack. Heading slugs are provided in the preview by the Heading Anchors extension (and by VSCode's own built-in heading ids), so `slug` has no standalone extension. VSCode's preview has its own copy button on code blocks (1.132+), so `copy-code` has none either.
 

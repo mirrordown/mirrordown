@@ -1,0 +1,40 @@
+{
+  "name": "markdown-cjk-breaks",
+  "displayName": "Markdown CJK Line Breaks",
+  "version": "0.0.0",
+  "description": "Removes line breaks inside Chinese and Japanese text from VSCode's markdown preview, where they would show as spaces",
+  "categories": [
+    "Other"
+  ],
+  "license": "MIT",
+  "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirrordown/mirrordown.git"
+  },
+  "publisher": "saeris",
+  "main": "./dist/index.cjs",
+  "browser": "./dist/index.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "devDependencies": {
+    "@mirrordown/mdit-cjk-breaks": "workspace:*",
+    "@types/markdown-it": "catalog:",
+    "@types/vscode": "^1.125.0"
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "bumpy": {
+    "buildCommand": "vp pack && vp exec vsce package --no-dependencies",
+    "publishCommand": "vp exec vsce publish --no-dependencies",
+    "skipNpmPublish": true
+  }
+}
