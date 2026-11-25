@@ -7151,16 +7151,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"markdown-image-size@workspace:extensions/markdown-image-size":
-  version: 0.0.0-use.local
-  resolution: "markdown-image-size@workspace:extensions/markdown-image-size"
-  dependencies:
-    "@mirrordown/mdit-image-size": "workspace:*"
-    "@types/markdown-it": "catalog:"
-    "@types/vscode": "npm:^1.125.0"
-  languageName: unknown
-  linkType: soft
-
 "markdown-inline-svg@workspace:extensions/markdown-inline-svg":
   version: 0.0.0-use.local
   resolution: "markdown-inline-svg@workspace:extensions/markdown-inline-svg"
@@ -7246,6 +7236,16 @@ __metadata:
   resolution: "markdown-mermaid-pele@workspace:extensions/markdown-mermaid-pele"
   dependencies:
     "@mirrordown/mdit-mermaid-pele": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-obsidian-image-size@workspace:extensions/markdown-image-size":
+  version: 0.0.0-use.local
+  resolution: "markdown-obsidian-image-size@workspace:extensions/markdown-image-size"
+  dependencies:
+    "@mirrordown/mdit-image-size": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

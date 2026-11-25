@@ -1,5 +1,5 @@
 {
-  "name": "markdown-image-size",
+  "name": "markdown-obsidian-image-size",
   "displayName": "Markdown Obsidian Image Size",
   "version": "0.1.0",
   "description": "Adds Obsidian image size (![alt|100x145](src)) support to VSCode's markdown preview",
