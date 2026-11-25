@@ -2,6 +2,7 @@ import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
 import {
+  cjkFriendlyEnabled,
   createDelimitedTransform,
   createHighlightMarkers,
   maskTreeEscapes,
@@ -24,23 +25,32 @@ export interface Mark extends Parent {
  * remark plugin for highlight syntax (`==text==`), wrapping each match in a
  * {@link Mark} node that renders as a `<mark>` element. A highlight that starts with a marker emoji names a variant in `data-highlight`: a colour emoji is removed (`==🔴text==` renders `<mark data-highlight="red">text</mark>`), a label's is kept (`==🐛 Bug==` renders `<mark data-highlight="bug">🐛 Bug</mark>`). `options.markers` adds, renames and turns off markers.
  */
-export const remarkMark: Plugin<[MarkOptions?], Root> = (options = {}) => {
+export const remarkMark: Plugin<[MarkOptions?], Root> = function (
+  options = {}
+) {
   const markers = createHighlightMarkers(options);
+  // remd-cjk-friendly says in the processor's data whether runs flank by its rule. It is read when the tree is transformed, so the two plugins may be listed in either order.
+  const data = this.data();
   // The scan is shared with the Sätteri plugin through @mirrordown/core.
-  const transform = createDelimitedTransform<PhrasingContent>(`=`, {
-    text: (value) => ({ type: `text`, value }),
-    wrap: (children): Mark => {
-      // Under the key the attrs plugin writes, so a `data-highlight` in an attribute block replaces it.
-      const variant = markers.take(children);
-      return {
-        type: `mark`,
-        children,
-        data: variant
-          ? { hName: `mark`, hProperties: { "data-highlight": variant } }
-          : { hName: `mark` }
-      };
-    }
-  });
+  const transform = createDelimitedTransform<PhrasingContent>(
+    `=`,
+    {
+      text: (value) => ({ type: `text`, value }),
+      wrap: (children): Mark => {
+        // Under the key the attrs plugin writes, so a `data-highlight` in an attribute block replaces it.
+        const variant = markers.take(children);
+        return {
+          type: `mark`,
+          children,
+          data: variant
+            ? { hName: `mark`, hProperties: { "data-highlight": variant } }
+            : { hName: `mark` }
+        };
+      }
+    },
+    undefined,
+    () => cjkFriendlyEnabled(data)
+  );
 
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a

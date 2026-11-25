@@ -1,7 +1,11 @@
 import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
-import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
+import {
+  cjkFriendlyEnabled,
+  createDelimitedTransform,
+  maskTreeEscapes
+} from "@mirrordown/core";
 
 /** Optional data carried by an {@link Insert} node. */
 export interface InsertData extends Data {}
@@ -16,15 +20,22 @@ export interface Insert extends Parent {
 /**
  * remark plugin for insertion syntax (`++text++`), wrapping each match in an {@link Insert} node that renders as an `<ins>` element. The scan is shared with markdown-it's pairing rules and the Sätteri plugin through `@mirrordown/core`.
  */
-export const remarkIns: Plugin<[], Root> = () => {
-  const transform = createDelimitedTransform<PhrasingContent>(`+`, {
-    text: (value) => ({ type: `text`, value }),
-    wrap: (children): Insert => ({
-      type: `insert`,
-      children,
-      data: { hName: `ins` }
-    })
-  });
+export const remarkIns: Plugin<[], Root> = function () {
+  // remd-cjk-friendly says in the processor's data whether runs flank by its rule. It is read when the tree is transformed, so the two plugins may be listed in either order.
+  const data = this.data();
+  const transform = createDelimitedTransform<PhrasingContent>(
+    `+`,
+    {
+      text: (value) => ({ type: `text`, value }),
+      wrap: (children): Insert => ({
+        type: `insert`,
+        children,
+        data: { hName: `ins` }
+      })
+    },
+    undefined,
+    () => cjkFriendlyEnabled(data)
+  );
 
   const transformer: Transformer<Root> = (tree, file) => {
     // Escapes are resolved before this runs; mask escaped characters so a backslash-escaped delimiter is not matched, as in markdown-it.

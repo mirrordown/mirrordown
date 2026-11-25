@@ -1484,6 +1484,7 @@ __metadata:
     "@vitest/browser-playwright": "catalog:"
     "@vscode/vsce": "npm:^3.9.2"
     markdown-it: "npm:^14.2.0"
+    markdown-it-cjk-friendly: "npm:^3.0.0"
     micromark-extension-cjk-friendly-util: "npm:^3.0.1"
     opentype.js: "npm:^2.0.0"
     playwright: "npm:^1.61.1"
@@ -1491,6 +1492,8 @@ __metadata:
     postcss-cli: "npm:^11.0.1"
     postcss-import: "npm:^16.1.1"
     rehype-stringify: "npm:^10.0.1"
+    remark-cjk-friendly: "npm:^2.3.4"
+    remark-cjk-friendly-gfm-strikethrough: "npm:^2.3.3"
     remark-gfm: "catalog:"
     remark-parse: "npm:^11.0.0"
     remark-rehype: "npm:^11.1.2"
@@ -1551,6 +1554,18 @@ __metadata:
 "@mirrordown/mdit-caption@workspace:*, @mirrordown/mdit-caption@workspace:^, @mirrordown/mdit-caption@workspace:packages/mdit-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-caption@workspace:packages/mdit-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-cjk-friendly@workspace:^, @mirrordown/mdit-cjk-friendly@workspace:packages/mdit-cjk-friendly":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-cjk-friendly@workspace:packages/mdit-cjk-friendly"
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
@@ -1870,6 +1885,7 @@ __metadata:
     "@mirrordown/mdit-autolink-headings": "workspace:^"
     "@mirrordown/mdit-block-ids": "workspace:^"
     "@mirrordown/mdit-caption": "workspace:^"
+    "@mirrordown/mdit-cjk-friendly": "workspace:^"
     "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
     "@mirrordown/mdit-del": "workspace:^"
@@ -1911,6 +1927,7 @@ __metadata:
     "@mirrordown/remd-autolink-headings": "workspace:^"
     "@mirrordown/remd-block-ids": "workspace:^"
     "@mirrordown/remd-caption": "workspace:^"
+    "@mirrordown/remd-cjk-friendly": "workspace:^"
     "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
     "@mirrordown/remd-del": "workspace:^"
@@ -2046,6 +2063,20 @@ __metadata:
   peerDependencies:
     unified: ^11.0.0
     vfile: ^6.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-cjk-friendly@workspace:^, @mirrordown/remd-cjk-friendly@workspace:packages/remd-cjk-friendly":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-cjk-friendly@workspace:packages/remd-cjk-friendly"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    micromark-core-commonmark: "npm:^2.0.0"
+    micromark-util-types: "catalog:"
+    unified: "catalog:"
+  peerDependencies:
+    unified: ^11.0.0
   languageName: unknown
   linkType: soft
 
@@ -7170,6 +7201,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"markdown-it-cjk-friendly@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "markdown-it-cjk-friendly@npm:3.0.0"
+  dependencies:
+    get-east-asian-width: "npm:^1.4.0"
+  peerDependencies:
+    "@types/markdown-it": ">=14.2.0"
+    markdown-it: "*"
+  peerDependenciesMeta:
+    "@types/markdown-it":
+      optional: true
+  checksum: 10/4cc360a0f9ce70ddab04c927b1ae5e119746f30f04c3538c8b99d4645600c2d8f1a78432c5e76f51e96dbce9e439e88811372b0c5e0754dc91e28a695d61204f
+  languageName: node
+  linkType: hard
+
 "markdown-it@npm:^14.0.0, markdown-it@npm:^14.2.0":
   version: 14.2.0
   resolution: "markdown-it@npm:14.2.0"
@@ -7462,6 +7508,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mdast-util-gfm-strikethrough@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "mdast-util-gfm-strikethrough@npm:2.0.1"
+  dependencies:
+    "@types/mdast": "npm:^4.0.0"
+    mdast-util-from-markdown: "npm:^2.0.0"
+    mdast-util-to-markdown: "npm:^2.0.0"
+  checksum: 10/8949dfda8646eeb0326c515347f119a3f805f3e4f890b4ad6392cd0a3b28587aadacd7ab1fdab0d4ea0e65d4be382def14e9cccde8dc224208f880e6e63013d5
+  languageName: node
+  linkType: hard
+
 "mdast-util-gfm-table@npm:^2.0.0":
   version: 2.0.0
   resolution: "mdast-util-gfm-table@npm:2.0.0"
@@ -7590,6 +7647,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mdast-util-to-markdown-cjk-friendly-gfm-strikethrough@npm:1.0.2":
+  version: 1.0.2
+  resolution: "mdast-util-to-markdown-cjk-friendly-gfm-strikethrough@npm:1.0.2"
+  dependencies:
+    mdast-util-gfm-strikethrough: "npm:^2.0.1"
+    mdast-util-to-markdown: "npm:^2.1.3"
+    mdast-util-to-markdown-cjk-friendly: "npm:1.0.2"
+  peerDependencies:
+    "@types/mdast": "*"
+  peerDependenciesMeta:
+    "@types/mdast":
+      optional: true
+  checksum: 10/ed65e5e13444655bb26ee2a1abaa25f6a0954fc052d804b10111cb5204c9843802fe0d61b62d862c86b3e097a1cba214591b3010c31aa7a0836964e6b8b43272
+  languageName: node
+  linkType: hard
+
+"mdast-util-to-markdown-cjk-friendly@npm:1.0.2":
+  version: 1.0.2
+  resolution: "mdast-util-to-markdown-cjk-friendly@npm:1.0.2"
+  dependencies:
+    mdast-util-to-markdown: "npm:^2.1.3"
+    micromark-extension-cjk-friendly-util: "npm:3.0.1"
+    micromark-util-character: "npm:^2.1.1"
+    micromark-util-classify-character: "npm:^2.0.1"
+    micromark-util-html-tag-name: "npm:^2.0.1"
+  peerDependencies:
+    "@types/mdast": "*"
+  peerDependenciesMeta:
+    "@types/mdast":
+      optional: true
+  checksum: 10/dfa0da8f53889f917d368f24f97aa4e31efbd3653344821ead66b5b11ddfc0f0b1dcbf41bd580678db38959e479541b5159b5d63cee58864cce7d92f33e65b41
+  languageName: node
+  linkType: hard
+
 "mdast-util-to-markdown@npm:^2.0.0":
   version: 2.1.2
   resolution: "mdast-util-to-markdown@npm:2.1.2"
@@ -7604,6 +7695,25 @@ __metadata:
     unist-util-visit: "npm:^5.0.0"
     zwitch: "npm:^2.0.0"
   checksum: 10/ab494a32f1ec90f0a502970b403b1847a10f3ba635adddb66ce70994cc47b4924c6c05078ddd29a8c2c5c9bc8c0bcc20e5fc1ef0fcb9b0cb9c0589a000817f1c
+  languageName: node
+  linkType: hard
+
+"mdast-util-to-markdown@npm:^2.1.3":
+  version: 2.2.4
+  resolution: "mdast-util-to-markdown@npm:2.2.4"
+  dependencies:
+    "@types/mdast": "npm:^4.0.0"
+    "@types/unist": "npm:^3.0.0"
+    longest-streak: "npm:^3.0.0"
+    mdast-util-phrasing: "npm:^4.0.0"
+    mdast-util-to-string: "npm:^4.0.0"
+    micromark-util-character: "npm:^2.0.0"
+    micromark-util-classify-character: "npm:^2.0.0"
+    micromark-util-decode-string: "npm:^2.0.0"
+    micromark-util-html-tag-name: "npm:^2.0.0"
+    unist-util-visit: "npm:^5.0.0"
+    zwitch: "npm:^2.0.0"
+  checksum: 10/dc27abdc5d48d8cf0aa9aa6d5646a72c58b68d5b6b62093cc1fa17bf92a4fc64f998faa8b6cddcda5971beb4d27b33b98065b6914272ac63cc812aed6091dbca
   languageName: node
   linkType: hard
 
@@ -7668,7 +7778,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-extension-cjk-friendly-util@npm:^3.0.1":
+"micromark-extension-cjk-friendly-gfm-strikethrough@npm:2.0.1":
+  version: 2.0.1
+  resolution: "micromark-extension-cjk-friendly-gfm-strikethrough@npm:2.0.1"
+  dependencies:
+    devlop: "npm:^1.1.0"
+    get-east-asian-width: "npm:^1.4.0"
+    micromark-extension-cjk-friendly-util: "npm:3.0.1"
+    micromark-util-character: "npm:^2.1.1"
+    micromark-util-chunked: "npm:^2.0.1"
+    micromark-util-resolve-all: "npm:^2.0.1"
+    micromark-util-symbol: "npm:^2.0.1"
+  peerDependencies:
+    micromark: ^4.0.0
+    micromark-util-types: ^2.0.0
+  peerDependenciesMeta:
+    micromark-util-types:
+      optional: true
+  checksum: 10/20b5060c6e9374cf28bd599958a695f5470a48add2220fe896d740d105db0c3d602bda31629f1a1a155999340c453d157571a24e6b076b4333eb5a81acf90376
+  languageName: node
+  linkType: hard
+
+"micromark-extension-cjk-friendly-util@npm:3.0.1, micromark-extension-cjk-friendly-util@npm:^3.0.1":
   version: 3.0.1
   resolution: "micromark-extension-cjk-friendly-util@npm:3.0.1"
   dependencies:
@@ -7679,6 +7810,25 @@ __metadata:
     micromark-util-types:
       optional: true
   checksum: 10/3eb5f3c8a1fb5558319f4d0712bb99c64f7ec41215cf5cff4679c738a7087813fdded80df06ed301c0b631c893f143055b444225deae63fc77123c74ebca0e21
+  languageName: node
+  linkType: hard
+
+"micromark-extension-cjk-friendly@npm:2.0.2":
+  version: 2.0.2
+  resolution: "micromark-extension-cjk-friendly@npm:2.0.2"
+  dependencies:
+    devlop: "npm:^1.1.0"
+    micromark-extension-cjk-friendly-util: "npm:3.0.1"
+    micromark-util-chunked: "npm:^2.0.1"
+    micromark-util-resolve-all: "npm:^2.0.1"
+    micromark-util-symbol: "npm:^2.0.1"
+  peerDependencies:
+    micromark: ^4.0.0
+    micromark-util-types: ^2.0.0
+  peerDependenciesMeta:
+    micromark-util-types:
+      optional: true
+  checksum: 10/8322337f9d1cb675540d6679721cf40f85ce9be2ba84381259d12b7134aadbf26eade774f1cdff79dd58383190b40cfa9cf485d28764a2ad2e4cb6baa7ef8114
   languageName: node
   linkType: hard
 
@@ -7935,7 +8085,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-chunked@npm:^2.0.0":
+"micromark-util-chunked@npm:^2.0.0, micromark-util-chunked@npm:^2.0.1":
   version: 2.0.1
   resolution: "micromark-util-chunked@npm:2.0.1"
   dependencies:
@@ -7944,7 +8094,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-classify-character@npm:^2.0.0":
+"micromark-util-classify-character@npm:^2.0.0, micromark-util-classify-character@npm:^2.0.1":
   version: 2.0.1
   resolution: "micromark-util-classify-character@npm:2.0.1"
   dependencies:
@@ -8008,7 +8158,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-html-tag-name@npm:^2.0.0":
+"micromark-util-html-tag-name@npm:^2.0.0, micromark-util-html-tag-name@npm:^2.0.1":
   version: 2.0.1
   resolution: "micromark-util-html-tag-name@npm:2.0.1"
   checksum: 10/dea365f5ad28ad74ff29fcb581f7b74fc1f80271c5141b3b2bc91c454cbb6dfca753f28ae03730d657874fcbd89d0494d0e3965dfdca06d9855f467c576afa9d
@@ -8024,7 +8174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-resolve-all@npm:^2.0.0":
+"micromark-util-resolve-all@npm:^2.0.0, micromark-util-resolve-all@npm:^2.0.1":
   version: 2.0.1
   resolution: "micromark-util-resolve-all@npm:2.0.1"
   dependencies:
@@ -9314,6 +9464,38 @@ __metadata:
     hast-util-to-html: "npm:^9.0.0"
     unified: "npm:^11.0.0"
   checksum: 10/76ded4b2b137f585c6a35ac2e95a35cbd9d49558bd5af946b7e7a9e67b17cb2a7d33f3df21776d2e9972cd057e829e17f61954bc72ea6cbe0e20d670b179adab
+  languageName: node
+  linkType: hard
+
+"remark-cjk-friendly-gfm-strikethrough@npm:^2.3.3":
+  version: 2.3.3
+  resolution: "remark-cjk-friendly-gfm-strikethrough@npm:2.3.3"
+  dependencies:
+    mdast-util-to-markdown-cjk-friendly-gfm-strikethrough: "npm:1.0.2"
+    micromark-extension-cjk-friendly-gfm-strikethrough: "npm:2.0.1"
+  peerDependencies:
+    "@types/mdast": ^4.0.0
+    unified: ^11.0.0
+  peerDependenciesMeta:
+    "@types/mdast":
+      optional: true
+  checksum: 10/931545c65e91a37746f5e9992e695cb9988ed0f8a30cac8bf31d5c765be1415fdab2c071b9d230f6046ac28caf91a89384e186b471877153767e097e959a5dfb
+  languageName: node
+  linkType: hard
+
+"remark-cjk-friendly@npm:^2.3.4":
+  version: 2.3.4
+  resolution: "remark-cjk-friendly@npm:2.3.4"
+  dependencies:
+    mdast-util-to-markdown-cjk-friendly: "npm:1.0.2"
+    micromark-extension-cjk-friendly: "npm:2.0.2"
+  peerDependencies:
+    "@types/mdast": ^4.0.0
+    unified: ^11.0.0
+  peerDependenciesMeta:
+    "@types/mdast":
+      optional: true
+  checksum: 10/5577c7544bfc01685ac90292d4a69509f445a2b82a62af52c8ddde78975ad386a8422c2a01da042fbeb6cf159854d32533bda2f31cb84eeccc9f145cd7257def
   languageName: node
   linkType: hard
 

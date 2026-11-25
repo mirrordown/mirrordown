@@ -2,7 +2,11 @@ import { visit } from "unist-util-visit";
 import type { Plugin, Transformer } from "unified";
 import type { Data, Parent, PhrasingContent, Root } from "mdast";
 import type { Element, ElementContent, Properties } from "hast";
-import { createDelimitedTransform, maskTreeEscapes } from "@mirrordown/core";
+import {
+  cjkFriendlyEnabled,
+  createDelimitedTransform,
+  maskTreeEscapes
+} from "@mirrordown/core";
 
 // A spoiler nested deeper than this stays text, as in the markdown-it and Sätteri plugins: Sätteri rejects a document whose content nests deeper than 128 levels, and a spoiler is two levels there (the label and the content span).
 const MAX_DEPTH = 50;
@@ -71,7 +75,9 @@ export const spoilerHastHandlers: Record<string, SpoilerHandler> = {
 /**
  * remark plugin for Discord-style spoiler syntax (`||text||`), wrapping each match in a {@link Spoiler} node. Pair with {@link spoilerHastHandlers} via `remarkRehype({ handlers: spoilerHastHandlers })` so the node renders as a click-to-reveal spoiler. The scan is shared with markdown-it's pairing rules and the Sätteri plugin through `@mirrordown/core`, and the output is byte-identical to `@mirrordown/mdit-spoiler`.
  */
-export const remarkSpoiler: Plugin<[], Root> = () => {
+export const remarkSpoiler: Plugin<[], Root> = function () {
+  // remd-cjk-friendly says in the processor's data whether runs flank by its rule. It is read when the tree is transformed, so the two plugins may be listed in either order.
+  const data = this.data();
   const transform = createDelimitedTransform<PhrasingContent>(
     `|`,
     {
@@ -86,7 +92,8 @@ export const remarkSpoiler: Plugin<[], Root> = () => {
         }
       })
     },
-    MAX_DEPTH
+    MAX_DEPTH,
+    () => cjkFriendlyEnabled(data)
   );
 
   const transformer: Transformer<Root> = (tree, file) => {

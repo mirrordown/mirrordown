@@ -18,10 +18,10 @@ const neighbour = (character: string | undefined): Neighbour =>
 
 // The run between `before` and `after`, each written as the text on that side of it: the last character of `before` (and the one before it, for a variation selector) and the first of `after`.
 const flanking = (before: string, after: string, cjkFriendly = true) => {
-  const characters = [...before];
+  const characters = Array.from(before);
   return delimiterFlanking(
     neighbour(characters.at(-1)),
-    neighbour([...after][0]),
+    neighbour(Array.from(after)[0]),
     cjkFriendly,
     () => neighbour(characters.at(-2))
   );
