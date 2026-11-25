@@ -162,3 +162,12 @@ export {
   type BlockIdEdits,
   type BlockMarker
 } from "./block-ids.js";
+export {
+  codePointBefore,
+  isCjkAmbiguousPunctuationSequence,
+  isCjkCharacter,
+  isEastAsianWide,
+  isHangul,
+  isIdeographicVariationSelector,
+  isNonEmojiVariationSelector
+} from "./cjk.js";

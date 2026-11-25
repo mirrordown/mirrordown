@@ -44,6 +44,7 @@
     "@vitest/browser-playwright": "catalog:",
     "@vscode/vsce": "^3.9.2",
     "markdown-it": "^14.2.0",
+    "micromark-extension-cjk-friendly-util": "^3.0.1",
     "opentype.js": "^2.0.0",
     "playwright": "^1.61.1",
     "postcss": "^8.5.15",

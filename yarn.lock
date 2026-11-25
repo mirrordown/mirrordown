@@ -1484,6 +1484,7 @@ __metadata:
     "@vitest/browser-playwright": "catalog:"
     "@vscode/vsce": "npm:^3.9.2"
     markdown-it: "npm:^14.2.0"
+    micromark-extension-cjk-friendly-util: "npm:^3.0.1"
     opentype.js: "npm:^2.0.0"
     playwright: "npm:^1.61.1"
     postcss: "npm:^8.5.15"
@@ -5983,7 +5984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-east-asian-width@npm:^1.0.0, get-east-asian-width@npm:^1.5.0":
+"get-east-asian-width@npm:^1.0.0, get-east-asian-width@npm:^1.4.0, get-east-asian-width@npm:^1.5.0":
   version: 1.7.0
   resolution: "get-east-asian-width@npm:1.7.0"
   checksum: 10/8d8d96b54d1cfb6510f1b6dce51c4a6000b4d122757780d519d0147d968a6f5401421dbeff2e6bd3dc742e9b502fbcdbb98a50bf7f62730a6a8d6749a632279c
@@ -7667,6 +7668,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"micromark-extension-cjk-friendly-util@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "micromark-extension-cjk-friendly-util@npm:3.0.1"
+  dependencies:
+    get-east-asian-width: "npm:^1.4.0"
+    micromark-util-character: "npm:^2.1.1"
+    micromark-util-symbol: "npm:^2.0.1"
+  peerDependenciesMeta:
+    micromark-util-types:
+      optional: true
+  checksum: 10/3eb5f3c8a1fb5558319f4d0712bb99c64f7ec41215cf5cff4679c738a7087813fdded80df06ed301c0b631c893f143055b444225deae63fc77123c74ebca0e21
+  languageName: node
+  linkType: hard
+
 "micromark-extension-gfm-autolink-literal@npm:^2.0.0":
   version: 2.1.0
   resolution: "micromark-extension-gfm-autolink-literal@npm:2.1.0"
@@ -8041,7 +8056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromark-util-symbol@npm:^2.0.0":
+"micromark-util-symbol@npm:^2.0.0, micromark-util-symbol@npm:^2.0.1":
   version: 2.0.1
   resolution: "micromark-util-symbol@npm:2.0.1"
   checksum: 10/497e6d95fc21c2bb5265b78a6a60db518c376dc438739b2e7d4aee6f9f165222711724b456c63163314f32b8eea68a064687711d41e986262926eab23ddb9229
