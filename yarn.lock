@@ -1484,6 +1484,7 @@ __metadata:
     "@vitest/browser-playwright": "catalog:"
     "@vscode/vsce": "npm:^3.9.2"
     markdown-it: "npm:^14.2.0"
+    markdown-it-cjk-breaks: "npm:^2.0.1"
     markdown-it-cjk-friendly: "npm:^3.0.0"
     micromark-extension-cjk-friendly-util: "npm:^3.0.1"
     opentype.js: "npm:^2.0.0"
@@ -1554,6 +1555,18 @@ __metadata:
 "@mirrordown/mdit-caption@workspace:*, @mirrordown/mdit-caption@workspace:^, @mirrordown/mdit-caption@workspace:packages/mdit-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-caption@workspace:packages/mdit-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/markdown-it": "catalog:"
+    markdown-it: "catalog:"
+  peerDependencies:
+    markdown-it: ^14.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/mdit-cjk-breaks@workspace:^, @mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks"
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/markdown-it": "catalog:"
@@ -1885,6 +1898,7 @@ __metadata:
     "@mirrordown/mdit-autolink-headings": "workspace:^"
     "@mirrordown/mdit-block-ids": "workspace:^"
     "@mirrordown/mdit-caption": "workspace:^"
+    "@mirrordown/mdit-cjk-breaks": "workspace:^"
     "@mirrordown/mdit-cjk-friendly": "workspace:^"
     "@mirrordown/mdit-copy-code": "workspace:^"
     "@mirrordown/mdit-definition-list": "workspace:^"
@@ -1927,6 +1941,7 @@ __metadata:
     "@mirrordown/remd-autolink-headings": "workspace:^"
     "@mirrordown/remd-block-ids": "workspace:^"
     "@mirrordown/remd-caption": "workspace:^"
+    "@mirrordown/remd-cjk-breaks": "workspace:^"
     "@mirrordown/remd-cjk-friendly": "workspace:^"
     "@mirrordown/remd-copy-code": "workspace:^"
     "@mirrordown/remd-definition-list": "workspace:^"
@@ -1971,6 +1986,7 @@ __metadata:
     "@mirrordown/sat-autolink-headings": "workspace:^"
     "@mirrordown/sat-block-ids": "workspace:^"
     "@mirrordown/sat-caption": "workspace:^"
+    "@mirrordown/sat-cjk-breaks": "workspace:^"
     "@mirrordown/sat-copy-code": "workspace:^"
     "@mirrordown/sat-del": "workspace:^"
     "@mirrordown/sat-file-tree": "workspace:^"
@@ -2055,6 +2071,20 @@ __metadata:
 "@mirrordown/remd-caption@workspace:^, @mirrordown/remd-caption@workspace:packages/remd-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/remd-caption@workspace:packages/remd-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    "@types/mdast": "catalog:"
+    unified: "catalog:"
+    vfile: "npm:^6.0.3"
+  peerDependencies:
+    unified: ^11.0.0
+    vfile: ^6.0.0
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/remd-cjk-breaks@workspace:^, @mirrordown/remd-cjk-breaks@workspace:packages/remd-cjk-breaks":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/remd-cjk-breaks@workspace:packages/remd-cjk-breaks"
   dependencies:
     "@mirrordown/core": "workspace:^"
     "@types/mdast": "catalog:"
@@ -2468,6 +2498,17 @@ __metadata:
 "@mirrordown/sat-caption@workspace:^, @mirrordown/sat-caption@workspace:packages/sat-caption":
   version: 0.0.0-use.local
   resolution: "@mirrordown/sat-caption@workspace:packages/sat-caption"
+  dependencies:
+    "@mirrordown/core": "workspace:^"
+    satteri: "catalog:"
+  peerDependencies:
+    satteri: ^0.11.3
+  languageName: unknown
+  linkType: soft
+
+"@mirrordown/sat-cjk-breaks@workspace:^, @mirrordown/sat-cjk-breaks@workspace:packages/sat-cjk-breaks":
+  version: 0.0.0-use.local
+  resolution: "@mirrordown/sat-cjk-breaks@workspace:packages/sat-cjk-breaks"
   dependencies:
     "@mirrordown/core": "workspace:^"
     satteri: "catalog:"
@@ -6015,7 +6056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-east-asian-width@npm:^1.0.0, get-east-asian-width@npm:^1.4.0, get-east-asian-width@npm:^1.5.0":
+"get-east-asian-width@npm:^1.0.0, get-east-asian-width@npm:^1.2.0, get-east-asian-width@npm:^1.4.0, get-east-asian-width@npm:^1.5.0":
   version: 1.7.0
   resolution: "get-east-asian-width@npm:1.7.0"
   checksum: 10/8d8d96b54d1cfb6510f1b6dce51c4a6000b4d122757780d519d0147d968a6f5401421dbeff2e6bd3dc742e9b502fbcdbb98a50bf7f62730a6a8d6749a632279c
@@ -7200,6 +7241,15 @@ __metadata:
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown
   linkType: soft
+
+"markdown-it-cjk-breaks@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "markdown-it-cjk-breaks@npm:2.0.1"
+  dependencies:
+    get-east-asian-width: "npm:^1.2.0"
+  checksum: 10/b71b535d1cc4d59b9afa5a4947cc66f349ef58b4a49ec943c2858a153c0f57569ad1a9ff1c3c8345d0d35044145e0bb1118d7853159279bde69706a38bd5e9cb
+  languageName: node
+  linkType: hard
 
 "markdown-it-cjk-friendly@npm:^3.0.0":
   version: 3.0.0

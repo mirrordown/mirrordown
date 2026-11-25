@@ -7,6 +7,7 @@ import {
 } from "@mirrordown/mdit-autolink-headings";
 import { blockIds } from "@mirrordown/mdit-block-ids";
 import { caption } from "@mirrordown/mdit-caption";
+import { cjkBreaks } from "@mirrordown/mdit-cjk-breaks";
 import { cjkFriendly } from "@mirrordown/mdit-cjk-friendly";
 import { copyCode, type CopyCodeOptions } from "@mirrordown/mdit-copy-code";
 import { dl } from "@mirrordown/mdit-definition-list";
@@ -47,6 +48,7 @@ export interface MirrordownOptions {
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   blockIds?: boolean;
   caption?: boolean;
+  cjkBreaks?: boolean;
   cjkFriendly?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
@@ -147,5 +149,7 @@ export const mirrordown = (
   configured(options.autolinkHeadings, autolinkHeadings);
   configured(options.lightbox, lightbox);
   on(options.unwrapImages, unwrapImages);
+  // Its rule goes at the end of the core chain, so after caption's, which joins a table caption's rows with soft breaks; every other rule that reads a block's lines runs earlier wherever it is registered. Before squeeze-paragraphs, which stays last: a removed break never leaves a paragraph empty.
+  on(options.cjkBreaks, cjkBreaks);
   on(options.squeezeParagraphs, squeezeParagraphs);
 };

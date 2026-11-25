@@ -39,6 +39,12 @@ export const features: ReadonlyArray<
     marker: "<figcaption>"
   },
   {
+    key: "cjkBreaks",
+    input: "日本語の文章は\n改行しても",
+    marker: "文章は\n改行",
+    absentWhenOn: true
+  },
+  {
     key: "cjkFriendly",
     presets: ["markdown-it", "remark"],
     input: "**テスト。**テスト",

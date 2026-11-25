@@ -1,0 +1,291 @@
+<!-- @case: a break between two ideographs or kana is removed -->
+
+<p>日本語の文章は改行しても</p>
+
+<!-- @case: every break of a wrapped paragraph between wide characters is removed -->
+
+<p>吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。</p>
+
+<!-- @case: a break between CJK and Latin text stays -->
+
+<p>日本語
+English</p>
+
+<!-- @case: a break between Latin and CJK text stays -->
+
+<p>English
+日本語</p>
+
+<!-- @case: a break between Latin words stays -->
+
+<p>one
+two</p>
+
+<!-- @case: Korean keeps its breaks: it puts spaces between words -->
+
+<p>한국어 문장은
+띄어쓰기를</p>
+
+<!-- @case: a break next to Hangul stays, on either side -->
+
+<p>漢字
+한글</p>
+<p>한글
+漢字</p>
+
+<!-- @case: halfwidth Hangul is Hangul -->
+
+<p>ﾡ
+日本</p>
+
+<!-- @case: wide punctuation is wide -->
+
+<p>中文，标点</p>
+<p>「引用」です。</p>
+
+<!-- @case: fullwidth forms are wide -->
+
+<p>ＡＢＣＤＥＦ</p>
+
+<!-- @case: halfwidth katakana is wide enough -->
+
+<p>ｶﾀｶﾅｶﾀｶﾅ</p>
+
+<!-- @case: punctuation of ambiguous width is not wide -->
+
+<p>“日本”
+日本</p>
+<p>日本
+“日本”</p>
+
+<!-- @case: a zero-width space before the break removes it, and stays -->
+
+<p>English​English</p>
+
+<!-- @case: a zero-width space after the break removes it, and stays -->
+
+<p>日本語​English</p>
+
+<!-- @case: a zero-width space written as a character reference -->
+
+<p>English​English</p>
+
+<!-- @case: a wide emoji is wide: the rule reads East Asian Width alone -->
+
+<p>🎉日本語</p>
+<p>日本語🎉</p>
+
+<!-- @case: an emoji that is not wide is not -->
+
+<p>☺
+日本語</p>
+
+<!-- @case: characters outside the Basic Multilingual Plane -->
+
+<p>𠮷野家で𠮷</p>
+
+<!-- @case: an ideographic variation selector is the character before the break -->
+
+<p>葛󠄀
+飾区</p>
+
+<!-- @case: the ideographic space is wide, and stays -->
+
+<p>日本語　日本語</p>
+
+<!-- @case: a character reference counts as the character it stands for -->
+
+<p>日本</p>
+
+<!-- @case: escaped characters stay escaped -->
+
+<p>*日本*</p>
+
+<!-- @case: an escaped character next to the break is the character before it -->
+
+<p>日本*
+語</p>
+
+<!-- @case: the spaces around a break are not characters -->
+
+<p>日本語日本語</p>
+<blockquote>
+<p>日本語日本語</p>
+</blockquote>
+
+<!-- @case: a hard break written with two spaces stays -->
+
+<p>日本語<br>
+日本語</p>
+
+<!-- @case: a hard break written with a backslash stays -->
+
+<p>日本語<br>
+日本語</p>
+
+<!-- @case: a code span counts by its own content -->
+
+<p><code>コード</code>日本語</p>
+<p>日本語<code>コード</code></p>
+
+<!-- @case: a code span ending in a Latin letter keeps the break -->
+
+<p>日本語<code>foo</code>
+日本語</p>
+<p>日本語
+<code>foo</code>日本語</p>
+
+<!-- @case: a line ending inside a code span is the code span's -->
+
+<p><code>日本 語</code></p>
+
+<!-- @case: a fenced code block keeps its lines -->
+
+<pre><code>日本
+語
+</code></pre>
+
+<!-- @case: an indented code block keeps its lines -->
+
+<p>コード：</p>
+<pre><code>日本
+語
+</code></pre>
+
+<!-- @case: an image is not a character -->
+
+<p>日本語<img src="x.png" alt="">
+日本語</p>
+<p>日本語
+<img src="x.png" alt="">日本語</p>
+
+<!-- @case: an image's description keeps its line ending -->
+
+<p><img src="x.png" alt="日本
+語"></p>
+
+<!-- @case: a link title keeps its line ending -->
+
+<p><a href="x" title="日本
+語">日本</a></p>
+
+<!-- @case: emphasis is transparent -->
+
+<p><em>日本</em>語</p>
+<p>日本<em>語</em></p>
+
+<!-- @case: strong emphasis is transparent -->
+
+<p><strong>日本</strong>語</p>
+<p>日本<strong>語</strong></p>
+
+<!-- @case: a break inside emphasis -->
+
+<p><strong>日本語</strong></p>
+
+<!-- @case: nested emphasis is transparent -->
+
+<p><em><strong>日本</strong></em>語</p>
+
+<!-- @case: a link is transparent -->
+
+<p><a href="x">日本</a>語</p>
+<p>日本<a href="x">語</a></p>
+
+<!-- @case: a reference link is transparent -->
+
+<p><a href="y">日本</a>語</p>
+
+<!-- @case: a link with nothing in it is transparent -->
+
+<p>日<a href="x"></a>本</p>
+
+<!-- @case: a link around emphasis is transparent -->
+
+<p><a href="x"><strong>日本</strong></a>語</p>
+
+<!-- @case: an autolink ends in a Latin letter -->
+
+<p><a href="https://example.com">https://example.com</a>
+日本</p>
+
+<!-- @case: the start of a block is not a character -->
+
+<p><img src="x.png" alt="">
+日本</p>
+
+<!-- @case: a list item -->
+
+<ul>
+<li>日本語</li>
+</ul>
+
+<!-- @case: a lazy line of a list item -->
+
+<ul>
+<li>日本語</li>
+</ul>
+
+<!-- @case: an ordered list item -->
+
+<ol>
+<li>日本語</li>
+</ol>
+
+<!-- @case: a nested list item -->
+
+<ul>
+<li>外
+<ul>
+<li>日本語</li>
+</ul>
+</li>
+</ul>
+
+<!-- @case: a loose list item -->
+
+<ul>
+<li>
+<p>日本語</p>
+</li>
+<li>
+<p>中文标点</p>
+</li>
+</ul>
+
+<!-- @case: a blockquote -->
+
+<blockquote>
+<p>日本語</p>
+</blockquote>
+
+<!-- @case: a lazy line of a blockquote -->
+
+<blockquote>
+<p>日本語</p>
+</blockquote>
+
+<!-- @case: a nested blockquote -->
+
+<blockquote>
+<blockquote>
+<p>日本語</p>
+</blockquote>
+</blockquote>
+
+<!-- @case: a setext heading -->
+
+<h1>日本語</h1>
+
+<!-- @case: an ATX heading has one line -->
+
+<h1>日本語</h1>
+<p>日本語</p>
+
+<!-- @case: a document with no break between wide characters is left as it is -->
+
+<p>Line one
+line two, <em>emphasis</em>
+and <code>code</code>.</p>
+<p>日本語
+English</p>

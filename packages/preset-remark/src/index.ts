@@ -7,6 +7,7 @@ import { remarkAbbr } from "@mirrordown/remd-abbr";
 import { remarkAttrs, type AttrsOptions } from "@mirrordown/remd-attrs";
 import { remarkBlockIds } from "@mirrordown/remd-block-ids";
 import { remarkCaption } from "@mirrordown/remd-caption";
+import { remarkCjkBreaks } from "@mirrordown/remd-cjk-breaks";
 import { remarkCjkFriendly } from "@mirrordown/remd-cjk-friendly";
 import {
   rehypeCopyCode,
@@ -85,6 +86,7 @@ export interface MirrordownOptions {
   autolinkHeadings?: boolean | AutolinkHeadingsOptions;
   blockIds?: boolean;
   caption?: boolean;
+  cjkBreaks?: boolean;
   cjkFriendly?: boolean;
   copyCode?: boolean | CopyCodeOptions;
   definitionList?: boolean;
@@ -206,7 +208,9 @@ export const mirrordown = (
       // After the delimiter plugins, alerts and attrs, as markdown-it applies abbreviations once inline parsing is done: a term inside an attribute block or equal to an alert's keyword is theirs first. It reads a definition from its source, so what the earlier plugins made of a definition's line doesn't matter.
       ...on(options.abbr, remarkAbbr),
       // After attrs and the containers: attributes ending a caption go on its figure.
-      ...on(options.caption, remarkCaption)
+      ...on(options.caption, remarkCaption),
+      // Last: the plugins before it find their syntax by the lines of a text node (tabs, steps, alerts, tags, abbr, caption) or build the spans it reads through (kbd, mark, ruby and the rest), as markdown-it has parsed all of them before its rule runs.
+      ...on(options.cjkBreaks, remarkCjkBreaks)
     ],
     rehypePlugins: [
       // First, so the plugins after it see the diagrams' <svg>.
