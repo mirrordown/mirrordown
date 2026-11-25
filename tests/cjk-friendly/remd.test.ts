@@ -25,7 +25,7 @@ describe("cjk-friendly/remd", () => {
     }
   );
 
-  // The corpus cases the two engines render differently without the plugin too: astral punctuation, runs of three or more tildes, which GFM leaves as text, and GFM's bare URLs.
+  // The corpus cases the two engines render differently without the plugin too: runs of three or more tildes, which GFM leaves as text, and GFM's bare URLs.
   it.each(cases(`spec-remd`))(
     "corpus, remark's own: $name",
     ({ input, expected }) => {
@@ -33,9 +33,9 @@ describe("cjk-friendly/remd", () => {
     }
   );
 
-  // micromark reads `🎉` as two code units, neither of them punctuation, so beside a run it is a letter; markdown-it and Sätteri read one symbol (So), punctuation as CommonMark says. The amendment keeps each engine's answer: `**` after a letter and before `🎉` opens here. remark-cjk-friendly reads the whole character instead, and differs from remark without it.
-  it("reads an astral symbol beside a run as micromark does, a letter", () => {
-    expect(corpus(`a**🎉a**a`)).toBe(`<p>a<strong>🎉a</strong>a</p>`);
+  // Besides the specification's own change, the one thing the plugin changes in text without CJK characters: it reads a character outside the Basic Multilingual Plane beside a `*`, `_` or `~~` run whole, as CommonMark, markdown-it, Sätteri and remark-cjk-friendly do, so `🎉` (So) is punctuation and `**` between a letter and it does not open. micromark's own emphasis, which runs without the plugin, reads two code units there and takes it for a letter.
+  it("reads an astral symbol beside a run whole, where micromark alone reads a letter", () => {
+    expect(corpus(`a**🎉a**a`)).toBe(`<p>a**🎉a**a</p>`);
     expect(remark({ spans: false, cjk: false })(`a**🎉a**a`)).toBe(
       `<p>a<strong>🎉a</strong>a</p>`
     );

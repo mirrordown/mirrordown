@@ -76,6 +76,24 @@ H~2~Oとm^2^です
 <!-- @case: punctuation with a variation selector before the closer, the one change without CJK text -->
 **a.︀**a
 
+<!-- @case: an astral symbol after a letter is punctuation, so the run does not open -->
+a**🎉a**a
+
+<!-- @case: an astral symbol before the opener is punctuation -->
+🎉**"a"**
+
+<!-- @case: an astral symbol before an underscore is punctuation -->
+🎉_"a"_
+
+<!-- @case: an astral letter stays a letter -->
+𝒳**"a"**
+
+<!-- @case: mark reads an astral symbol whole -->
+🎉=="a"==
+
+<!-- @case: subscript and superscript read an astral symbol whole -->
+🎉~"a"~ and 🎉^"a"^
+
 <!-- @case: in a link -->
 [**テスト。**テスト](https://example.com)
 

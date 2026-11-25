@@ -67,7 +67,7 @@ describe("presets", () => {
     const md = markdownIt({ mermaidPele });
     const rm = remark({ mermaidPele });
     const sat = satteri({ mermaidPele });
-    // markdown-it, not remark: micromark reads a character outside the Basic Multilingual Plane as two code units, so remark alone takes `🈂` beside `**` for a letter where markdown-it and Sätteri read punctuation.
+    // markdown-it, not remark: with `cjkFriendly` off, remark's emphasis is micromark's own, which reads a character outside the Basic Multilingual Plane as two code units and so takes `🈂` beside `**` for a letter where markdown-it and Sätteri read punctuation. With the plugin on, remark reads it whole too.
     const mdAsSatteri = markdownIt({ mermaidPele, ...missingFrom(`sätteri`) });
     it.each(fixtureCases)("$name", ({ input }) => {
       const expected = rm(input);

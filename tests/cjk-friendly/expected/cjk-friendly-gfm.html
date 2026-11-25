@@ -10,5 +10,8 @@
 <!-- @case: strikethrough around strong, closing before CJK text -->
 <p><del><strong>削除。</strong></del>テスト</p>
 
+<!-- @case: strikethrough reads an astral symbol whole -->
+<p>🎉<del>"a"</del> and a~~a𝜵~~a</p>
+
 <!-- @case: in a table cell -->
 <table><thead><tr><th>列</th></tr></thead><tbody><tr><td><strong>テスト。</strong>テスト</td></tr><tr><td><del>削除。</del>テスト</td></tr></tbody></table>

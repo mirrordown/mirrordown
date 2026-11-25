@@ -10,7 +10,7 @@ import { markdownIt, remark } from "../presets/engines.js";
 import { options as mermaidPele } from "../mermaid-pele/options.js";
 import { parseCases } from "../utils/index.js";
 
-// R8 as a sweep: every document the suite already has, every other set's fixtures, the Obsidian corpus and every guide, rendered through each preset that has the plugin, with it on and off. A document with no CJK character beside a delimiter must come out the same.
+// R8 as a sweep: every document the suite already has, every other set's fixtures, the Obsidian corpus and every guide, rendered through each preset that has the plugin, with it on and off. A document with no CJK character beside a delimiter must come out the same, but for one stated exception in remark: with the plugin, a character outside the Basic Multilingual Plane that is punctuation or a symbol beside a `*`, `_` or `~~` run is read as punctuation, where micromark's own emphasis and strikethrough read a letter.
 
 const root = join(import.meta.dirname, `..`, `..`);
 const tests = join(root, `tests`);
@@ -77,19 +77,38 @@ const cjkBesideDelimiter = (text: string): boolean => {
   );
 };
 
+// The exception's case: an astral symbol or punctuation mark beside a run of a delimiter micromark's emphasis or GFM strikethrough reads.
+const ASTRAL_PUNCTUATION = /^[\p{P}\p{S}]$/u;
+const MICROMARK_DELIMITERS = new Set([`*`, `_`, `~`]);
+const astralBesideRun = (text: string): boolean => {
+  const characters = Array.from(text);
+  return characters.some(
+    (character, index) =>
+      MICROMARK_DELIMITERS.has(character) &&
+      [characters[index - 1], characters[index + 1]].some(
+        (beside) =>
+          beside !== undefined &&
+          beside.codePointAt(0)! > 0xffff &&
+          ASTRAL_PUNCTUATION.test(beside)
+      )
+  );
+};
+
 describe.each([
-  [`markdown-it`, markdownIt],
-  [`remark`, remark]
-])("cjk-friendly through the %s preset", (_, render) => {
+  [`markdown-it`, markdownIt, cjkBesideDelimiter],
+  [
+    `remark`,
+    remark,
+    (text: string): boolean => cjkBesideDelimiter(text) || astralBesideRun(text)
+  ]
+] as const)("cjk-friendly through the %s preset", (_, render, mayChange) => {
   const on = render({ mermaidPele });
   const off = render({ mermaidPele, cjkFriendly: false });
   const changed = documents.filter(({ input }) => on(input) !== off(input));
 
   it("leaves every document with no CJK character beside a delimiter as it was", () => {
     expect(
-      changed
-        .filter(({ input }) => !cjkBesideDelimiter(input))
-        .map(({ name }) => name)
+      changed.filter(({ input }) => !mayChange(input)).map(({ name }) => name)
     ).toStrictEqual([]);
   });
 

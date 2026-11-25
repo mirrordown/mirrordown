@@ -66,40 +66,32 @@ describe("cjk-friendly against remark-cjk-friendly", () => {
   ]);
   const plain = remark([remarkGfm]);
 
-  // Three ways the reference departs from remark, each of which ours keeps, since a document with no CJK character beside a run must render as it did:
-  // 1. It reads a character outside the Basic Multilingual Plane whole, where micromark reads its two code units: `🎉` is punctuation to it and a letter to micromark. Ours renders what the reference renders with each such character taken for a letter.
-  // 2. It drops micromark's rule that a `*` run flanks beside `_` and a `_` run beside `*` (micromark's own attention markers), so `a*_b_*` changes without any CJK text.
-  // 3. Its strikethrough reads the character right before a closing run, not the one a variation selector belongs to, so `~︀~*` cannot close; the specification and markdown-it-cjk-friendly read through the selector.
-  const ASTRAL_PUNCTUATION = /^[\p{P}\p{S}]$/u;
-  const isAstralPunctuation = (character: string): boolean =>
-    character.codePointAt(0)! > 0xffff && ASTRAL_PUNCTUATION.test(character);
-  const asLetters = (input: string): string =>
-    Array.from(input, (c) => (isAstralPunctuation(c) ? `ß` : c)).join(``);
-  const explain = (input: string, html: string): string | undefined => {
-    if (
-      Array.from(input).some(isAstralPunctuation) &&
-      reference(asLetters(input)) === asLetters(html)
-    ) {
-      return `astral`;
-    }
+  // Two ways the reference departs from remark, each of which ours keeps, since a document with no CJK character beside a run must render as it did:
+  // 1. It drops micromark's rule that a `*` run flanks beside `_` and a `_` run beside `*` (micromark's own attention markers), so `a*_b_*` changes without any CJK text.
+  // 2. Its strikethrough reads the character right before a closing run, not the one a variation selector belongs to, so `~︀~*` cannot close; the specification and markdown-it-cjk-friendly read through the selector.
+  // Both read a character outside the Basic Multilingual Plane whole, where micromark alone reads two code units.
+  const explain = (input: string): string | undefined => {
     if (/\*_|_\*/u.test(input)) return `attention markers`;
     if (/[︀-︎]~/u.test(input)) return `strikethrough selector`;
     return undefined;
   };
   const differences = (list: readonly string[]) =>
     list
-      .map((input) => ({ input, html: ours(input) }))
-      .filter(({ input, html }) => html !== reference(input))
-      .map(({ input, html }) => ({ input, why: explain(input, html) }));
+      .filter((input) => ours(input) !== reference(input))
+      .map((input) => ({ input, why: explain(input) }));
 
-  it("renders the corpus as the reference does, but for astral punctuation", () => {
-    expect(differences(inputs.corpus)).toStrictEqual([
-      { input: `a**a𝜵**a`, why: `astral` },
-      { input: `a**𝜵a**a`, why: `astral` },
-      { input: `a**𐬻a**a`, why: `astral` },
-      { input: `a**a𐬻**a`, why: `astral` }
-    ]);
+  it("renders the corpus as the reference does", () => {
+    expect(differences(inputs.corpus)).toStrictEqual([]);
   });
+
+  // `🎉` is a symbol (So) and `𝜵` a mathematical symbol (Sm): punctuation beside a run, read whole by both, where remark without either plugin reads a letter.
+  it.each([`🎉**"a"**`, `a**a𝜵**a`, `🎉_"a"_`, `🎉~~"a"~~`])(
+    "reads an astral symbol beside a run as the reference does: %s",
+    (input) => {
+      expect(ours(input)).toBe(reference(input));
+      expect(ours(input)).not.toBe(plain(input));
+    }
+  );
 
   it("renders every CommonMark example as the reference does, and as remark does without it", () => {
     expect(differences(inputs.commonMark)).toStrictEqual([]);
@@ -108,11 +100,26 @@ describe("cjk-friendly against remark-cjk-friendly", () => {
     ).toStrictEqual([]);
   });
 
-  it("differs from the reference on generated strings only in the three known ways", () => {
+  it("differs from the reference on generated strings only in the two known ways", () => {
     const found = differences(inputs.generated);
     expect(found.filter(({ why }) => why === undefined)).toStrictEqual([]);
-    // Most strings hold none of the three, and those agree.
+    // Most strings hold neither, and those agree.
     expect(found.length).toBeLessThan(inputs.generated.length / 20);
+  });
+
+  // No difference comes from an astral character: with each astral symbol or punctuation mark written as `!` instead, ASCII punctuation that micromark reads as such, every string that differs still differs.
+  it("differs on no generated string because of an astral character", () => {
+    const astral = /^[\p{P}\p{S}]$/u;
+    const asAscii = (input: string): string =>
+      Array.from(input, (c) =>
+        c.codePointAt(0)! > 0xffff && astral.test(c) ? `!` : c
+      ).join(``);
+    const found = differences(inputs.generated).map(({ input }) => input);
+    expect(
+      found.filter(
+        (input) => ours(asAscii(input)) === reference(asAscii(input))
+      )
+    ).toStrictEqual([]);
   });
 
   // The second departure, alone: no CJK text, and the reference changes what remark renders.

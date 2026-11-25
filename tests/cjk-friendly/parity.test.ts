@@ -20,53 +20,65 @@ describe.each([
     inputs: `generated strings`,
     strings: generate(4000),
     changed: 50,
+    closes: 17,
     crossing: []
   },
   {
     inputs: `generated strings with Mirrordown's delimiters`,
     strings: generate(4000, SPAN_ALPHABET),
     changed: 50,
+    closes: 14,
     crossing: [`Ａ--.あ^~++--~`, `)Ａ++））(_++_`, `||字~_Ａ--(==||~`]
   },
   {
     inputs: `the specification's corpus`,
     strings: corpus().map(({ input }) => input),
     changed: 50,
+    closes: 6,
     crossing: []
   },
   {
     inputs: `the CommonMark examples`,
     strings: commonMarkExamples().map(({ markdown }) => markdown),
     changed: 0,
+    closes: 0,
     crossing: []
   }
-])("cjk-friendly parity on $inputs", ({ strings, changed, crossing }) => {
-  const compared = strings.filter(
-    (input) => asDel(mdOff(input)) === rmOff(input)
-  );
-  const differ = compared.filter((input) => asDel(md(input)) !== rm(input));
-
-  it("compares inputs the plugin changes", () => {
-    expect(
-      compared.filter((input) => rm(input) !== rmOff(input)).length
-    ).toBeGreaterThanOrEqual(changed);
-  });
-
-  // markdown-it reads `🎉` whole, a symbol and so punctuation; micromark reads two code units, neither punctuation. Here the amendment's clauses turn on what the two read beside a run: taken for a letter, markdown-it renders what remark does.
-  it("renders alike, but where an astral symbol is punctuation to markdown-it only", () => {
-    const astral = differ.filter((input) =>
-      Array.from(input).some(isAstralPunctuation)
+])(
+  "cjk-friendly parity on $inputs",
+  ({ strings, changed, closes, crossing }) => {
+    const compared = strings.filter(
+      (input) => asDel(mdOff(input)) === rmOff(input)
     );
-    const asLetters = (text: string): string =>
-      Array.from(text, (c) => (isAstralPunctuation(c) ? `ß` : c)).join(``);
-    for (const input of astral) {
-      expect(asDel(md(asLetters(input)))).toBe(asLetters(rm(input)));
-    }
-    expect(differ.filter((input) => !astral.includes(input))).toStrictEqual(
-      crossing
-    );
-  });
-});
+    const differ = compared.filter((input) => asDel(md(input)) !== rm(input));
+
+    it("compares inputs the plugin changes", () => {
+      expect(
+        compared.filter((input) => rm(input) !== rmOff(input)).length
+      ).toBeGreaterThanOrEqual(changed);
+    });
+
+    it("renders alike, but for the crossing spans pinned below", () => {
+      expect(differ).toStrictEqual(crossing);
+    });
+
+    // Without the plugin, micromark's own emphasis and strikethrough read `🎉` as two code units, neither punctuation, where markdown-it reads one symbol; inputs that differ for that reason alone (markdown-it, given a letter there, renders what remark does) are set aside above. With the plugin, remark reads the whole character too, and they render alike.
+    it("closes the differences that come from astral characters alone", () => {
+      const asLetters = (text: string): string =>
+        Array.from(text, (c) => (isAstralPunctuation(c) ? `ß` : c)).join(``);
+      const astralOnly = strings.filter(
+        (input) =>
+          asDel(mdOff(input)) !== rmOff(input) &&
+          Array.from(input).some(isAstralPunctuation) &&
+          asDel(mdOff(asLetters(input))) === asLetters(rmOff(input))
+      );
+      expect(astralOnly.length).toBeGreaterThanOrEqual(closes);
+      expect(
+        astralOnly.filter((input) => asDel(md(input)) !== rm(input))
+      ).toStrictEqual([]);
+    });
+  }
+);
 
 // The three strings pinned above, with the CJK text that lets a run flank replaced by a space or a letter, and no plugin: the engines differ there already. remark builds `==`, `++`, `--` and `||` after micromark has paired `~` and `_`, so a span of ours cannot cross one of micromark's, while markdown-it pairs all of them in one list.
 describe("cjk-friendly parity: spans that cross a micromark construct", () => {

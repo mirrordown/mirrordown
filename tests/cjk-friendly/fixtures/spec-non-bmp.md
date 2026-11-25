@@ -11,3 +11,15 @@ a**a∇**a
 
 <!-- @case: non-bmp 04 -->
 a**∇a**a
+
+<!-- @case: non-bmp 05 -->
+a**a𝜵**a
+
+<!-- @case: non-bmp 06 -->
+a**𝜵a**a
+
+<!-- @case: non-bmp 07 -->
+a**𐬻a**a
+
+<!-- @case: non-bmp 08 -->
+a**a𐬻**a
