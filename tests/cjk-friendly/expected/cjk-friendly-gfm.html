@@ -1,0 +1,14 @@
+<!-- @case: strikethrough closing after CJK punctuation -->
+<p><del>削除。</del>テスト</p>
+
+<!-- @case: strikethrough around a CJK bracket -->
+<p>これは<del>「削除」</del>です</p>
+
+<!-- @case: strikethrough with no CJK character beside it, as before -->
+<p>~~a.~~b and <del>a</del>b</p>
+
+<!-- @case: strikethrough around strong, closing before CJK text -->
+<p><del><strong>削除。</strong></del>テスト</p>
+
+<!-- @case: in a table cell -->
+<table><thead><tr><th>列</th></tr></thead><tbody><tr><td><strong>テスト。</strong>テスト</td></tr><tr><td><del>削除。</del>テスト</td></tr></tbody></table>
