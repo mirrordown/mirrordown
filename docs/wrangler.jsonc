@@ -6,5 +6,7 @@
   "compatibility_date": "2026-11-24",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  // `wrangler preview`, which Workers Builds runs for every branch but `main`, refuses a configuration without this block. It is empty because a preview of a static site needs no settings of its own: the assets above apply to it too.
+  "previews": {}
 }
