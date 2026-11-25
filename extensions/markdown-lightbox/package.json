@@ -1,7 +1,7 @@
 {
   "name": "markdown-lightbox",
   "displayName": "Markdown Image Lightbox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Adds a JavaScript-free click-to-zoom image lightbox to VSCode's markdown preview",
   "categories": [
     "Other"
