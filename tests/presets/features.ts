@@ -26,6 +26,12 @@ export const features: ReadonlyArray<{
     marker: "<figcaption>"
   },
   {
+    key: "cjkBreaks",
+    input: "日本語の文章は\n改行しても",
+    marker: "文章は\n改行",
+    absentWhenOn: true
+  },
+  {
     key: "copyCode",
     input: "```sh\nnpm test\n```",
     marker: 'class="markdown-copy-code"'

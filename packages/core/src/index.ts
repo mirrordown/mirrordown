@@ -171,3 +171,9 @@ export {
   isIdeographicVariationSelector,
   isNonEmojiVariationSelector
 } from "./cjk.js";
+export {
+  cjkBreakRemoved,
+  removeCjkBreaks,
+  type CjkBreakNode,
+  type CjkBreakWriter
+} from "./cjk-breaks.js";

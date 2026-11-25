@@ -1,0 +1,116 @@
+<!-- @case: a highlight is transparent -->
+
+<p><mark>日本</mark>語</p>
+<p>日本<mark>語</mark></p>
+
+<!-- @case: an insertion and a deletion are transparent -->
+
+<p><ins>日本</ins>語</p>
+<p><del>日本</del>語</p>
+
+<!-- @case: a spoiler is transparent -->
+
+<p><label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">日本</span></label>語</p>
+<p>日本<label class="markdown-spoiler"><input type="checkbox" class="markdown-spoiler-toggle" aria-label="spoiler"><span class="markdown-spoiler-content">語</span></label></p>
+
+<!-- @case: subscript and superscript are transparent -->
+
+<p>H<sub>日本</sub>語</p>
+<p>x<sup>日本</sup>語</p>
+
+<!-- @case: a key is transparent -->
+
+<p><kbd>日本</kbd>語</p>
+
+<!-- @case: a ruby is read by its base text, not its reading -->
+
+<p><ruby>漢字<rt>kanji</rt></ruby>日本</p>
+<p>日本
+<ruby>kanji<rt>漢字</rt></ruby></p>
+
+<!-- @case: a tag is transparent -->
+
+<p><a class="tag" href="#タグ">#タグ</a>続き</p>
+
+<!-- @case: an abbreviation is transparent -->
+
+<p><abbr title="東京大学">東大</abbr>です</p>
+
+<!-- @case: a break inside a highlight -->
+
+<p><mark>日本語</mark></p>
+
+<!-- @case: an alert's body -->
+
+<div class="markdown-alert" data-alert="note">
+<p class="markdown-alert-title" aria-label="Note"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"></path></svg>Note</p>
+<p>日本語</p>
+</div>
+
+<!-- @case: an alert's title is its own line -->
+
+<div class="markdown-alert" data-alert="tip">
+<p class="markdown-alert-title" aria-label="題名"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6"></path><path d="M10 22h4"></path></svg>題名</p>
+<p>本文です</p>
+</div>
+
+<!-- @case: a tab panel -->
+
+<div class="markdown-tabs" data-tabs-group="1505"><div class="markdown-tabs-labels"><input type="radio" name="tabs-7c0bf69a" id="tabs-7c0bf69a-0" hidden checked><label class="markdown-tabs-label" for="tabs-7c0bf69a-0">タブ</label></div><div class="markdown-tabs-panels"><section class="markdown-tabs-panel" aria-label="タブ"><p>日本語</p></section></div></div>
+
+<!-- @case: a step body -->
+
+<ol class="markdown-steps"><li class="markdown-steps-item" data-step="1"><p class="markdown-steps-title">手順</p><div class="markdown-steps-body"><p>日本語</p></div></li></ol>
+
+<!-- @case: a definition -->
+
+<dl>
+<dt>用語</dt>
+<dd>日本語</dd>
+</dl>
+
+<!-- @case: a caption -->
+
+<figure class="markdown-caption"><img src="x.png" alt=""><figcaption>日本語</figcaption></figure>
+
+<!-- @case: a table caption across rows -->
+
+<figure class="markdown-caption"><table>
+<thead>
+<tr>
+<th>a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+</tr>
+</tbody>
+</table><figcaption>日本語</figcaption></figure>
+
+<!-- @case: a task list item -->
+
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled> 日本語</li>
+</ul>
+
+<!-- @case: a block id after the last line -->
+
+<p id="^name">日本語</p>
+
+<!-- @case: an attribute block after the last line -->
+
+<p class="note">日本語</p>
+
+<!-- @case: an attribute block at the end of the last line -->
+
+<p id="name" class="note">日本語</p>
+
+<!-- @case: a span's attribute block is not between it and the break -->
+
+<p><mark class="x">日本</mark>語</p>
+<p><strong class="x">日本</strong>語</p>
+
+<!-- @case: a setext heading's id is read without the break -->
+
+<section data-depth="1"><h1 id="日本語"><a class="anchor" aria-hidden="true" tabindex="-1" href="#日本語"></a>日本語</h1></section>

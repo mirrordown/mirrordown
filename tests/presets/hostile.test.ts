@@ -18,7 +18,9 @@ const sets: readonly {
   { key: `kbd`, wrap: (text) => `[[${text}]]`, marker: `[` },
   { key: `mark`, wrap: (text) => `==${text}==`, marker: `=` },
   { key: `spoiler`, wrap: (text) => `||${text}||`, marker: `|` },
-  { key: `tags`, wrap: (text) => `#${text} `, marker: `#` }
+  { key: `tags`, wrap: (text) => `#${text} `, marker: `#` },
+  // Not a pair of delimiters: a soft break between two wide characters on each side of the content, and runs of line endings.
+  { key: `cjkBreaks`, wrap: (text) => `日本\n${text}\n語`, marker: `\n` }
 ];
 
 // Input an author would never write on purpose still arrives: pasted logs, generated files, text from another system. None of it may throw, hang, or make the engines disagree.

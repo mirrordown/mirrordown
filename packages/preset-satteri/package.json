@@ -25,6 +25,7 @@
     "@mirrordown/sat-autolink-headings": "workspace:^",
     "@mirrordown/sat-block-ids": "workspace:^",
     "@mirrordown/sat-caption": "workspace:^",
+    "@mirrordown/sat-cjk-breaks": "workspace:^",
     "@mirrordown/sat-copy-code": "workspace:^",
     "@mirrordown/sat-del": "workspace:^",
     "@mirrordown/sat-file-tree": "workspace:^",
