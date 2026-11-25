@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { SPEC, SPEC_GFM, cases } from "./cases.js";
-import { remark } from "./engines.js";
+import { markdownIt, remark } from "./engines.js";
 
 describe("cjk-friendly/remd", () => {
   // The rule does not depend on GFM, so the CommonMark cases hold with remark-gfm and without it.
@@ -39,6 +39,17 @@ describe("cjk-friendly/remd", () => {
     expect(remark({ spans: false, cjk: false })(`a**🎉a**a`)).toBe(
       `<p>a<strong>🎉a</strong>a</p>`
     );
+  });
+
+  // Half a surrogate pair beside a run: markdown-it reads U+FFFD there, a symbol, so the run flanks as it does beside punctuation, and remark has to agree though the text it writes keeps the surrogate.
+  it.each([
+    [`a lone high surrogate before`, `\ud83c**"a"**`],
+    [`a lone low surrogate before`, `\udf89**"a"**`],
+    [`a lone high surrogate after`, `**"a"**\ud83c`],
+    [`a lone low surrogate after`, `**"a"**\udf89`]
+  ])("reads %s as markdown-it does", (_, input) => {
+    expect(corpus(input)).toBe(markdownIt({ spans: false })(input));
+    expect(corpus(input)).toContain(`<strong>"a"</strong>`);
   });
 
   // A variation selector belongs to the character before it. micromark keeps a NUL (read as U+FFFD) apart from the text around it, so remark finds nothing before the selector and reads it as CommonMark does, a letter, and the run does not open before `"`; markdown-it reads U+FFFD there (as remark-cjk-friendly and markdown-it-cjk-friendly differ in the same way).

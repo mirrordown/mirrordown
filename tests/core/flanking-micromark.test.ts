@@ -8,7 +8,7 @@ import {
   type Neighbour
 } from "../../packages/core/src";
 
-// micromark hands a tokenizer one code unit at a time, so a character outside the Basic Multilingual Plane arrives as two surrogates, neither of them whitespace or punctuation. CommonMark, markdown-it and Sätteri read the whole character, so the readers that remd-cjk-friendly's constructs and Mirrordown's `~` and `^` use read it whole too: an emoji or a mathematical symbol beside a run is punctuation, an astral letter is a letter. A surrogate without its other half stays what micromark makes of it.
+// micromark hands a tokenizer one code unit at a time, so a character outside the Basic Multilingual Plane arrives as two surrogates, neither of them whitespace or punctuation. CommonMark, markdown-it and Sätteri read the whole character, so the readers that remd-cjk-friendly's constructs and Mirrordown's `~` and `^` use read it whole too: an emoji or a mathematical symbol beside a run is punctuation, an astral letter is a letter. A surrogate without its other half is read as U+FFFD, as the other two engines read it.
 
 // Records what the readers say about the `*` runs of a document, then gives way to micromark's own emphasis.
 const neighbours = (
@@ -75,16 +75,16 @@ describe("core: micromarkBefore and micromarkAfter", () => {
     });
   });
 
-  // Half a pair is no character: it stays the code unit micromark handed over, neither whitespace nor punctuation.
+  // Half a pair is no character. markdown-it reads U+FFFD in its place, and Sätteri is handed U+FFFD before it parses; U+FFFD is a symbol, so the three engines agree only if remark reads punctuation there too.
   it.each([
-    [`a lone high surrogate before`, `a\ud83c*a`, `before`, 0xd83c],
-    [`a lone low surrogate before`, `a\udf89*a`, `before`, 0xdf89],
-    [`a lone high surrogate after`, `a*\ud83ca`, `after`, 0xd83c],
-    [`a lone low surrogate after`, `a*\udf89a`, `after`, 0xdf89]
-  ] as const)("reads %s as itself", (_, input, side, codePoint) => {
+    [`a lone high surrogate before`, `a\ud83c*a`, `before`],
+    [`a lone low surrogate before`, `a\udf89*a`, `before`],
+    [`a lone high surrogate after`, `a*\ud83ca`, `after`],
+    [`a lone low surrogate after`, `a*\udf89a`, `after`]
+  ] as const)("reads %s as U+FFFD, a symbol", (_, input, side) => {
     expect(neighbours(input)[0]?.[side]).toStrictEqual({
-      kind: `other`,
-      codePoint
+      kind: `punctuation`,
+      codePoint: 0xfffd
     });
   });
 

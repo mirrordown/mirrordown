@@ -4,7 +4,7 @@ import type { CharacterClass, Neighbour } from "./flanking.js";
 
 // The characters beside a delimiter run in a micromark tokenizer, as `delimiterFlanking` takes them: the micromark side of the shared flanking rule, used by remd-cjk-friendly's constructs and by `scriptSyntax`.
 
-// micromark-util-classify-character, inlined: line endings, tabs, `\s` and the end of the text are whitespace, Unicode P and S are punctuation. It reads one code unit, as micromark's own emphasis does, so on its own an astral character (two surrogates) would be neither; it classifies the codes that are not part of one, and a lone surrogate.
+// micromark-util-classify-character, inlined: line endings, tabs, `\s` and the end of the text are whitespace, Unicode P and S are punctuation. It reads one code unit, as micromark's own emphasis does, so on its own an astral character (two surrogates) would be neither; it classifies the codes that are not surrogates.
 const WHITESPACE = /\s/;
 const PUNCTUATION = /\p{P}|\p{S}/u;
 export const micromarkClass = (code: Code): CharacterClass =>
@@ -44,6 +44,15 @@ const isLowSurrogate = (code: number): boolean =>
 const isHighSurrogate = (code: number): boolean =>
   code >= 0xd800 && code <= 0xdbff;
 
+// Half a surrogate pair is no character. markdown-it reads U+FFFD in its place and Sätteri is handed U+FFFD by the time it parses, and U+FFFD is a symbol (So), so beside a run it is punctuation in all three.
+const REPLACEMENT: Neighbour = { kind: `punctuation`, codePoint: 0xfffd };
+
+// A whole character as a neighbour: `codePoint` is a code point above U+FFFF, or one code unit of the text.
+const neighbour = (codePoint: number): Neighbour =>
+  isLowSurrogate(codePoint) || isHighSurrogate(codePoint)
+    ? REPLACEMENT
+    : { kind: characterClass(codePoint), codePoint };
+
 /**
  * The character before a run that starts at the tokenizer's current point, and a reader for the one before that. Call it where the run starts, before its first marker is consumed: `context.previous` is then the code before the run.
  */
@@ -72,17 +81,17 @@ export const micromarkBefore = (
   const astral = codePoint > 0xffff;
   const end = point._bufferIndex - (astral ? 2 : 1);
   return {
-    before: {
-      kind: astral ? characterClass(codePoint) : micromarkClass(previous),
-      codePoint
-    },
+    before:
+      astral || isLowSurrogate(previous) || isHighSurrogate(previous)
+        ? neighbour(codePoint)
+        : { kind: micromarkClass(previous), codePoint },
     twoBefore: () => {
       if (end < 1) return { kind: `whitespace` };
       const text = slice(context, point, end - 2, end);
       const character = codePointBefore(text, text.length);
       return character === undefined
         ? { kind: `whitespace` }
-        : { kind: characterClass(character), codePoint: character };
+        : neighbour(character);
     }
   };
 };
@@ -103,9 +112,8 @@ export const micromarkAfter = (
       point._bufferIndex,
       point._bufferIndex + 2
     ).codePointAt(0);
-    if (pair !== undefined && pair > 0xffff) {
-      return { kind: characterClass(pair), codePoint: pair };
-    }
+    if (pair !== undefined && pair > 0xffff) return neighbour(pair);
   }
+  if (isLowSurrogate(code) || isHighSurrogate(code)) return REPLACEMENT;
   return { kind, codePoint: code };
 };
