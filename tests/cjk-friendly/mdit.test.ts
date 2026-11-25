@@ -37,4 +37,9 @@ describe("cjk-friendly/mdit", () => {
   it("reads an astral symbol beside a run as punctuation", () => {
     expect(corpus(`a**🎉a**a`)).toBe(`<p>a**🎉a**a</p>`);
   });
+
+  // A variation selector belongs to the character before it. markdown-it reads that character in its source, where a NUL is already U+FFFD, a symbol, so the selector makes punctuation and the run opens before `"`; micromark keeps a NUL apart from the text around it, and remark reads the selector as following nothing (as markdown-it-cjk-friendly and remark-cjk-friendly differ in the same way).
+  it("reads the character before a variation selector after a NUL as U+FFFD", () => {
+    expect(corpus(`a\0︀**"b"**`)).toBe(`<p>a�︀<strong>"b"</strong></p>`);
+  });
 });

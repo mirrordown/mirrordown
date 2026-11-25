@@ -40,4 +40,9 @@ describe("cjk-friendly/remd", () => {
       `<p>a<strong>🎉a</strong>a</p>`
     );
   });
+
+  // A variation selector belongs to the character before it. micromark keeps a NUL (read as U+FFFD) apart from the text around it, so remark finds nothing before the selector and reads it as CommonMark does, a letter, and the run does not open before `"`; markdown-it reads U+FFFD there (as remark-cjk-friendly and markdown-it-cjk-friendly differ in the same way).
+  it("reads a variation selector after a NUL as following nothing", () => {
+    expect(corpus(`a\0︀**"b"**`)).toBe(`<p>a�︀**"b"**</p>`);
+  });
 });

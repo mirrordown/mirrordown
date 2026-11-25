@@ -59,7 +59,7 @@ What stays as it was:
 
 - **Underscores inside a word.** `これは__重要__です` stays text: a `_` run that is both left- and right-flanking opens only after punctuation and closes only before it, CJK or not, which keeps `snake_case_names` intact.
 - **Emoji.** They are wide, but they are not CJK characters: a run beside one flanks as in CommonMark.
-- **Text with no CJK character beside a delimiter.** It renders exactly as before, with one exception the specification makes on purpose: a variation selector (U+FE00 to U+FE0E) belongs to the character before it, so punctuation followed by one (`.︀**a`) is read as punctuation, where CommonMark read the selector as a letter.
+- **Text with no CJK character beside a delimiter.** It renders exactly as before, with one exception the specification makes on purpose: a variation selector (U+FE00 to U+FE0E) belongs to the character before it, so punctuation followed by one is read as punctuation, where CommonMark read the selector as a letter. `**a.︀**a` (a full stop, U+FE00) is bold in CommonMark and stays as written with this plugin, as `**a.**a` does in both.
 
 The specification reads variation selectors throughout: `。︀` is still CJK punctuation, an ideograph with an ideographic variation selector (`葛󠄀`) is still an ideograph, and the quotation marks `“ ” ‘ ’` followed by U+FE01, which asks for their full-width form, count as CJK punctuation.
 
@@ -99,6 +99,7 @@ Each engine keeps its own idea of whitespace and punctuation, and the amendment 
 - micromark reads a character outside the Basic Multilingual Plane as two code units, neither of them punctuation, so remark takes `🎉` or `𝜵` beside a run for a letter where markdown-it and Sätteri read punctuation: `a**a𝜵**a` is bold in remark only. `remark-cjk-friendly` reads the whole character, and so differs from remark without it.
 - micromark lets a `*` run flank a `_` and a `_` run flank a `*` (`a*_b_*` is nested emphasis in remark), and keeps doing so. `remark-cjk-friendly` drops that rule.
 - remark builds `==`, `++`, `--` and `||` after micromark has paired emphasis and `~`, so a span of ours that crosses one of those resolves differently from markdown-it, which pairs them all together.
+- A variation selector right after a NUL (`a\0︀**"b"**`) belongs to U+FFFD in markdown-it, which has replaced the NUL in its text, and to nothing in remark, where micromark keeps the NUL apart; the two reference packages differ the same way.
 
 ## Usage
 

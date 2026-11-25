@@ -73,6 +73,9 @@ H~2~Oとm^2^です
 <!-- @case: no CJK character beside the run, as before -->
 **foo.**bar
 
+<!-- @case: punctuation with a variation selector before the closer, the one change without CJK text -->
+**a.︀**a
+
 <!-- @case: in a link -->
 [**テスト。**テスト](https://example.com)
 
