@@ -25,6 +25,8 @@ const EXTENSIONS = [
   ["markdown-autolink-headings", "autolink-headings"],
   ["markdown-block-ids", "block-ids"],
   ["markdown-caption", "caption"],
+  ["markdown-cjk-breaks", "cjk-breaks"],
+  ["markdown-cjk-friendly", "cjk-friendly"],
   ["markdown-definition-list", "definition-list"],
   ["markdown-del", "del"],
   ["markdown-denden-furigana", "ruby"],

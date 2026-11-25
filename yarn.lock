@@ -1564,7 +1564,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-cjk-breaks@workspace:^, @mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks":
+"@mirrordown/mdit-cjk-breaks@workspace:*, @mirrordown/mdit-cjk-breaks@workspace:^, @mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-cjk-breaks@workspace:packages/mdit-cjk-breaks"
   dependencies:
@@ -1576,7 +1576,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mirrordown/mdit-cjk-friendly@workspace:^, @mirrordown/mdit-cjk-friendly@workspace:packages/mdit-cjk-friendly":
+"@mirrordown/mdit-cjk-friendly@workspace:*, @mirrordown/mdit-cjk-friendly@workspace:^, @mirrordown/mdit-cjk-friendly@workspace:packages/mdit-cjk-friendly":
   version: 0.0.0-use.local
   resolution: "@mirrordown/mdit-cjk-friendly@workspace:packages/mdit-cjk-friendly"
   dependencies:
@@ -7162,6 +7162,26 @@ __metadata:
   resolution: "markdown-caption@workspace:extensions/markdown-caption"
   dependencies:
     "@mirrordown/mdit-caption": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-cjk-breaks@workspace:extensions/markdown-cjk-breaks":
+  version: 0.0.0-use.local
+  resolution: "markdown-cjk-breaks@workspace:extensions/markdown-cjk-breaks"
+  dependencies:
+    "@mirrordown/mdit-cjk-breaks": "workspace:*"
+    "@types/markdown-it": "catalog:"
+    "@types/vscode": "npm:^1.125.0"
+  languageName: unknown
+  linkType: soft
+
+"markdown-cjk-friendly@workspace:extensions/markdown-cjk-friendly":
+  version: 0.0.0-use.local
+  resolution: "markdown-cjk-friendly@workspace:extensions/markdown-cjk-friendly"
+  dependencies:
+    "@mirrordown/mdit-cjk-friendly": "workspace:*"
     "@types/markdown-it": "catalog:"
     "@types/vscode": "npm:^1.125.0"
   languageName: unknown

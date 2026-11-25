@@ -20,6 +20,8 @@
     "saeris.markdown-autolink-headings",
     "saeris.markdown-block-ids",
     "saeris.markdown-caption",
+    "saeris.markdown-cjk-breaks",
+    "saeris.markdown-cjk-friendly",
     "saeris.markdown-definition-list",
     "saeris.markdown-del",
     "saeris.markdown-denden-furigana",
