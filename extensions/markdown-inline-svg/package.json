@@ -20,7 +20,7 @@
   },
   "contributes": {
     "markdown.previewScripts": [
-      "./dist/preview.js"
+      "./dist/preview.iife.js"
     ]
   },
   "activationEvents": [],
