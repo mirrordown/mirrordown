@@ -1,7 +1,7 @@
 {
   "name": "@mirrordown/mdit-task-lists",
   "description": "A markdown-it plugin for task lists: GFM's [ ] and [x], plus the six task markers Obsidian's community agrees on ([/], [-], [>], [<], [?], [!]), each labelled and drawn with an icon.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "Drake Costa <drake@saeris.io> (https://saeris.gg)",
   "repository": {

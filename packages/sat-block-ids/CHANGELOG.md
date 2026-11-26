@@ -1,5 +1,11 @@
 # Changelog
 
+
+## 0.1.1
+<sub>2026-11-26</sub>
+
+- *(patch)* Updated dependency `@mirrordown/core` v0.4.0
+
 ## 0.1.0
 <sub>2026-11-24</sub>
 
