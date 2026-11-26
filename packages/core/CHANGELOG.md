@@ -6,6 +6,132 @@
 
 
 
+
+## 0.4.0
+<sub>2026-11-26</sub>
+
+- *(minor)*
+  Core can say what a CJK character is, from tables pinned to one Unicode version. No plugin uses them yet, so no output changes.
+
+  - **New exports for classifying a code point**, as the [CommonMark CJK-friendly Amendments](https://github.com/tats-u/markdown-cjk-friendly/blob/main/specification.md) define the terms:
+
+    ```ts
+    import { isCjkCharacter, isEastAsianWide, isHangul } from "@mirrordown/core";
+
+    isCjkCharacter(0x3002); // 。 true: wide, and not an emoji
+    isCjkCharacter(0x1f389); // 🎉 false: wide, but an emoji by default
+    isCjkCharacter(0xd55c); // 한 true: Hangul
+    isEastAsianWide(0x1f389); // true: East Asian Width W, F or H
+    isHangul(0xd55c); // true
+    ```
+
+    Also `isIdeographicVariationSelector`, `isNonEmojiVariationSelector`, `isCjkAmbiguousPunctuationSequence`, and `codePointBefore(text, index)`, which reads the code point that ends before an index without splitting a surrogate pair.
+
+  - **The answers come from Unicode 18.0.0, whatever the runtime ships.** A `\p{…}` expression answers with the Unicode version of the Node or browser running it, so the same document could render differently on two machines. These tables are generated from the Unicode Character Database by `scripts/generate-cjk-ranges.mjs` and checked in.
+- *(minor)*
+  New plugin set `cjk-breaks`: a line break inside Chinese or Japanese text is no longer a space on the page. The presets turn it on by default.
+
+  - **New: `@mirrordown/mdit-cjk-breaks`, `@mirrordown/remd-cjk-breaks`, `@mirrordown/sat-cjk-breaks`.** Authors wrap long paragraphs in their editor, and a browser shows each line break as a space: right between Latin words, wrong in the middle of a sentence written without spaces. The plugins remove a soft line break when the characters on both sides have East Asian Width W, F or H and neither is Hangul, or when either is the zero-width space U+200B.
+
+    ```markdown
+    吾輩は猫である。
+    名前はまだ無い。
+    ```
+
+    Was `<p>吾輩は猫である。⏎名前はまだ無い。</p>`, which a browser shows as `吾輩は猫である。 名前はまだ無い。`. Now `<p>吾輩は猫である。名前はまだ無い。</p>`.
+
+    Korean, which puts spaces between words, keeps its breaks, and so does a break with a Latin word on either side:
+
+    ```markdown
+    한국어 문장은
+    띄어쓰기를 합니다.
+
+    日本語
+    English
+    ```
+
+    Both render as before.
+
+  - **The character on each side is the one the reader sees.** Emphasis, links and the Mirrordown spans are read through, and a code span counts by its own content. An image, raw HTML or a hard break is not a character, so the break beside it stays.
+
+    ```markdown
+    **日本**
+    **語**
+
+    日本語`foo`
+    日本語
+    ```
+
+    Now `<p><strong>日本</strong><strong>語</strong></p>` and, unchanged, `<p>日本語<code>foo</code>⏎日本語</p>`. This differs from `markdown-it-cjk-breaks`, which looks for the nearest text on each side and steps over what lies between: it removes the second break, joining `foo` to `日本語`.
+
+  - **Presets: `cjkBreaks`, on by default.** All three presets remove CJK breaks, after every plugin that reads lines, so tabs, steps, alerts, captions and the rest find their syntax first. A document with no soft break between two wide characters renders byte for byte as before. Turn it off with `cjkBreaks: false`.
+
+  - **`@mirrordown/core`** exports `cjkBreakRemoved`, the rule the three plugins share, and `removeCjkBreaks`, the mdast transform behind the remark and Sätteri plugins.
+- *(minor)*
+  New plugin set `cjk-friendly` for markdown-it and remark: emphasis and every other delimiter open and close beside Chinese, Japanese and Korean punctuation. The two presets turn it on by default. Sätteri resolves emphasis in its parser and does not have the rule yet.
+
+  - **New: `@mirrordown/mdit-cjk-friendly` and `@mirrordown/remd-cjk-friendly`.** CommonMark decides whether `**` can open or close by the characters around it, with rules written for languages that put spaces between words. Beside CJK punctuation they fail. The plugins implement the [CommonMark CJK-friendly Amendments](https://github.com/tats-u/markdown-cjk-friendly/blob/main/specification.md).
+
+    ```markdown
+    **テスト。**テスト
+
+    これは**「重要」**です
+
+    **이름(Name)**은 필수입니다
+    ```
+
+    Was `<p>**テスト。**テスト</p>`, `<p>これは**「重要」**です</p>` and `<p>**이름(Name)**은 필수입니다</p>`. Now `<p><strong>テスト。</strong>テスト</p>`, `<p>これは<strong>「重要」</strong>です</p>` and `<p><strong>이름(Name)</strong>은 필수입니다</p>`.
+
+  - **Strikethrough and the Mirrordown delimiters take the same rule.** `~~`, `==`, `++`, `--`, `||`, `~` and `^` are flanked as emphasis is, so they failed in the same places.
+
+    ```markdown
+    ~~削除。~~テスト
+
+    これは==「重要」==です
+    ```
+
+    Was text in both. Now `<p><del>削除。</del>テスト</p>` (`<s>` in markdown-it) and `<p>これは<mark>「重要」</mark>です</p>`. In remark, `remd-mark`, `remd-ins`, `remd-del`, `remd-spoiler`, `remd-sub` and `remd-sup` read whether `remarkCjkFriendly` is in the processor, in any plugin order; without it they render as before.
+
+  - **Text without CJK characters is unchanged**, with one exception the specification makes on purpose: punctuation followed by a variation selector is read as punctuation.
+
+    ```markdown
+    a**"b"**c
+
+    **a.**b
+    ```
+
+    Both stay text, as in CommonMark.
+
+  - **Presets: `cjkFriendly`, on by default** in `@mirrordown/preset-markdown-it` and `@mirrordown/preset-remark`. Turn it off with `cjkFriendly: false`. `@mirrordown/preset-satteri` has no such option yet.
+
+  - **`@mirrordown/core`** decides every delimiter's flanking in one function, `delimiterFlanking`, with the amendment as an option. `createDelimitedTransform` and `scriptSyntax` take an optional reader that says whether it is on.
+- *(patch)*
+  remark reads a character outside the Basic Multilingual Plane beside a delimiter run as the whole character it is, as markdown-it and Sätteri do.
+
+  - **An emoji or a symbol beside `*`, `_` or `~~` is punctuation in remark, with `remd-cjk-friendly`.** micromark classifies the character beside a run one code unit at a time, and a character outside the BMP is two, so it took every emoji and mathematical symbol for a letter. CommonMark counts symbols as punctuation, and markdown-it and Sätteri read them so.
+
+    ```markdown
+    🎉**"a"**
+
+    a**a𝜵**a
+    ```
+
+    Was, in remark, `<p>🎉**"a"**</p>` and `<p>a<strong>a𝜵</strong>a</p>`. Now `<p>🎉<strong>"a"</strong></p>` and `<p>a**a𝜵**a</p>`, as markdown-it and Sätteri render them. The remark preset has the plugin on by default; without it, remark's emphasis is micromark's own and reads as before.
+
+  - **`remd-sub` and `remd-sup` read it the same way, with or without other plugins**, as `mdit-sub` and `mdit-sup` do.
+
+    ```markdown
+    🎉~"a"~
+
+    a^a𝜵^a
+    ```
+
+    Was `<p>🎉~"a"~</p>` and `<p>a<sup>a𝜵</sup>a</p>`. Now `<p>🎉<sub>"a"</sub></p>` and `<p>a^a𝜵^a</p>`.
+
+  - **Half a surrogate pair beside a run is read as U+FFFD**, a symbol, which is what markdown-it reads in its place.
+
+  - A letter outside the BMP, such as `𠮷`, is a letter as before, and so is every character inside it.
+
 ## 0.3.0
 <sub>2026-11-24</sub>
 

@@ -1,7 +1,7 @@
 {
   "name": "markdown-cjk-friendly",
   "displayName": "Markdown CJK-Friendly Emphasis",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Makes emphasis and other inline markup work beside Chinese, Japanese and Korean punctuation in VSCode's markdown preview",
   "categories": [
     "Other"

@@ -1,7 +1,7 @@
 {
   "name": "markdown-cjk-breaks",
   "displayName": "Markdown CJK Line Breaks",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Removes line breaks inside Chinese and Japanese text from VSCode's markdown preview, where they would show as spaces",
   "categories": [
     "Other"
