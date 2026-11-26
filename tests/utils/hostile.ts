@@ -5,6 +5,11 @@
  */
 export const HOSTILE_TIME_LIMIT = 1000;
 
+/**
+ * Test options for a growth check: one that renders two sizes of an input, usually four times apart, and asserts the ratio of the two times is under a limit, usually 8. Four times the input takes about 4 times as long when the cost is per item and 16 times when each item costs the whole input, so a real regression misses the limit on every run. A busy machine misses it now and then with nothing wrong: on shared CI runners linear code has measured 8.0 to 8.5 (four separate checks in November 2026), each time passing when run again. So a check is retried, and fails only when it misses on every attempt. Time the plugin's own work where the engine around it is slower than linear by itself (markdown-it and remark both are on one long paragraph), or the ratio starts near the limit.
+ */
+export const GROWTH_CHECK = { timeout: 120_000, retry: 3 } as const;
+
 const RUN = 20_000;
 
 /** A hostile input for one piece of syntax. */

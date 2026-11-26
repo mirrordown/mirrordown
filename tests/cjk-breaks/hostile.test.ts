@@ -10,7 +10,11 @@ import { VFile } from "vfile";
 import { cjkBreaks } from "../../packages/mdit-cjk-breaks/src";
 import { remarkCjkBreaks } from "../../packages/remd-cjk-breaks/src";
 import { satteriCjkBreaks } from "../../packages/sat-cjk-breaks/src";
-import { HOSTILE_TIME_LIMIT, comparable } from "../utils/hostile.js";
+import {
+  comparable,
+  GROWTH_CHECK,
+  HOSTILE_TIME_LIMIT
+} from "../utils/hostile.js";
 
 // Every break is decided by looking at most as far as the line next to it, and the removed ones go in one pass over each text node or token list, so the plugin's cost is the number of lines, whatever they hold.
 const pipelines = (on: boolean): ((input: string) => string)[] => {
@@ -90,39 +94,44 @@ describe(`cjk-breaks on hostile input`, () => {
 
   // A limit in milliseconds is passed by a fast machine whatever the plugin does. Growth does not depend on the machine: four times as many lines take about four times as long when the cost is per line, and sixteen times as long when each line costs the length of the paragraph.
   describe.each(shapes)(`four times as many $name`, ({ make, small }) => {
+    // markdown-it is timed out, as remark is below: by itself it takes 5.3 times as long on four times the lines at these sizes (measured without the plugin), so timing a whole render left a limit of 8 little room, and it failed on a shared runner at 8.4 with nothing wrong in the rule. The rule runs alone, on tokens parsed beforehand; a profile of a whole render puts it and its width lookups at about a tenth of the time. Parsed anew for each run, since the rule takes the breaks out of the tokens it is given.
+    // Its sizes are sixteen times apart, not four: sixteen times the lines take 16 times as long when the cost is per line (15.7 to 18.6 measured) and 256 times when each line costs the paragraph. The list of kept tokens now and then costs one run twice as much as it grows past some size (28 measured), which four times apart reads as 7 against a limit of 8, and sixteen apart as 28 against 64.
     it(
-      `take markdown-it about four times as long`,
-      { timeout: 120_000 },
+      `take markdown-it's rule about sixteen times as long for sixteen times as many`,
+      GROWTH_CHECK,
       () => {
-        const render = withPlugin[0];
-        const few = make(small);
-        const many = make(small * 4);
-        expect(
-          fastest(() => render(many)) / fastest(() => render(few))
-        ).toBeLessThan(8);
+        const parser = new MarkdownIt();
+        const md = new MarkdownIt().use(cjkBreaks);
+        // The plugin pushes its rule to the end of the core chain.
+        const rule = md.core.ruler.getRules(``).at(-1)!;
+        const time = (input: string): number =>
+          Math.min(
+            ...[0, 1, 2, 3, 4].map(() => {
+              const state = new md.core.State(input, md, {});
+              state.tokens = parser.parse(input, {});
+              return timed(() => rule(state));
+            })
+          );
+        expect(time(make(small * 64)) / time(make(small * 4))).toBeLessThan(64);
       }
     );
 
     // remark itself is timed out: its parser takes most of the time and varies most, so the plugin runs alone on a parsed tree. Alone it takes two to four milliseconds on `small` lines, too little to time while the rest of the suite runs beside it (the ratio went past 8 in a full run though the cost is per line), so its two sizes are four times the others', and it takes the fastest of five.
-    it(
-      `take remark's plugin about four times as long`,
-      { timeout: 120_000 },
-      () => {
-        const parser = unified().use(remarkParse);
-        const transform = unified().use(remarkCjkBreaks);
-        const time = (input: string): number => {
-          const tree = parser.parse(input);
-          const file = new VFile(input);
-          const trees = [0, 1, 2, 3, 4].map((): Root => structuredClone(tree));
-          return Math.min(
-            ...trees.map((copy) => timed(() => transform.runSync(copy, file)))
-          );
-        };
-        expect(time(make(small * 16)) / time(make(small * 4))).toBeLessThan(8);
-      }
-    );
+    it(`take remark's plugin about four times as long`, GROWTH_CHECK, () => {
+      const parser = unified().use(remarkParse);
+      const transform = unified().use(remarkCjkBreaks);
+      const time = (input: string): number => {
+        const tree = parser.parse(input);
+        const file = new VFile(input);
+        const trees = [0, 1, 2, 3, 4].map((): Root => structuredClone(tree));
+        return Math.min(
+          ...trees.map((copy) => timed(() => transform.runSync(copy, file)))
+        );
+      };
+      expect(time(make(small * 16)) / time(make(small * 4))).toBeLessThan(8);
+    });
 
-    it(`take Sätteri about four times as long`, { timeout: 120_000 }, () => {
+    it(`take Sätteri about four times as long`, GROWTH_CHECK, () => {
       const render = withPlugin[2];
       const few = make(small);
       const many = make(small * 4);

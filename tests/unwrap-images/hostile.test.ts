@@ -17,8 +17,9 @@ import { satteriBlockIds } from "../../packages/sat-block-ids/src";
 import { satteriLightbox } from "../../packages/sat-lightbox/src";
 import { satteriUnwrapImages } from "../../packages/sat-unwrap-images/src";
 import {
-  HOSTILE_TIME_LIMIT,
   comparable,
+  GROWTH_CHECK,
+  HOSTILE_TIME_LIMIT,
   hostileCases
 } from "../utils/hostile.js";
 import { normalizeHtml } from "../utils/index.js";
@@ -184,7 +185,7 @@ describe("hostile input through unwrap-images", () => {
   // A limit in milliseconds is passed by a fast machine whatever the plugin does, and it was: markdown-it's plugin put each paragraph's children in its place with a splice, which moved every later token once per paragraph, and only a slower machine took more than the limit. Growth does not depend on the machine: four times as many paragraphs take four times as long when the cost is per paragraph, and about twelve times as long with that splice. The sizes are far apart on purpose: between twice as many, the two answers are 2 and 3.5, and a busy machine measured 3.1 for the first.
   it(
     "four times as many image paragraphs take markdown-it about four times as long",
-    { timeout: 120_000 },
+    GROWTH_CHECK,
     () => {
       const render = withPlugin[MDIT];
       const time = (n: number): number => {
